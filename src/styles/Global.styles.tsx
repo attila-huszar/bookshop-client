@@ -4,7 +4,6 @@ export default createGlobalStyle`
   * {
     margin: 0;
     padding: 0;
-    outline: 0;
     box-sizing: border-box;
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
@@ -14,6 +13,7 @@ export default createGlobalStyle`
    }
    
   #root {
+    background-color: #fdcb6e;
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
     --generalColor: #ffce1a;
