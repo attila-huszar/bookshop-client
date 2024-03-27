@@ -1,4 +1,4 @@
-import { StyledHeader } from '../styles/Header.styles'
+import { StyledHeader } from './Header.styles'
 
 export function Header() {
   return <StyledHeader />
