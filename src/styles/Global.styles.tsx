@@ -14,8 +14,6 @@ export default createGlobalStyle`
    }
    
   #root {
-    position: relative;
-    min-height: 100vh;
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
     --generalColor: #ffce1a;
