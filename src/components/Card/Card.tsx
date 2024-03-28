@@ -6,7 +6,7 @@ import {
   CardGreyText,
   CardPriceStrikethrough,
 } from './Card.styles'
-import { StyledButton } from '../../components'
+import { Button } from '../../components'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 import cartIcon from '../../assets/svg/cart.svg'
 
@@ -26,10 +26,10 @@ export function Card() {
           <span>$ 27.89</span>
           <CardPriceStrikethrough>$ 30.99</CardPriceStrikethrough>
         </CardText>
-        <StyledButton>
-          <img src={cartIcon} alt="cart" />
+        <Button onClick={() => {}}>
+          <img src={cartIcon} />
           Add to basket
-        </StyledButton>
+        </Button>
       </CardDetails>
     </StyledCard>
   )
