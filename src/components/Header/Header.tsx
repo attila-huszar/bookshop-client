@@ -1,5 +1,5 @@
 import { StyledHeader } from './Header.styles'
-import { StyledButton } from '../../components'
+import { Button } from '../../components'
 import { Menu } from './components/Menu/Menu'
 import { Search } from './components/Search/Search'
 import { Account } from './components/Account/Account'
@@ -13,10 +13,10 @@ export function Header() {
       <Search />
       <Account />
       <Favorite />
-      <StyledButton>
-        <img src={cartIcon} alt="cart" />
+      <Button onClick={() => {}}>
+        <img src={cartIcon} />
         Basket
-      </StyledButton>
+      </Button>
     </StyledHeader>
   )
 }
