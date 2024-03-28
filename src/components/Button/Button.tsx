@@ -11,7 +11,7 @@ export function Button({
 }) {
   if (icon) {
     return (
-      <IconButton onClick={() => {}}>
+      <IconButton onClick={onClick}>
         <img src={icon} />
       </IconButton>
     )
