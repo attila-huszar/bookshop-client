@@ -22,4 +22,13 @@ export default createGlobalStyle`
     --textGreyColor: #6c6c6c;
     --favoriteColor: #ff5841;
   }
+
+  a { 
+    text-decoration: none;
+    color: var(--textColor);
+  }
+
+  a:hover {
+    color: var(--generalColor);
+  }
 `
