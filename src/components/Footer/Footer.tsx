@@ -3,23 +3,23 @@ import { Subscribe } from './components/Subscribe/Subscribe'
 import { Links } from './components/Links/Links'
 import {
   StyledFooter,
-  FooterLeft,
-  FooterRight,
-  FooterBottom,
+  LeftSection,
+  RightSection,
+  BottomSection,
 } from './Footer.styles'
 
 export function Footer() {
   return (
     <StyledFooter>
-      <FooterLeft>
+      <LeftSection>
         <Navigation />
-      </FooterLeft>
-      <FooterRight>
+      </LeftSection>
+      <RightSection>
         <Subscribe />
-      </FooterRight>
-      <FooterBottom>
+      </RightSection>
+      <BottomSection>
         <Links />
-      </FooterBottom>
+      </BottomSection>
     </StyledFooter>
   )
 }

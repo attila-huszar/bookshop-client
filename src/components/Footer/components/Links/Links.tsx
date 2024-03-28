@@ -1,27 +1,12 @@
 import { NavList } from '../../Footer.styles'
 import { SocialLinks } from './Links.styles'
-import instagramIcon from '../../../../assets/svg/instagram.svg'
-import googleIcon from '../../../../assets/svg/google.svg'
-import fbIcon from '../../../../assets/svg/facebook.svg'
-
-const navLinks: { [key: string]: [string, string] }[] = [
-  { privacyPolicy: ['', 'Privacy Policy'] },
-  { termsOfUse: ['', 'Terms of Use'] },
-  { salesAndRefunds: ['', 'Sales and Refunds'] },
-  { legal: ['', 'Legal'] },
-]
-
-const socialLinks: { [key: string]: [string, string] }[] = [
-  { instagram: ['', instagramIcon] },
-  { google: ['', googleIcon] },
-  { facebook: ['', fbIcon] },
-]
+import { legalLinks, socialLinks } from '../../../../lib/navLinks'
 
 export function Links() {
   return (
     <>
       <NavList>
-        {navLinks.map((el) => (
+        {legalLinks.map((el) => (
           <li key={Object.keys(el)[0]}>
             <a href={Object.values(el)[0][0]}>{Object.values(el)[0][1]}</a>
           </li>

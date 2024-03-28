@@ -1,5 +1,4 @@
 import { createGlobalStyle } from 'styled-components'
-import styled from 'styled-components'
 
 export default createGlobalStyle`
   * {
@@ -31,8 +30,4 @@ export default createGlobalStyle`
   a:hover {
     color: var(--generalColor);
   }
-`
-
-export const Spacer = styled.div`
-  height: 3rem;
 `

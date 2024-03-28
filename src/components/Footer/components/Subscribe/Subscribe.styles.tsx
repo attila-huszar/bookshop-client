@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const SubscribeForm = styled.form`
   display: flex;
-  margin-top: 0.5rem;
+  margin-top: 3.5rem;
   border: 2px solid var(--generalColor);
   border-radius: 10px;
   overflow: hidden;

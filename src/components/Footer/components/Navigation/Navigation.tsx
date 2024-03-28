@@ -1,22 +1,16 @@
-import logo from '../../../../assets/svg/logo.svg'
 import { NavList } from '../../Footer.styles'
-import { Spacer } from '../../../../styles/Global.styles'
-
-const navLinks: { [key: string]: [string, string] }[] = [
-  { about: ['', 'About'] },
-  { features: ['', 'Features'] },
-  { pricing: ['', 'Pricing'] },
-  { gallery: ['', 'Gallery'] },
-  { team: ['', 'Team'] },
-]
+import { navLinks } from '../../../../lib/navLinks'
+import { StyledLogo } from './Navigation.styles'
+import logo from '../../../../assets/svg/logo.svg'
 
 export function Navigation() {
   return (
     <>
-      <a href="#top">
-        <img src={logo} alt="logo" />
-      </a>
-      <Spacer />
+      <StyledLogo>
+        <a href="#top">
+          <img src={logo} alt="logo" />
+        </a>
+      </StyledLogo>
       <NavList>
         {navLinks.map((el) => (
           <li key={Object.keys(el)[0]}>
