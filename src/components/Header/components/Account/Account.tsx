@@ -1,8 +1,10 @@
-import styled from 'styled-components'
+import { IconButton } from '../../../../components'
 import accountIcon from '../../../../assets/svg/account.svg'
 
-const StyledImage = styled.img``
-
 export function Account() {
-  return <StyledImage src={accountIcon} alt="account" />
+  return (
+    <IconButton>
+      <img src={accountIcon} alt="account" />
+    </IconButton>
+  )
 }

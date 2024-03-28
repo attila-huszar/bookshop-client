@@ -10,10 +10,10 @@ export default createGlobalStyle`
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-   }
+  }
    
   #root {
-    background-color: #fdcb6e;
+    background-color: #ecb346;
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
     --generalColor: #ffce1a;
@@ -21,5 +21,5 @@ export default createGlobalStyle`
     --textLightColor: #fffff8;
     --textGreyColor: #6c6c6c;
     --favoriteColor: #ff5841;
-   }
+  }
 `
