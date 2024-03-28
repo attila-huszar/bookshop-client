@@ -13,6 +13,7 @@ export default createGlobalStyle`
   }
    
   #root {
+    background-color: #ecb346;
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
     --generalColor: #ffce1a;
