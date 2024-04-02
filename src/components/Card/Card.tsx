@@ -1,36 +1,55 @@
 import {
   StyledCard,
-  CardDetails,
-  CardImage,
-  CardText,
-  CardGreyText,
-  CardPriceStrikethrough,
+  Details,
+  Image,
+  Title,
+  Description,
+  PriceBeforeDiscount,
 } from './Card.styles'
 import { Button } from '../../components'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 import cartIcon from '../../assets/svg/cart.svg'
 
-export function Card() {
+export function Card({
+  title,
+  description,
+  price,
+  discount,
+  imgUrl,
+}: {
+  title: string
+  description: string
+  price: string
+  discount?: number
+  imgUrl: string
+}) {
   return (
     <StyledCard>
-      <CardImage
-        src=""
+      <Image
+        src={imgUrl}
         onError={(e) => ((e.target as HTMLImageElement).src = imagePlaceholder)}
-        alt=""></CardImage>
-      <CardDetails>
-        <CardText>The Time Has Come</CardText>
-        <CardGreyText>
-          Lindbergh's Pharmacy is an Athens, Georgia, institution...
-        </CardGreyText>
-        <CardText>
-          <span>$ 27.89</span>
-          <CardPriceStrikethrough>$ 30.99</CardPriceStrikethrough>
-        </CardText>
-        <Button onClick={() => {}}>
+        alt={title}></Image>
+      <Details>
+        <Title>{title}</Title>
+        <Description>{description}</Description>
+        <Title>
+          {discount ? (
+            <>
+              <span>
+                ${' '}
+                {(Number(price) - (Number(price) * discount) / 100).toFixed(2)}
+              </span>
+              <PriceBeforeDiscount>$ {price}</PriceBeforeDiscount>
+            </>
+          ) : (
+            <span>$ {price}</span>
+          )}
+        </Title>
+        <Button onClick={() => {}} fontSize="1rem">
           <img src={cartIcon} />
           Add to basket
         </Button>
-      </CardDetails>
+      </Details>
     </StyledCard>
   )
 }

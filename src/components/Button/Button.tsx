@@ -1,21 +1,18 @@
 import { StyledButton, IconButton } from './Button.styles'
+import type { ButtonTypes } from './Button.types'
 
-export function Button({
-  onClick,
-  icon,
-  children,
-}: {
-  onClick: () => void
-  icon?: string
-  children?: React.ReactNode
-}) {
+export function Button({ onClick, children, icon, ...props }: ButtonTypes) {
   if (icon) {
     return (
-      <IconButton onClick={onClick}>
+      <IconButton onClick={onClick} {...props}>
         <img src={icon} />
       </IconButton>
     )
   }
 
-  return <StyledButton onClick={onClick}>{children}</StyledButton>
+  return (
+    <StyledButton onClick={onClick} {...props}>
+      {children}
+    </StyledButton>
+  )
 }

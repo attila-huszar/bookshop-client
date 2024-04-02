@@ -7,30 +7,47 @@ export const StyledCard = styled.div`
   padding: 1rem;
 `
 
-export const CardDetails = styled.div`
+export const Details = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 4rem 0 0 2rem;
 `
 
-export const CardImage = styled.img`
-  height: 15.625rem;
+export const Image = styled.img`
+  height: 100%;
   width: 11.25rem;
   border-radius: 5px;
   object-fit: cover;
 `
 
-export const CardText = styled.p`
-  margin-bottom: 1rem;
+export const Title = styled.p`
   font-size: 1.125rem;
 `
 
-export const CardGreyText = styled.p`
-  margin-bottom: 1rem;
+export const Description = styled.p`
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   font-size: 1rem;
   color: var(--textGreyColor);
+  overflow: hidden;
 `
 
-export const CardPriceStrikethrough = styled.span`
+export const PriceBeforeDiscount = styled.span`
+  position: relative;
   margin-left: 1.5rem;
   color: var(--textGreyColor);
-  text-decoration: line-through;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 125%;
+    height: 50%;
+    top: 0;
+    left: 0;
+    transform: translateX(-10%);
+    border-bottom: 1px solid;
+    pointer-events: none;
+  }
 `
