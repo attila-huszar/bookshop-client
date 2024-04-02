@@ -7,22 +7,11 @@ import {
   PriceBeforeDiscount,
 } from './Card.styles'
 import { Button } from '../../components'
+import { ICard } from '../../interfaces/ICard'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 import cartIcon from '../../assets/svg/cart.svg'
 
-export function Card({
-  title,
-  description,
-  price,
-  discount,
-  imgUrl,
-}: {
-  title: string
-  description: string
-  price: string
-  discount?: number
-  imgUrl: string
-}) {
+export function Card({ title, description, price, discount, imgUrl }: ICard) {
   return (
     <StyledCard>
       <Image
@@ -45,7 +34,7 @@ export function Card({
             <span>$ {price}</span>
           )}
         </Title>
-        <Button onClick={() => {}} fontSize="1rem">
+        <Button onClick={() => {}} size="lg">
           <img src={cartIcon} />
           Add to basket
         </Button>

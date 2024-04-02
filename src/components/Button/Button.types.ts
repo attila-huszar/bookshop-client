@@ -1,5 +1,5 @@
 export type StyleTypes = {
-  fontSize?: string
+  size?: 'sm' | 'md' | 'lg'
   shadowed?: boolean
 }
 

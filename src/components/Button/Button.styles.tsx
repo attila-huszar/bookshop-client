@@ -9,7 +9,17 @@ export const StyledButton = styled.button<StyleTypes>`
   border: none;
   outline: none;
   cursor: pointer;
-  font-size: ${({ fontSize }) => fontSize || '0.875rem'};
+  font-size: ${({ size }) => {
+    if (size === 'sm') {
+      return '0.75rem'
+    } else if (size === 'md') {
+      return '0.875rem'
+    } else if (size === 'lg') {
+      return '1rem'
+    } else {
+      return '0.875rem'
+    }
+  }};
   font-weight: 700;
   padding: 0.375rem 1.25rem;
   border-radius: 10px;
