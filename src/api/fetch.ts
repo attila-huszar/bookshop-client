@@ -2,8 +2,8 @@ import axios from 'axios'
 import { IBook } from '../interfaces/IBook'
 
 const url: Record<string, string> = {
-  books: 'http://localhost:3004/books',
-  authors: 'http://localhost:3004/authors',
+  books: import.meta.env.VITE_URL_BOOKS,
+  authors: import.meta.env.VITE_URL_AUTHORS,
 }
 
 export const fetchData = async (type: string): Promise<IBook[]> => {

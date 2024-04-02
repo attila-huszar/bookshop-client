@@ -1,14 +1,16 @@
 import { StyledHome } from './Home.styles'
+import { ErrorDiv } from '../../components'
+import { LoadingDiv } from '../../components'
 import { Card } from '../../components'
 import { IBook } from '../../interfaces/IBook'
 
 export function Home({ data }: { data: IBook[] | Error | undefined }) {
   if (!data) {
-    return <div>Loading...</div>
+    return <LoadingDiv />
   }
 
   if (data instanceof Error) {
-    return <div>{String(data)}</div>
+    return <ErrorDiv error={data} />
   }
 
   return (
