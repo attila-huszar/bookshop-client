@@ -1,21 +1,21 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { getData } from '../../store/api'
-import { RootState, AppDispatch } from '../../store/store'
+import { fetchBooks, bookState } from '../../store/booksSlice'
+import { AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'
 import { Card } from '../../components'
 import { Loading } from '../../components'
 import { Error } from '../../components'
 
 export function Home() {
-  const { data, error } = useSelector((state: RootState) => state.books)
   const dispatch = useDispatch<AppDispatch>()
+  const { data, status, error } = useSelector(bookState)
 
   useEffect(() => {
-    dispatch(getData('books'))
+    dispatch(fetchBooks())
   }, [dispatch])
 
-  if (!data) {
+  if (status === 'loading') {
     return <Loading />
   }
 
