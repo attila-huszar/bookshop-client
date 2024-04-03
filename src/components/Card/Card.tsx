@@ -4,7 +4,9 @@ import {
   Image,
   Title,
   Description,
-  PriceBeforeDiscount,
+  Currency,
+  Price,
+  Strikethrough,
 } from './Card.styles'
 import { Button } from '../../components'
 import { ICard } from '../../interfaces/ICard'
@@ -24,14 +26,20 @@ export function Card({ title, description, price, discount, imgUrl }: ICard) {
         <Title>
           {discount ? (
             <>
-              <span>
-                ${' '}
+              <Currency>$</Currency>
+              <Price>
                 {(Number(price) - (Number(price) * discount) / 100).toFixed(2)}
-              </span>
-              <PriceBeforeDiscount>$ {price}</PriceBeforeDiscount>
+              </Price>
+              <Strikethrough>
+                <Currency>$</Currency>
+                <Price>{price}</Price>
+              </Strikethrough>
             </>
           ) : (
-            <span>$ {price}</span>
+            <>
+              <Currency>$</Currency>
+              <Price>{price}</Price>
+            </>
           )}
         </Title>
         <Button onClick={() => {}} size="lg">
