@@ -1,5 +1,5 @@
 import { StyledError } from './Error.styles'
 
-export function Error({ error }: { error: Error }) {
-  return <StyledError>{String(error)}</StyledError>
+export function Error({ error }: { error: string }) {
+  return <StyledError>{error}</StyledError>
 }

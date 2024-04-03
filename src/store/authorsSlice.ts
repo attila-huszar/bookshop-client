@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { IAuthors } from '../interfaces'
 
-const initialState: { data: IAuthors[] | undefined; error: Error | null } = {
+const initialState: { data: IAuthors[] | undefined; error: string | null } = {
   data: [],
   error: null,
 }

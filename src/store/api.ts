@@ -23,7 +23,7 @@ const fetchUrl =
       const response = await axios.get(url)
       dispatch(actions.success(response.data))
     } catch (error) {
-      dispatch(actions.error(error))
+      dispatch(actions.error((error as Error).message))
     }
   }
 
