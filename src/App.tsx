@@ -1,17 +1,19 @@
 import { Provider } from 'react-redux'
 import { store } from './store/store'
 import { Layout } from './pages'
-import { useRoutes } from 'react-router-dom'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import GlobalStyle from './styles/Global.styles'
 
 function App() {
-  const routeElements = useRoutes(routes)
+  const router = createBrowserRouter(routes)
 
   return (
     <Provider store={store}>
       <GlobalStyle />
-      <Layout>{routeElements}</Layout>
+      <Layout>
+        <RouterProvider router={router} />
+      </Layout>
     </Provider>
   )
 }
