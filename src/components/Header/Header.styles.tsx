@@ -10,5 +10,6 @@ export const StyledHeader = styled.header`
   height: 5rem;
   width: 100%;
   max-width: 90rem;
-  padding: 2.5rem 6.25rem 0;
+  padding: 0 6.25rem;
+  background-color: #fff;
 `

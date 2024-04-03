@@ -154,7 +154,7 @@
       "biography": "Homer is the legendary author of the ancient Greek epic poems the 'Iliad' and the 'Odyssey,' which have profoundly influenced Western literature and culture."
     },
 
-{
+    {
       "id": 22,
       "name": "Alexandre Dumas",
       "fullName": "Alexandre Dumas",
@@ -295,7 +295,8 @@
       "id": 5,
       "title": "1984",
       "author": 5,
-      "genre": "https://upload.wikimedia.org/wikipedia/en/e/e1/1982_%28book%29_cover.jpg",
+      "genre": "Political fiction",
+      "imgUrl": "https://upload.wikimedia.org/wikipedia/en/e/e1/1982_%28book%29_cover.jpg",
       "favorite": true,
       "description": "A dystopian novel set in a totalitarian society where 'Big Brother' watches everyone.",
       "yearOfPublishing": "1949",
