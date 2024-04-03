@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const StyledLoadingDiv = styled.div`
+export const StyledLoading = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;

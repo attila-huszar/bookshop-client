@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const StyledErrorDiv = styled.div`
+export const StyledError = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
