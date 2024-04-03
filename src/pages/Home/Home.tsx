@@ -1,16 +1,26 @@
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { getData } from '../../store/api'
+import { RootState, AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'
 import { ErrorDiv } from '../../components'
 import { LoadingDiv } from '../../components'
 import { Card } from '../../components'
-import { IBook } from '../../interfaces/IBook'
 
-export function Home({ data }: { data: IBook[] | Error | undefined }) {
+export function Home() {
+  const { data, error } = useSelector((state: RootState) => state.books)
+  const dispatch = useDispatch<AppDispatch>()
+
+  useEffect(() => {
+    dispatch(getData('books'))
+  }, [dispatch])
+
   if (!data) {
     return <LoadingDiv />
   }
 
-  if (data instanceof Error) {
-    return <ErrorDiv error={data} />
+  if (error) {
+    return <ErrorDiv error={error} />
   }
 
   return (
