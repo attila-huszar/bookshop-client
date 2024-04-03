@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { IBook } from '../interfaces'
+import { IAuthors } from '../interfaces'
 
-const initialState: { data: IBook[] | undefined; error: Error | null } = {
+const initialState: { data: IAuthors[] | undefined; error: Error | null } = {
   data: [],
   error: null,
 }

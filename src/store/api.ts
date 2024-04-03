@@ -1,13 +1,9 @@
 import axios from 'axios'
+import { URL } from '../lib/pathConstants'
 import { AppDispatch } from './store'
 import { ActionCreatorWithPayload } from '@reduxjs/toolkit'
 import { booksSuccess, booksError } from './booksSlice'
 import { authorsSuccess, authorsError } from './authorsSlice'
-
-const URL: Record<string, string> = {
-  books: import.meta.env.VITE_BASE_URL + '/books',
-  authors: import.meta.env.VITE_BASE_URL + '/authors',
-}
 
 const actions: Record<string, BooksActions | AuthorsActions> = {
   books: {
