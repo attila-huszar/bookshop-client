@@ -25,6 +25,24 @@ export const fetchBooks = createAsyncThunk(
   },
 )
 
+export const fetchBook = createAsyncThunk(
+  'fetchBook',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${URL.books}/${id}`)
+      return response.data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.data) {
+        return rejectWithValue(error.response.data)
+      } else if (error instanceof AxiosError && error.message) {
+        return rejectWithValue(error.message)
+      } else {
+        return rejectWithValue('Unknown error occurred')
+      }
+    }
+  },
+)
+
 const initialState: IBookState = {
   data: [],
   isLoading: false,

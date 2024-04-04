@@ -1,5 +1,5 @@
 export interface IAuthor {
-  id: number
+  id: number | string
   name: string
   fullName: string
   birthYear: number
