@@ -6,7 +6,6 @@ import {
 } from '@reduxjs/toolkit'
 import { IAuthorState } from '../interfaces'
 import { URL } from '../lib/pathConstants'
-import { RootState } from './store'
 
 export const fetchAuthors = createAsyncThunk(
   'fetchAuthors',
@@ -32,7 +31,7 @@ const initialState: IAuthorState = {
   error: null,
 }
 
-export const authorsSlice = createSlice({
+const authorsSlice = createSlice({
   name: 'authors',
   initialState,
   reducers: {},
@@ -52,4 +51,4 @@ export const authorsSlice = createSlice({
   },
 })
 
-export const authorState = (state: RootState) => state.authors
+export const authorsReducer = authorsSlice.reducer
