@@ -1,22 +1,39 @@
-import axios from 'axios'
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import axios, { AxiosError } from 'axios'
+import {
+  createSlice,
+  createAsyncThunk,
+  SerializedError,
+} from '@reduxjs/toolkit'
 import { IBook } from '../interfaces'
 import { URL } from '../lib/pathConstants'
 import { RootState } from './store'
 
-export const fetchBooks = createAsyncThunk('fetchBooks', async () => {
-  const response = await axios.get(URL.books)
-  return response.data
-})
+export const fetchBooks = createAsyncThunk(
+  'fetchBooks',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(URL.books)
+      return response.data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.data) {
+        return rejectWithValue(error.response.data)
+      } else if (error instanceof AxiosError && error.message) {
+        return rejectWithValue(error.message)
+      } else {
+        return rejectWithValue('Unknown error occurred')
+      }
+    }
+  },
+)
 
 const initialState: {
   data: IBook[]
   status: string
-  error: string | undefined
+  error: SerializedError | null
 } = {
   data: [],
   status: 'idle',
-  error: undefined,
+  error: null,
 }
 
 export const booksSlice = createSlice({
@@ -34,7 +51,7 @@ export const booksSlice = createSlice({
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.status = 'failed'
-        state.error = action.error.message
+        state.error = action.payload as SerializedError
       })
   },
 })
