@@ -13,6 +13,7 @@ import { ICard } from '../../interfaces/ICard'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 import cartIcon from '../../assets/svg/cart.svg'
 import { Link } from 'react-router-dom'
+import { BOOKS } from '../../routes/routeConstants'
 
 export function Card({
   id,
@@ -23,7 +24,7 @@ export function Card({
   imgUrl,
 }: ICard) {
   return (
-    <Link to={`books/${id}`}>
+    <Link to={`${BOOKS}${id}`}>
       <StyledCard>
         <Image
           src={imgUrl}
