@@ -27,8 +27,4 @@ export default createGlobalStyle`
     text-decoration: none;
     color: var(--textColor);
   }
-
-  a:hover {
-    color: var(--generalColor);
-  }
 `
