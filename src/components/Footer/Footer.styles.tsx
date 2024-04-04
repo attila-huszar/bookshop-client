@@ -10,6 +10,10 @@ export const StyledFooter = styled.footer`
   width: 100%;
   max-width: 90rem;
   padding: 0 6.25rem;
+
+  a:hover {
+    color: var(--generalColor);
+  }
 `
 
 export const LeftSection = styled.section`

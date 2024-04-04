@@ -5,6 +5,12 @@ export const StyledCard = styled.div`
   height: 17.5rem;
   width: 30rem;
   padding: 1rem;
+  border-radius: 10px;
+  transition: background-color 0.3s ease-out;
+
+  &:hover {
+    background-color: var(--bgMobileColor);
+  }
 `
 
 export const Details = styled.div`
