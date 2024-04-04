@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { IBook } from '../interfaces'
+import { IBookState } from '../interfaces'
 import { URL } from '../lib/pathConstants'
 import { RootState } from './store'
 
@@ -26,11 +26,7 @@ export const fetchBooks = createAsyncThunk(
   },
 )
 
-const initialState: {
-  data: IBook[]
-  isLoading: boolean
-  error: SerializedError | null
-} = {
+const initialState: IBookState = {
   data: [],
   isLoading: false,
   error: null,

@@ -1,4 +1,4 @@
-export interface IAuthors {
+export interface IAuthor {
   id: number
   name: string
   fullName: string

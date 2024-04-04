@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { IAuthors } from '../interfaces'
+import { IAuthorState } from '../interfaces'
 import { URL } from '../lib/pathConstants'
 import { RootState } from './store'
 
@@ -26,11 +26,7 @@ export const fetchAuthors = createAsyncThunk(
   },
 )
 
-const initialState: {
-  data: IAuthors[]
-  isLoading: boolean
-  error: SerializedError | null
-} = {
+const initialState: IAuthorState = {
   data: [],
   isLoading: false,
   error: null,
