@@ -1,11 +1,15 @@
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { StyledProduct, Breadcrumb } from './Product.styles'
 
 export function Product() {
   const { id } = useParams()
 
   return (
-    <div>
-      <p>Product: {id}</p>
-    </div>
+    <StyledProduct>
+      <Link to="..">
+        <Breadcrumb>Book Details</Breadcrumb>
+      </Link>
+      <div>Product: {id}</div>
+    </StyledProduct>
   )
 }
