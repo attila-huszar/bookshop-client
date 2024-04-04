@@ -1,16 +1,26 @@
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchBooks, bookState } from '../../store/booksSlice'
+import { AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'
-import { ErrorDiv } from '../../components'
-import { LoadingDiv } from '../../components'
 import { Card } from '../../components'
-import { IBook } from '../../interfaces/IBook'
+import { Loading } from '../../components'
+import { Error } from '../../components'
 
-export function Home({ data }: { data: IBook[] | Error | undefined }) {
-  if (!data) {
-    return <LoadingDiv />
+export function Home() {
+  const dispatch = useDispatch<AppDispatch>()
+  const { data, isLoading, error } = useSelector(bookState)
+
+  useEffect(() => {
+    dispatch(fetchBooks())
+  }, [dispatch])
+
+  if (isLoading) {
+    return <Loading />
   }
 
-  if (data instanceof Error) {
-    return <ErrorDiv error={data} />
+  if (error) {
+    return <Error error={error} />
   }
 
   return (
