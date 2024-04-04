@@ -28,11 +28,11 @@ export const fetchAuthors = createAsyncThunk(
 
 const initialState: {
   data: IAuthors[]
-  status: string
+  isLoading: boolean
   error: SerializedError | null
 } = {
   data: [],
-  status: 'idle',
+  isLoading: false,
   error: null,
 }
 
@@ -43,14 +43,14 @@ export const authorsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAuthors.pending, (state) => {
-        state.status = 'loading'
+        state.isLoading = true
       })
       .addCase(fetchAuthors.fulfilled, (state, action) => {
-        state.status = 'success'
+        state.isLoading = false
         state.data = action.payload
       })
       .addCase(fetchAuthors.rejected, (state, action) => {
-        state.status = 'failed'
+        state.isLoading = false
         state.error = action.payload as SerializedError
       })
   },

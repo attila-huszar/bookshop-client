@@ -9,13 +9,13 @@ import { Error } from '../../components'
 
 export function Home() {
   const dispatch = useDispatch<AppDispatch>()
-  const { data, status, error } = useSelector(bookState)
+  const { data, isLoading, error } = useSelector(bookState)
 
   useEffect(() => {
     dispatch(fetchBooks())
   }, [dispatch])
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <Loading />
   }
 
