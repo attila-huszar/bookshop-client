@@ -6,7 +6,6 @@ import {
 } from '@reduxjs/toolkit'
 import { IBookState } from '../interfaces'
 import { URL } from '../lib/pathConstants'
-import { RootState } from './store'
 
 export const fetchBooks = createAsyncThunk(
   'fetchBooks',
@@ -32,7 +31,7 @@ const initialState: IBookState = {
   error: null,
 }
 
-export const booksSlice = createSlice({
+const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {},
@@ -52,4 +51,4 @@ export const booksSlice = createSlice({
   },
 })
 
-export const bookState = (state: RootState) => state.books
+export const booksReducer = booksSlice.reducer

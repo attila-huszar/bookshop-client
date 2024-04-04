@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchBooks, bookState } from '../../store/booksSlice'
+import { fetchBooks } from '../../store/booksSlice'
+import { booksSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'
 import { Card } from '../../components'
@@ -9,7 +10,7 @@ import { Error } from '../../components'
 
 export function Home() {
   const dispatch = useDispatch<AppDispatch>()
-  const { data, isLoading, error } = useSelector(bookState)
+  const { data, isLoading, error } = useSelector(booksSelector)
 
   useEffect(() => {
     dispatch(fetchBooks())
