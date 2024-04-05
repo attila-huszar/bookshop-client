@@ -33,6 +33,7 @@ export const DetailsSection = styled.section`
   grid-template-rows: max-content max-content 1fr;
   column-gap: 3rem;
   min-height: 35rem;
+  margin: 2rem 0 6rem;
 `
 
 export const ImageWrapper = styled.div`
@@ -40,11 +41,14 @@ export const ImageWrapper = styled.div`
   grid-row: 1 / 4;
   padding: 3rem;
   background-color: #f4f4ff;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
 
   img {
-    border-radius: 10px;
-    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    border-radius: 5px;
+    box-shadow:
+      rgba(0, 0, 0, 0.19) 0px 10px 20px,
+      rgba(0, 0, 0, 0.23) 0px 6px 6px;
   }
 `
 
