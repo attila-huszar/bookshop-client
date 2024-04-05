@@ -1,5 +1,5 @@
 export interface IBook {
-  id: number | string
+  id: number
   title: string
   author: number
   genre: string

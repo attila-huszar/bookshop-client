@@ -5,7 +5,7 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { IAuthorState } from '../interfaces'
-import { URL } from '../lib/pathConstants'
+import { URL } from '../lib/urlConstants'
 
 export const fetchAuthors = createAsyncThunk(
   'fetchAuthors',

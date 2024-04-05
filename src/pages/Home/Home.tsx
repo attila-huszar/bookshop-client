@@ -13,8 +13,10 @@ export function Home() {
   const { data, isLoading, error } = useSelector(booksSelector)
 
   useEffect(() => {
-    dispatch(fetchBooks())
-  }, [dispatch])
+    if (!data.length) {
+      dispatch(fetchBooks())
+    }
+  }, [data, dispatch])
 
   if (isLoading) {
     return <Loading />

@@ -5,7 +5,7 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { IBookState } from '../interfaces'
-import { URL } from '../lib/pathConstants'
+import { URL } from '../lib/urlConstants'
 
 export const fetchBooks = createAsyncThunk(
   'fetchBooks',
@@ -14,12 +14,10 @@ export const fetchBooks = createAsyncThunk(
       const response = await axios.get(URL.books)
       return response.data
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data) {
-        return rejectWithValue(error.response.data)
-      } else if (error instanceof AxiosError && error.message) {
-        return rejectWithValue(error.message)
+      if (error instanceof AxiosError) {
+        throw rejectWithValue(error.message)
       } else {
-        return rejectWithValue('Unknown error occurred')
+        throw rejectWithValue('Unknown error occurred')
       }
     }
   },
@@ -32,12 +30,10 @@ export const fetchBook = createAsyncThunk(
       const response = await axios.get(`${URL.books}/${id}`)
       return response.data
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data) {
-        return rejectWithValue(error.response.data)
-      } else if (error instanceof AxiosError && error.message) {
-        return rejectWithValue(error.message)
+      if (error instanceof AxiosError) {
+        throw rejectWithValue(error.message)
       } else {
-        return rejectWithValue('Unknown error occurred')
+        throw rejectWithValue('Unknown error occurred')
       }
     }
   },
