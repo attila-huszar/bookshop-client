@@ -9,19 +9,29 @@ export const StyledButton = styled.button<StyleTypes>`
   border: none;
   outline: none;
   cursor: pointer;
-  font-size: ${({ size }) => {
-    if (size === 'sm') {
+  font-size: ${({ textSize }) => {
+    if (textSize === 'sm') {
       return '0.75rem'
-    } else if (size === 'md') {
+    } else if (textSize === 'md') {
       return '0.875rem'
-    } else if (size === 'lg') {
+    } else if (textSize === 'lg') {
       return '1rem'
     } else {
       return '0.875rem'
     }
   }};
+  padding: ${({ pad }) => {
+    if (pad === 'sm') {
+      return '0.25rem 1rem'
+    } else if (pad === 'md') {
+      return '0.375rem 1.25rem'
+    } else if (pad === 'lg') {
+      return '1rem 3rem'
+    } else {
+      return '0.375rem 1.25rem'
+    }
+  }};
   font-weight: 700;
-  padding: 0.375rem 1.25rem;
   border-radius: 10px;
   color: #fff;
   background-color: var(--generalColor);

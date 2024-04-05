@@ -1,5 +1,6 @@
 export type StyleTypes = {
-  size?: 'sm' | 'md' | 'lg'
+  textSize?: 'sm' | 'md' | 'lg'
+  pad?: 'sm' | 'md' | 'lg'
   shadowed?: boolean
 }
 

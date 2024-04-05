@@ -2,8 +2,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   StyledProduct,
   Breadcrumb,
-  Details,
+  DetailsSection,
   ImageWrapper,
+  Description,
+  Price,
+  Title,
+  Author,
+  ButtonWrapper,
 } from './Product.styles'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -11,8 +16,10 @@ import { fetchBook } from '../../store/booksSlice'
 import { bookSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
 import { IBook } from '../../interfaces'
-import { Error } from '../../components'
+import { Button, Error } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
+import { Strikethrough } from '../../styles/Shared.styles'
+import cartIcon from '../../assets/svg/cart.svg'
 
 export function Product() {
   const { id } = useParams()
@@ -53,13 +60,45 @@ export function Product() {
   return book.id ? (
     <StyledProduct>
       <Breadcrumb onClick={handleGoBack}>Book Details</Breadcrumb>
-      <Details>
+      <DetailsSection>
         <ImageWrapper>
           <img src={book.imgUrl} alt={book.title} width="100%" />
         </ImageWrapper>
-      </Details>
-      <div>Product: {book.id}</div>
-      <div>Title: {book.title}</div>
+        <Title>{book.title} </Title>
+        <Author>{book.author}</Author>
+        <Price>
+          {book.discount ? (
+            <>
+              <span>$ </span>
+              <span>
+                {(
+                  Number(book.price) -
+                  (Number(book.price) * book.discount) / 100
+                ).toFixed(2)}
+              </span>
+              <Strikethrough>
+                <span>$ </span>
+                <span>{book.price}</span>
+              </Strikethrough>
+            </>
+          ) : (
+            <>
+              <span>$ </span>
+              <span>{book.price}</span>
+            </>
+          )}
+        </Price>
+        <Description>
+          <h2>Summary</h2>
+          <p>{book.description}</p>
+        </Description>
+        <ButtonWrapper>
+          <Button onClick={() => {}} textSize="lg" pad="lg">
+            <img src={cartIcon} />
+            Add to basket
+          </Button>
+        </ButtonWrapper>
+      </DetailsSection>
     </StyledProduct>
   ) : (
     <Error error={bookFromFetch as SerializedError} />

@@ -6,8 +6,8 @@ import {
   Description,
   Currency,
   Price,
-  Strikethrough,
 } from './Card.styles'
+import { Strikethrough } from '../../styles/Shared.styles'
 import { Button } from '../../components'
 import { ICard } from '../../interfaces/ICard'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
@@ -56,7 +56,7 @@ export function Card({
               </>
             )}
           </Title>
-          <Button onClick={() => {}} size="lg">
+          <Button onClick={() => {}} textSize="lg">
             <img src={cartIcon} />
             Add to basket
           </Button>
