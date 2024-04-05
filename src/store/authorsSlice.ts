@@ -14,12 +14,10 @@ export const fetchAuthors = createAsyncThunk(
       const response = await axios.get(URL.authors)
       return response.data
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data) {
-        return rejectWithValue(error.response.data)
-      } else if (error instanceof AxiosError && error.message) {
-        return rejectWithValue(error.message)
+      if (error instanceof AxiosError) {
+        throw rejectWithValue(error.message)
       } else {
-        return rejectWithValue('Unknown error occurred')
+        throw rejectWithValue('Unknown error occurred')
       }
     }
   },

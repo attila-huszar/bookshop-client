@@ -13,13 +13,14 @@ import {
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchBook } from '../../store/booksSlice'
-import { bookSelector } from '../../store/selectors'
+import { bookSelector, authorsSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
 import { IBook } from '../../interfaces'
 import { Button, Error } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
 import { Strikethrough } from '../../styles/Shared.styles'
 import cartIcon from '../../assets/svg/cart.svg'
+import { fetchAuthors } from '../../store/authorsSlice'
 
 export function Product() {
   const { id } = useParams()
@@ -27,6 +28,8 @@ export function Product() {
   const dispatch = useDispatch<AppDispatch>()
   const [bookFromFetch, setBookFromFetch] = useState<IBook | null>(null)
   const navigate = useNavigate()
+  const { data } = useSelector(authorsSelector)
+  const [author, setAuthor] = useState<string | null>(null)
 
   const book = {
     id: bookFromStore?.id || bookFromFetch?.id,
@@ -49,6 +52,20 @@ export function Product() {
   }, [bookFromStore, dispatch, id])
 
   useEffect(() => {
+    if (!data.length) {
+      dispatch(fetchAuthors())
+    } else {
+      const authorFound = data.find((author) => author.id === book.author)
+
+      if (authorFound) {
+        setAuthor(authorFound.name)
+      } else {
+        setAuthor('Unknown')
+      }
+    }
+  }, [book.author, data, dispatch])
+
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -65,7 +82,7 @@ export function Product() {
           <img src={book.imgUrl} alt={book.title} width="100%" />
         </ImageWrapper>
         <Title>{book.title} </Title>
-        <Author>{book.author}</Author>
+        <Author>{author}</Author>
         <Price>
           {book.discount ? (
             <>
