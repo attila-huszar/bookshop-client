@@ -1,5 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { StyledNotFound } from './NotFound.styles'
+import {
+  BackButton,
+  ImageWrapper,
+  NotFoundSection,
+  StyledNotFound,
+} from './NotFound.styles'
+import books from '../../assets/image/books.png'
 
 export function NotFound() {
   const navigate = useNavigate()
@@ -11,7 +17,17 @@ export function NotFound() {
 
   return (
     <StyledNotFound>
-      <button onClick={handleGoBack}>404</button>
+      <ImageWrapper>
+        <img src={books} alt="books" />
+      </ImageWrapper>
+      <NotFoundSection>
+        <h2>404</h2>
+        <h3>Looks like you've got lost...</h3>
+        <h4>The page you're looking for doesn't exist or has been moved.</h4>
+      </NotFoundSection>
+      <BackButton type="button" onClick={handleGoBack}>
+        Go Home
+      </BackButton>
     </StyledNotFound>
   )
 }
