@@ -1,5 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { StyledProduct, Breadcrumb } from './Product.styles'
+import {
+  StyledProduct,
+  Breadcrumb,
+  Details,
+  ImageWrapper,
+} from './Product.styles'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchBook } from '../../store/booksSlice'
@@ -48,6 +53,11 @@ export function Product() {
   return book.id ? (
     <StyledProduct>
       <Breadcrumb onClick={handleGoBack}>Book Details</Breadcrumb>
+      <Details>
+        <ImageWrapper>
+          <img src={book.imgUrl} alt={book.title} width="100%" />
+        </ImageWrapper>
+      </Details>
       <div>Product: {book.id}</div>
       <div>Title: {book.title}</div>
     </StyledProduct>

@@ -11,5 +11,7 @@ export const StyledHeader = styled.header`
   width: 100%;
   max-width: 90rem;
   padding: 0 6.25rem;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2;
 `
