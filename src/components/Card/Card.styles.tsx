@@ -39,12 +39,3 @@ export const Description = styled.p`
   color: var(--textGreyColor);
   overflow: hidden;
 `
-
-export const Currency = styled.span`
-  margin-right: 0.5rem;
-  font-size: 1.125rem;
-`
-
-export const Price = styled.span`
-  font-size: 1.125rem;
-`

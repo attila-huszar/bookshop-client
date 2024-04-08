@@ -75,17 +75,6 @@ export const Author = styled.p`
   }
 `
 
-export const Price = styled.p`
-  grid-column: 3 / 4;
-  grid-row: 1 / 3;
-  align-self: center;
-
-  span {
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-`
-
 export const Description = styled.div`
   grid-column: 2 / 4;
   grid-row: 3 / 4;

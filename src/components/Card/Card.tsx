@@ -1,19 +1,10 @@
-import {
-  StyledCard,
-  Details,
-  Image,
-  Title,
-  Description,
-  Currency,
-  Price,
-} from './Card.styles'
-import { Strikethrough } from '../../styles/Shared.styles'
-import { Button } from '../../components'
-import { ICard } from '../../interfaces/ICard'
+import { Link } from 'react-router-dom'
+import { StyledCard, Details, Image, Title, Description } from './Card.styles'
+import { Button, Price } from '../../components'
+import { BOOKS } from '../../routes/routeConstants'
+import { CardProps } from '../../interfaces/'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 import cartIcon from '../../assets/svg/cart.svg'
-import { Link } from 'react-router-dom'
-import { BOOKS } from '../../routes/routeConstants'
 
 export function Card({
   id,
@@ -22,7 +13,7 @@ export function Card({
   price,
   discount,
   imgUrl,
-}: ICard) {
+}: CardProps) {
   return (
     <Link to={`${BOOKS}${id}`}>
       <StyledCard>
@@ -35,27 +26,7 @@ export function Card({
         <Details>
           <Title>{title}</Title>
           <Description>{description}</Description>
-          <Title>
-            {discount ? (
-              <>
-                <Currency>$</Currency>
-                <Price>
-                  {(Number(price) - (Number(price) * discount) / 100).toFixed(
-                    2,
-                  )}
-                </Price>
-                <Strikethrough>
-                  <Currency>$</Currency>
-                  <Price>{price}</Price>
-                </Strikethrough>
-              </>
-            ) : (
-              <>
-                <Currency>$</Currency>
-                <Price>{price}</Price>
-              </>
-            )}
-          </Title>
+          <Price component="card" price={price} discount={discount} />
           <Button onClick={() => {}} $textSize="lg">
             <img src={cartIcon} />
             Add to basket

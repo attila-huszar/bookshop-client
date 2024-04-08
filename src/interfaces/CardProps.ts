@@ -1,4 +1,4 @@
-export interface ICard {
+export type CardProps = {
   id: number | string
   title: string
   description: string

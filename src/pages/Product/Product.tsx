@@ -5,7 +5,6 @@ import {
   DetailsSection,
   ImageWrapper,
   Description,
-  Price,
   Title,
   Author,
   ButtonWrapper,
@@ -16,9 +15,8 @@ import { fetchBookById, fetchAuthorById } from '../../api'
 import { bookByIdSelector, authorByIdSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
 import { IAuthor, IBook } from '../../interfaces'
-import { Button, Error } from '../../components'
+import { Button, Error, Price } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
-import { Strikethrough } from '../../styles/Shared.styles'
 import cartIcon from '../../assets/svg/cart.svg'
 
 export function Product() {
@@ -74,28 +72,11 @@ export function Product() {
         </ImageWrapper>
         <Title>{book.title} </Title>
         <Author>{author.name}</Author>
-        <Price>
-          {book.discount ? (
-            <>
-              <span>$ </span>
-              <span>
-                {(
-                  Number(book.price) -
-                  (Number(book.price) * book.discount) / 100
-                ).toFixed(2)}
-              </span>
-              <Strikethrough>
-                <span>$ </span>
-                <span>{book.price}</span>
-              </Strikethrough>
-            </>
-          ) : (
-            <>
-              <span>$ </span>
-              <span>{book.price}</span>
-            </>
-          )}
-        </Price>
+        <Price
+          component="product"
+          price={book.price}
+          discount={book.discount}
+        />
         <Description>
           <h2>Summary</h2>
           <p>{book.description}</p>
