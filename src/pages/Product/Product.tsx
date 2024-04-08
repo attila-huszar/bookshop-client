@@ -99,7 +99,7 @@ export function Product() {
           <p>{book.description}</p>
         </Description>
         <ButtonWrapper>
-          <Button onClick={() => {}} textSize="lg" pad="lg">
+          <Button onClick={() => {}} $textSize="lg" $pad="lg">
             <img src={cartIcon} />
             Add to basket
           </Button>

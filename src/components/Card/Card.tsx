@@ -56,7 +56,7 @@ export function Card({
               </>
             )}
           </Title>
-          <Button onClick={() => {}} textSize="lg">
+          <Button onClick={() => {}} $textSize="lg">
             <img src={cartIcon} />
             Add to basket
           </Button>

@@ -68,6 +68,11 @@ export const Author = styled.p`
   font-weight: 700;
   text-wrap: balance;
   color: var(--textGreyColor);
+
+  &:empty::before {
+    content: '';
+    display: inline-block;
+  }
 `
 
 export const Price = styled.p`

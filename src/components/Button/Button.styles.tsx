@@ -9,23 +9,23 @@ export const StyledButton = styled.button<StyleTypes>`
   border: none;
   outline: none;
   cursor: pointer;
-  font-size: ${({ textSize }) => {
-    if (textSize === 'sm') {
+  font-size: ${({ $textSize }) => {
+    if ($textSize === 'sm') {
       return '0.75rem'
-    } else if (textSize === 'md') {
+    } else if ($textSize === 'md') {
       return '0.875rem'
-    } else if (textSize === 'lg') {
+    } else if ($textSize === 'lg') {
       return '1rem'
     } else {
       return '0.875rem'
     }
   }};
-  padding: ${({ pad }) => {
-    if (pad === 'sm') {
+  padding: ${({ $pad }) => {
+    if ($pad === 'sm') {
       return '0.25rem 1rem'
-    } else if (pad === 'md') {
+    } else if ($pad === 'md') {
       return '0.375rem 1.25rem'
-    } else if (pad === 'lg') {
+    } else if ($pad === 'lg') {
       return '1rem 3rem'
     } else {
       return '0.375rem 1.25rem'
@@ -35,8 +35,8 @@ export const StyledButton = styled.button<StyleTypes>`
   border-radius: 10px;
   color: #fff;
   background-color: var(--generalColor);
-  box-shadow: ${({ shadowed }) =>
-    shadowed ? 'var(--generalColor) 0px 8px 24px' : undefined};
+  box-shadow: ${({ $shadowed }) =>
+    $shadowed ? 'var(--generalColor) 0px 8px 24px' : undefined};
 `
 
 export const IconButton = styled.button`
