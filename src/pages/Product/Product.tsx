@@ -31,7 +31,9 @@ export function Product() {
   const book = { ...(bookFromStore || bookFromFetch) }
 
   const authorFromStore = useSelector(authorByIdSelector(book.author))
-  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor | null>(null)
+  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor>({
+    name: '',
+  } as IAuthor)
   const author = { ...(authorFromStore || authorFromFetch) }
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { fetchAuthors, fetchAuthorById } from '../api'
 import { IAuthorState } from '../interfaces'
 
 const initialState: IAuthorState = {
-  authorsData: Array(50).fill({ id: 0, name: '' }),
+  authorsData: [],
   authorsIsLoading: false,
   authorsError: null,
 }
@@ -26,11 +26,7 @@ const authorsSlice = createSlice({
         state.authorsError = action.payload as SerializedError
       })
       .addCase(fetchAuthorById.fulfilled, (state, action) => {
-        state.authorsData = [
-          ...state.authorsData.slice(0, action.payload.id - 1),
-          action.payload,
-          ...state.authorsData.slice(action.payload.id),
-        ]
+        state.authorsData = [...state.authorsData, action.payload]
       })
   },
 })
