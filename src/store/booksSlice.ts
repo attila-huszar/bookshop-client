@@ -23,8 +23,8 @@ export const fetchBooks = createAsyncThunk(
   },
 )
 
-export const fetchBook = createAsyncThunk(
-  'fetchBook',
+export const fetchBookById = createAsyncThunk(
+  'fetchBookById',
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${URL.books}/${id}`)
@@ -40,9 +40,9 @@ export const fetchBook = createAsyncThunk(
 )
 
 const initialState: IBookState = {
-  data: [],
-  isLoading: false,
-  error: null,
+  booksData: [],
+  booksIsLoading: false,
+  booksError: null,
 }
 
 const booksSlice = createSlice({
@@ -52,15 +52,15 @@ const booksSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchBooks.pending, (state) => {
-        state.isLoading = true
+        state.booksIsLoading = true
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.data = action.payload
+        state.booksIsLoading = false
+        state.booksData = action.payload
       })
       .addCase(fetchBooks.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.payload as SerializedError
+        state.booksIsLoading = false
+        state.booksError = action.payload as SerializedError
       })
   },
 })

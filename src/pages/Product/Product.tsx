@@ -12,39 +12,33 @@ import {
 } from './Product.styles'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchBook } from '../../store/booksSlice'
-import { bookSelector, authorsSelector } from '../../store/selectors'
+import { fetchBookById } from '../../store/booksSlice'
+import { fetchAuthorById } from '../../store/authorsSlice'
+import { bookByIdSelector, authorByIdSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
-import { IBook } from '../../interfaces'
+import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
 import { Strikethrough } from '../../styles/Shared.styles'
 import cartIcon from '../../assets/svg/cart.svg'
-import { fetchAuthors } from '../../store/authorsSlice'
 
 export function Product() {
   const { id } = useParams()
-  const bookFromStore = useSelector(bookSelector(id))
-  const dispatch = useDispatch<AppDispatch>()
-  const [bookFromFetch, setBookFromFetch] = useState<IBook | null>(null)
   const navigate = useNavigate()
-  const { data } = useSelector(authorsSelector)
-  const [author, setAuthor] = useState<string | null>(null)
+  const dispatch = useDispatch<AppDispatch>()
 
-  const book = {
-    id: bookFromStore?.id || bookFromFetch?.id,
-    title: bookFromStore?.title || bookFromFetch?.title,
-    author: bookFromStore?.author || bookFromFetch?.author,
-    description: bookFromStore?.description || bookFromFetch?.description,
-    price: bookFromStore?.price || bookFromFetch?.price,
-    discount: bookFromStore?.discount || bookFromFetch?.discount,
-    imgUrl: bookFromStore?.imgUrl || bookFromFetch?.imgUrl,
-  }
+  const bookFromStore = useSelector(bookByIdSelector(id))
+  const [bookFromFetch, setBookFromFetch] = useState<IBook | null>(null)
+  const book = { ...(bookFromStore || bookFromFetch) }
+
+  const authorFromStore = useSelector(authorByIdSelector(book.author))
+  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor | null>(null)
+  const author = { ...(authorFromStore || authorFromFetch) }
 
   useEffect(() => {
     if (!bookFromStore && id) {
       const fetchData = async () => {
-        const book = await dispatch(fetchBook(id))
+        const book = await dispatch(fetchBookById(id))
         setBookFromFetch(book.payload)
       }
       fetchData()
@@ -52,18 +46,14 @@ export function Product() {
   }, [bookFromStore, dispatch, id])
 
   useEffect(() => {
-    if (!data.length) {
-      dispatch(fetchAuthors())
-    } else {
-      const authorFound = data.find((author) => author.id === book.author)
-
-      if (authorFound) {
-        setAuthor(authorFound.name)
-      } else {
-        setAuthor('Unknown')
+    if (!authorFromStore && book.author) {
+      const fetchData = async () => {
+        const author = await dispatch(fetchAuthorById(book.author as number))
+        setAuthorFromFetch(author.payload)
       }
+      fetchData()
     }
-  }, [book.author, data, dispatch])
+  }, [authorFromStore, book.author, dispatch])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -82,7 +72,7 @@ export function Product() {
           <img src={book.imgUrl} alt={book.title} width="100%" />
         </ImageWrapper>
         <Title>{book.title} </Title>
-        <Author>{author}</Author>
+        <Author>{author.name}</Author>
         <Price>
           {book.discount ? (
             <>

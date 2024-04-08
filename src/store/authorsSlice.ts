@@ -23,10 +23,26 @@ export const fetchAuthors = createAsyncThunk(
   },
 )
 
+export const fetchAuthorById = createAsyncThunk(
+  'fetchAuthorById',
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${URL.authors}/${id}`)
+      return response.data
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw rejectWithValue(error.message)
+      } else {
+        throw rejectWithValue('Unable to get author')
+      }
+    }
+  },
+)
+
 const initialState: IAuthorState = {
-  data: [],
-  isLoading: false,
-  error: null,
+  authorsData: Array(50).fill({ id: 0, name: '' }),
+  authorsIsLoading: false,
+  authorsError: null,
 }
 
 const authorsSlice = createSlice({
@@ -36,15 +52,22 @@ const authorsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAuthors.pending, (state) => {
-        state.isLoading = true
+        state.authorsIsLoading = true
       })
       .addCase(fetchAuthors.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.data = action.payload
+        state.authorsIsLoading = false
+        state.authorsData = action.payload
       })
       .addCase(fetchAuthors.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.payload as SerializedError
+        state.authorsIsLoading = false
+        state.authorsError = action.payload as SerializedError
+      })
+      .addCase(fetchAuthorById.fulfilled, (state, action) => {
+        state.authorsData = [
+          ...state.authorsData.slice(0, action.payload.id - 1),
+          action.payload,
+          ...state.authorsData.slice(action.payload.id),
+        ]
       })
   },
 })

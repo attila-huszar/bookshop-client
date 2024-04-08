@@ -10,25 +10,25 @@ import { Error } from '../../components'
 
 export function Home() {
   const dispatch = useDispatch<AppDispatch>()
-  const { data, isLoading, error } = useSelector(booksSelector)
+  const { booksData, booksIsLoading, booksError } = useSelector(booksSelector)
 
   useEffect(() => {
-    if (!data.length) {
+    if (!booksData.length) {
       dispatch(fetchBooks())
     }
-  }, [data, dispatch])
+  }, [booksData, dispatch])
 
-  if (isLoading) {
+  if (booksIsLoading) {
     return <Loading />
   }
 
-  if (error) {
-    return <Error error={error} />
+  if (booksError) {
+    return <Error error={booksError} />
   }
 
   return (
     <StyledHome>
-      {data.map((item) => (
+      {booksData.map((item) => (
         <Card key={item.id} {...item} />
       ))}
     </StyledHome>
