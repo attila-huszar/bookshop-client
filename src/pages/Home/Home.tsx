@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchBooks } from '../../store/booksSlice'
+import { fetchBooks } from '../../api'
 import { booksSelector } from '../../store/selectors'
 import { AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'

@@ -1,43 +1,6 @@
-import axios, { AxiosError } from 'axios'
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit'
+import { createSlice, SerializedError } from '@reduxjs/toolkit'
+import { fetchBooks } from '../api'
 import { IBookState } from '../interfaces'
-import { URL } from '../lib/urlConstants'
-
-export const fetchBooks = createAsyncThunk(
-  'fetchBooks',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(URL.books)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw rejectWithValue(error.message)
-      } else {
-        throw rejectWithValue('Unknown error occurred')
-      }
-    }
-  },
-)
-
-export const fetchBookById = createAsyncThunk(
-  'fetchBookById',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${URL.books}/${id}`)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw rejectWithValue(error.message)
-      } else {
-        throw rejectWithValue('Unknown error occurred')
-      }
-    }
-  },
-)
 
 const initialState: IBookState = {
   booksData: [],
