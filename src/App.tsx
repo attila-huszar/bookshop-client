@@ -1,6 +1,5 @@
 import { Provider } from 'react-redux'
 import { store } from './store/store'
-import { Layout } from './pages'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import GlobalStyle from './styles/Global.styles'
@@ -10,10 +9,8 @@ function App() {
 
   return (
     <Provider store={store}>
+      <RouterProvider router={router} />
       <GlobalStyle />
-      <Layout>
-        <RouterProvider router={router} />
-      </Layout>
     </Provider>
   )
 }

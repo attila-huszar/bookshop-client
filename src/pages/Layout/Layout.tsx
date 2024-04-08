@@ -1,12 +1,12 @@
-import { Header, Footer } from '../../components'
+import { Outlet } from 'react-router-dom'
 import { StyledLayout } from './Layout.styles'
-import { PropsWithChildren } from 'react'
+import { Header, Footer } from '../../components'
 
-export function Layout({ children }: PropsWithChildren) {
+export function Layout() {
   return (
     <StyledLayout>
       <Header />
-      {children}
+      <Outlet />
       <Footer />
     </StyledLayout>
   )
