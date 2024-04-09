@@ -10,10 +10,9 @@ import {
   ButtonWrapper,
 } from './Product.styles'
 import { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useAppSelector, useAppDispatch } from '../../hooks'
 import { fetchBookById, fetchAuthorById } from '../../api'
 import { bookByIdSelector, authorByIdSelector } from '../../store/selectors'
-import { AppDispatch } from '../../store/store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
@@ -22,16 +21,14 @@ import cartIcon from '../../assets/svg/cart.svg'
 export function Product() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const dispatch = useDispatch<AppDispatch>()
+  const dispatch = useAppDispatch()
 
-  const bookFromStore = useSelector(bookByIdSelector(id))
+  const bookFromStore = useAppSelector(bookByIdSelector(id))
   const [bookFromFetch, setBookFromFetch] = useState<IBook | null>(null)
   const book = { ...(bookFromStore || bookFromFetch) }
 
-  const authorFromStore = useSelector(authorByIdSelector(book.author))
-  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor>({
-    name: '',
-  } as IAuthor)
+  const authorFromStore = useAppSelector(authorByIdSelector(book.author))
+  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor | null>(null)
   const author = { ...(authorFromStore || authorFromFetch) }
 
   useEffect(() => {
@@ -42,7 +39,7 @@ export function Product() {
       }
       fetchData()
     }
-  }, [bookFromStore, dispatch, id])
+  }, [bookFromStore, id, dispatch])
 
   useEffect(() => {
     if (!authorFromStore && book.author) {

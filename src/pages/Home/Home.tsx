@@ -1,22 +1,13 @@
-import { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { fetchBooks } from '../../api'
+import { useAppSelector } from '../../hooks'
 import { booksSelector } from '../../store/selectors'
-import { AppDispatch } from '../../store/store'
 import { StyledHome } from './Home.styles'
 import { Card } from '../../components'
 import { Loading } from '../../components'
 import { Error } from '../../components'
 
 export function Home() {
-  const dispatch = useDispatch<AppDispatch>()
-  const { booksData, booksIsLoading, booksError } = useSelector(booksSelector)
-
-  useEffect(() => {
-    if (!booksData.length) {
-      dispatch(fetchBooks())
-    }
-  }, [booksData, dispatch])
+  const { booksData, booksIsLoading, booksError } =
+    useAppSelector(booksSelector)
 
   if (booksIsLoading) {
     return <Loading />
