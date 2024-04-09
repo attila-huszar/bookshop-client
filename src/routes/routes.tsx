@@ -13,10 +13,10 @@ export const routes = [
         path: 'books/:id',
         element: <Product />,
       },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
     ],
-  },
-  {
-    path: '*',
-    element: <NotFound />,
   },
 ]

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { NavList } from '../../Footer.styles'
 import { navLinks } from '../../../../lib/navLinks'
 import { StyledLogo } from './Navigation.styles'
@@ -7,9 +8,17 @@ export function Navigation() {
   return (
     <>
       <StyledLogo>
-        <a href="#top">
+        <Link
+          to="/"
+          onClick={() => {
+            window.scroll({
+              top: 0,
+              left: 0,
+              behavior: 'smooth',
+            })
+          }}>
           <img src={logo} alt="logo" />
-        </a>
+        </Link>
       </StyledLogo>
       <NavList>
         {navLinks.map((el) => (
