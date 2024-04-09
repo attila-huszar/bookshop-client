@@ -1,17 +1,23 @@
 import { createSlice, SerializedError } from '@reduxjs/toolkit'
 import { fetchBooks } from '../api'
 import { IBookState } from '../interfaces'
+import { shuffleBooks } from '../utils/shuffleBooks'
 
 const initialState: IBookState = {
   booksData: [],
   booksIsLoading: false,
   booksError: null,
+  randomBooks: [],
 }
 
 const booksSlice = createSlice({
   name: 'books',
   initialState,
-  reducers: {},
+  reducers: {
+    randomBooks: (state) => {
+      state.randomBooks = shuffleBooks(state.booksData)
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBooks.pending, (state) => {
@@ -29,3 +35,4 @@ const booksSlice = createSlice({
 })
 
 export const booksReducer = booksSlice.reducer
+export const { randomBooks } = booksSlice.actions

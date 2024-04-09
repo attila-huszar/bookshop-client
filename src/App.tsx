@@ -4,13 +4,16 @@ import { useEffect } from 'react'
 import { useAppDispatch } from './hooks'
 import { fetchBooks } from './api'
 import GlobalStyle from './styles/Global.styles'
+import { randomBooks } from './store/booksSlice'
 
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    dispatch(fetchBooks())
+    dispatch(fetchBooks()).then(() => {
+      dispatch(randomBooks())
+    })
   }, [dispatch])
 
   return (

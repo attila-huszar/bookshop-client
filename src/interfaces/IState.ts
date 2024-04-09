@@ -6,6 +6,7 @@ export interface IBookState {
   booksData: IBook[]
   booksIsLoading: boolean
   booksError: SerializedError | null
+  randomBooks: IBook[]
 }
 
 export interface IAuthorState {

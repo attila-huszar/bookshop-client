@@ -9,10 +9,3 @@ export const StyledRecommended = styled.section`
     margin-bottom: 1rem;
   }
 `
-
-export const BooksWrapper = styled.div`
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 35px;
-  overflow-x: scroll;
-`
