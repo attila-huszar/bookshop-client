@@ -1,7 +1,7 @@
 import { createSlice, SerializedError } from '@reduxjs/toolkit'
 import { fetchBooks } from '../api'
 import { IBookState } from '../interfaces'
-import { shuffleBooks } from '../utils/shuffleBooks'
+import { getRandomBooks } from '../utils/shuffleBooks'
 
 const initialState: IBookState = {
   booksData: [],
@@ -15,7 +15,7 @@ const booksSlice = createSlice({
   initialState,
   reducers: {
     randomBooks: (state) => {
-      state.randomBooks = shuffleBooks(state.booksData)
+      state.randomBooks = getRandomBooks(state.booksData, 4)
     },
   },
   extraReducers: (builder) => {

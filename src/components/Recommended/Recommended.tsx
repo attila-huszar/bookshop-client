@@ -14,7 +14,7 @@ export function Recommended() {
     <StyledRecommended>
       <h2>Recommended for you</h2>
       <Swiper modules={[Navigation]} navigation={true} slidesPerView={2}>
-        {randomBooks.slice(0, 4).map((book) => (
+        {randomBooks.map((book) => (
           <SwiperSlide key={book.id}>
             <Card {...book} />
           </SwiperSlide>
