@@ -1,5 +1,9 @@
-import { createSlice, SerializedError } from '@reduxjs/toolkit'
-import { fetchAuthors, fetchAuthorById } from '../api'
+import {
+  createSlice,
+  createAsyncThunk,
+  SerializedError,
+} from '@reduxjs/toolkit'
+import { fetchAuthors } from '../api/fetchData'
 import { IAuthorState } from '../interfaces'
 
 const initialState: IAuthorState = {
@@ -14,14 +18,14 @@ const authorsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAuthors.pending, (state) => {
+      .addCase(fetchAllAuthors.pending, (state) => {
         state.authorsIsLoading = true
       })
-      .addCase(fetchAuthors.fulfilled, (state, action) => {
+      .addCase(fetchAllAuthors.fulfilled, (state, action) => {
         state.authorsIsLoading = false
         state.authorsData = action.payload
       })
-      .addCase(fetchAuthors.rejected, (state, action) => {
+      .addCase(fetchAllAuthors.rejected, (state, action) => {
         state.authorsIsLoading = false
         state.authorsError = action.payload as SerializedError
       })
@@ -30,5 +34,15 @@ const authorsSlice = createSlice({
       })
   },
 })
+
+export const fetchAllAuthors = createAsyncThunk(
+  'fetchAllAuthors',
+  (_, rejectWithValue) => fetchAuthors(_, rejectWithValue),
+)
+
+export const fetchAuthorById = createAsyncThunk(
+  'fetchAuthorById',
+  (id: string, rejectWithValue) => fetchAuthors(id, rejectWithValue),
+)
 
 export const authorsReducer = authorsSlice.reducer

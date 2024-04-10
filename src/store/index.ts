@@ -1,2 +1,8 @@
-export { fetchBooks, fetchBookById } from './booksSlice'
-export { fetchAuthors, fetchAuthorById } from './authorsSlice'
+export { fetchAllBooks, fetchBookById, booksRandomize } from './booksSlice'
+export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
+export {
+  booksSelector,
+  authorsSelector,
+  bookByIdSelector,
+  authorByIdSelector,
+} from './selectors'

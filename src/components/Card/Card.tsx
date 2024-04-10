@@ -15,7 +15,15 @@ export function Card({
   imgUrl,
 }: CardProps) {
   return (
-    <Link to={`${BOOKS}${id}`}>
+    <Link
+      to={`${BOOKS}${id}`}
+      onClick={() => {
+        window.scroll({
+          top: 0,
+          left: 0,
+          behavior: 'smooth',
+        })
+      }}>
       <StyledCard>
         <Image
           src={imgUrl}

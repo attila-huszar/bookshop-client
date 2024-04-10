@@ -1,14 +1,14 @@
 import { useAppSelector } from '../../hooks'
-import { booksSelector } from '../../store/selectors'
+import { booksSelector } from '../../store'
 import { StyledRecommended } from './Recommended.styles'
 import { Card } from '../../components'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
-import '../../../node_modules/swiper/swiper.css'
-import '../../../node_modules/swiper/modules/navigation.css'
+import 'swiper/css'
+import 'swiper/css/navigation'
 
 export function Recommended() {
-  const { randomBooks } = useAppSelector(booksSelector)
+  const { booksRandomize } = useAppSelector(booksSelector)
 
   return (
     <StyledRecommended>
@@ -18,7 +18,7 @@ export function Recommended() {
         navigation={true}
         slidesPerView={'auto'}
         spaceBetween={50}>
-        {randomBooks.map((book) => (
+        {booksRandomize.map((book) => (
           <SwiperSlide key={book.id} style={{ width: 'fit-content' }}>
             <Card {...book} />
           </SwiperSlide>

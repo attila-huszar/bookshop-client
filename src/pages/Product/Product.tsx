@@ -11,8 +11,12 @@ import {
 } from './Product.styles'
 import { useEffect, useState } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks'
-import { fetchBookById, fetchAuthorById } from '../../api'
-import { bookByIdSelector, authorByIdSelector } from '../../store/selectors'
+import {
+  fetchBookById,
+  fetchAuthorById,
+  bookByIdSelector,
+  authorByIdSelector,
+} from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price } from '../../components'
 import { SerializedError } from '@reduxjs/toolkit'
@@ -44,7 +48,7 @@ export function Product() {
   useEffect(() => {
     if (!authorFromStore && book.author) {
       const fetchData = async () => {
-        const author = await dispatch(fetchAuthorById(book.author as number))
+        const author = await dispatch(fetchAuthorById(`${book.author}`))
         setAuthorFromFetch(author.payload)
       }
       fetchData()
