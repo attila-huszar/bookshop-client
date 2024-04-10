@@ -13,9 +13,13 @@ export function Recommended() {
   return (
     <StyledRecommended>
       <h2>Recommended for you</h2>
-      <Swiper modules={[Navigation]} navigation={true} slidesPerView={2}>
+      <Swiper
+        modules={[Navigation]}
+        navigation={true}
+        slidesPerView={'auto'}
+        spaceBetween={50}>
         {randomBooks.map((book) => (
-          <SwiperSlide key={book.id}>
+          <SwiperSlide key={book.id} style={{ width: 'fit-content' }}>
             <Card {...book} />
           </SwiperSlide>
         ))}
