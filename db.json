@@ -248,6 +248,7 @@
       "price": "23",
       "rating": 4.6,
       "discount": 0,
+      "topSellers":true,
       "new": false
     },
     {
@@ -289,6 +290,7 @@
       "price": "20",
       "rating": 4.5,
       "discount": 0,
+      "topSellers":true,
       "new": true
     },
     {
@@ -329,6 +331,7 @@
       "price": "19",
       "rating": 4.9,
       "discount": 0,
+      "topSellers":true,
       "new": false
     },
     {
@@ -465,6 +468,7 @@
       "price": "22",
       "rating": 4.7,
       "discount": 0,
+      "topSellers":true,
       "new": false
     },
     {
@@ -530,6 +534,7 @@
       "price": "18",
       "rating": 4.6,
       "discount": 0,
+      "topSellers":true,
       "new": false
     },
     {
@@ -609,6 +614,7 @@
       "price": "22",
       "rating": 4.6,
       "discount": 5,
+      "topSellers":true,
       "new": false
     },
     {
