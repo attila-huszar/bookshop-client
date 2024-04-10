@@ -37,12 +37,12 @@ const authorsSlice = createSlice({
 
 export const fetchAllAuthors = createAsyncThunk(
   'fetchAllAuthors',
-  (_, rejectWithValue) => fetchAuthors(_, rejectWithValue),
+  (_, { rejectWithValue }) => fetchAuthors(_, rejectWithValue),
 )
 
 export const fetchAuthorById = createAsyncThunk(
   'fetchAuthorById',
-  (id: string, rejectWithValue) => fetchAuthors(id, rejectWithValue),
+  (id: string, { rejectWithValue }) => fetchAuthors(id, rejectWithValue),
 )
 
 export const authorsReducer = authorsSlice.reducer

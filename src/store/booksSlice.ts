@@ -35,17 +35,20 @@ const booksSlice = createSlice({
         state.booksIsLoading = false
         state.booksError = action.payload as SerializedError
       })
+      .addCase(fetchBookById.fulfilled, (state, action) => {
+        state.booksData = [...state.booksData, action.payload]
+      })
   },
 })
 
 export const fetchAllBooks = createAsyncThunk(
   'fetchAllBooks',
-  (_, rejectWithValue) => fetchBooks(_, rejectWithValue),
+  (_, { rejectWithValue }) => fetchBooks(_, rejectWithValue),
 )
 
 export const fetchBookById = createAsyncThunk(
   'fetchBookById',
-  (id: string, rejectWithValue) => fetchBooks(id, rejectWithValue),
+  (id: string, { rejectWithValue }) => fetchBooks(id, rejectWithValue),
 )
 
 export const booksReducer = booksSlice.reducer

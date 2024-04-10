@@ -9,7 +9,7 @@ import {
   Author,
   ButtonWrapper,
 } from './Product.styles'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks'
 import {
   fetchBookById,
@@ -27,33 +27,20 @@ export function Product() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const bookFromStore = useAppSelector(bookByIdSelector(id))
-  const [bookFromFetch, setBookFromFetch] = useState<IBook | null>(null)
-  const book = { ...(bookFromStore || bookFromFetch) }
-
-  const authorFromStore = useAppSelector(authorByIdSelector(book.author))
-  const [authorFromFetch, setAuthorFromFetch] = useState<IAuthor | null>(null)
-  const author = { ...(authorFromStore || authorFromFetch) }
+  const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
+  const author: IAuthor | undefined = useAppSelector(
+    authorByIdSelector(book?.author as number),
+  )
 
   useEffect(() => {
-    if (!bookFromStore && id) {
-      const fetchData = async () => {
-        const book = await dispatch(fetchBookById(id))
-        setBookFromFetch(book.payload)
-      }
-      fetchData()
+    if (book) {
+      dispatch(fetchAuthorById(`${book.author}`))
+    } else {
+      dispatch(fetchBookById(id!)).then((res) => {
+        res.payload.author && dispatch(fetchAuthorById(`${res.payload.author}`))
+      })
     }
-  }, [bookFromStore, id, dispatch])
-
-  useEffect(() => {
-    if (!authorFromStore && book.author) {
-      const fetchData = async () => {
-        const author = await dispatch(fetchAuthorById(`${book.author}`))
-        setAuthorFromFetch(author.payload)
-      }
-      fetchData()
-    }
-  }, [authorFromStore, book.author, dispatch])
+  }, [book, dispatch, id])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -64,15 +51,15 @@ export function Product() {
     hasPreviousPage ? navigate(-1) : navigate('/')
   }
 
-  return book.id ? (
+  return book?.id ? (
     <StyledProduct>
       <Breadcrumb onClick={handleGoBack}>Book Details</Breadcrumb>
       <DetailsSection>
         <ImageWrapper>
           <img src={book.imgUrl} alt={book.title} width="100%" />
         </ImageWrapper>
-        <Title>{book.title} </Title>
-        <Author>{author.name}</Author>
+        <Title>{book.title}</Title>
+        <Author>{author?.name}</Author>
         <Price
           component="product"
           price={book.price}
@@ -91,6 +78,6 @@ export function Product() {
       </DetailsSection>
     </StyledProduct>
   ) : (
-    <Error error={bookFromFetch as SerializedError} />
+    <Error error={book as SerializedError} />
   )
 }
