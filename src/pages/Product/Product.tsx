@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   StyledProduct,
@@ -9,17 +10,17 @@ import {
   Author,
   ButtonWrapper,
 } from './Product.styles'
-import { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks'
 import {
   fetchBookById,
   fetchAuthorById,
   bookByIdSelector,
   authorByIdSelector,
+  bookErrorSelector,
+  authorErrorSelector,
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price } from '../../components'
-import { SerializedError } from '@reduxjs/toolkit'
 import cartIcon from '../../assets/svg/cart.svg'
 
 export function Product() {
@@ -31,16 +32,16 @@ export function Product() {
   const author: IAuthor | undefined = useAppSelector(
     authorByIdSelector(book?.author as number),
   )
+  const bookError = useAppSelector(bookErrorSelector)
+  const authorError = useAppSelector(authorErrorSelector)
 
   useEffect(() => {
-    if (book) {
+    if (!book) {
+      dispatch(fetchBookById(id!))
+    } else if (!author) {
       dispatch(fetchAuthorById(`${book.author}`))
-    } else {
-      dispatch(fetchBookById(id!)).then((res) => {
-        res.payload.author && dispatch(fetchAuthorById(`${res.payload.author}`))
-      })
     }
-  }, [book, dispatch, id])
+  }, [book, author, id, dispatch])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -51,7 +52,7 @@ export function Product() {
     hasPreviousPage ? navigate(-1) : navigate('/')
   }
 
-  return book?.id ? (
+  return book ? (
     <StyledProduct>
       <Breadcrumb onClick={handleGoBack}>Book Details</Breadcrumb>
       <DetailsSection>
@@ -59,7 +60,7 @@ export function Product() {
           <img src={book.imgUrl} alt={book.title} width="100%" />
         </ImageWrapper>
         <Title>{book.title}</Title>
-        <Author>{author?.name}</Author>
+        <Author>{author ? author.name : (authorError as string)}</Author>
         <Price
           component="product"
           price={book.price}
@@ -78,6 +79,6 @@ export function Product() {
       </DetailsSection>
     </StyledProduct>
   ) : (
-    <Error error={book as SerializedError} />
+    <Error error={bookError} />
   )
 }

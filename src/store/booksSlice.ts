@@ -38,6 +38,9 @@ const booksSlice = createSlice({
       .addCase(fetchBookById.fulfilled, (state, action) => {
         state.booksData = [...state.booksData, action.payload]
       })
+      .addCase(fetchBookById.rejected, (state, action) => {
+        state.booksError = action.payload as SerializedError
+      })
   },
 })
 

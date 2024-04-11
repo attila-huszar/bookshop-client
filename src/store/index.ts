@@ -5,4 +5,6 @@ export {
   authorsSelector,
   bookByIdSelector,
   authorByIdSelector,
+  bookErrorSelector,
+  authorErrorSelector,
 } from './selectors'

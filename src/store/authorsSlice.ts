@@ -32,6 +32,9 @@ const authorsSlice = createSlice({
       .addCase(fetchAuthorById.fulfilled, (state, action) => {
         state.authorsData = [...state.authorsData, action.payload]
       })
+      .addCase(fetchAuthorById.rejected, (state, action) => {
+        state.authorsError = action.payload as SerializedError
+      })
   },
 })
 
