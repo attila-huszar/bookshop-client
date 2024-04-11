@@ -20,12 +20,12 @@ export const StyledButton = styled.button<StyleTypes>`
       return '0.875rem'
     }
   }};
-  padding: ${({ $pad }) => {
-    if ($pad === 'sm') {
+  padding: ${({ $padding }) => {
+    if ($padding === 'sm') {
       return '0.25rem 1rem'
-    } else if ($pad === 'md') {
+    } else if ($padding === 'md') {
       return '0.375rem 1.25rem'
-    } else if ($pad === 'lg') {
+    } else if ($padding === 'lg') {
       return '1rem 3rem'
     } else {
       return '0.375rem 1.25rem'

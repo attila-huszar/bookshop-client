@@ -4,7 +4,6 @@ import { Menu } from './components/Menu/Menu'
 import { Search } from './components/Search/Search'
 import { Account } from './components/Account/Account'
 import { Favorite } from './components/Favorite/Favorite'
-import cartIcon from '../../assets/svg/cart.svg'
 
 export function Header() {
   return (
@@ -15,8 +14,7 @@ export function Header() {
         <Search />
         <Account />
         <Favorite />
-        <Button onClick={() => {}}>
-          <img src={cartIcon} />
+        <Button onClick={() => {}} $withCart>
           Basket
         </Button>
       </StyledHeader>

@@ -21,7 +21,6 @@ import {
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price } from '../../components'
-import cartIcon from '../../assets/svg/cart.svg'
 
 export function Product() {
   const { id } = useParams()
@@ -71,8 +70,7 @@ export function Product() {
           <p>{book.description}</p>
         </Description>
         <ButtonWrapper>
-          <Button onClick={() => {}} $textSize="lg" $pad="lg">
-            <img src={cartIcon} />
+          <Button onClick={() => {}} $withCart $textSize="lg" $padding="lg">
             Add to basket
           </Button>
         </ButtonWrapper>

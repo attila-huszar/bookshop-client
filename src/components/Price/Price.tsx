@@ -4,14 +4,14 @@ import {
   Currency,
   Strikethrough,
 } from './Price.styles'
-import { PriceProps } from '../../interfaces'
+import { IPriceProps } from '../../interfaces'
 
 export function Price({
   component,
   price,
   discount,
   currency = '$',
-}: PriceProps) {
+}: IPriceProps) {
   const Component = component === 'card' ? StyledPriceCard : StyledPriceProduct
 
   return (
