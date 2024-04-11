@@ -5,16 +5,20 @@ export const StyledProduct = styled.main`
   padding: 0 6.25rem;
 `
 
-export const Breadcrumb = styled.button`
+export const Breadcrumb = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border: none;
-  background: none;
-  cursor: pointer;
+
+  a {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    padding-left: 2rem;
+    margin-left: -2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
 
   &::before {
     content: '';

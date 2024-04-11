@@ -11,4 +11,5 @@ export interface IBook {
   rating: number
   discount: number
   new: boolean
+  topSellers?: boolean
 }

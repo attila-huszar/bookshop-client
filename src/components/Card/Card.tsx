@@ -15,7 +15,7 @@ export function Card({
 }: ICardProps) {
   return (
     <Link
-      to={`${BOOKS}${id}`}
+      to={`/${BOOKS}/${id}`}
       onClick={() => {
         window.scroll({
           top: 0,
@@ -34,7 +34,7 @@ export function Card({
           <Title>{title}</Title>
           <Description>{description}</Description>
           <Price component="card" price={price} discount={discount} />
-          <Button onClick={() => {}} $withCart $textSize="lg">
+          <Button onClick={() => {}} $withCart>
             Add to basket
           </Button>
         </Details>

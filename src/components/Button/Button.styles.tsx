@@ -12,10 +12,10 @@ export const StyledButton = styled.button<StyleTypes>`
   font-size: ${({ $textSize }) => {
     if ($textSize === 'sm') {
       return '0.75rem'
-    } else if ($textSize === 'md') {
-      return '0.875rem'
     } else if ($textSize === 'lg') {
       return '1rem'
+    } else if ($textSize === 'xl') {
+      return '1.25rem'
     } else {
       return '0.875rem'
     }
@@ -23,10 +23,10 @@ export const StyledButton = styled.button<StyleTypes>`
   padding: ${({ $padding }) => {
     if ($padding === 'sm') {
       return '0.25rem 1rem'
-    } else if ($padding === 'md') {
-      return '0.375rem 1.25rem'
     } else if ($padding === 'lg') {
       return '1rem 3rem'
+    } else if ($padding === 'wide') {
+      return '0.375rem 4rem'
     } else {
       return '0.375rem 1.25rem'
     }
@@ -36,7 +36,7 @@ export const StyledButton = styled.button<StyleTypes>`
   color: #fff;
   background-color: var(--generalColor);
   box-shadow: ${({ $shadowed }) =>
-    $shadowed ? 'var(--generalColor) 0px 8px 24px' : undefined};
+    $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
 `
 
 export const IconButton = styled.button`

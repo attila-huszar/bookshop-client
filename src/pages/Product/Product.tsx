@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   StyledProduct,
   Breadcrumb,
@@ -20,11 +20,11 @@ import {
   authorErrorSelector,
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
-import { Button, Error, Price } from '../../components'
+import { Button, Error, Price, Recommended } from '../../components'
+import { BOOKS } from '../../routes/routeConstants'
 
 export function Product() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
@@ -46,36 +46,39 @@ export function Product() {
     window.scrollTo(0, 0)
   }, [])
 
-  function handleGoBack() {
-    const hasPreviousPage = window.history.length > 2
-    hasPreviousPage ? navigate(-1) : navigate('/')
-  }
-
   return book ? (
-    <StyledProduct>
-      <Breadcrumb onClick={handleGoBack}>Book Details</Breadcrumb>
-      <DetailsSection>
-        <ImageWrapper>
-          <img src={book.imgUrl} alt={book.title} width="100%" />
-        </ImageWrapper>
-        <Title>{book.title}</Title>
-        <Author>{author ? author.name : (authorError as string)}</Author>
-        <Price
-          component="product"
-          price={book.price}
-          discount={book.discount}
-        />
-        <Description>
-          <h2>Summary</h2>
-          <p>{book.description}</p>
-        </Description>
-        <ButtonWrapper>
-          <Button onClick={() => {}} $withCart $textSize="lg" $padding="lg">
-            Add to basket
-          </Button>
-        </ButtonWrapper>
-      </DetailsSection>
-    </StyledProduct>
+    <>
+      <StyledProduct>
+        <Breadcrumb>
+          <Link to={`/${BOOKS}`} preventScrollReset={true}>
+            Book Details
+          </Link>
+        </Breadcrumb>
+        <DetailsSection>
+          <ImageWrapper>
+            <img src={book.imgUrl} alt={book.title} width="100%" />
+          </ImageWrapper>
+          <Title>{book.title}</Title>
+          <Author>{author ? author.name : (authorError as string)}</Author>
+          <Price
+            component="product"
+            price={book.price}
+            discount={book.discount}
+          />
+          <Description>
+            <h2>Summary</h2>
+            <p>{book.description}</p>
+          </Description>
+          <ButtonWrapper>
+            <Button onClick={() => {}} $withCart $textSize="lg" $padding="lg">
+              Add to basket
+            </Button>
+          </ButtonWrapper>
+        </DetailsSection>
+      </StyledProduct>
+
+      <Recommended />
+    </>
   ) : (
     <Error error={bookError} />
   )
