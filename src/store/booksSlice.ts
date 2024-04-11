@@ -1,54 +1,58 @@
-import axios, { AxiosError } from 'axios'
 import {
   createSlice,
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
+import { fetchBooks } from '../api/fetchData'
 import { IBookState } from '../interfaces'
-import { URL } from '../lib/pathConstants'
-
-export const fetchBooks = createAsyncThunk(
-  'fetchBooks',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(URL.books)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError && error.response?.data) {
-        return rejectWithValue(error.response.data)
-      } else if (error instanceof AxiosError && error.message) {
-        return rejectWithValue(error.message)
-      } else {
-        return rejectWithValue('Unknown error occurred')
-      }
-    }
-  },
-)
+import { getRandomBooks } from '../utils/getRandomBooks'
 
 const initialState: IBookState = {
-  data: [],
-  isLoading: false,
-  error: null,
+  booksData: [],
+  booksIsLoading: false,
+  booksError: null,
+  booksRandomize: [],
 }
 
 const booksSlice = createSlice({
   name: 'books',
   initialState,
-  reducers: {},
+  reducers: {
+    booksRandomize: (state) => {
+      state.booksRandomize = getRandomBooks(state.booksData, 4)
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchBooks.pending, (state) => {
-        state.isLoading = true
+      .addCase(fetchAllBooks.pending, (state) => {
+        state.booksIsLoading = true
       })
-      .addCase(fetchBooks.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.data = action.payload
+      .addCase(fetchAllBooks.fulfilled, (state, action) => {
+        state.booksIsLoading = false
+        state.booksData = action.payload
       })
-      .addCase(fetchBooks.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.payload as SerializedError
+      .addCase(fetchAllBooks.rejected, (state, action) => {
+        state.booksIsLoading = false
+        state.booksError = action.payload as SerializedError
+      })
+      .addCase(fetchBookById.fulfilled, (state, action) => {
+        state.booksData = [...state.booksData, action.payload]
+      })
+      .addCase(fetchBookById.rejected, (state, action) => {
+        state.booksError = action.payload as SerializedError
       })
   },
 })
 
+export const fetchAllBooks = createAsyncThunk(
+  'fetchAllBooks',
+  (_, { rejectWithValue }) => fetchBooks(_, rejectWithValue),
+)
+
+export const fetchBookById = createAsyncThunk(
+  'fetchBookById',
+  (id: string, { rejectWithValue }) => fetchBooks(id, rejectWithValue),
+)
+
 export const booksReducer = booksSlice.reducer
+export const { booksRandomize } = booksSlice.actions

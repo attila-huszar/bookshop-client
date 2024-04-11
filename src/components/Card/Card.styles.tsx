@@ -39,29 +39,3 @@ export const Description = styled.p`
   color: var(--textGreyColor);
   overflow: hidden;
 `
-
-export const Currency = styled.span`
-  margin-right: 0.5rem;
-  font-size: 1.125rem;
-`
-
-export const Price = styled.span`
-  font-size: 1.125rem;
-`
-
-export const Strikethrough = styled.span`
-  position: relative;
-  margin-left: 2rem;
-  font-size: 1rem;
-  color: var(--textGreyColor);
-
-  &::after {
-    content: '';
-    position: absolute;
-    width: calc(100% + 2ch);
-    bottom: 50%;
-    left: -1ch;
-    border-bottom: 1px solid;
-    pointer-events: none;
-  }
-`

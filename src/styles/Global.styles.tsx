@@ -11,16 +11,20 @@ export default createGlobalStyle`
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-   
+
   #root {
-    background-color: #ecb346;
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
+    --edgeColor: #ecb346;
     --generalColor: #ffce1a;
     --textColor: #0d0842;
     --textLightColor: #fffff8;
     --textGreyColor: #6c6c6c;
     --favoriteColor: #ff5841;
+  }
+
+  body {
+    background-color: #ecb346;
   }
 
   a { 

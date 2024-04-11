@@ -1,19 +1,9 @@
-import {
-  StyledCard,
-  Details,
-  Image,
-  Title,
-  Description,
-  Currency,
-  Price,
-  Strikethrough,
-} from './Card.styles'
-import { Button } from '../../components'
-import { ICard } from '../../interfaces/ICard'
-import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
-import cartIcon from '../../assets/svg/cart.svg'
 import { Link } from 'react-router-dom'
+import { StyledCard, Details, Image, Title, Description } from './Card.styles'
+import { Button, Price } from '../../components'
 import { BOOKS } from '../../routes/routeConstants'
+import { ICardProps } from '../../interfaces/'
+import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 
 export function Card({
   id,
@@ -22,9 +12,17 @@ export function Card({
   price,
   discount,
   imgUrl,
-}: ICard) {
+}: ICardProps) {
   return (
-    <Link to={`${BOOKS}${id}`}>
+    <Link
+      to={`${BOOKS}${id}`}
+      onClick={() => {
+        window.scroll({
+          top: 0,
+          left: 0,
+          behavior: 'smooth',
+        })
+      }}>
       <StyledCard>
         <Image
           src={imgUrl}
@@ -35,29 +33,8 @@ export function Card({
         <Details>
           <Title>{title}</Title>
           <Description>{description}</Description>
-          <Title>
-            {discount ? (
-              <>
-                <Currency>$</Currency>
-                <Price>
-                  {(Number(price) - (Number(price) * discount) / 100).toFixed(
-                    2,
-                  )}
-                </Price>
-                <Strikethrough>
-                  <Currency>$</Currency>
-                  <Price>{price}</Price>
-                </Strikethrough>
-              </>
-            ) : (
-              <>
-                <Currency>$</Currency>
-                <Price>{price}</Price>
-              </>
-            )}
-          </Title>
-          <Button onClick={() => {}} size="lg">
-            <img src={cartIcon} />
+          <Price component="card" price={price} discount={discount} />
+          <Button onClick={() => {}} $withCart $textSize="lg">
             Add to basket
           </Button>
         </Details>

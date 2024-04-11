@@ -1,10 +1,9 @@
-import { Home } from '../pages'
-import { Product } from '../pages'
-import { NotFound } from '../pages'
+import { Layout, Home, Product, NotFound } from '../pages'
 
 export const routes = [
   {
     path: '/',
+    element: <Layout />,
     children: [
       {
         index: true,
@@ -14,10 +13,10 @@ export const routes = [
         path: 'books/:id',
         element: <Product />,
       },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
     ],
-  },
-  {
-    path: '*',
-    element: <NotFound />,
   },
 ]

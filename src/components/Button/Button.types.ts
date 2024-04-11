@@ -1,6 +1,8 @@
 export type StyleTypes = {
-  size?: 'sm' | 'md' | 'lg'
-  shadowed?: boolean
+  $textSize?: 'sm' | 'md' | 'lg'
+  $padding?: 'sm' | 'md' | 'lg'
+  $shadowed?: boolean
+  $withCart?: boolean
 }
 
 export type ButtonTypes = StyleTypes & {

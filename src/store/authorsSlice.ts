@@ -1,34 +1,15 @@
-import axios, { AxiosError } from 'axios'
 import {
   createSlice,
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
+import { fetchAuthors } from '../api/fetchData'
 import { IAuthorState } from '../interfaces'
-import { URL } from '../lib/pathConstants'
-
-export const fetchAuthors = createAsyncThunk(
-  'fetchAuthors',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(URL.authors)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError && error.response?.data) {
-        return rejectWithValue(error.response.data)
-      } else if (error instanceof AxiosError && error.message) {
-        return rejectWithValue(error.message)
-      } else {
-        return rejectWithValue('Unknown error occurred')
-      }
-    }
-  },
-)
 
 const initialState: IAuthorState = {
-  data: [],
-  isLoading: false,
-  error: null,
+  authorsData: [],
+  authorsIsLoading: false,
+  authorsError: null,
 }
 
 const authorsSlice = createSlice({
@@ -37,18 +18,34 @@ const authorsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAuthors.pending, (state) => {
-        state.isLoading = true
+      .addCase(fetchAllAuthors.pending, (state) => {
+        state.authorsIsLoading = true
       })
-      .addCase(fetchAuthors.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.data = action.payload
+      .addCase(fetchAllAuthors.fulfilled, (state, action) => {
+        state.authorsIsLoading = false
+        state.authorsData = action.payload
       })
-      .addCase(fetchAuthors.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.payload as SerializedError
+      .addCase(fetchAllAuthors.rejected, (state, action) => {
+        state.authorsIsLoading = false
+        state.authorsError = action.payload as SerializedError
+      })
+      .addCase(fetchAuthorById.fulfilled, (state, action) => {
+        state.authorsData = [...state.authorsData, action.payload]
+      })
+      .addCase(fetchAuthorById.rejected, (state, action) => {
+        state.authorsError = action.payload as SerializedError
       })
   },
 })
+
+export const fetchAllAuthors = createAsyncThunk(
+  'fetchAllAuthors',
+  (_, { rejectWithValue }) => fetchAuthors(_, rejectWithValue),
+)
+
+export const fetchAuthorById = createAsyncThunk(
+  'fetchAuthorById',
+  (id: string, { rejectWithValue }) => fetchAuthors(id, rejectWithValue),
+)
 
 export const authorsReducer = authorsSlice.reducer
