@@ -1,7 +1,7 @@
 import { StyledNewsCard, Details, ImageWrap } from './NewsCard.styles'
-import { INewsCardProps } from '../../../../interfaces'
+import { INews } from '../../../../interfaces'
 
-export function NewsCard({ title, content, img }: INewsCardProps) {
+export function NewsCard({ title, content, img }: INews) {
   return (
     <StyledNewsCard>
       <Details>

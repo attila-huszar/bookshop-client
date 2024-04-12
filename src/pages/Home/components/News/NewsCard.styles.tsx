@@ -3,8 +3,8 @@ import styled from 'styled-components'
 export const StyledNewsCard = styled.div`
   display: flex;
   height: 11.25rem;
-  width: 37.5rem;
-  padding: 0 1rem;
+  width: 37.125rem;
+  padding: 0 0.75rem;
   border-radius: 10px;
 `
 

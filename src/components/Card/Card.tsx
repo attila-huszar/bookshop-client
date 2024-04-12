@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
 import { Button, Price } from '../../components'
-import { BOOKS } from '../../routes/routeConstants'
+import { BOOKS } from '../../routes/pathConstants'
 import { ICardProps } from '../../interfaces/'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 

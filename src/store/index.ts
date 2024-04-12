@@ -1,5 +1,7 @@
 export { fetchAllBooks, fetchBookById, booksRandomize } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
+export { fetchAllNews } from './newsSlice'
+
 export {
   booksSelector,
   authorsSelector,
@@ -7,4 +9,6 @@ export {
   authorByIdSelector,
   bookErrorSelector,
   authorErrorSelector,
+  newsSelector,
+  newsErrorSelector,
 } from './selectors'

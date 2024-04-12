@@ -1,6 +1,6 @@
 import { IBook } from './IBook'
-import { INewsCardProps } from './INewsCardProps'
+import { INews } from './INews'
 
 export interface ISwiper {
-  children: React.ReactElement<IBook>[] | React.ReactElement<INewsCardProps>[]
+  children: React.ReactElement<IBook>[] | React.ReactElement<INews>[]
 }

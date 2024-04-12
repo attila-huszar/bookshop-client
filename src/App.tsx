@@ -2,7 +2,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import { useEffect } from 'react'
 import { useAppDispatch } from './hooks'
-import { fetchAllBooks, booksRandomize } from './store'
+import { fetchAllBooks, booksRandomize, fetchAllNews } from './store'
 import GlobalStyle from './styles/Global.styles'
 
 function App() {
@@ -13,6 +13,7 @@ function App() {
     dispatch(fetchAllBooks()).then(() => {
       dispatch(booksRandomize())
     })
+    dispatch(fetchAllNews())
   }, [dispatch])
 
   return (

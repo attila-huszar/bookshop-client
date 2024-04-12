@@ -6,6 +6,6 @@ export const StyledNews = styled.section`
   padding: 2.5rem 6.25rem;
 
   h2 {
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
 `

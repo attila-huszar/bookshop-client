@@ -30,3 +30,7 @@ export const authorByIdSelector = (id: number) => (state: RootState) =>
 
 export const authorErrorSelector = (state: RootState) =>
   state.authors.authorsError
+
+export const newsSelector = (state: RootState) => state.news
+
+export const newsErrorSelector = (state: RootState) => state.news.newsError

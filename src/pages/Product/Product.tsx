@@ -21,7 +21,7 @@ import {
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
-import { BOOKS } from '../../routes/routeConstants'
+import { BOOKS } from '../../routes/pathConstants'
 
 export function Product() {
   const { id } = useParams()
