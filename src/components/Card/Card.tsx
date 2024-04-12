@@ -14,15 +14,7 @@ export function Card({
   imgUrl,
 }: ICardProps) {
   return (
-    <Link
-      to={`/${BOOKS}/${id}`}
-      onClick={() => {
-        window.scroll({
-          top: 0,
-          left: 0,
-          behavior: 'smooth',
-        })
-      }}>
+    <Link to={`/${BOOKS}/${id}`}>
       <StyledCard>
         <Image
           src={imgUrl}
@@ -34,7 +26,11 @@ export function Card({
           <Title>{title}</Title>
           <Description>{description}</Description>
           <Price component="card" price={price} discount={discount} />
-          <Button onClick={() => {}} $withCart>
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+            }}
+            $withCart>
             Add to basket
           </Button>
         </Details>

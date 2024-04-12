@@ -37,7 +37,7 @@ export const DetailsSection = styled.section`
   grid-template-rows: max-content max-content 1fr;
   column-gap: 3rem;
   min-height: 35rem;
-  margin: 2rem 0 6rem;
+  margin: 3rem 0 6rem;
 `
 
 export const ImageWrapper = styled.div`

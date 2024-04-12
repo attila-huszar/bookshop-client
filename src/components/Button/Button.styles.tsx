@@ -37,6 +37,13 @@ export const StyledButton = styled.button<StyleTypes>`
   background-color: var(--generalColor);
   box-shadow: ${({ $shadowed }) =>
     $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
+  outline: 3px solid var(--generalColor);
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    color: var(--generalColor);
+    background-color: #fff;
+  }
 `
 
 export const IconButton = styled.button`
