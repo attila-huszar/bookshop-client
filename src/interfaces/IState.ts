@@ -1,5 +1,4 @@
-import { IBook } from './IBook'
-import { IAuthor } from './IAuthor'
+import { IBook, IAuthor, INews } from '.'
 import { SerializedError } from '@reduxjs/toolkit'
 
 export interface IBookState {
@@ -13,4 +12,10 @@ export interface IAuthorState {
   authorsData: IAuthor[]
   authorsIsLoading: boolean
   authorsError: SerializedError | null
+}
+
+export interface INewsState {
+  newsData: INews[]
+  newsIsLoading: boolean
+  newsError: SerializedError | null
 }

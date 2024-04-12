@@ -1,4 +1,4 @@
-import { Layout, Home, Product, NotFound } from '../pages'
+import { Layout, Home, Products, Product, NotFound } from '../pages'
 
 export const routes = [
   {
@@ -8,6 +8,10 @@ export const routes = [
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: 'books',
+        element: <Products />,
       },
       {
         path: 'books/:id',

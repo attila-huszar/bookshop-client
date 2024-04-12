@@ -1,27 +1,16 @@
-import { useAppSelector } from '../../hooks'
-import { booksSelector } from '../../store/selectors'
 import { StyledHome } from './Home.styles'
-import { Card } from '../../components'
-import { Loading } from '../../components'
-import { Error } from '../../components'
+import { Recommended } from '../../components'
+import { Releases } from './components/Releases/Releases'
+import { TopSellers } from './components/TopSellers/TopSellers'
+import { News } from './components/News/News'
 
 export function Home() {
-  const { booksData, booksIsLoading, booksError } =
-    useAppSelector(booksSelector)
-
-  if (booksIsLoading) {
-    return <Loading />
-  }
-
-  if (booksError) {
-    return <Error error={booksError} />
-  }
-
   return (
     <StyledHome>
-      {booksData.map((item) => (
-        <Card key={item.id} {...item} />
-      ))}
+      <Releases />
+      <TopSellers />
+      <Recommended />
+      <News />
     </StyledHome>
   )
 }

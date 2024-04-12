@@ -1,6 +1,6 @@
 import { StyledButton, IconButton } from './Button.styles'
 import type { ButtonTypes } from './Button.types'
-import cartIcon from '../../assets/svg/cart.svg'
+import CartIcon from '../../assets/svg/cart.svg?react'
 
 export function Button({ onClick, children, icon, ...props }: ButtonTypes) {
   return icon ? (
@@ -9,7 +9,7 @@ export function Button({ onClick, children, icon, ...props }: ButtonTypes) {
     </IconButton>
   ) : (
     <StyledButton onClick={onClick} {...props}>
-      {props.$withCart && <img src={cartIcon} />}
+      {props.$withCart && <CartIcon />}
       {children}
     </StyledButton>
   )

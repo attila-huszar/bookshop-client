@@ -5,16 +5,20 @@ export const StyledProduct = styled.main`
   padding: 0 6.25rem;
 `
 
-export const Breadcrumb = styled.button`
+export const Breadcrumb = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border: none;
-  background: none;
-  cursor: pointer;
+
+  a {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    padding-left: 2rem;
+    margin-left: -2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
 
   &::before {
     content: '';
@@ -33,7 +37,7 @@ export const DetailsSection = styled.section`
   grid-template-rows: max-content max-content 1fr;
   column-gap: 3rem;
   min-height: 35rem;
-  margin: 2rem 0 6rem;
+  margin: 3rem 0 6rem;
 `
 
 export const ImageWrapper = styled.div`

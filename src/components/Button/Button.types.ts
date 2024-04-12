@@ -1,6 +1,6 @@
 export type StyleTypes = {
-  $textSize?: 'sm' | 'md' | 'lg'
-  $padding?: 'sm' | 'md' | 'lg'
+  $textSize?: 'sm' | 'lg' | 'xl'
+  $padding?: 'sm' | 'lg' | 'wide'
   $shadowed?: boolean
   $withCart?: boolean
 }
