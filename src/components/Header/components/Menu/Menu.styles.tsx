@@ -7,7 +7,7 @@ export const StyledMenu = styled.div`
 
 export const Dropdown = styled.div<MenuTypes>`
   position: absolute;
-  width: 8rem;
+  width: 12rem;
   top: 3rem;
   left: 0;
   display: grid;
@@ -33,12 +33,8 @@ export const DropdownList = styled.ul`
   background-color: #e1e1e6;
   border-radius: 5px;
   cursor: pointer;
-  z-index: 1;
+  z-index: 10;
   overflow: hidden;
-
-  li {
-    padding: 0.5rem 1rem;
-  }
 
   li:hover {
     background-color: lightgray;
@@ -51,4 +47,11 @@ export const DropdownList = styled.ul`
   li:last-child {
     border-radius: 0 0 5px 5px;
   }
+`
+
+export const MenuItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
 `

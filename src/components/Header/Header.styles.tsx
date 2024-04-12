@@ -6,7 +6,7 @@ export const StyledHeader = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 35px;
+  gap: 2.5rem;
   height: 6.5rem;
   width: 100%;
   max-width: 90rem;
