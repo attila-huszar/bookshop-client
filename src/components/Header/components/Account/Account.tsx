@@ -1,8 +1,15 @@
+import { useNavigate } from 'react-router-dom'
 import { IconButton } from '../../../../components'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
 
 export function Account() {
+  const navigate = useNavigate()
+
   return (
-    <IconButton onClick={() => {}} icon={<AccountIcon />} label="Account" />
+    <IconButton
+      onClick={() => navigate('/registration')}
+      icon={<AccountIcon />}
+      label="Account"
+    />
   )
 }
