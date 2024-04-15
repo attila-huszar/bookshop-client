@@ -8,5 +8,6 @@ export type StyleTypes = {
 export type ButtonTypes = StyleTypes & {
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
   children?: React.ReactNode
-  icon?: string
+  icon?: React.ReactNode
+  label?: string
 }

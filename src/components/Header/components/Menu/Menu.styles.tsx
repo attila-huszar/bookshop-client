@@ -30,7 +30,7 @@ export const DropdownList = styled.ul`
   padding: 0;
   font-size: 1.25rem;
   list-style: none;
-  background-color: #e1e1e6;
+  background-color: #eaeaea;
   border-radius: 5px;
   cursor: pointer;
   z-index: 10;

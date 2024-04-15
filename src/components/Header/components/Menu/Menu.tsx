@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
 import { Button } from '../../../../components'
 import { menuLinks } from '../../../../lib/menuLinks'
-import menuIcon from '../../../../assets/svg/menu.svg'
+import MenuIcon from '../../../../assets/svg/menu.svg?react'
 
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -28,7 +28,11 @@ export function Menu() {
 
   return (
     <StyledMenu ref={menuRef}>
-      <Button onClick={toggleMenu} icon={menuIcon} />
+      <Button
+        onClick={toggleMenu}
+        icon={<MenuIcon height={26} width={28} />}
+        label="Menu"
+      />
       <Dropdown $show={menuOpen}>
         <DropdownList>
           {menuLinks.map((link) => (

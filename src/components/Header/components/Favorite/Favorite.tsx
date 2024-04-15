@@ -1,6 +1,12 @@
 import { Button } from '../../../../components'
-import favoriteIcon from '../../../../assets/svg/favorite.svg'
+import FavoriteIcon from '../../../../assets/svg/favorite.svg?react'
 
 export function Favorite() {
-  return <Button onClick={() => {}} icon={favoriteIcon} />
+  return (
+    <Button
+      onClick={() => {}}
+      icon={<FavoriteIcon height={26} />}
+      label="Favorite"
+    />
+  )
 }
