@@ -1,6 +1,7 @@
 export { Header } from './Header/Header'
 export { Footer } from './Footer/Footer'
 export { Button } from './Button/Button'
+export { IconButton } from './Button/IconButton'
 export { Card } from './Card/Card'
 export { Loading } from './Loading/Loading'
 export { Error } from './Error/Error'

@@ -45,19 +45,3 @@ export const StyledButton = styled.button<StyleTypes>`
     background-color: #fff;
   }
 `
-
-export const IconButton = styled.button`
-  display: flex;
-  align-items: center;
-  outline: none;
-  padding: 0;
-  border: none;
-  cursor: pointer;
-  color: var(--textColor);
-  background: none;
-  transition: all 0.2s ease-out;
-
-  &:hover {
-    color: var(--generalColor);
-  }
-`
