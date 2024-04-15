@@ -1,5 +1,5 @@
 export type StyleTypes = {
-  $iconSize?: 'sm' | 'lg'
+  $iconSize?: 'sm' | 'md' | 'lg'
 }
 
 export type IconButtonTypes = StyleTypes & {

@@ -1,34 +1,30 @@
 import styled from 'styled-components'
 import { StyleTypes } from './IconButton.types'
 
+const iconHeight = {
+  sm: '22px',
+  md: '26px',
+  lg: '30px',
+}
+
+const iconWidth = {
+  sm: '24px',
+  md: '28px',
+  lg: '32px',
+}
+
 export const StyledIconButton = styled.button<StyleTypes>`
   display: flex;
   align-items: center;
-  outline: none;
+  height: ${({ $iconSize = 'md' }) => iconHeight[$iconSize]};
+  width: ${({ $iconSize = 'md' }) => iconWidth[$iconSize]};
   padding: 0;
-  border: none;
-  cursor: pointer;
   color: var(--textColor);
   background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
   transition: all 0.2s ease-out;
-  height: ${({ $iconSize }) => {
-    if ($iconSize === 'sm') {
-      return '22px'
-    } else if ($iconSize === 'lg') {
-      return '30px'
-    } else {
-      return '26px'
-    }
-  }};
-  width: ${({ $iconSize }) => {
-    if ($iconSize === 'sm') {
-      return '24px'
-    } else if ($iconSize === 'lg') {
-      return '32px'
-    } else {
-      return '28px'
-    }
-  }};
 
   &:hover {
     color: var(--generalColor);
