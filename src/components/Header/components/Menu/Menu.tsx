@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
 import { Button } from '../../../../components'
@@ -13,18 +13,22 @@ export function Menu() {
     setMenuOpen((prevState) => !prevState)
   }
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
       if (menuOpen && !menuRef.current?.contains(event.target as Element)) {
         setMenuOpen(false)
       }
-    }
+    },
+    [menuOpen],
+  )
 
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [menuOpen])
+  }, [handleClickOutside])
 
   return (
     <StyledMenu ref={menuRef}>
