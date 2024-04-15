@@ -4,14 +4,14 @@ export const StyledReleases = styled.section`
   display: flex;
   width: 100%;
   max-width: 90rem;
-  padding: 2.5rem 6.25rem;
+  padding: 1.5rem 6.25rem;
 
   div {
     width: 50%;
   }
 
   h1 {
-    margin-bottom: 2rem;
+    margin: 1rem 0 2rem;
   }
 
   p {

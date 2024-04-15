@@ -4,7 +4,7 @@ export const StyledNotFound = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: -7.5rem 0 5rem;
+  margin: -5rem 0 5rem;
 `
 
 export const ImageWrapper = styled.div`

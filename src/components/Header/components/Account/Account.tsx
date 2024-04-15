@@ -1,6 +1,8 @@
-import { Button } from '../../../../components'
-import accountIcon from '../../../../assets/svg/account.svg'
+import { IconButton } from '../../../../components'
+import AccountIcon from '../../../../assets/svg/account.svg?react'
 
 export function Account() {
-  return <Button onClick={() => {}} icon={accountIcon} />
+  return (
+    <IconButton onClick={() => {}} icon={<AccountIcon />} label="Account" />
+  )
 }
