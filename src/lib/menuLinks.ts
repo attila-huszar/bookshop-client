@@ -6,5 +6,5 @@ import AccountIcon from '../assets/svg/account.svg'
 export const menuLinks = [
   { path: '/', name: 'Home', icon: HomeIcon },
   { path: `/${BOOKS}`, name: 'Shop', icon: BookIcon },
-  { path: '/404', name: 'Account', icon: AccountIcon },
+  { path: '#', name: 'Account', icon: AccountIcon },
 ]

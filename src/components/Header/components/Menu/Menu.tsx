@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
 import { Button } from '../../../../components'
@@ -6,15 +6,30 @@ import { menuLinks } from '../../../../lib/menuLinks'
 import menuIcon from '../../../../assets/svg/menu.svg'
 
 export function Menu() {
-  const [openMenu, setOpenMenu] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
   const toggleMenu = () => {
-    setOpenMenu((prevState) => !prevState)
+    setMenuOpen((prevState) => !prevState)
   }
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuOpen && !menuRef.current?.contains(event.target as Element)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuOpen])
+
   return (
-    <StyledMenu>
+    <StyledMenu ref={menuRef}>
       <Button onClick={toggleMenu} icon={menuIcon} />
-      <Dropdown $show={openMenu}>
+      <Dropdown $show={menuOpen}>
         <DropdownList>
           {menuLinks.map((link) => (
             <li key={link.name}>
