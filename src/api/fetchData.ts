@@ -50,3 +50,19 @@ export const fetchNews = async (
     }
   }
 }
+
+export const fetchUser = async (
+  id: string | void,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get('')
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
