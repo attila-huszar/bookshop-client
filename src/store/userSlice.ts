@@ -7,7 +7,14 @@ import { fetchUser } from '../api/fetchData'
 import { IUserState } from '../interfaces'
 
 const initialState: IUserState = {
-  userData: { id: 0, firstName: '', lastName: '', email: '', password: '' },
+  userData: {
+    uuid: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+  },
   userIsLoading: false,
   userError: null,
 }

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
+import { IUser } from '../interfaces'
 
 export const fetchBooks = async (
   id: string | void,
@@ -52,17 +53,44 @@ export const fetchNews = async (
 }
 
 export const fetchUser = async (
-  id: string | void,
+  uuid: string,
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const response = await axios.get('')
+    const response = await axios.get(`${URL.users}/${uuid}`)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
     } else {
       throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const registerUser = async ({
+  uuid,
+  firstName,
+  lastName,
+  email,
+  phone,
+  password,
+}: IUser) => {
+  try {
+    const response = await axios.post(`${URL.users}`, {
+      uuid,
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+    })
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw error.message
+    } else {
+      throw 'Unknown error occurred'
     }
   }
 }
