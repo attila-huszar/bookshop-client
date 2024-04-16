@@ -1,5 +1,12 @@
-import { Formik, Form, Field, ErrorMessage } from 'formik'
-import { StyledRegistration, ButtonWrapper } from './Registration.styles'
+import { Formik, Form, Field, FieldInputProps, FieldMetaProps } from 'formik'
+import {
+  StyledRegistration,
+  Label,
+  InputWrapper,
+  Input,
+  ButtonWrapper,
+  ErrorMessage,
+} from './Registration.styles'
 import { Button } from '../../components'
 import { RegistrationSchema } from '../../utils/validationSchema'
 import { registerUser } from '../../api/fetchData'
@@ -20,7 +27,7 @@ export function Registration() {
           passwordConfirmation: '',
         }}
         validationSchema={RegistrationSchema}
-        onSubmit={(values) => {
+        onSubmit={(values, actions) => {
           const user = {
             uuid: uuidv4() as string,
             firstName: values.firstName,
@@ -31,34 +38,161 @@ export function Registration() {
           }
 
           registerUser(user)
+
+          const timeOut = setTimeout(() => {
+            actions.setSubmitting(false)
+
+            clearTimeout(timeOut)
+          }, 1000)
         }}>
-        {({ isSubmitting }) => (
+        {({ isValid, isSubmitting }) => (
           <Form>
-            <p>First Name</p>
-            <Field name="firstName" placeholder="First Name" />
+            <Label>First Name</Label>
+            <Field name="firstName">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    placeholder="First Name"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
-            <p>Last Name</p>
-            <Field name="lastName" placeholder="Last Name" />
+            <Label>Last Name</Label>
+            <Field name="lastName">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    placeholder="Last Name"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
-            <p>Email</p>
-            <Field type="email" name="email" placeholder="Email" />
-            <ErrorMessage name="email" component="div" />
+            <Label>Email</Label>
+            <Field name="email">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    type="email"
+                    placeholder="Email"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
-            <p>Phone</p>
-            <Field type="tel" name="phone" placeholder="Phone" />
-            <ErrorMessage name="phone" component="div" />
+            <Label>Phone</Label>
+            <Field name="phone">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="Phone"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
-            <p>Password</p>
-            <Field type="password" name="password" />
-            <ErrorMessage name="password" component="div" />
+            <Label>Password</Label>
+            <Field name="password">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    type="password"
+                    placeholder="Password"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
-            <p>Confirm Password</p>
-            <Field type="password" name="passwordConfirmation" />
-            <ErrorMessage name="passwordConfirmation" component="div" />
+            <Label>Password Confirm</Label>
+            <Field name="passwordConfirmation">
+              {({
+                field,
+                meta,
+              }: {
+                field: FieldInputProps<string>
+                meta: FieldMetaProps<string>
+              }) => (
+                <InputWrapper>
+                  <Input
+                    $valid={meta.touched && !meta.error}
+                    $error={meta.touched && meta.error}
+                    type="password"
+                    placeholder="Password Confirm"
+                    {...field}
+                  />
+                  {meta.touched && meta.error && (
+                    <ErrorMessage>{meta.error}</ErrorMessage>
+                  )}
+                </InputWrapper>
+              )}
+            </Field>
 
             <ButtonWrapper>
-              <Button type="submit" disabled={isSubmitting}>
-                Submit
+              <Button type="submit" disabled={!isValid || isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>
             </ButtonWrapper>
           </Form>
