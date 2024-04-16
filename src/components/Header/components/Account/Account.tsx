@@ -9,7 +9,8 @@ export function Account() {
     <IconButton
       onClick={() => navigate('/registration')}
       icon={<AccountIcon />}
-      label="Account"
+      title="Account"
+      $iconSize="sm"
     />
   )
 }

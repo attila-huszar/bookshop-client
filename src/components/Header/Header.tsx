@@ -14,7 +14,7 @@ export function Header() {
         <Search />
         <Account />
         <Favorite />
-        <Button onClick={() => {}} $withCart>
+        <Button onClick={() => {}} $withCart title="Basket">
           Basket
         </Button>
       </StyledHeader>

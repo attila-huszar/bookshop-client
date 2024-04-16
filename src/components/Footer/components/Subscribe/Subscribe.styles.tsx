@@ -16,14 +16,6 @@ export const SubscribeForm = styled.form`
     color: #6c6c6c;
   }
 
-  input:focus {
-    outline: none;
-  }
-
-  form:focus-within {
-    outline: 2px solid var(--favoriteColor);
-  }
-
   button {
     padding: 0.5rem 2rem;
     border: none;
@@ -31,5 +23,12 @@ export const SubscribeForm = styled.form`
     font-weight: 700;
     color: #fff;
     background-color: var(--generalColor);
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+
+    &:hover {
+      color: var(--generalColor);
+      background-color: #fff;
+    }
   }
 `
