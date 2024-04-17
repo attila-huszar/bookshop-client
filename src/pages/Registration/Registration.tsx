@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Formik, Form, Field } from 'formik'
 import { StyledRegistration, Label, ButtonWrapper } from './Registration.styles'
 import { Button } from '../../components'
@@ -7,10 +8,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { FormikField } from './FormikField'
 import { IFormikField } from './Registration.types'
 import { useAppDispatch } from '../../hooks'
-import { getUser, registerUser } from '../../store/userSlice'
+import { registerUser, getUser } from '../../store/userSlice'
 
 export function Registration() {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   return (
     <StyledRegistration>
@@ -38,7 +40,11 @@ export function Registration() {
           dispatch(registerUser(user)).then(() =>
             dispatch(
               getUser({ email: values.email, password: values.password }),
-            ),
+            ).then((res) => {
+              if (res.meta.requestStatus === 'fulfilled') {
+                navigate('/', { replace: true })
+              }
+            }),
           )
 
           const timeOut = setTimeout(() => {

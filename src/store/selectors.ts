@@ -34,3 +34,5 @@ export const authorErrorSelector = (state: RootState) =>
 export const newsSelector = (state: RootState) => state.news
 
 export const newsErrorSelector = (state: RootState) => state.news.newsError
+
+export const userSelector = (state: RootState) => state.user.userData
