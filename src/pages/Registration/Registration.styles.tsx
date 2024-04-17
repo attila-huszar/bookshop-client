@@ -35,34 +35,24 @@ export const Input = styled.input<RegistrationTypes>`
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
   border: 1px solid lightgrey;
-  border-radius: 4px;
-  background-color: white;
+  border-radius: 5px;
+  background-color: #fff;
 
   &:focus,
   &:active {
+    border: 1px solid rgb(26, 33, 43);
     box-shadow:
       rgb(210, 213, 217) 0px 0px 2px 1px,
       rgb(227, 230, 232) 0px 0px 0px 3px;
-    border: 1px solid rgb(26, 33, 43);
     outline: none;
-  }
-
-  &:-webkit-autofill,
-  &:-webkit-autofill:hover,
-  &:-webkit-autofill:focus {
-    background-color: white;
-    border: 1px solid lightgrey;
-    box-shadow: 0 0 0px 1000px #fff inset;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
-    transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: black;
   }
 
   ${({ $valid }) =>
     $valid &&
     `
       border: 1px solid rgb(0, 156, 38);
-
+      outline: none;
+      
       &:focus,
       &:active {
         border: 1px solid rgb(0, 156, 38);
@@ -70,12 +60,6 @@ export const Input = styled.input<RegistrationTypes>`
           rgb(106, 237, 97) 0px 0px 2px 1px,
           rgb(177, 247, 160) 0px 0px 0px 3px;
         outline: none;
-      }
-
-      &:-webkit-autofill,
-      &:-webkit-autofill:hover,
-      &:-webkit-autofill:focus {
-        border: 1px solid rgb(0, 156, 38);
       }
     `}
 
@@ -87,17 +71,11 @@ export const Input = styled.input<RegistrationTypes>`
 
       &:focus,
       &:active {
+        border: 1px solid rgb(191, 49, 12);
         box-shadow:
           rgb(244, 129, 116) 0px 0px 2px 1px,
           rgb(251, 178, 174) 0px 0px 0px 3px;
-        border: 1px solid rgb(191, 49, 12);
         outline: none;
-      }
-
-      &:-webkit-autofill,
-      &:-webkit-autofill:hover,
-      &:-webkit-autofill:focus {
-        border: 1px solid rgb(191, 49, 12);
       }
     `}
 `

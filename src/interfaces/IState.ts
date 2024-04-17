@@ -1,4 +1,4 @@
-import { IBook, IAuthor, INews, IUser } from '.'
+import { IBook, IAuthor, INews } from '.'
 import { SerializedError } from '@reduxjs/toolkit'
 
 export interface IBookState {
@@ -21,7 +21,7 @@ export interface INewsState {
 }
 
 export interface IUserState {
-  userData: IUser
+  userData: string
   userIsLoading: boolean
   userError: SerializedError | null
 }

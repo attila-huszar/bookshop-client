@@ -52,13 +52,13 @@ export const fetchNews = async (
   }
 }
 
-export const fetchUser = async (
-  uuid: string,
+export const getUserByEmail = async (
+  email: string,
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const response = await axios.get(`${URL.users}/${uuid}`)
-    return response.data
+    const response = await axios.get(`${URL.users}?email=${email}`)
+    return response.data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
@@ -68,29 +68,18 @@ export const fetchUser = async (
   }
 }
 
-export const registerUser = async ({
-  uuid,
-  firstName,
-  lastName,
-  email,
-  phone,
-  password,
-}: IUser) => {
+export const postUserRegister = async (
+  user: IUser,
+  rejectWithValue: (value: unknown) => void,
+) => {
   try {
-    const response = await axios.post(`${URL.users}`, {
-      uuid,
-      firstName,
-      lastName,
-      email,
-      phone,
-      password,
-    })
+    const response = await axios.post(`${URL.users}`, user)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw error.message
+      throw rejectWithValue(error.message)
     } else {
-      throw 'Unknown error occurred'
+      throw rejectWithValue('Unknown error occurred')
     }
   }
 }

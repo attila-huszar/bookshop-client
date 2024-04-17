@@ -3,18 +3,12 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchUser } from '../api/fetchData'
-import { IUserState } from '../interfaces'
+import { getUserByEmail, postUserRegister } from '../api/fetchData'
+import { IUser, IUserState } from '../interfaces'
+import { passwordDecrypt } from '../utils/passwordHash'
 
 const initialState: IUserState = {
-  userData: {
-    uuid: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-  },
+  userData: '',
   userIsLoading: false,
   userError: null,
 }
@@ -25,23 +19,35 @@ const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserById.pending, (state) => {
+      .addCase(getUser.pending, (state) => {
         state.userIsLoading = true
       })
-      .addCase(fetchUserById.fulfilled, (state, action) => {
+      .addCase(getUser.fulfilled, (state, action) => {
         state.userIsLoading = false
         state.userData = action.payload
+        state.userError = null
       })
-      .addCase(fetchUserById.rejected, (state, action) => {
+      .addCase(getUser.rejected, (state, action) => {
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
       })
   },
 })
 
-export const fetchUserById = createAsyncThunk(
-  'fetchUserById',
-  (id: string, { rejectWithValue }) => fetchUser(id, rejectWithValue),
+export const getUser = createAsyncThunk(
+  'getUser',
+  (user: { email: string; password: string }, { rejectWithValue }) =>
+    getUserByEmail(user.email, rejectWithValue).then((res) => {
+      if (passwordDecrypt(res.password) !== user.password)
+        throw rejectWithValue('Incorrect password')
+
+      return res.uuid
+    }),
+)
+
+export const registerUser = createAsyncThunk(
+  'registerUser',
+  (user: IUser, { rejectWithValue }) => postUserRegister(user, rejectWithValue),
 )
 
 export const userReducer = userSlice.reducer
