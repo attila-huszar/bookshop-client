@@ -11,4 +11,5 @@ export {
   authorErrorSelector,
   newsSelector,
   newsErrorSelector,
+  userSelector,
 } from './selectors'

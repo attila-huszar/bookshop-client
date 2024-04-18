@@ -1,11 +1,13 @@
 export type { IBook } from './IBook'
 export type { IAuthor } from './IAuthor'
 export type { INews } from './INews'
-export type { IBookState } from './IState'
-export type { IAuthorState } from './IState'
-export type { INewsState } from './IState'
+export type {
+  IBookStoreState,
+  IAuthorStoreState,
+  INewsStoreState,
+  IUserStoreState,
+} from './IState'
 export type { ICardProps } from './ICardProps'
 export type { IPriceProps } from './IPriceProps'
 export type { ISwiper } from './ISwiper'
-export type { IUser } from './IUser'
-export type { IUserState } from './IState'
+export type { IUser, IUserStore } from './IUser'

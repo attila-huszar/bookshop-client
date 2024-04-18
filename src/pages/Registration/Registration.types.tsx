@@ -1,5 +1,3 @@
-import { FieldInputProps, FormikProps, FieldMetaProps } from 'formik'
-
 export type RegistrationTypes = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
@@ -9,10 +7,17 @@ export type RegistrationTypes = React.DetailedHTMLProps<
 }
 
 export interface IFormikField {
-  field: FieldInputProps<string>
-  form?: FormikProps<string>
-  meta: FieldMetaProps<string>
-  type?: string
+  name: string
   placeholder: string
-  inputMode?: string
+  type?: React.HTMLInputTypeAttribute | undefined
+  inputMode?:
+    | 'text'
+    | 'search'
+    | 'email'
+    | 'tel'
+    | 'url'
+    | 'none'
+    | 'numeric'
+    | 'decimal'
+    | undefined
 }

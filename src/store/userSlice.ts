@@ -4,11 +4,11 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { getUserByEmail, postUserRegister } from '../api/fetchData'
-import { IUser, IUserState } from '../interfaces'
-import { passwordDecrypt } from '../utils/passwordHash'
+import { IUser, IUserStore, IUserStoreState } from '../interfaces'
+import { passwordEncrypt } from '../utils/passwordHash'
 
-const initialState: IUserState = {
-  userData: '',
+const initialState: IUserStoreState = {
+  userData: {} as IUserStore,
   userIsLoading: false,
   userError: null,
 }
@@ -38,10 +38,10 @@ export const getUser = createAsyncThunk(
   'getUser',
   (user: { email: string; password: string }, { rejectWithValue }) =>
     getUserByEmail(user.email, rejectWithValue).then((res) => {
-      if (passwordDecrypt(res.password) !== user.password)
+      if (res.password !== passwordEncrypt(user.password))
         throw rejectWithValue('Incorrect password')
 
-      return res.uuid
+      return res
     }),
 )
 
