@@ -15,6 +15,7 @@ export default createGlobalStyle`
   #root {
     --bgColor: #fff;
     --bgMobileColor: #f3f3f3;
+    --light-grey: #eaeaea;
     --edgeColor: #ecb346;
     --generalColor: #ffce1a;
     --textColor: #0d0842;

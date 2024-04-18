@@ -7,9 +7,10 @@ export function FormikField({
   placeholder,
   type,
   inputMode,
+  autoFocus,
 }: IFormikField) {
   return (
-    <Field name={name}>
+    <Field name={name} autoFocus={autoFocus}>
       {({
         field,
         meta,

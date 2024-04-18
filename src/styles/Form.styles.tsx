@@ -1,26 +1,5 @@
 import styled from 'styled-components'
 
-export const StyledForm = styled.main`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 6.25rem 4rem;
-
-  h2 {
-    margin-bottom: 1rem;
-  }
-
-  form {
-    width: 30rem;
-  }
-`
-
-export const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-`
-
 export const Label = styled.p`
   margin-top: 1rem;
 `
@@ -90,6 +69,12 @@ export const ErrorMessage = styled.div`
   border-radius: 5px;
   font-size: 0.875rem;
   z-index: 1;
+`
+
+export const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 `
 
 type FormTypes = React.DetailedHTMLProps<
