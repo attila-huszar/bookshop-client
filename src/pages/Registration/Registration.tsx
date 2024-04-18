@@ -7,6 +7,7 @@ import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
 import { useAppDispatch } from '../../hooks'
 import { registerUser, loginUser } from '../../store/userSlice'
+import toast from 'react-hot-toast'
 
 export function Registration() {
   const dispatch = useAppDispatch()
@@ -42,6 +43,10 @@ export function Registration() {
               ).then((res) => {
                 if (res.meta.requestStatus === 'fulfilled') {
                   navigate('/', { replace: true })
+
+                  toast.success(`${res.payload.email} Registered Successfully`)
+                } else {
+                  toast.error('Registration Failed')
                 }
               }),
             )

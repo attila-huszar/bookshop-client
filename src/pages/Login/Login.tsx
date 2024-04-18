@@ -5,6 +5,7 @@ import { FormikField, Button } from '../../components'
 import { LoginSchema } from '../../utils/validationSchema'
 import { useAppDispatch } from '../../hooks'
 import { loginUser } from '../../store/userSlice'
+import toast from 'react-hot-toast'
 
 export function Login() {
   const dispatch = useAppDispatch()
@@ -24,9 +25,11 @@ export function Login() {
             loginUser({ email: values.email, password: values.password }),
           )
             .then((res) => {
-              console.log(res)
               if (res.meta.requestStatus === 'fulfilled') {
                 navigate('/', { replace: true })
+                toast.success(`Welcome back, ${res.payload.firstName}!`)
+              } else {
+                toast.error(res.payload)
               }
             })
             .finally(() => actions.setSubmitting(false))
