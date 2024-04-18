@@ -20,7 +20,11 @@ const initialState: IUserStoreState = {
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    logoutUser: (state) => {
+      state.userData = {} as IUserStore
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
@@ -61,3 +65,4 @@ export const getUserByID = createAsyncThunk(
 )
 
 export const userReducer = userSlice.reducer
+export const { logoutUser } = userSlice.actions
