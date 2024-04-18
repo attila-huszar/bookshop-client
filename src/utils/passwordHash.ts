@@ -6,13 +6,3 @@ export function passwordEncrypt(password: string): string {
     })
     .join('')
 }
-
-export function passwordDecrypt(hash: string): string {
-  if (!hash) return ''
-
-  const decoded = hash.match(/.{2}/g)!.map(function (value) {
-    return parseInt(value, 32) - 7
-  })
-
-  return String.fromCharCode(...decoded)
-}

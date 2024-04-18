@@ -17,7 +17,11 @@ export const RegistrationSchema = Yup.object().shape({
       'Latin letters only',
     )
     .required('Required'),
-  email: Yup.string().email('Invalid Email').required('Required'),
+  email: Yup.string()
+    .min(5, 'Min 5 characters')
+    .max(320, 'Max 320 characters')
+    .email('Invalid Email')
+    .required('Required'),
   phone: Yup.string()
     .matches(
       /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,

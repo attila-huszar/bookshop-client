@@ -37,11 +37,11 @@ const userSlice = createSlice({
 export const getUser = createAsyncThunk(
   'getUser',
   (user: { email: string; password: string }, { rejectWithValue }) =>
-    getUserByEmail(user.email, rejectWithValue).then((res) => {
-      if (res.password !== passwordEncrypt(user.password))
+    getUserByEmail(user.email, rejectWithValue).then((response) => {
+      if (response.password !== passwordEncrypt(user.password))
         throw rejectWithValue('Incorrect password')
 
-      return res
+      return response
     }),
 )
 
