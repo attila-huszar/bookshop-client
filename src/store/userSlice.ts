@@ -39,6 +39,18 @@ const userSlice = createSlice({
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
       })
+      .addCase(getUserByID.pending, (state) => {
+        state.userIsLoading = true
+      })
+      .addCase(getUserByID.fulfilled, (state, action) => {
+        state.userIsLoading = false
+        state.userData = action.payload
+        state.userError = null
+      })
+      .addCase(getUserByID.rejected, (state, action) => {
+        state.userIsLoading = false
+        state.userError = action.payload as SerializedError
+      })
   },
 })
 
@@ -61,7 +73,15 @@ export const registerUser = createAsyncThunk(
 export const getUserByID = createAsyncThunk(
   'getUserByID',
   (uuid: string, { rejectWithValue }) =>
-    getUserByUUID(uuid, rejectWithValue).then((res) => res),
+    getUserByUUID(uuid, rejectWithValue).then((res) => {
+      if (res) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPass } = res
+        return userWithoutPass
+      } else {
+        throw rejectWithValue('User not found')
+      }
+    }),
 )
 
 export const userReducer = userSlice.reducer

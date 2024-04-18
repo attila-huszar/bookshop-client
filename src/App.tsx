@@ -1,20 +1,31 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import { useEffect } from 'react'
-import { useAppDispatch } from './hooks'
-import { fetchAllBooks, booksRandomize, fetchAllNews } from './store'
+import { useAppDispatch, useLocalStorage } from './hooks'
+import {
+  fetchAllBooks,
+  booksRandomize,
+  fetchAllNews,
+  getUserByID,
+} from './store'
 import GlobalStyle from './styles/Global.styles'
 
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
+  const { localStore } = useLocalStorage()
+  const uuid = localStore('uuid')
 
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
       dispatch(booksRandomize())
     })
     dispatch(fetchAllNews())
-  }, [dispatch])
+
+    if (uuid) {
+      dispatch(getUserByID(uuid))
+    }
+  }, [dispatch, uuid])
 
   return (
     <>

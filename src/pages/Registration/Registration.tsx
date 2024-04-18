@@ -5,13 +5,14 @@ import { FormikField, Button } from '../../components'
 import { RegistrationSchema } from '../../utils/validationSchema'
 import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
-import { useAppDispatch } from '../../hooks'
+import { useAppDispatch, useLocalStorage } from '../../hooks'
 import { registerUser, loginUser } from '../../store/userSlice'
 import toast from 'react-hot-toast'
 
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { setLocalStore } = useLocalStorage()
 
   return (
     <StyledForm>
@@ -43,8 +44,8 @@ export function Registration() {
               ).then((res) => {
                 if (res.meta.requestStatus === 'fulfilled') {
                   navigate('/', { replace: true })
-
                   toast.success(`${res.payload.email} Registered Successfully`)
+                  setLocalStore('uuid', res.payload.uuid)
                 } else {
                   toast.error('Registration Failed')
                 }

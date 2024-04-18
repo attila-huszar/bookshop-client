@@ -14,12 +14,14 @@ import { accountLinks } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
 import AccountLoggedInIcon from '../../../../assets/svg/account_loggedin.svg?react'
 import toast from 'react-hot-toast'
+import { useLocalStorage } from '../../../../hooks'
 
 export function Account() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const user = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
+  const { removeLocalStore } = useLocalStorage()
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
@@ -66,6 +68,7 @@ export function Account() {
                 to={accountLinks[1].path}
                 onClick={() => {
                   toggleMenu()
+                  removeLocalStore(user.uuid)
                   toast.success(`${user.email} successfully logged out`)
                   dispatch(logoutUser())
                 }}>

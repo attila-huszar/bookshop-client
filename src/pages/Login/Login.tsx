@@ -3,13 +3,14 @@ import { Formik, Form } from 'formik'
 import { StyledForm, Label, ButtonWrapper } from '../../styles/Form.styles'
 import { FormikField, Button } from '../../components'
 import { LoginSchema } from '../../utils/validationSchema'
-import { useAppDispatch } from '../../hooks'
+import { useAppDispatch, useLocalStorage } from '../../hooks'
 import { loginUser } from '../../store/userSlice'
 import toast from 'react-hot-toast'
 
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { setLocalStore } = useLocalStorage()
 
   return (
     <StyledForm>
@@ -28,6 +29,7 @@ export function Login() {
               if (res.meta.requestStatus === 'fulfilled') {
                 navigate('/', { replace: true })
                 toast.success(`Welcome back, ${res.payload.firstName}!`)
+                setLocalStore('uuid', res.payload.uuid)
               } else {
                 toast.error(res.payload)
               }
