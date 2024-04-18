@@ -153,7 +153,6 @@
       "homeland": "Greece",
       "biography": "Homer is the legendary author of the ancient Greek epic poems the 'Iliad' and the 'Odyssey,' which have profoundly influenced Western literature and culture."
     },
-
     {
       "id": 22,
       "name": "Alexandre Dumas",
@@ -657,5 +656,6 @@
       "content": "Abounding in sinister secrets - sometimes magical, sometimes not - locked in the libraries and halls of mysterious educational institutions, dark academia has become a phenomenally successful literary genre. With its...",
       "img": "/images/news/img4.jpg"
     }
-  ]
+  ],
+  "users": []
 }

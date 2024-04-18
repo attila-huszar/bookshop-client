@@ -1,3 +1,5 @@
 export const BOOKS = 'books'
 export const AUTHORS = 'authors'
 export const NEWS = 'news'
+export const USERS = 'users'
+export const REGISTRATION = 'registration'

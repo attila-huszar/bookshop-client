@@ -1,4 +1,12 @@
-import { Layout, Home, Products, Product, NotFound } from '../pages'
+import {
+  Layout,
+  Home,
+  Products,
+  Product,
+  Registration,
+  NotFound,
+} from '../pages'
+import { BOOKS, REGISTRATION } from './pathConstants'
 
 export const routes = [
   {
@@ -10,12 +18,16 @@ export const routes = [
         element: <Home />,
       },
       {
-        path: 'books',
+        path: BOOKS,
         element: <Products />,
       },
       {
-        path: 'books/:id',
+        path: `${BOOKS}/:id`,
         element: <Product />,
+      },
+      {
+        path: REGISTRATION,
+        element: <Registration />,
       },
       {
         path: '*',

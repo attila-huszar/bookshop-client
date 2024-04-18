@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
+import { IUser } from '../interfaces'
 
 export const fetchBooks = async (
   id: string | void,
@@ -41,6 +42,38 @@ export const fetchNews = async (
 ) => {
   try {
     const response = await axios.get(id ? `${URL.news}/${id}` : URL.news)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getUserByEmail = async (
+  email: string,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.users}?email=${email}`)
+    return response.data[0]
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const postUserRegister = async (
+  user: IUser,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.post(`${URL.users}`, user)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
