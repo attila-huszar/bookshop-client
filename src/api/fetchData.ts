@@ -68,6 +68,22 @@ export const getUserByEmail = async (
   }
 }
 
+export const getUserByUUID = async (
+  uuid: string,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.users}?uuid=${uuid}`)
+    return response.data[0]
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
 export const postUserRegister = async (
   user: IUser,
   rejectWithValue: (value: unknown) => void,

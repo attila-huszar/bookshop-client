@@ -1,20 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { StyledRegistration, Label, ButtonWrapper } from './Registration.styles'
-import { Button } from '../../components'
+import { StyledForm, Label, ButtonWrapper } from '../../styles/Form.styles'
+import { FormikField, Button } from '../../components'
 import { RegistrationSchema } from '../../utils/validationSchema'
 import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
-import { FieldCustomStyle } from './FieldCustomStyle'
 import { useAppDispatch } from '../../hooks'
-import { registerUser, getUser } from '../../store/userSlice'
+import { registerUser, loginUser } from '../../store/userSlice'
 
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
   return (
-    <StyledRegistration>
+    <StyledForm>
       <h2>User Registration</h2>
       <Formik
         initialValues={{
@@ -36,32 +35,28 @@ export function Registration() {
             password: passwordEncrypt(values.password),
           }
 
-          dispatch(registerUser(user)).then(() =>
-            dispatch(
-              getUser({ email: values.email, password: values.password }),
-            ).then((res) => {
-              if (res.meta.requestStatus === 'fulfilled') {
-                navigate('/', { replace: true })
-              }
-            }),
-          )
-
-          const timeOut = setTimeout(() => {
-            actions.setSubmitting(false)
-
-            clearTimeout(timeOut)
-          }, 500)
+          dispatch(registerUser(user))
+            .then(() =>
+              dispatch(
+                loginUser({ email: values.email, password: values.password }),
+              ).then((res) => {
+                if (res.meta.requestStatus === 'fulfilled') {
+                  navigate('/', { replace: true })
+                }
+              }),
+            )
+            .finally(() => actions.setSubmitting(false))
         }}>
         {({ isValid, isSubmitting }) => (
           <Form>
             <Label>First Name</Label>
-            <FieldCustomStyle name="firstName" placeholder="First Name" />
+            <FormikField name="firstName" placeholder="First Name" />
 
             <Label>Last Name</Label>
-            <FieldCustomStyle name="lastName" placeholder="Last Name" />
+            <FormikField name="lastName" placeholder="Last Name" />
 
             <Label>Email</Label>
-            <FieldCustomStyle
+            <FormikField
               name="email"
               placeholder="Email"
               type="email"
@@ -69,21 +64,21 @@ export function Registration() {
             />
 
             <Label>Password</Label>
-            <FieldCustomStyle
+            <FormikField
               name="password"
               placeholder="Password"
               type="password"
             />
 
             <Label>Password Confirm</Label>
-            <FieldCustomStyle
+            <FormikField
               name="passwordConfirmation"
               placeholder="Confirm Password"
               type="password"
             />
 
             <Label>Phone</Label>
-            <FieldCustomStyle
+            <FormikField
               name="phone"
               placeholder="Phone"
               type="tel"
@@ -98,6 +93,6 @@ export function Registration() {
           </Form>
         )}
       </Formik>
-    </StyledRegistration>
+    </StyledForm>
   )
 }

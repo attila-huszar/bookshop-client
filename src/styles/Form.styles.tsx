@@ -1,7 +1,6 @@
 import styled from 'styled-components'
-import { RegistrationTypes } from './Registration.types'
 
-export const StyledRegistration = styled.main`
+export const StyledForm = styled.main`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,7 +29,7 @@ export const InputWrapper = styled.div`
   margin-bottom: 1rem;
 `
 
-export const Input = styled.input<RegistrationTypes>`
+export const Input = styled.input<FormTypes>`
   width: 100%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
@@ -92,3 +91,11 @@ export const ErrorMessage = styled.div`
   font-size: 0.875rem;
   z-index: 1;
 `
+
+type FormTypes = React.DetailedHTMLProps<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  HTMLInputElement
+> & {
+  $valid: boolean
+  $error: string | false | undefined
+}

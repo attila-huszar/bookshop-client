@@ -1,8 +1,8 @@
 import { Field, FieldInputProps, FieldMetaProps } from 'formik'
-import { InputWrapper, Input, ErrorMessage } from './Registration.styles'
-import { IFormikField } from './Registration.types'
+import { InputWrapper, Input, ErrorMessage } from '../../styles/Form.styles'
+import { IFormikField } from '../../interfaces'
 
-export function FieldCustomStyle({
+export function FormikField({
   name,
   placeholder,
   type,

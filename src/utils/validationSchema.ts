@@ -36,3 +36,11 @@ export const RegistrationSchema = Yup.object().shape({
     .oneOf([Yup.ref('password')], 'Passwords must match')
     .required('Required'),
 })
+
+export const LoginSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid Email').required('Required'),
+  password: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
+    .required('Required'),
+})
