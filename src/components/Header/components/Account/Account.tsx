@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { IconButton } from '../../../../components'
 import { useAppDispatch, useAppSelector } from '../../../../hooks'
 import { userSelector } from '../../../../store'
@@ -15,6 +15,7 @@ import AccountIcon from '../../../../assets/svg/account.svg?react'
 import AccountLoggedInIcon from '../../../../assets/svg/account_loggedin.svg?react'
 import toast from 'react-hot-toast'
 import { useLocalStorage } from '../../../../hooks'
+import { LOGIN } from '../../../../routes/pathConstants'
 
 export function Account() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -22,6 +23,7 @@ export function Account() {
   const user = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const { removeLocalStore } = useLocalStorage()
+  const navigate = useNavigate()
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
@@ -47,13 +49,13 @@ export function Account() {
   return (
     <StyledMenu ref={menuRef}>
       <IconButton
-        onClick={toggleMenu}
+        onClick={user.firstName ? toggleMenu : () => navigate(LOGIN)}
         icon={user.firstName ? <AccountLoggedInIcon /> : <AccountIcon />}
         title={user.firstName || 'Account'}
         $iconSize="sm"
       />
-      <Dropdown $show={menuOpen}>
-        {user.email ? (
+      {user.email && (
+        <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
               <Link to={'/account'} onClick={toggleMenu}>
@@ -84,37 +86,8 @@ export function Account() {
               </Link>
             </li>
           </DropdownList>
-        ) : (
-          <DropdownList>
-            <li>
-              <Link to={accountLinks[0].path} onClick={toggleMenu}>
-                <MenuItem>
-                  <img
-                    src={accountLinks[0].icon}
-                    alt={accountLinks[0].name}
-                    width={24}
-                    height={22}
-                  />
-                  <span>{accountLinks[0].name}</span>
-                </MenuItem>
-              </Link>
-            </li>
-            <li>
-              <Link to={accountLinks[2].path} onClick={toggleMenu}>
-                <MenuItem>
-                  <img
-                    src={accountLinks[2].icon}
-                    alt={accountLinks[2].name}
-                    width={24}
-                    height={22}
-                  />
-                  <span>{accountLinks[2].name}</span>
-                </MenuItem>
-              </Link>
-            </li>
-          </DropdownList>
-        )}
-      </Dropdown>
+        </Dropdown>
+      )}
     </StyledMenu>
   )
 }
