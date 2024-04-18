@@ -49,12 +49,12 @@ export function Account() {
   return (
     <StyledMenu ref={menuRef}>
       <IconButton
-        onClick={user.firstName ? toggleMenu : () => navigate(LOGIN)}
-        icon={user.firstName ? <AccountLoggedInIcon /> : <AccountIcon />}
-        title={user.firstName || 'Account'}
+        onClick={user ? toggleMenu : () => navigate(LOGIN)}
+        icon={user ? <AccountLoggedInIcon /> : <AccountIcon />}
+        title={user?.firstName || 'Account'}
         $iconSize="sm"
       />
-      {user.email && (
+      {user && (
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
@@ -70,7 +70,7 @@ export function Account() {
                 to={accountLinks[1].path}
                 onClick={() => {
                   toggleMenu()
-                  removeLocalStore(user.uuid)
+                  removeLocalStore('uuid')
                   toast.success(`${user.email} successfully logged out`)
                   dispatch(logoutUser())
                 }}>

@@ -8,11 +8,11 @@ import {
   getUserByUUID,
   postUserRegister,
 } from '../api/fetchData'
-import { IUser, IUserStore, IUserStoreState } from '../interfaces'
+import { IUser, IUserStoreState } from '../interfaces'
 import { passwordEncrypt } from '../utils/passwordHash'
 
 const initialState: IUserStoreState = {
-  userData: {} as IUserStore,
+  userData: null,
   userIsLoading: false,
   userError: null,
 }
@@ -22,7 +22,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     logoutUser: (state) => {
-      state.userData = {} as IUserStore
+      state.userData = null
     },
   },
   extraReducers: (builder) => {
