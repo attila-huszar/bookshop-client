@@ -18,7 +18,7 @@ export const RegistrationSchema = Yup.object().shape({
     )
     .required('Required'),
   email: Yup.string()
-    .min(5, 'Min 5 characters')
+    .min(5, 'Invalid Email')
     .max(320, 'Max 320 characters')
     .email('Invalid Email')
     .required('Required'),
@@ -34,5 +34,13 @@ export const RegistrationSchema = Yup.object().shape({
     .required('Required'),
   passwordConfirmation: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Required'),
+})
+
+export const LoginSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid Email').required('Required'),
+  password: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
     .required('Required'),
 })

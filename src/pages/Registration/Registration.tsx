@@ -1,21 +1,21 @@
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { StyledRegistration, Label, ButtonWrapper } from './Registration.styles'
-import { Button } from '../../components'
+import { Label, ButtonWrapper } from '../../styles/Form.styles'
+import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { RegistrationSchema } from '../../utils/validationSchema'
 import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
-import { FieldCustomStyle } from './FieldCustomStyle'
-import { useAppDispatch } from '../../hooks'
-import { registerUser, getUser } from '../../store/userSlice'
+import { useAppDispatch, useLocalStorage } from '../../hooks'
+import { registerUser, loginUser } from '../../store/userSlice'
+import toast from 'react-hot-toast'
 
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { setToLocalStorage } = useLocalStorage()
 
   return (
-    <StyledRegistration>
-      <h2>User Registration</h2>
+    <AuthorizationMenu>
       <Formik
         initialValues={{
           firstName: '',
@@ -26,6 +26,7 @@ export function Registration() {
           passwordConfirmation: '',
         }}
         validationSchema={RegistrationSchema}
+        validateOnBlur={false}
         onSubmit={(values, actions) => {
           const user = {
             uuid: uuidv4() as string,
@@ -36,32 +37,41 @@ export function Registration() {
             password: passwordEncrypt(values.password),
           }
 
-          dispatch(registerUser(user)).then(() =>
-            dispatch(
-              getUser({ email: values.email, password: values.password }),
-            ).then((res) => {
-              if (res.meta.requestStatus === 'fulfilled') {
-                navigate('/', { replace: true })
+          dispatch(registerUser(user))
+            .then((registerResponse) => {
+              if (registerResponse.meta.requestStatus === 'fulfilled') {
+                dispatch(
+                  loginUser({ email: values.email, password: values.password }),
+                ).then((loginResponse) => {
+                  if (loginResponse.meta.requestStatus === 'fulfilled') {
+                    setToLocalStorage('uuid', loginResponse.payload.uuid)
+                    navigate('/', { replace: true })
+                    toast.success(
+                      `${loginResponse.payload.email} registered successfully! You are now logged in!`,
+                    )
+                  } else if (loginResponse.meta.requestStatus === 'rejected') {
+                    toast.error('Login failed')
+                  }
+                })
+              } else if (registerResponse.meta.requestStatus === 'rejected') {
+                toast.error(registerResponse.payload)
+              } else {
+                toast.error('Registration Failed')
               }
-            }),
-          )
+            })
 
-          const timeOut = setTimeout(() => {
-            actions.setSubmitting(false)
-
-            clearTimeout(timeOut)
-          }, 500)
+            .finally(() => actions.setSubmitting(false))
         }}>
-        {({ isValid, isSubmitting }) => (
+        {({ isSubmitting }) => (
           <Form>
             <Label>First Name</Label>
-            <FieldCustomStyle name="firstName" placeholder="First Name" />
+            <FormikField name="firstName" placeholder="First Name" focus />
 
             <Label>Last Name</Label>
-            <FieldCustomStyle name="lastName" placeholder="Last Name" />
+            <FormikField name="lastName" placeholder="Last Name" />
 
             <Label>Email</Label>
-            <FieldCustomStyle
+            <FormikField
               name="email"
               placeholder="Email"
               type="email"
@@ -69,21 +79,21 @@ export function Registration() {
             />
 
             <Label>Password</Label>
-            <FieldCustomStyle
+            <FormikField
               name="password"
               placeholder="Password"
               type="password"
             />
 
             <Label>Password Confirm</Label>
-            <FieldCustomStyle
+            <FormikField
               name="passwordConfirmation"
               placeholder="Confirm Password"
               type="password"
             />
 
             <Label>Phone</Label>
-            <FieldCustomStyle
+            <FormikField
               name="phone"
               placeholder="Phone"
               type="tel"
@@ -91,13 +101,13 @@ export function Registration() {
             />
 
             <ButtonWrapper>
-              <Button type="submit" disabled={!isValid || isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>
             </ButtonWrapper>
           </Form>
         )}
       </Formik>
-    </StyledRegistration>
+    </AuthorizationMenu>
   )
 }

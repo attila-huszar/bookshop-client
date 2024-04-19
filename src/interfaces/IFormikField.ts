@@ -1,11 +1,3 @@
-export type RegistrationTypes = React.DetailedHTMLProps<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  HTMLInputElement
-> & {
-  $valid: boolean
-  $error: string | false | undefined
-}
-
 export interface IFormikField {
   name: string
   placeholder: string
@@ -20,4 +12,5 @@ export interface IFormikField {
     | 'numeric'
     | 'decimal'
     | undefined
+  focus?: boolean
 }

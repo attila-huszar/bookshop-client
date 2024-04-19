@@ -21,7 +21,7 @@ export interface INewsStoreState {
 }
 
 export interface IUserStoreState {
-  userData: IUserStore
+  userData: IUserStore | null
   userIsLoading: boolean
   userError: SerializedError | null
 }
