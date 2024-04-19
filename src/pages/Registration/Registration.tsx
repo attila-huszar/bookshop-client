@@ -1,7 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button } from '../../components'
+import {
+  AuthorizationMenu,
+  FormikField,
+  Button,
+  ImageUpload,
+} from '../../components'
 import { RegistrationSchema } from '../../utils/validationSchema'
 import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
@@ -59,7 +64,6 @@ export function Registration() {
                 toast.error('Registration Failed')
               }
             })
-
             .finally(() => actions.setSubmitting(false))
         }}>
         {({ isSubmitting }) => (
@@ -99,6 +103,8 @@ export function Registration() {
               type="tel"
               inputMode="numeric"
             />
+
+            <ImageUpload />
 
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
