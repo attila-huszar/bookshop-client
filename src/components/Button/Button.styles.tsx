@@ -37,4 +37,11 @@ export const StyledButton = styled.button<StyleTypes>`
     color: var(--generalColor);
     background-color: #fff;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    color: #fff;
+    background-color: #ffe999;
+    outline: 3px solid #ffe999;
+  }
 `

@@ -32,7 +32,7 @@ export function Menu() {
 
   return (
     <StyledMenu ref={menuRef}>
-      <IconButton onClick={toggleMenu} icon={<MenuIcon />} label="Menu" />
+      <IconButton onClick={toggleMenu} icon={<MenuIcon />} title="Menu" />
       <Dropdown $show={menuOpen}>
         <DropdownList>
           {menuLinks.map((link) => (

@@ -5,8 +5,8 @@ export type StyleTypes = {
   $withCart?: boolean
 }
 
-export type ButtonTypes = StyleTypes & {
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
-  children: React.ReactNode
-  label?: string
-}
+export type ButtonTypes = React.DetailedHTMLProps<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+> &
+  StyleTypes
