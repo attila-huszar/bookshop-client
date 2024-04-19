@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Field, FieldInputProps, FieldMetaProps } from 'formik'
 import { InputWrapper, Input, ErrorMessage } from '../../styles/Form.styles'
 import { IFormikField } from '../../interfaces'
@@ -7,10 +8,18 @@ export function FormikField({
   placeholder,
   type,
   inputMode,
-  autoFocus,
+  focus,
 }: IFormikField) {
+  const formikRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (focus && formikRef.current) {
+      formikRef.current.focus()
+    }
+  }, [focus, formikRef])
+
   return (
-    <Field name={name} autoFocus={autoFocus}>
+    <Field name={name}>
       {({
         field,
         meta,
@@ -25,6 +34,7 @@ export function FormikField({
             placeholder={placeholder}
             type={type}
             inputMode={inputMode}
+            ref={formikRef}
             {...field}
           />
           {meta.touched && meta.error && (

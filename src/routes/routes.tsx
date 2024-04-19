@@ -3,7 +3,8 @@ import {
   Home,
   Products,
   Product,
-  LoginAndRegister,
+  Registration,
+  Login,
   NotFound,
 } from '../pages'
 import { BOOKS, REGISTRATION, LOGIN } from './pathConstants'
@@ -27,11 +28,11 @@ export const routes = [
       },
       {
         path: REGISTRATION,
-        element: <LoginAndRegister />,
+        element: <Registration />,
       },
       {
         path: LOGIN,
-        element: <LoginAndRegister />,
+        element: <Login />,
       },
       {
         path: '*',

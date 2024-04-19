@@ -18,7 +18,7 @@ export const RegistrationSchema = Yup.object().shape({
     )
     .required('Required'),
   email: Yup.string()
-    .min(5, 'Min 5 characters')
+    .min(5, 'Invalid Email')
     .max(320, 'Max 320 characters')
     .email('Invalid Email')
     .required('Required'),

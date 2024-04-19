@@ -12,5 +12,5 @@ export interface IFormikField {
     | 'numeric'
     | 'decimal'
     | undefined
-  autoFocus?: boolean
+  focus?: boolean
 }
