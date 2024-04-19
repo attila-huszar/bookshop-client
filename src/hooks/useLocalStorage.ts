@@ -1,18 +1,22 @@
 export const useLocalStorage = () => {
-  const localStore = (key: string): string | null => {
+  const getFromLocalStorage = (key: string): string | null => {
     return JSON.parse(localStorage.getItem(key) as string)
   }
 
-  const setLocalStore = (
+  const setToLocalStorage = (
     key: string,
     value: string | number | boolean,
   ): void => {
     localStorage.setItem(key, JSON.stringify(value))
   }
 
-  const removeLocalStore = (key: string): void => {
+  const removeFromLocalStorage = (key: string): void => {
     localStorage.removeItem(key)
   }
 
-  return { localStore, setLocalStore, removeLocalStore }
+  return {
+    getFromLocalStorage,
+    setToLocalStorage,
+    removeFromLocalStorage,
+  }
 }

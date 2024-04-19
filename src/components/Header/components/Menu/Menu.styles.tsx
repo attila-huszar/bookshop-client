@@ -47,6 +47,10 @@ export const DropdownList = styled.ul`
   li:last-child {
     border-radius: 0 0 5px 5px;
   }
+
+  & a {
+    display: block;
+  }
 `
 
 export const MenuItem = styled.div`

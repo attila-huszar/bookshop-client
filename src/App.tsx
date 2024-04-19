@@ -13,8 +13,8 @@ import GlobalStyle from './styles/Global.styles'
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
-  const { localStore } = useLocalStorage()
-  const uuid = localStore('uuid')
+  const { getFromLocalStorage } = useLocalStorage()
+  const uuid = getFromLocalStorage('uuid')
 
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {

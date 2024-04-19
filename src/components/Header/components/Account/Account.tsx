@@ -10,7 +10,7 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { accountLinks } from '../../../../lib/menuLinks'
+import { logoutLink } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
 import AccountLoggedInIcon from '../../../../assets/svg/account_loggedin.svg?react'
 import toast from 'react-hot-toast'
@@ -22,7 +22,7 @@ export function Account() {
   const menuRef = useRef<HTMLDivElement>(null)
   const user = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
-  const { removeLocalStore } = useLocalStorage()
+  const { removeFromLocalStorage } = useLocalStorage()
   const navigate = useNavigate()
 
   const toggleMenu = () => {
@@ -67,21 +67,21 @@ export function Account() {
             </li>
             <li>
               <Link
-                to={accountLinks[1].path}
+                to={logoutLink.path}
                 onClick={() => {
                   toggleMenu()
-                  removeLocalStore('uuid')
+                  removeFromLocalStorage('uuid')
                   toast.success(`${user.email} successfully logged out`)
                   dispatch(logoutUser())
                 }}>
                 <MenuItem>
                   <img
-                    src={accountLinks[1].icon}
-                    alt={accountLinks[1].name}
+                    src={logoutLink.icon}
+                    alt={logoutLink.name}
                     width={24}
                     height={22}
                   />
-                  <span>{accountLinks[1].name}</span>
+                  <span>{logoutLink.name}</span>
                 </MenuItem>
               </Link>
             </li>

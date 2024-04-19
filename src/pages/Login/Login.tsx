@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { setLocalStore } = useLocalStorage()
+  const { setToLocalStorage } = useLocalStorage()
 
   return (
     <AuthorizationMenu>
@@ -29,7 +29,7 @@ export function Login() {
               if (response.meta.requestStatus === 'fulfilled') {
                 navigate('/', { replace: true })
                 toast.success(`Welcome back, ${response.payload.firstName}!`)
-                setLocalStore('uuid', response.payload.uuid)
+                setToLocalStorage('uuid', response.payload.uuid)
               } else {
                 toast.error(response.payload)
               }

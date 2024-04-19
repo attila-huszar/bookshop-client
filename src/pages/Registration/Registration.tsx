@@ -12,7 +12,7 @@ import toast from 'react-hot-toast'
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { setLocalStore } = useLocalStorage()
+  const { setToLocalStorage } = useLocalStorage()
 
   return (
     <AuthorizationMenu>
@@ -44,7 +44,7 @@ export function Registration() {
                   loginUser({ email: values.email, password: values.password }),
                 ).then((loginResponse) => {
                   if (loginResponse.meta.requestStatus === 'fulfilled') {
-                    setLocalStore('uuid', loginResponse.payload.uuid)
+                    setToLocalStorage('uuid', loginResponse.payload.uuid)
                     navigate('/', { replace: true })
                     toast.success(
                       `${loginResponse.payload.email} registered successfully! You are now logged in!`,
