@@ -61,17 +61,29 @@ export const loginUser = createAsyncThunk(
       if (response && response.password === passwordEncrypt(user.password)) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPass } = response
-
         return userWithoutPass
       } else {
-        throw rejectWithValue('Username or password incorrect')
+        throw rejectWithValue('Username or password is incorrect')
       }
     }),
 )
 
 export const registerUser = createAsyncThunk(
   'registerUser',
-  (user: IUser, { rejectWithValue }) => postUserRegister(user, rejectWithValue),
+  async (user: IUser, { rejectWithValue }) => {
+    const response = await getUserByEmail(user.email, rejectWithValue)
+
+    if (!response) {
+      const registerResponse = await postUserRegister(user, rejectWithValue)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPass } = registerResponse
+      return userWithoutPass
+    } else if (response.email === user.email) {
+      throw rejectWithValue(`${user.email} is already registered!`)
+    } else {
+      throw rejectWithValue('Something went wrong')
+    }
+  },
 )
 
 export const getUserByID = createAsyncThunk(

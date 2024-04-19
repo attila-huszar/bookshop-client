@@ -38,20 +38,23 @@ export function Registration() {
           }
 
           dispatch(registerUser(user))
+            .then((response) => {
+              if (response.meta.requestStatus === 'fulfilled') {
+                navigate('/', { replace: true })
+                toast.success(
+                  `${response.payload.email} registered successfully! You are now logged in!`,
+                )
+                setLocalStore('uuid', response.payload.uuid)
+              } else if (response.meta.requestStatus === 'rejected') {
+                toast.error(response.payload)
+              } else {
+                toast.error('Registration Failed')
+              }
+            })
             .then(() =>
               dispatch(
                 loginUser({ email: values.email, password: values.password }),
-              ).then((response) => {
-                if (response.meta.requestStatus === 'fulfilled') {
-                  navigate('/', { replace: true })
-                  toast.success(
-                    `${response.payload.email} registered successfully! You are now logged in!`,
-                  )
-                  setLocalStore('uuid', response.payload.uuid)
-                } else {
-                  toast.error('Registration Failed')
-                }
-              }),
+              ),
             )
             .finally(() => actions.setSubmitting(false))
         }}>
