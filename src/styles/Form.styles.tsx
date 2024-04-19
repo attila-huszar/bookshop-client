@@ -82,5 +82,5 @@ type FormTypes = React.DetailedHTMLProps<
   HTMLInputElement
 > & {
   $valid: boolean
-  $error: string | false | undefined
+  $error: boolean | string | undefined
 }

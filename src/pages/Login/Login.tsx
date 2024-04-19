@@ -36,7 +36,7 @@ export function Login() {
             })
             .finally(() => actions.setSubmitting(false))
         }}>
-        {({ isValid, isSubmitting }) => (
+        {({ isSubmitting }) => (
           <Form>
             <Label>Email</Label>
             <FormikField
@@ -55,7 +55,7 @@ export function Login() {
             />
 
             <ButtonWrapper>
-              <Button type="submit" disabled={!isValid || isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
             </ButtonWrapper>

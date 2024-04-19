@@ -55,7 +55,7 @@ export function Registration() {
             )
             .finally(() => actions.setSubmitting(false))
         }}>
-        {({ isValid, isSubmitting }) => (
+        {({ isSubmitting }) => (
           <Form>
             <Label>First Name</Label>
             <FormikField name="firstName" placeholder="First Name" focus />
@@ -94,7 +94,7 @@ export function Registration() {
             />
 
             <ButtonWrapper>
-              <Button type="submit" disabled={!isValid || isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>
             </ButtonWrapper>
