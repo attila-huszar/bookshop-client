@@ -38,24 +38,28 @@ export function Registration() {
           }
 
           dispatch(registerUser(user))
-            .then((response) => {
-              if (response.meta.requestStatus === 'fulfilled') {
-                navigate('/', { replace: true })
-                toast.success(
-                  `${response.payload.email} registered successfully! You are now logged in!`,
-                )
-                setLocalStore('uuid', response.payload.uuid)
-              } else if (response.meta.requestStatus === 'rejected') {
-                toast.error(response.payload)
+            .then((registerResponse) => {
+              if (registerResponse.meta.requestStatus === 'fulfilled') {
+                dispatch(
+                  loginUser({ email: values.email, password: values.password }),
+                ).then((loginResponse) => {
+                  if (loginResponse.meta.requestStatus === 'fulfilled') {
+                    setLocalStore('uuid', loginResponse.payload.uuid)
+                    navigate('/', { replace: true })
+                    toast.success(
+                      `${loginResponse.payload.email} registered successfully! You are now logged in!`,
+                    )
+                  } else if (loginResponse.meta.requestStatus === 'rejected') {
+                    toast.error('Login failed')
+                  }
+                })
+              } else if (registerResponse.meta.requestStatus === 'rejected') {
+                toast.error(registerResponse.payload)
               } else {
                 toast.error('Registration Failed')
               }
             })
-            .then(() =>
-              dispatch(
-                loginUser({ email: values.email, password: values.password }),
-              ),
-            )
+
             .finally(() => actions.setSubmitting(false))
         }}>
         {({ isSubmitting }) => (
