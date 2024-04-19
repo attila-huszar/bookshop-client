@@ -10,7 +10,7 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { logoutLink } from '../../../../lib/menuLinks'
+import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
 import AccountLoggedInIcon from '../../../../assets/svg/account_loggedin.svg?react'
 import toast from 'react-hot-toast'
@@ -58,9 +58,9 @@ export function Account() {
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
-              <Link to={'/account'} onClick={toggleMenu}>
+              <Link to={userAccountLink.path} onClick={toggleMenu}>
                 <MenuItem>
-                  <AccountLoggedInIcon width={24} height={22} />
+                  <img src={userAccountLink.icon} width={24} height={22} />
                   <span>{user.firstName}</span>
                 </MenuItem>
               </Link>
