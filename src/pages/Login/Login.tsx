@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
-import { LoginSchema } from '../../utils/validationSchema'
+import { loginSchema } from '../../utils/validationSchema'
 import { useAppDispatch, useLocalStorage } from '../../hooks'
 import { loginUser } from '../../store/userSlice'
 import toast from 'react-hot-toast'
+import { loginInitialValues } from '../../lib/defaultValues'
 
 export function Login() {
   const dispatch = useAppDispatch()
@@ -15,11 +16,8 @@ export function Login() {
   return (
     <AuthorizationMenu>
       <Formik
-        initialValues={{
-          email: '',
-          password: '',
-        }}
-        validationSchema={LoginSchema}
+        initialValues={loginInitialValues}
+        validationSchema={loginSchema}
         validateOnBlur={false}
         onSubmit={(values, actions): void => {
           dispatch(

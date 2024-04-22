@@ -6,7 +6,9 @@ import {
 import {
   getUserByEmail,
   getUserByUUID,
+  postUserImg,
   postUserRegister,
+  putUser,
 } from '../api/fetchData'
 import { IUser, IUserStoreState } from '../interfaces'
 import { passwordEncrypt } from '../utils/passwordHash'
@@ -99,6 +101,36 @@ export const getUserByID = createAsyncThunk(
         throw rejectWithValue('User not found')
       }
     }),
+)
+
+export const uploadImage = createAsyncThunk(
+  'uploadImage',
+  (file: File, { rejectWithValue }) =>
+    postUserImg(file, rejectWithValue).then((imageResponse) => {
+      if (imageResponse.url) {
+        return imageResponse
+      } else {
+        throw rejectWithValue('Image upload failed')
+      }
+    }),
+)
+
+export const updateAvatar = createAsyncThunk(
+  'updateUser',
+  async (user: { uuid: string; avatar: string }, { rejectWithValue }) => {
+    const userResponse = await getUserByUUID(user.uuid, rejectWithValue)
+
+    if (userResponse) {
+      const updatedUser = await putUser(
+        { ...userResponse, avatar: user.avatar },
+        rejectWithValue,
+      )
+
+      return updatedUser
+    } else {
+      throw rejectWithValue('User not found')
+    }
+  },
 )
 
 export const userReducer = userSlice.reducer

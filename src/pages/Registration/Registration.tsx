@@ -1,18 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
-import {
-  AuthorizationMenu,
-  FormikField,
-  Button,
-  ImageUpload,
-} from '../../components'
-import { RegistrationSchema } from '../../utils/validationSchema'
+import { AuthorizationMenu, FormikField, Button } from '../../components'
+import { registrationSchema } from '../../utils/validationSchema'
 import { passwordEncrypt } from '../../utils/passwordHash'
 import { v4 as uuidv4 } from 'uuid'
 import { useAppDispatch, useLocalStorage } from '../../hooks'
-import { registerUser, loginUser } from '../../store/userSlice'
+import {
+  registerUser,
+  loginUser,
+  uploadImage,
+  updateAvatar,
+} from '../../store/userSlice'
 import toast from 'react-hot-toast'
+import { registrationInitialValues } from '../../lib/defaultValues'
 
 export function Registration() {
   const dispatch = useAppDispatch()
@@ -22,15 +23,8 @@ export function Registration() {
   return (
     <AuthorizationMenu>
       <Formik
-        initialValues={{
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          password: '',
-          passwordConfirmation: '',
-        }}
-        validationSchema={RegistrationSchema}
+        initialValues={registrationInitialValues}
+        validationSchema={registrationSchema}
         validateOnBlur={false}
         onSubmit={(values, actions) => {
           const user = {
@@ -40,11 +34,24 @@ export function Registration() {
             email: values.email,
             phone: values.phone,
             password: passwordEncrypt(values.password),
+            avatar: values.avatar,
           }
 
           dispatch(registerUser(user))
             .then((registerResponse) => {
               if (registerResponse.meta.requestStatus === 'fulfilled') {
+                if (values.avatar) {
+                  dispatch(uploadImage(values.avatar as unknown as File)).then(
+                    (imageResponse) =>
+                      dispatch(
+                        updateAvatar({
+                          uuid: user.uuid,
+                          avatar: imageResponse.payload.url,
+                        }),
+                      ),
+                  )
+                }
+
                 dispatch(
                   loginUser({ email: values.email, password: values.password }),
                 ).then((loginResponse) => {
@@ -64,7 +71,9 @@ export function Registration() {
                 toast.error('Registration Failed')
               }
             })
-            .finally(() => actions.setSubmitting(false))
+            .finally(() => {
+              actions.setSubmitting(false)
+            })
         }}>
         {({ isSubmitting }) => (
           <Form>
@@ -104,7 +113,8 @@ export function Registration() {
               inputMode="numeric"
             />
 
-            <ImageUpload />
+            <Label>Upload Avatar</Label>
+            <FormikField name="avatar" type="file" />
 
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
