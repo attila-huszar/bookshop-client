@@ -33,9 +33,9 @@ export const StyledIconButton = styled.button<StyleTypes>`
 
   svg {
     height: ${({ $iconSize = 'md', $bordered }) =>
-      $bordered ? '36px' : iconHeight[$iconSize]};
+      $bordered ? '38px' : iconHeight[$iconSize]};
     width: ${({ $iconSize = 'md', $bordered }) =>
-      $bordered ? '36px' : iconWidth[$iconSize]};
+      $bordered ? '38px' : iconWidth[$iconSize]};
     border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
   }
 `

@@ -10,13 +10,16 @@ import {
   postUserRegister,
   putUser,
 } from '../api/fetchData'
-import { IUser, IUserStoreState } from '../interfaces'
-import { passwordEncrypt } from '../utils/passwordHash'
+import { IUpdateUser, IUser, IUserStoreState } from '../interfaces'
+import { passwordEncrypt } from '../utils/passwordEncrypt'
 
 const initialState: IUserStoreState = {
   userData: null,
+  userIsVerified: false,
   userIsLoading: false,
   userError: null,
+  loginError: null,
+  registerError: null,
 }
 
 const userSlice = createSlice({
@@ -29,20 +32,55 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(registerUser.pending, (state) => {
+        state.userIsLoading = true
+        state.registerError = null
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.userIsLoading = false
+        state.userData = action.payload
+        state.userIsVerified = true
+        state.registerError = null
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.userIsLoading = false
+        state.userIsVerified = false
+        state.registerError = action.payload as SerializedError
+      })
+
       .addCase(loginUser.pending, (state) => {
         state.userIsLoading = true
+        state.loginError = null
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.userIsLoading = false
         state.userData = action.payload
-        state.userError = null
+        state.loginError = null
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.userIsLoading = false
-        state.userError = action.payload as SerializedError
+        state.loginError = action.payload as SerializedError
+        state.userData = null
       })
+
+      .addCase(updateUser.pending, (state) => {
+        state.userIsLoading = true
+        state.userError = null
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.userIsLoading = false
+        state.userData = action.payload
+        state.userError = null
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.userIsLoading = false
+        state.userError = action.payload as SerializedError
+        state.userData = null
+      })
+
       .addCase(getUserByID.pending, (state) => {
         state.userIsLoading = true
+        state.userError = null
       })
       .addCase(getUserByID.fulfilled, (state, action) => {
         state.userIsLoading = false
@@ -52,9 +90,7 @@ const userSlice = createSlice({
       .addCase(getUserByID.rejected, (state, action) => {
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
-      })
-      .addCase(updateAvatar.fulfilled, (state, action) => {
-        state.userData = action.payload
+        state.userData = null
       })
   },
 })
@@ -86,7 +122,7 @@ export const registerUser = createAsyncThunk(
     } else if (response.email === user.email) {
       throw rejectWithValue(`${user.email} is already taken!`)
     } else {
-      throw rejectWithValue('Something went wrong')
+      throw rejectWithValue('Registration Failed')
     }
   },
 )
@@ -118,14 +154,14 @@ export const uploadImage = createAsyncThunk(
     }),
 )
 
-export const updateAvatar = createAsyncThunk(
-  'updateAvatar',
-  async (user: { uuid: string; avatar: string }, { rejectWithValue }) => {
-    const userResponse = await getUserByUUID(user.uuid, rejectWithValue)
+export const updateUser = createAsyncThunk(
+  'updateUser',
+  async ({ uuid, field, value }: IUpdateUser, { rejectWithValue }) => {
+    const userResponse = await getUserByUUID(uuid, rejectWithValue)
 
     if (userResponse) {
       const updatedUser = await putUser(
-        { ...userResponse, avatar: user.avatar },
+        { ...userResponse, [field]: value },
         rejectWithValue,
       )
 

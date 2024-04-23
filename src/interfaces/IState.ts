@@ -22,6 +22,9 @@ export interface INewsStoreState {
 
 export interface IUserStoreState {
   userData: IUserStore | null
+  userIsVerified: boolean
   userIsLoading: boolean
   userError: SerializedError | null
+  loginError: SerializedError | null
+  registerError: SerializedError | null
 }
