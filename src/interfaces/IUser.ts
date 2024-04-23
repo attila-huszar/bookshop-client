@@ -7,7 +7,7 @@ export interface IUser {
   password: string
   createdAt?: Date
   updatedAt?: Date
-  avatar?: string
+  avatar?: string | null
   id?: number
 }
 

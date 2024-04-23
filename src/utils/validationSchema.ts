@@ -66,7 +66,8 @@ export const registrationSchema = Yup.object().shape({
     )
     .test('is-valid-size', 'Max size is 500KB', (file) =>
       isValidFileSize(file as File, MAX_FILE_SIZE),
-    ),
+    )
+    .nullable(),
 })
 
 export const loginSchema = Yup.object().shape({

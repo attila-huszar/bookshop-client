@@ -16,17 +16,26 @@ const iconWidth = {
 export const StyledIconButton = styled.button<StyleTypes>`
   display: flex;
   align-items: center;
-  height: ${({ $iconSize = 'md' }) => iconHeight[$iconSize]};
-  width: ${({ $iconSize = 'md' }) => iconWidth[$iconSize]};
-  padding: 0;
-  color: var(--textColor);
+  padding: 3px;
+  color: var(--black);
   background: none;
   border: none;
   outline: none;
   cursor: pointer;
   transition: all 0.2s ease-out;
+  border: ${({ $bordered }) =>
+    $bordered ? '2px solid var(--secondary-color)' : undefined};
+  border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
 
   &:hover {
-    color: var(--generalColor);
+    color: var(--secondary-color);
+  }
+
+  svg {
+    height: ${({ $iconSize = 'md', $bordered }) =>
+      $bordered ? '36px' : iconHeight[$iconSize]};
+    width: ${({ $iconSize = 'md', $bordered }) =>
+      $bordered ? '36px' : iconWidth[$iconSize]};
+    border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
   }
 `

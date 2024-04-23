@@ -1,5 +1,6 @@
 export type StyleTypes = {
   $iconSize?: 'sm' | 'md' | 'lg'
+  $bordered?: boolean
 }
 
 export type IconButtonTypes = React.DetailedHTMLProps<

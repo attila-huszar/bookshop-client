@@ -24,17 +24,17 @@ export const StyledButton = styled.button<StyleTypes>`
   font-size: ${({ $textSize = 'md' }) => textSize[$textSize]};
   font-weight: 700;
   color: #fff;
-  background-color: var(--generalColor);
+  background-color: var(--primary-color);
   box-shadow: ${({ $shadowed }) =>
     $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
   border: none;
   border-radius: 10px;
-  outline: 3px solid var(--generalColor);
+  outline: 3px solid var(--primary-color);
   cursor: pointer;
   transition: all 0.2s ease-out;
 
   &:hover {
-    color: var(--generalColor);
+    color: var(--primary-color);
     background-color: #fff;
   }
 

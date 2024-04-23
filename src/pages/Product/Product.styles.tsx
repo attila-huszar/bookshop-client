@@ -71,7 +71,7 @@ export const Author = styled.p`
   font-size: 1.5rem;
   font-weight: 700;
   text-wrap: balance;
-  color: var(--textGreyColor);
+  color: var(--grey);
 
   &:empty::before {
     content: '';
@@ -92,7 +92,7 @@ export const Description = styled.div`
 
   p {
     font-size: 1.25rem;
-    color: var(--textGreyColor);
+    color: var(--grey);
   }
 `
 

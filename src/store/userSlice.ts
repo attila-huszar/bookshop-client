@@ -53,6 +53,9 @@ const userSlice = createSlice({
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
       })
+      .addCase(updateAvatar.fulfilled, (state, action) => {
+        state.userData = action.payload
+      })
   },
 })
 
@@ -116,7 +119,7 @@ export const uploadImage = createAsyncThunk(
 )
 
 export const updateAvatar = createAsyncThunk(
-  'updateUser',
+  'updateAvatar',
   async (user: { uuid: string; avatar: string }, { rejectWithValue }) => {
     const userResponse = await getUserByUUID(user.uuid, rejectWithValue)
 
@@ -126,7 +129,9 @@ export const updateAvatar = createAsyncThunk(
         rejectWithValue,
       )
 
-      return updatedUser
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = updatedUser
+      return userWithoutPassword
     } else {
       throw rejectWithValue('User not found')
     }

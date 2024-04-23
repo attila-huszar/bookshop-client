@@ -2,17 +2,19 @@ import styled from 'styled-components'
 
 export const StyledAvatar = styled.button`
   display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
   background-color: transparent;
   border-radius: 50%;
-  border: 2px solid var(--generalColor);
-  overflow: hidden;
+  border: 2px solid var(--secondary-color);
   cursor: pointer;
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    background-color: var(--light-grey);
+  }
 
   img {
+    padding: 2px;
     border-radius: 50%;
+    overflow: hidden;
   }
 `

@@ -12,7 +12,7 @@ import {
 } from '../Menu/Menu.styles'
 import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
-import accountDefaultIcon from '../../../../assets/svg/account_loggedin.svg'
+import AccountDefaultIcon from '../../../../assets/svg/account_default.svg?react'
 import toast from 'react-hot-toast'
 import { useLocalStorage } from '../../../../hooks'
 import { LOGIN } from '../../../../routes/pathConstants'
@@ -50,17 +50,25 @@ export function Account() {
   return (
     <StyledMenu ref={menuRef}>
       {user ? (
-        <Avatar
-          imgUrl={user.avatar || accountDefaultIcon}
-          onClick={toggleMenu}
-          title={user.firstName}
-        />
+        typeof user.avatar === 'string' ? (
+          <Avatar
+            imgUrl={user.avatar}
+            onClick={toggleMenu}
+            title={user.firstName}
+          />
+        ) : (
+          <IconButton
+            onClick={toggleMenu}
+            icon={<AccountDefaultIcon />}
+            title={user.firstName}
+            $bordered
+          />
+        )
       ) : (
         <IconButton
           onClick={() => navigate(LOGIN)}
           icon={<AccountIcon />}
           title={'Account'}
-          $iconSize="sm"
         />
       )}
       {user && (

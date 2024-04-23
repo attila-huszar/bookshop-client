@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
@@ -20,6 +21,10 @@ export function Registration() {
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
     <AuthorizationMenu>
       <Formik
@@ -41,14 +46,13 @@ export function Registration() {
             .then((registerResponse) => {
               if (registerResponse.meta.requestStatus === 'fulfilled') {
                 if (values.avatar) {
-                  dispatch(uploadImage(values.avatar as unknown as File)).then(
-                    (imageResponse) =>
-                      dispatch(
-                        updateAvatar({
-                          uuid: user.uuid,
-                          avatar: imageResponse.payload.url,
-                        }),
-                      ),
+                  dispatch(uploadImage(values.avatar)).then((imageResponse) =>
+                    dispatch(
+                      updateAvatar({
+                        uuid: user.uuid,
+                        avatar: imageResponse.payload.url,
+                      }),
+                    ),
                   )
                 }
 

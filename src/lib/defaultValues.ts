@@ -10,5 +10,5 @@ export const registrationInitialValues = {
   phone: '',
   password: '',
   passwordConfirmation: '',
-  avatar: '',
+  avatar: null,
 }

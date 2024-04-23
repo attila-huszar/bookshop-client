@@ -105,9 +105,10 @@ export const postUserImg = async (
   img: File,
   rejectWithValue: (value: unknown) => void,
 ) => {
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload/bookstore/avatar`
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`
   const formData = new FormData()
   formData.append('upload_preset', unsignedUploadPreset)
+  formData.append('folder', '/bookstore/avatars')
   formData.append('file', img)
 
   try {

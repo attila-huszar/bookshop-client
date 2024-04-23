@@ -19,7 +19,7 @@ export const Strikethrough = styled.span`
   position: relative;
   margin-left: 2rem;
   font-size: inherit;
-  color: var(--textGreyColor);
+  color: var(--grey);
 
   &::after {
     content: '';

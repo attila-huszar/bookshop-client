@@ -18,7 +18,7 @@ export const Details = styled.div`
   div {
     width: 64px;
     margin-bottom: 1rem;
-    border-bottom: 3px solid var(--generalColor);
+    border-bottom: 3px solid var(--primary-color);
   }
 
   p {

@@ -32,7 +32,7 @@ export const ExtraSpace = styled.div`
     height: 20px;
     width: 20px;
     border-top-left-radius: 20px;
-    box-shadow: -20px -20px 0 20px var(--edgeColor);
+    box-shadow: -20px -20px 0 20px var(--secondary-color);
   }
 
   &::after {
@@ -43,6 +43,6 @@ export const ExtraSpace = styled.div`
     height: 20px;
     width: 20px;
     border-top-right-radius: 20px;
-    box-shadow: 20px -20px 0 20px var(--edgeColor);
+    box-shadow: 20px -20px 0 20px var(--secondary-color);
   }
 `

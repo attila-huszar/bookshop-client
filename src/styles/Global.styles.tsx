@@ -13,15 +13,14 @@ export default createGlobalStyle`
   }
 
   #root {
-    --bgColor: #fff;
-    --bgMobileColor: #f3f3f3;
+    --primary-color: #ffce1a;
+    --secondary-color: #ecb346;
+    --white: #fdfdfd;
+    --whitesmoke: #f3f3f3;
     --light-grey: #eaeaea;
-    --edgeColor: #ecb346;
-    --generalColor: #ffce1a;
-    --textColor: #0d0842;
-    --textLightColor: #fffff8;
-    --textGreyColor: #6c6c6c;
-    --favoriteColor: #ff5841;
+    --grey: #6c6c6c;
+    --black: #0d0842;
+    --orange: #ff5841;
   }
 
   body {
@@ -30,6 +29,6 @@ export default createGlobalStyle`
 
   a { 
     text-decoration: none;
-    color: var(--textColor);
+    color: var(--black);
   }
 `

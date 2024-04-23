@@ -26,7 +26,7 @@ export const FormChangeLinks = styled.div`
   }
 
   a:hover {
-    color: var(--edgeColor);
+    color: var(--secondary-color);
   }
 
   a.active {

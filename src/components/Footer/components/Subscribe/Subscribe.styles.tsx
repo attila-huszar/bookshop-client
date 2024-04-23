@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const SubscribeForm = styled.form`
   display: flex;
   margin-top: 3.5rem;
-  border: 2px solid var(--generalColor);
+  border: 2px solid var(--primary-color);
   border-radius: 10px;
   overflow: hidden;
 
@@ -22,12 +22,12 @@ export const SubscribeForm = styled.form`
     font-size: 1rem;
     font-weight: 700;
     color: #fff;
-    background-color: var(--generalColor);
+    background-color: var(--primary-color);
     cursor: pointer;
     transition: all 0.2s ease-out;
 
     &:hover {
-      color: var(--generalColor);
+      color: var(--primary-color);
       background-color: #fff;
     }
   }
