@@ -1,14 +1,35 @@
 import styled from 'styled-components'
 
-export const StyledPriceCard = styled.p`
+export const StyledPriceCard = styled.div`
   font-size: 1.125rem;
+
+  p {
+    display: flex;
+    gap: 2rem;
+  }
 `
 
-export const StyledPriceProduct = styled.p`
+export const StyledPriceProduct = styled.div`
   font-size: 1.25rem;
   grid-column: 3 / 4;
   grid-row: 1 / 3;
   align-self: center;
+
+  p {
+    display: flex;
+    gap: 2rem;
+  }
+`
+
+export const StyledPriceCart = styled.div`
+  display: flex;
+  flex-direction: row-reverse;
+  font-size: 1.125rem;
+
+  p {
+    display: grid;
+    justify-items: end;
+  }
 `
 
 export const Currency = styled.span`
@@ -17,7 +38,6 @@ export const Currency = styled.span`
 
 export const Strikethrough = styled.span`
   position: relative;
-  margin-left: 2rem;
   font-size: inherit;
   color: var(--grey);
 

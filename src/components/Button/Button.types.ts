@@ -3,6 +3,7 @@ export type StyleTypes = {
   $padding?: 'sm' | 'md' | 'lg' | 'wide'
   $shadowed?: boolean
   $withCart?: boolean
+  $inverted?: boolean
 }
 
 export type ButtonTypes = React.DetailedHTMLProps<

@@ -16,11 +16,12 @@ export default createGlobalStyle`
     --primary-color: #ffce1a;
     --secondary-color: #ecb346;
     --white: #fdfdfd;
-    --whitesmoke: #fafafa;
+    --whitesmoke: #f7f7f7;
     --light-grey: #eaeaea;
-    --grey: #6c6c6c;
-    --black: #0d0842;
-    --orange: #ff5841;
+    --grey: #888888;
+    --light-black: #555555;
+    --black: #0F0F0F;
+    --orange: #ff4500;
   }
 
   body {

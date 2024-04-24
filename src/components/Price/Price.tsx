@@ -1,6 +1,7 @@
 import {
   StyledPriceCard,
   StyledPriceProduct,
+  StyledPriceCart,
   Currency,
   Strikethrough,
 } from './Price.styles'
@@ -12,26 +13,38 @@ export function Price({
   discount,
   currency = '$',
 }: IPriceProps) {
-  const Component = component === 'card' ? StyledPriceCard : StyledPriceProduct
+  const componentMap = {
+    card: StyledPriceCard,
+    product: StyledPriceProduct,
+    cart: StyledPriceCart,
+  }
+
+  const Component = componentMap[component]
 
   return (
     <Component>
       {discount ? (
-        <>
-          <Currency>{currency}</Currency>
+        <p>
           <span>
-            {(Number(price) - (Number(price) * discount) / 100).toFixed(2)}
+            <Currency>{currency}</Currency>
+            <span>
+              {Number(
+                (Number(price) - (Number(price) * discount) / 100).toFixed(2),
+              )}
+            </span>
           </span>
           <Strikethrough>
             <Currency>{currency}</Currency>
             <span>{price}</span>
           </Strikethrough>
-        </>
+        </p>
       ) : (
-        <>
-          <Currency>{currency}</Currency>
-          <span>{price}</span>
-        </>
+        <p>
+          <span>
+            <Currency>{currency}</Currency>
+            <span>{price}</span>
+          </span>
+        </p>
       )}
     </Component>
   )

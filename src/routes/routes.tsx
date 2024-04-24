@@ -5,9 +5,10 @@ import {
   Product,
   Registration,
   Login,
+  Cart,
   NotFound,
 } from '../pages'
-import { BOOKS, REGISTRATION, LOGIN } from './pathConstants'
+import { BOOKS, REGISTRATION, LOGIN, CART } from './pathConstants'
 
 export const routes = [
   {
@@ -33,6 +34,10 @@ export const routes = [
       {
         path: LOGIN,
         element: <Login />,
+      },
+      {
+        path: CART,
+        element: <Cart />,
       },
       {
         path: '*',
