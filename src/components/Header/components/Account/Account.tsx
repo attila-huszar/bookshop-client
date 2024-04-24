@@ -39,6 +39,13 @@ export function Account() {
     [menuOpen],
   )
 
+  const handleLogout = () => {
+    toggleMenu()
+    removeFromLocalStorage('uuid')
+    toast.success(`${user?.email} successfully logged out`)
+    dispatch(logoutUser())
+  }
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
 
@@ -83,14 +90,7 @@ export function Account() {
               </Link>
             </li>
             <li>
-              <Link
-                to={logoutLink.path}
-                onClick={() => {
-                  toggleMenu()
-                  removeFromLocalStorage('uuid')
-                  toast.success(`${user.email} successfully logged out`)
-                  dispatch(logoutUser())
-                }}>
+              <Link to={logoutLink.path} onClick={handleLogout}>
                 <MenuItem>
                   <img
                     src={logoutLink.icon}
