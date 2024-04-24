@@ -3,23 +3,38 @@ import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
-import { registrationSchema } from '../../utils/validationSchema'
-import { passwordEncrypt } from '../../utils/passwordHash'
-import { v4 as uuidv4 } from 'uuid'
-import { useAppDispatch, useLocalStorage } from '../../hooks'
-import {
-  registerUser,
-  loginUser,
-  uploadImage,
-  updateAvatar,
-} from '../../store/userSlice'
-import toast from 'react-hot-toast'
+import { registrationSchema, passwordEncrypt } from '../../utils'
 import { registrationInitialValues } from '../../lib/defaultValues'
+import { v4 as uuidv4 } from 'uuid'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useLocalStorage,
+  useImageUpload,
+} from '../../hooks'
+import { registerUser } from '../../store/userSlice'
+import { userSelector, registerErrorSelector } from '../../store'
+import toast from 'react-hot-toast'
 
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
+  const user = useAppSelector(userSelector)
+  const registerError = useAppSelector(registerErrorSelector)
+  const { uploadAndSetImage } = useImageUpload()
+
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true })
+      toast.success(
+        `${user.email} registered successfully! You are now logged in!`,
+      )
+      setToLocalStorage('uuid', user.uuid)
+    } else if (registerError) {
+      toast.error(registerError as string)
+    }
+  }, [user, registerError])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -43,41 +58,15 @@ export function Registration() {
           }
 
           dispatch(registerUser(user))
-            .then((registerResponse) => {
-              if (registerResponse.meta.requestStatus === 'fulfilled') {
-                if (values.avatar) {
-                  dispatch(uploadImage(values.avatar)).then((imageResponse) =>
-                    dispatch(
-                      updateAvatar({
-                        uuid: user.uuid,
-                        avatar: imageResponse.payload.url,
-                      }),
-                    ),
-                  )
-                }
 
-                dispatch(
-                  loginUser({ email: values.email, password: values.password }),
-                ).then((loginResponse) => {
-                  if (loginResponse.meta.requestStatus === 'fulfilled') {
-                    setToLocalStorage('uuid', loginResponse.payload.uuid)
-                    navigate('/', { replace: true })
-                    toast.success(
-                      `${loginResponse.payload.email} registered successfully! You are now logged in!`,
-                    )
-                  } else if (loginResponse.meta.requestStatus === 'rejected') {
-                    toast.error('Login failed')
-                  }
-                })
-              } else if (registerResponse.meta.requestStatus === 'rejected') {
-                toast.error(registerResponse.payload)
-              } else {
-                toast.error('Registration Failed')
-              }
+          user.avatar &&
+            uploadAndSetImage({
+              uuid: user.uuid,
+              field: 'avatar',
+              value: user.avatar,
             })
-            .finally(() => {
-              actions.setSubmitting(false)
-            })
+
+          actions.setSubmitting(false)
         }}>
         {({ isSubmitting }) => (
           <Form>

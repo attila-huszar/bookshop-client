@@ -36,3 +36,13 @@ export const newsSelector = (state: RootState) => state.news
 export const newsErrorSelector = (state: RootState) => state.news.newsError
 
 export const userSelector = (state: RootState) => state.user.userData
+
+export const userVerifiedSelector = (state: RootState) =>
+  state.user.userIsVerified
+
+export const userErrorSelector = (state: RootState) => state.user.userError
+
+export const loginErrorSelector = (state: RootState) => state.user.loginError
+
+export const registerErrorSelector = (state: RootState) =>
+  state.user.registerError

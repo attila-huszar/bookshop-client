@@ -6,12 +6,17 @@ import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
 import { AdvancedImage } from '@cloudinary/react'
 import { StyledAvatar } from './Avatar.styles'
 import { IAvatar } from '../../interfaces'
+import { useMemo } from 'react'
 
 export const Avatar = ({ imgUrl, onClick, title }: IAvatar) => {
-  const avatar = new CloudinaryImage(
-    `bookstore/avatars/${imgUrl.split('/').pop()}`,
-    cloudConfig,
-  ).resize(thumbnail().width(40).height(40).gravity(focusOn(face())))
+  const avatar = useMemo(
+    () =>
+      new CloudinaryImage(
+        `bookstore/avatars/${imgUrl.split('/').pop()}`,
+        cloudConfig,
+      ).resize(thumbnail().width(44).height(44).gravity(focusOn(face()))),
+    [imgUrl],
+  )
 
   return (
     <StyledAvatar onClick={onClick} title={title}>

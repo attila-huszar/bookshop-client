@@ -12,4 +12,8 @@ export {
   newsSelector,
   newsErrorSelector,
   userSelector,
+  userVerifiedSelector,
+  userErrorSelector,
+  loginErrorSelector,
+  registerErrorSelector,
 } from './selectors'

@@ -4,15 +4,28 @@ import { Formik, Form } from 'formik'
 import { Label, ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { loginSchema } from '../../utils/validationSchema'
-import { useAppDispatch, useLocalStorage } from '../../hooks'
+import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
 import { loginUser } from '../../store/userSlice'
 import toast from 'react-hot-toast'
 import { loginInitialValues } from '../../lib/defaultValues'
+import { userSelector, loginErrorSelector } from '../../store'
 
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
+  const user = useAppSelector(userSelector)
+  const loginError = useAppSelector(loginErrorSelector)
+
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true })
+      toast.success(`Welcome back, ${user.firstName}!`)
+      setToLocalStorage('uuid', user.uuid)
+    } else if (loginError) {
+      toast.error(loginError as string)
+    }
+  }, [user, loginError])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -24,20 +37,11 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={(values, actions): void => {
+        onSubmit={(values, actions) => {
           dispatch(
             loginUser({ email: values.email, password: values.password }),
           )
-            .then((response) => {
-              if (response.meta.requestStatus === 'fulfilled') {
-                navigate('/', { replace: true })
-                toast.success(`Welcome back, ${response.payload.firstName}!`)
-                setToLocalStorage('uuid', response.payload.uuid)
-              } else {
-                toast.error(response.payload)
-              }
-            })
-            .finally(() => actions.setSubmitting(false))
+          actions.setSubmitting(false)
         }}>
         {({ isSubmitting }) => (
           <Form>
