@@ -6,12 +6,7 @@ import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { registrationSchema, passwordEncrypt } from '../../utils'
 import { registrationInitialValues } from '../../lib/defaultValues'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useLocalStorage,
-  useImageUpload,
-} from '../../hooks'
+import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
 import { registerUser } from '../../store/userSlice'
 import { userSelector, registerErrorSelector } from '../../store'
 import toast from 'react-hot-toast'
@@ -22,7 +17,6 @@ export function Registration() {
   const { setToLocalStorage } = useLocalStorage()
   const user = useAppSelector(userSelector)
   const registerError = useAppSelector(registerErrorSelector)
-  const { uploadAndSetImage } = useImageUpload()
 
   useEffect(() => {
     if (user) {
@@ -58,14 +52,6 @@ export function Registration() {
           }
 
           dispatch(registerUser(user))
-
-          user.avatar &&
-            uploadAndSetImage({
-              uuid: user.uuid,
-              field: 'avatar',
-              value: user.avatar,
-            })
-
           actions.setSubmitting(false)
         }}>
         {({ isSubmitting }) => (
