@@ -8,5 +8,5 @@ export const StyledLayout = styled.div`
   padding: 7.5rem 0 25rem;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  background-color: var(--bgColor);
+  background-color: var(--white);
 `

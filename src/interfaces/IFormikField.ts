@@ -1,6 +1,6 @@
 export interface IFormikField {
   name: string
-  placeholder: string
+  placeholder?: string
   type?: React.HTMLInputTypeAttribute | undefined
   inputMode?:
     | 'text'

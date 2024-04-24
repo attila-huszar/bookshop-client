@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
 import { IUser } from '../interfaces'
+import { cloudName, unsignedUploadPreset } from '../lib/envVariables'
 
 export const fetchBooks = async (
   id: string | void,
@@ -90,6 +91,44 @@ export const postUserRegister = async (
 ) => {
   try {
     const response = await axios.post(`${URL.users}`, user)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const postUserImg = async (
+  img: File,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`
+  const formData = new FormData()
+  formData.append('upload_preset', unsignedUploadPreset)
+  formData.append('folder', '/bookstore/avatars')
+  formData.append('file', img)
+
+  try {
+    const response = await axios.post(url, formData)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const putUser = async (
+  user: IUser,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.put(`${URL.users}/${user.id}`, user)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {

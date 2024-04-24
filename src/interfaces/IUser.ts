@@ -7,6 +7,8 @@ export interface IUser {
   password: string
   createdAt?: Date
   updatedAt?: Date
+  avatar?: string | null
+  id?: number
 }
 
 export type IUserStore = Omit<IUser, 'password'>

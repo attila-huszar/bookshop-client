@@ -31,7 +31,7 @@ export const NotFoundSection = styled.section`
     margin: 1.5rem 0;
     font-size: 1.5rem;
     line-height: normal;
-    color: var(--textGreyColor);
+    color: var(--grey);
   }
 `
 

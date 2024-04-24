@@ -6,7 +6,9 @@ import {
 import {
   getUserByEmail,
   getUserByUUID,
+  postUserImg,
   postUserRegister,
+  putUser,
 } from '../api/fetchData'
 import { IUser, IUserStoreState } from '../interfaces'
 import { passwordEncrypt } from '../utils/passwordHash'
@@ -50,6 +52,9 @@ const userSlice = createSlice({
       .addCase(getUserByID.rejected, (state, action) => {
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
+      })
+      .addCase(updateAvatar.fulfilled, (state, action) => {
+        state.userData = action.payload
       })
   },
 })
@@ -99,6 +104,38 @@ export const getUserByID = createAsyncThunk(
         throw rejectWithValue('User not found')
       }
     }),
+)
+
+export const uploadImage = createAsyncThunk(
+  'uploadImage',
+  (file: File, { rejectWithValue }) =>
+    postUserImg(file, rejectWithValue).then((imageResponse) => {
+      if (imageResponse.url) {
+        return imageResponse
+      } else {
+        throw rejectWithValue('Image upload failed')
+      }
+    }),
+)
+
+export const updateAvatar = createAsyncThunk(
+  'updateAvatar',
+  async (user: { uuid: string; avatar: string }, { rejectWithValue }) => {
+    const userResponse = await getUserByUUID(user.uuid, rejectWithValue)
+
+    if (userResponse) {
+      const updatedUser = await putUser(
+        { ...userResponse, avatar: user.avatar },
+        rejectWithValue,
+      )
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = updatedUser
+      return userWithoutPassword
+    } else {
+      throw rejectWithValue('User not found')
+    }
+  },
 )
 
 export const userReducer = userSlice.reducer

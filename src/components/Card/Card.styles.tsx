@@ -9,7 +9,7 @@ export const StyledCard = styled.div`
   transition: background-color 0.3s ease-out;
 
   &:hover {
-    background-color: var(--bgMobileColor);
+    background-color: var(--whitesmoke);
   }
 `
 
@@ -36,6 +36,6 @@ export const Description = styled.p`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   font-size: 1rem;
-  color: var(--textGreyColor);
+  color: var(--grey);
   overflow: hidden;
 `

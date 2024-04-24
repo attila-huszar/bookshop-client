@@ -12,10 +12,11 @@ import {
 } from '../Menu/Menu.styles'
 import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
-import AccountLoggedInIcon from '../../../../assets/svg/account_loggedin.svg?react'
+import AccountDefaultIcon from '../../../../assets/svg/account_default.svg?react'
 import toast from 'react-hot-toast'
 import { useLocalStorage } from '../../../../hooks'
 import { LOGIN } from '../../../../routes/pathConstants'
+import { Avatar } from '../../../Avatar/Avatar'
 
 export function Account() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -48,12 +49,28 @@ export function Account() {
 
   return (
     <StyledMenu ref={menuRef}>
-      <IconButton
-        onClick={user ? toggleMenu : () => navigate(LOGIN)}
-        icon={user ? <AccountLoggedInIcon /> : <AccountIcon />}
-        title={user?.firstName || 'Account'}
-        $iconSize="sm"
-      />
+      {user ? (
+        typeof user.avatar === 'string' ? (
+          <Avatar
+            imgUrl={user.avatar}
+            onClick={toggleMenu}
+            title={user.firstName}
+          />
+        ) : (
+          <IconButton
+            onClick={toggleMenu}
+            icon={<AccountDefaultIcon />}
+            title={user.firstName}
+            $bordered
+          />
+        )
+      ) : (
+        <IconButton
+          onClick={() => navigate(LOGIN)}
+          icon={<AccountIcon />}
+          title={'Account'}
+        />
+      )}
       {user && (
         <Dropdown $show={menuOpen}>
           <DropdownList>

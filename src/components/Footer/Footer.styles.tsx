@@ -12,7 +12,7 @@ export const StyledFooter = styled.footer`
   padding: 0 6.25rem;
 
   a:hover {
-    color: var(--generalColor);
+    color: var(--primary-color);
   }
 `
 
