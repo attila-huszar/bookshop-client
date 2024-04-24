@@ -115,6 +115,11 @@ export const registerUser = createAsyncThunk(
     const response = await getUserByEmail(user.email, rejectWithValue)
 
     if (!response) {
+      if (user.avatar instanceof File) {
+        const imageResponse = await postUserImg(user.avatar, rejectWithValue)
+        user.avatar = imageResponse.url
+      }
+
       const registerResponse = await postUserRegister(user, rejectWithValue)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = registerResponse

@@ -1,13 +1,7 @@
 import { useEffect, useRef } from 'react'
-import {
-  Field,
-  FieldInputProps,
-  FieldMetaProps,
-  FormikState,
-  useFormikContext,
-} from 'formik'
+import { Field, useFormikContext } from 'formik'
 import { InputWrapper, Input, ErrorMessage } from '../../styles/Form.styles'
-import { IFormikField } from '../../interfaces'
+import { IFormik, IFormikField } from '../../interfaces'
 
 export function FormikField({
   name,
@@ -37,6 +31,7 @@ export function FormikField({
 
   if (type === 'file') {
     const fileMeta = formikContext.getFieldMeta(name)
+    const shouldShowError = fileMeta.touched && formikContext.submitCount > 0
 
     return (
       <InputWrapper>
@@ -45,48 +40,38 @@ export function FormikField({
           type="file"
           accept="image/*"
           onChange={handleImgChange}
-          $valid={
-            fileMeta.touched && !fileMeta.error && formikContext.submitCount > 0
-          }
-          $error={
-            fileMeta.touched && fileMeta.error && formikContext.submitCount > 0
-          }
+          $valid={shouldShowError && !fileMeta.error}
+          $error={shouldShowError && fileMeta.error}
         />
-        {fileMeta.touched &&
-          fileMeta.error &&
-          formikContext.submitCount > 0 && (
-            <ErrorMessage>{fileMeta.error}</ErrorMessage>
-          )}
+        {shouldShowError && fileMeta.error && (
+          <ErrorMessage>{fileMeta.error}</ErrorMessage>
+        )}
       </InputWrapper>
     )
   }
 
   return (
     <Field name={name}>
-      {({
-        field,
-        form,
-        meta,
-      }: {
-        field: FieldInputProps<string>
-        form: FormikState<string>
-        meta: FieldMetaProps<string>
-      }) => (
-        <InputWrapper>
-          <Input
-            $valid={meta.touched && !meta.error && form.submitCount > 0}
-            $error={meta.touched && meta.error && form.submitCount > 0}
-            placeholder={placeholder}
-            type={type}
-            inputMode={inputMode}
-            ref={formikRef}
-            {...field}
-          />
-          {meta.touched && meta.error && form.submitCount > 0 && (
-            <ErrorMessage>{meta.error}</ErrorMessage>
-          )}
-        </InputWrapper>
-      )}
+      {({ field, form, meta }: IFormik) => {
+        const shouldShowError = meta.touched && form.submitCount > 0
+
+        return (
+          <InputWrapper>
+            <Input
+              $valid={shouldShowError && !meta.error}
+              $error={shouldShowError && meta.error}
+              placeholder={placeholder}
+              type={type}
+              inputMode={inputMode}
+              ref={formikRef}
+              {...field}
+            />
+            {shouldShowError && meta.error && (
+              <ErrorMessage>{meta.error}</ErrorMessage>
+            )}
+          </InputWrapper>
+        )
+      }}
     </Field>
   )
 }
