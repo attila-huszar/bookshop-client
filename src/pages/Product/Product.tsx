@@ -22,10 +22,12 @@ import {
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
 import { BOOKS } from '../../routes/pathConstants'
+import { useCart } from '../../hooks'
 
 export function Product() {
   const { id } = useParams()
   const dispatch = useAppDispatch()
+  const { addToCart } = useCart()
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
   const author: IAuthor | undefined = useAppSelector(
@@ -50,9 +52,7 @@ export function Product() {
     <>
       <StyledProduct>
         <Breadcrumb>
-          <Link to={`/${BOOKS}`} preventScrollReset={true}>
-            Book Details
-          </Link>
+          <Link to={`/${BOOKS}`}>Book Details</Link>
         </Breadcrumb>
         <DetailsSection>
           <ImageWrapper>
@@ -70,7 +70,14 @@ export function Product() {
             <p>{book.description}</p>
           </Description>
           <ButtonWrapper>
-            <Button onClick={() => {}} $withCart $textSize="lg" $padding="lg">
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                addToCart(book)
+              }}
+              $withCart
+              $textSize="lg"
+              $padding="lg">
               Add to basket
             </Button>
           </ButtonWrapper>

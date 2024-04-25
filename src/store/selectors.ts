@@ -46,3 +46,5 @@ export const loginErrorSelector = (state: RootState) => state.user.loginError
 
 export const registerErrorSelector = (state: RootState) =>
   state.user.registerError
+
+export const cartSelector = (state: RootState) => state.cart.cartData

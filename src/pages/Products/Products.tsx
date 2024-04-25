@@ -19,8 +19,8 @@ export function Products() {
 
   return (
     <StyledProducts>
-      {booksData.map((item) => (
-        <Card key={item.id} {...item} />
+      {booksData.map((book) => (
+        <Card key={book.id} book={book} />
       ))}
     </StyledProducts>
   )

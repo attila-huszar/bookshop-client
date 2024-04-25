@@ -28,3 +28,9 @@ export interface IUserStoreState {
   loginError: SerializedError | null
   registerError: SerializedError | null
 }
+
+export interface ICartStoreState {
+  cartData: IBook[]
+  cartIsLoading: boolean
+  cartError: SerializedError | null
+}

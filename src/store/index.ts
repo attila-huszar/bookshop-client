@@ -16,4 +16,5 @@ export {
   userErrorSelector,
   loginErrorSelector,
   registerErrorSelector,
+  cartSelector,
 } from './selectors'

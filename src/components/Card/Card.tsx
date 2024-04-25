@@ -2,33 +2,30 @@ import { Link } from 'react-router-dom'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
 import { Button, Price } from '../../components'
 import { BOOKS } from '../../routes/pathConstants'
-import { ICardProps } from '../../interfaces/'
+import { IBook } from '../../interfaces/'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
+import { useCart } from '../../hooks'
 
-export function Card({
-  id,
-  title,
-  description,
-  price,
-  discount,
-  imgUrl,
-}: ICardProps) {
+export function Card({ book }: { book: IBook }) {
+  const { addToCart } = useCart()
+
   return (
-    <Link to={`/${BOOKS}/${id}`}>
+    <Link to={`/${BOOKS}/${book.id}`}>
       <StyledCard>
         <Image
-          src={imgUrl}
+          src={book.imgUrl}
           onError={(e) =>
             ((e.target as HTMLImageElement).src = imagePlaceholder)
           }
-          alt={title}></Image>
+          alt={book.title}></Image>
         <Details>
-          <Title>{title}</Title>
-          <Description>{description}</Description>
-          <Price component="card" price={price} discount={discount} />
+          <Title>{book.title}</Title>
+          <Description>{book.description}</Description>
+          <Price component="card" price={book.price} discount={book.discount} />
           <Button
             onClick={(e) => {
               e.preventDefault()
+              addToCart(book)
             }}
             $withCart>
             Add to basket

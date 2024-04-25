@@ -6,6 +6,7 @@ export type {
   IAuthorStoreState,
   INewsStoreState,
   IUserStoreState,
+  ICartStoreState,
 } from './IState'
 export type { ICardProps } from './ICardProps'
 export type { IPriceProps } from './IPriceProps'
@@ -15,3 +16,4 @@ export type { IFormik } from './IFormik'
 export type { IFormikField } from './IFormikField'
 export type { IAvatar } from './IAvatar'
 export type { IUpdateUser } from './IUpdateUser'
+export type { ICart } from './ICart'

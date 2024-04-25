@@ -3,6 +3,7 @@ import { booksReducer } from './booksSlice'
 import { authorsReducer } from './authorsSlice'
 import { newsReducer } from './newsSlice'
 import { userReducer } from './userSlice'
+import { cartReducer } from './cartSlice'
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     authors: authorsReducer,
     news: newsReducer,
     user: userReducer,
+    cart: cartReducer,
   },
 })
 

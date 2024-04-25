@@ -138,3 +138,11 @@ export const ButtonWrapper = styled.div`
   flex-wrap: wrap;
   gap: 3rem;
 `
+
+export const EmptyCart = styled.div`
+  text-align: center;
+  margin: 2rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--grey);
+`
