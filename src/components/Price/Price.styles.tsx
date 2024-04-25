@@ -24,6 +24,7 @@ export const StyledPriceProduct = styled.div`
 export const StyledPriceCart = styled.div`
   display: flex;
   flex-direction: row-reverse;
+  margin-right: 1rem;
   font-size: 1.125rem;
 
   p {

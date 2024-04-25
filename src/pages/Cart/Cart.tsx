@@ -1,95 +1,103 @@
+import { Fragment } from 'react/jsx-runtime'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, IconButton, Price } from '../../components'
 import {
   StyledCart,
-  CartItem,
-  Quantity,
+  CartGrid,
   TotalPrice,
   ButtonWrapper,
+  Book,
+  Quantity,
+  PriceItem,
+  RemoveItem,
+  ImageWrapper,
+  PriceTotal,
+  LabelQuantity,
+  LabelPrice,
 } from './Cart.styles'
 import { BOOKS } from '../../routes/pathConstants'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
+import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
+import { IBook } from '../../interfaces'
 
 export function Cart() {
   const navigate = useNavigate()
 
-  const totalPrice = Number(
-    mockData
-      .reduce(
-        (acc, item) =>
-          acc +
-          quantity *
-            (Number(item.price) - (Number(item.price) * item.discount) / 100),
-        0,
-      )
-      .toFixed(2),
-  )
-
-  const discount = Number(
-    mockData
-      .reduce(
-        (acc, item) =>
-          acc + ((Number(item.price) * item.discount) / 100) * quantity,
-        0,
-      )
-      .toFixed(2),
-  )
+  const subTotal = calcSubtotalOrDiscount(mockData, quantity, 'subtotal')
+  const discount = calcSubtotalOrDiscount(mockData, quantity, 'discount')
 
   return (
     <StyledCart>
       <h2>Cart</h2>
-      <div>
+      <CartGrid>
+        <p>Books in basket</p>
+        <LabelQuantity>Quantity</LabelQuantity>
+        <LabelPrice>Price</LabelPrice>
+        <LabelPrice>Total</LabelPrice>
+        <div></div>
         {mockData.map((item) => (
-          <CartItem key={item.id}>
-            <Link to={`/${BOOKS}/${item.id}`}>
-              <img src={item.imgUrl} alt={item.title} />
-            </Link>
-            <Link to={`/${BOOKS}/${item.id}`}>{item.title}</Link>
-            <IconButton
-              onClick={() => {}}
-              icon={<RemoveQuantityIcon />}
-              title="Remove quantity"
-              $iconSize="sm"
-              $color="var(--grey)"
-            />
-            <Quantity value={quantity} onChange={() => {}}></Quantity>
-            <IconButton
-              onClick={() => {}}
-              icon={<AddQuantityIcon />}
-              title="Add quantity"
-              $iconSize="sm"
-              $color="var(--grey)"
-            />
-            <Price
-              component="cart"
-              price={item.price}
-              discount={item.discount}
-            />
-            <Price
-              component="cart"
-              price={quantity * Number(item.price)}
-              discount={item.discount}
-            />
-            <IconButton
-              onClick={() => {}}
-              icon={<RemoveFromCartIcon />}
-              title="Remove from cart"
-              $color="var(--orange)"
-            />
-          </CartItem>
+          <Fragment key={item.id}>
+            <Book>
+              <Link to={`/${BOOKS}/${item.id}`}>
+                <ImageWrapper>
+                  <img src={item.imgUrl} alt={item.title} />
+                </ImageWrapper>
+                <p>{item.title}</p>
+              </Link>
+            </Book>
+            <Quantity>
+              <IconButton
+                onClick={() => {}}
+                icon={<RemoveQuantityIcon />}
+                title="Remove quantity"
+                $iconSize="sm"
+                $color="var(--grey)"
+              />
+              <input value={quantity} onChange={() => {}} />
+              <IconButton
+                onClick={() => {}}
+                icon={<AddQuantityIcon />}
+                title="Add quantity"
+                $iconSize="sm"
+                $color="var(--grey)"
+              />
+            </Quantity>
+            <PriceItem>
+              <Price
+                component="cart"
+                price={item.price}
+                discount={item.discount}
+              />
+            </PriceItem>
+            <PriceTotal>
+              <Price
+                component="cart"
+                price={quantity * Number(item.price)}
+                discount={item.discount}
+              />
+            </PriceTotal>
+            <RemoveItem>
+              <IconButton
+                onClick={() => {}}
+                icon={<RemoveFromCartIcon />}
+                title="Remove from cart"
+                $color="var(--orange)"
+              />
+            </RemoveItem>
+          </Fragment>
         ))}
-      </div>
+      </CartGrid>
       <TotalPrice>
         <h3>Price Summary</h3>
-        {discount && (
+        {!!discount && (
           <>
-            <h4>Subtotal: $ {totalPrice + discount}</h4>
+            <h4>Subtotal: $ {subTotal}</h4>
             <h4>Discount: $ -{discount}</h4>
           </>
         )}
-        <p>Total: $ {totalPrice}</p>
+        <p>Total: $ {subTotal - discount}</p>
       </TotalPrice>
       <ButtonWrapper>
         <Button
@@ -107,7 +115,7 @@ export function Cart() {
   )
 }
 
-const mockData = [
+const mockData: IBook[] = [
   {
     id: 1,
     title: 'Great Expectations',
@@ -120,9 +128,10 @@ const mockData = [
     yearOfPublishing: '1861',
     price: '23',
     rating: 4.6,
-    discount: 0,
+    discount: 10,
     topSellers: true,
     new: false,
+    favorite: false,
   },
   {
     id: 2,
@@ -137,7 +146,7 @@ const mockData = [
     yearOfPublishing: '1960',
     price: '25',
     rating: 4.8,
-    discount: 10,
+    discount: 0,
     new: false,
   },
 ]
