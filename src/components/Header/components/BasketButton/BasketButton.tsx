@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { Button } from '../../../../components'
+import { useCart } from '../../../../hooks'
 import { StyledBasketButton, CartItemCount } from './BasketButton.styles'
-import { useAppSelector } from '../../../../hooks'
-import { cartSelector } from '../../../../store'
+import { Button } from '../../../../components'
 import { CART } from '../../../../routes/pathConstants'
 
 export function BasketButton() {
-  const cart = useAppSelector(cartSelector)
+  const { cart } = useCart()
   const navigate = useNavigate()
 
   return (
@@ -18,7 +17,11 @@ export function BasketButton() {
         title="Basket">
         Basket
       </Button>
-      {cart?.length ? <CartItemCount>{cart.length}</CartItemCount> : null}
+      {cart?.length ? (
+        <CartItemCount>
+          {cart.reduce((acc, item) => acc + item.quantity, 0)}
+        </CartItemCount>
+      ) : null}
     </StyledBasketButton>
   )
 }

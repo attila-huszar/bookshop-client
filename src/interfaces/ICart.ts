@@ -6,3 +6,8 @@ export interface ICart {
   discount: number
   imgUrl: string
 }
+
+export interface ILocalCart {
+  id: number
+  quantity: number
+}

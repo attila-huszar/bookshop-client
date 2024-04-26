@@ -4,6 +4,7 @@ export { fetchAllNews } from './newsSlice'
 export { loginUser, registerUser, getUserByID } from './userSlice'
 export {
   cartAdd,
+  cartAddFromLocalStorage,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
@@ -25,3 +26,4 @@ export {
   registerErrorSelector,
   cartSelector,
 } from './selectors'
+export { localStorageMiddleware } from './middlewares'

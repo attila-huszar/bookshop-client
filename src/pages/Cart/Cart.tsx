@@ -1,5 +1,6 @@
-import { useEffect, Fragment } from 'react'
+import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAppDispatch, useCart, useLocalStorage } from '../../hooks'
 import { Button, IconButton, Price } from '../../components'
 import {
   StyledCart,
@@ -17,26 +18,74 @@ import {
   EmptyCart,
 } from './Cart.styles'
 import { BOOKS } from '../../routes/pathConstants'
+import { enforceMinMax } from '../../utils/enforceInputValues'
+import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
+import { ICart } from '../../interfaces'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
-import { enforceMinMax } from '../../utils/enforceInputValues'
-import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
-import { useSelector } from 'react-redux'
-import { cartSelector } from '../../store'
-import { useCart } from '../../hooks'
+import { fetchBookById } from '../../store'
 
 export function Cart() {
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const cart = useSelector(cartSelector)
-  const { removeFromCart, addQuantity, removeQuantity, setQuantity } = useCart()
+  const {
+    cart,
+    addToCartFromLocalStorage,
+    removeFromCart,
+    addQuantity,
+    removeQuantity,
+    setQuantity,
+  } = useCart()
+  const { getFromLocalStorage } = useLocalStorage()
+  const cartFromLocalStorage: { id: number; quantity: number }[] =
+    getFromLocalStorage('cart')
 
-  const subtotal = calcSubtotalOrDiscount(cart, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cart, 'discount')
+  useEffect(() => {
+    if (cartFromLocalStorage && cartFromLocalStorage.length) {
+      const promises = cartFromLocalStorage.map((item) =>
+        dispatch(fetchBookById(`${item.id}`)).then((response) => ({
+          id: item.id,
+          title: response.payload.title,
+          imgUrl: response.payload.imgUrl,
+          price: response.payload.price,
+          discount: response.payload.discount,
+          quantity: item.quantity,
+        })),
+      )
+
+      Promise.all(promises).then((response) => {
+        addToCartFromLocalStorage(response)
+      })
+    }
+  }, [])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  const subtotal = calcSubtotalOrDiscount(cart, 'subtotal')
+  const discount = calcSubtotalOrDiscount(cart, 'discount')
+
+  const handleRemoveQuantity = (item: ICart) => {
+    if (item.quantity > 0) {
+      removeQuantity(item)
+    }
+  }
+
+  const handleAddQuantity = (item: ICart) => {
+    if (item.quantity < 50) {
+      addQuantity(item)
+    }
+  }
+
+  const handleSetQuantity = (
+    item: ICart,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = enforceMinMax(event.target)
+    setQuantity({ item, value })
+  }
 
   if (cart.length) {
     return (
@@ -47,8 +96,7 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          <div></div>
-          {cart.map((item) => (
+          {cart.map((item: ICart) => (
             <Fragment key={item.id}>
               <Book>
                 <Link to={`/${BOOKS}/${item.id}`}>
@@ -60,11 +108,7 @@ export function Cart() {
               </Book>
               <Quantity>
                 <IconButton
-                  onClick={() => {
-                    if (item.quantity > 0) {
-                      removeQuantity(item)
-                    }
-                  }}
+                  onClick={() => handleRemoveQuantity(item)}
                   icon={<RemoveQuantityIcon />}
                   title="Remove quantity"
                   $iconSize="sm"
@@ -73,21 +117,14 @@ export function Cart() {
                 />
                 <input
                   value={item.quantity}
-                  onChange={(e) => {
-                    const value = enforceMinMax(e.target)
-                    setQuantity({ item, value })
-                  }}
+                  onChange={(e) => handleSetQuantity(item, e)}
                   type="number"
                   inputMode="numeric"
                   min={1}
                   max={50}
                 />
                 <IconButton
-                  onClick={() => {
-                    if (item.quantity < 50) {
-                      addQuantity(item)
-                    }
-                  }}
+                  onClick={() => handleAddQuantity(item)}
                   icon={<AddQuantityIcon />}
                   title="Add quantity"
                   $iconSize="sm"
@@ -111,9 +148,7 @@ export function Cart() {
               </PriceTotal>
               <RemoveItem>
                 <IconButton
-                  onClick={() => {
-                    removeFromCart(item)
-                  }}
+                  onClick={() => removeFromCart(item)}
                   icon={<RemoveFromCartIcon />}
                   title="Remove from cart"
                   $color="var(--orange)"

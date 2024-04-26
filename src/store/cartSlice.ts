@@ -26,11 +26,15 @@ const cartSlice = createSlice({
         (item) => item.id === action.payload.id,
       )
 
-      if (existingItemIdx !== -1) {
-        state.cartData[existingItemIdx].quantity++
-      } else {
+      if (existingItemIdx === -1) {
         state.cartData = [...state.cartData, cartItem]
       }
+    },
+    cartAddFromLocalStorage: (state, action) => {
+      state.cartData = action.payload
+    },
+    cartClear: (state) => {
+      state.cartData = []
     },
     cartRemove: (state, action) => {
       state.cartData = state.cartData.filter(
@@ -75,6 +79,7 @@ const cartSlice = createSlice({
 export const cartReducer = cartSlice.reducer
 export const {
   cartAdd,
+  cartAddFromLocalStorage,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
