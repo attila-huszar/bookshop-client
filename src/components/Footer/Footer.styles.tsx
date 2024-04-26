@@ -24,6 +24,10 @@ export const LeftSection = styled.section`
 export const RightSection = styled.section`
   grid-area: 1 / 2 / 2 / 3;
   padding: 4.75rem 2.5rem;
+
+  p {
+    text-wrap: balance;
+  }
 `
 
 export const BottomSection = styled.section`

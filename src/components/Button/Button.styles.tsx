@@ -23,19 +23,22 @@ export const StyledButton = styled.button<StyleTypes>`
   padding: ${({ $padding = 'md' }) => padding[$padding]};
   font-size: ${({ $textSize = 'md' }) => textSize[$textSize]};
   font-weight: 700;
-  color: #fff;
-  background-color: var(--primary-color);
+  color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
+  background-color: ${({ $inverted }) =>
+    $inverted ? '#fff' : 'var(--primary-color)'};
   box-shadow: ${({ $shadowed }) =>
     $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
   border: none;
   border-radius: 10px;
   outline: 3px solid var(--primary-color);
+  outline-offset: -3px;
   cursor: pointer;
   transition: all 0.2s ease-out;
 
   &:hover {
-    color: var(--primary-color);
-    background-color: #fff;
+    color: ${({ $inverted }) => ($inverted ? '#fff' : 'var(--primary-color)')};
+    background-color: ${({ $inverted }) =>
+      $inverted ? 'var(--primary-color)' : '#fff'};
   }
 
   &:disabled {
