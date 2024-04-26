@@ -1,27 +1,27 @@
-import { IBook, IAuthor, INews, IUserStore } from '.'
+import { IBook, IAuthor, INews, IUserOmitPassword, ICart } from '.'
 import { SerializedError } from '@reduxjs/toolkit'
 
-export interface IBookStoreState {
+export interface IBookStore {
   booksData: IBook[]
   booksIsLoading: boolean
   booksError: SerializedError | null
   booksRandomize: IBook[]
 }
 
-export interface IAuthorStoreState {
+export interface IAuthorStore {
   authorsData: IAuthor[]
   authorsIsLoading: boolean
   authorsError: SerializedError | null
 }
 
-export interface INewsStoreState {
+export interface INewsStore {
   newsData: INews[]
   newsIsLoading: boolean
   newsError: SerializedError | null
 }
 
-export interface IUserStoreState {
-  userData: IUserStore | null
+export interface IUserStore {
+  userData: IUserOmitPassword | null
   userIsVerified: boolean
   userIsLoading: boolean
   userError: SerializedError | null
@@ -29,8 +29,8 @@ export interface IUserStoreState {
   registerError: SerializedError | null
 }
 
-export interface ICartStoreState {
-  cartData: IBook[]
+export interface ICartStore {
+  cartData: ICart[]
   cartIsLoading: boolean
   cartError: SerializedError | null
 }

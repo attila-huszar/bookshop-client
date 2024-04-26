@@ -4,9 +4,9 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { fetchNews } from '../api/fetchData'
-import { INewsStoreState } from '../interfaces'
+import { INewsStore } from '../interfaces'
 
-const initialState: INewsStoreState = {
+const initialState: INewsStore = {
   newsData: [],
   newsIsLoading: false,
   newsError: null,

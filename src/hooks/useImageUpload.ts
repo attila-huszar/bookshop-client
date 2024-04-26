@@ -1,11 +1,11 @@
 import { useAppDispatch } from '../hooks'
 import { updateUser, uploadImage } from '../store/userSlice'
-import { IUpdateUser } from '../interfaces'
+import { IUserUpdate } from '../interfaces'
 
 export function useImageUpload() {
   const dispatch = useAppDispatch()
 
-  const uploadAndSetImage = async ({ uuid, field, value }: IUpdateUser) => {
+  const uploadAndSetImage = async ({ uuid, field, value }: IUserUpdate) => {
     const imageResponse = await dispatch(uploadImage(value as File))
 
     dispatch(

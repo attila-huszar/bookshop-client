@@ -4,10 +4,10 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { fetchBooks } from '../api/fetchData'
-import { IBookStoreState } from '../interfaces'
+import { IBookStore } from '../interfaces'
 import { getRandomBooks } from '../utils/getRandomBooks'
 
-const initialState: IBookStoreState = {
+const initialState: IBookStore = {
   booksData: [],
   booksIsLoading: false,
   booksError: null,

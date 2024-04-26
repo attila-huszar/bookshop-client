@@ -1,6 +1,8 @@
-import { IBook } from './IBook'
-
 export interface ICart {
-  books: IBook[]
-  id?: number
+  id: number
+  quantity: number
+  title: string
+  price: number
+  discount: number
+  imgUrl: string
 }

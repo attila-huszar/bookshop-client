@@ -1,12 +1,23 @@
 import { useAppDispatch } from '.'
-import { IBook } from '../interfaces'
-import { cartAdd, cartRemove } from '../store/cartSlice'
+import {
+  cartAdd,
+  cartRemove,
+  cartQuantityAdd,
+  cartQuantityRemove,
+  cartQuantitySet,
+} from '../store'
+import { IBook, ICart } from '../interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()
 
   const addToCart = (payload: IBook) => dispatch(cartAdd(payload))
-  const removeFromCart = (payload: IBook) => dispatch(cartRemove(payload))
+  const removeFromCart = (payload: ICart) => dispatch(cartRemove(payload))
+  const addQuantity = (payload: ICart) => dispatch(cartQuantityAdd(payload))
+  const removeQuantity = (payload: ICart) =>
+    dispatch(cartQuantityRemove(payload))
+  const setQuantity = (payload: { item: ICart; value: number }) =>
+    dispatch(cartQuantitySet(payload))
 
-  return { addToCart, removeFromCart }
+  return { addToCart, removeFromCart, addQuantity, removeQuantity, setQuantity }
 }

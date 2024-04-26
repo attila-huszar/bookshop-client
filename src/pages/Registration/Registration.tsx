@@ -7,8 +7,7 @@ import { registrationSchema, passwordEncrypt } from '../../utils'
 import { registrationInitialValues } from '../../lib/defaultValues'
 import { v4 as uuidv4 } from 'uuid'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
-import { registerUser } from '../../store/userSlice'
-import { userSelector, registerErrorSelector } from '../../store'
+import { userSelector, registerUser, registerErrorSelector } from '../../store'
 import toast from 'react-hot-toast'
 
 export function Registration() {

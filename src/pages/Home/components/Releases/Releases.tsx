@@ -23,7 +23,7 @@ export function Releases() {
           to captivating memoirs, this week's new releases offer something for
           everyone.
         </p>
-        <Button onClick={() => {}} $shadowed $padding="wide" $textSize="lg">
+        <Button onClick={() => {}} $shadowed $size="wide" $textSize="lg">
           Subscribe
         </Button>
       </div>

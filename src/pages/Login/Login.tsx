@@ -5,10 +5,9 @@ import { Label, ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { loginSchema } from '../../utils/validationSchema'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
-import { loginUser } from '../../store/userSlice'
-import toast from 'react-hot-toast'
 import { loginInitialValues } from '../../lib/defaultValues'
-import { userSelector, loginErrorSelector } from '../../store'
+import { userSelector, loginUser, loginErrorSelector } from '../../store'
+import toast from 'react-hot-toast'
 
 export function Login() {
   const dispatch = useAppDispatch()

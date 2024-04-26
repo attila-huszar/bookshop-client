@@ -1,13 +1,17 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
 import { Button, Price } from '../../components'
-import { BOOKS } from '../../routes/pathConstants'
-import { IBook } from '../../interfaces/'
+import { BOOKS, CART } from '../../routes/pathConstants'
+import { IBook } from '../../interfaces'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
-import { useCart } from '../../hooks'
+import { useAppSelector, useCart } from '../../hooks'
+import { cartSelector } from '../../store'
 
 export function Card({ book }: { book: IBook }) {
   const { addToCart } = useCart()
+  const navigate = useNavigate()
+  const cart = useAppSelector(cartSelector)
+  const isBookInCart = cart.some((item) => item.id === book.id)
 
   return (
     <Link to={`/${BOOKS}/${book.id}`}>
@@ -25,10 +29,10 @@ export function Card({ book }: { book: IBook }) {
           <Button
             onClick={(e) => {
               e.preventDefault()
-              addToCart(book)
+              isBookInCart ? navigate(`/${CART}`) : addToCart(book)
             }}
-            $withCart>
-            Add to basket
+            $withCart={!isBookInCart}>
+            {isBookInCart ? 'View in Basket' : 'Add to Basket'}
           </Button>
         </Details>
       </StyledCard>

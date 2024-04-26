@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   StyledProduct,
   Breadcrumb,
@@ -18,16 +18,18 @@ import {
   authorByIdSelector,
   bookErrorSelector,
   authorErrorSelector,
+  cartSelector,
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
-import { BOOKS } from '../../routes/pathConstants'
+import { BOOKS, CART } from '../../routes/pathConstants'
 import { useCart } from '../../hooks'
 
 export function Product() {
   const { id } = useParams()
   const dispatch = useAppDispatch()
   const { addToCart } = useCart()
+  const navigate = useNavigate()
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
   const author: IAuthor | undefined = useAppSelector(
@@ -35,6 +37,8 @@ export function Product() {
   )
   const bookError = useAppSelector(bookErrorSelector)
   const authorError = useAppSelector(authorErrorSelector)
+  const cart = useAppSelector(cartSelector)
+  const isBookInCart = cart.some((item) => item.id === book?.id)
 
   useEffect(() => {
     if (!book) {
@@ -71,14 +75,13 @@ export function Product() {
           </Description>
           <ButtonWrapper>
             <Button
-              onClick={(e) => {
-                e.preventDefault()
-                addToCart(book)
+              onClick={() => {
+                isBookInCart ? navigate(`/${CART}`) : addToCart(book)
               }}
-              $withCart
+              $withCart={!isBookInCart}
               $textSize="lg"
-              $padding="lg">
-              Add to basket
+              $size="lg">
+              {isBookInCart ? 'View in Basket' : 'Add to Basket'}
             </Button>
           </ButtonWrapper>
         </DetailsSection>

@@ -3,6 +3,13 @@ export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
 export { loginUser, registerUser, getUserByID } from './userSlice'
 export {
+  cartAdd,
+  cartRemove,
+  cartQuantityAdd,
+  cartQuantityRemove,
+  cartQuantitySet,
+} from './cartSlice'
+export {
   booksSelector,
   authorsSelector,
   bookByIdSelector,

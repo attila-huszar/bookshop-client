@@ -10,10 +10,10 @@ import {
   postUserRegister,
   putUser,
 } from '../api/fetchData'
-import { IUpdateUser, IUser, IUserStoreState } from '../interfaces'
+import { IUser, IUserUpdate, IUserStore } from '../interfaces'
 import { passwordEncrypt } from '../utils/passwordEncrypt'
 
-const initialState: IUserStoreState = {
+const initialState: IUserStore = {
   userData: null,
   userIsVerified: false,
   userIsLoading: false,
@@ -100,7 +100,6 @@ export const loginUser = createAsyncThunk(
   (user: { email: string; password: string }, { rejectWithValue }) =>
     getUserByEmail(user.email, rejectWithValue).then((response) => {
       if (response && response.password === passwordEncrypt(user.password)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = response
         return userWithoutPassword
       } else {
@@ -121,7 +120,6 @@ export const registerUser = createAsyncThunk(
       }
 
       const registerResponse = await postUserRegister(user, rejectWithValue)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = registerResponse
       return userWithoutPassword
     } else if (response.email === user.email) {
@@ -137,9 +135,7 @@ export const getUserByID = createAsyncThunk(
   (uuid: string, { rejectWithValue }) =>
     getUserByUUID(uuid, rejectWithValue).then((response) => {
       if (response) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = response
-
         return userWithoutPassword
       } else {
         throw rejectWithValue('User not found')
@@ -161,7 +157,7 @@ export const uploadImage = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, field, value }: IUpdateUser, { rejectWithValue }) => {
+  async ({ uuid, field, value }: IUserUpdate, { rejectWithValue }) => {
     const userResponse = await getUserByUUID(uuid, rejectWithValue)
 
     if (userResponse) {
@@ -170,7 +166,6 @@ export const updateUser = createAsyncThunk(
         rejectWithValue,
       )
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = updatedUser
       return userWithoutPassword
     } else {

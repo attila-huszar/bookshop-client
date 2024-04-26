@@ -1,6 +1,20 @@
 import styled from 'styled-components'
 import { StyleTypes } from './Button.types'
 
+const height = {
+  sm: '2.25rem',
+  md: '2.5rem',
+  lg: '3rem',
+  wide: '2.5rem',
+}
+
+const width = {
+  sm: '7.5rem',
+  md: '12rem',
+  lg: '15rem',
+  wide: '18rem',
+}
+
 const textSize = {
   sm: '0.75rem',
   md: '0.875rem',
@@ -8,19 +22,13 @@ const textSize = {
   xl: '1.25rem',
 }
 
-const padding = {
-  sm: '0.25rem 1rem',
-  md: '0.375rem 1.25rem',
-  lg: '1rem 3rem',
-  wide: '0.375rem 4rem',
-}
-
 export const StyledButton = styled.button<StyleTypes>`
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 8px;
-  width: fit-content;
-  padding: ${({ $padding = 'md' }) => padding[$padding]};
+  height: ${({ $size = 'md' }) => height[$size]};
+  width: ${({ $size = 'md' }) => width[$size]};
   font-size: ${({ $textSize = 'md' }) => textSize[$textSize]};
   font-weight: 700;
   color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
@@ -42,9 +50,8 @@ export const StyledButton = styled.button<StyleTypes>`
   }
 
   &:disabled {
-    cursor: not-allowed;
     color: #fff;
-    background-color: #ffe999;
-    outline: 3px solid #ffe999;
+    background-color: var(--primary-faded);
+    outline: 3px solid var(--primary-faded);
   }
 `

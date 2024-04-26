@@ -38,4 +38,8 @@ export const StyledIconButton = styled.button<StyleTypes>`
       $bordered ? '38px' : iconWidth[$iconSize]};
     border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
   }
+
+  &:disabled {
+    color: var(--light-grey);
+  }
 `
