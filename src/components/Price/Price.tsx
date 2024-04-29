@@ -28,9 +28,7 @@ export function Price({
           <span>
             <Currency>{currency}</Currency>
             <span>
-              {Number(
-                (Number(price) - (Number(price) * discount) / 100).toFixed(2),
-              )}
+              {(Number(price) - (Number(price) * discount) / 100).toFixed(2)}
             </span>
           </span>
           <Strikethrough>

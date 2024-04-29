@@ -160,12 +160,17 @@ export function Cart() {
         <TotalPrice>
           <h3>Price Summary</h3>
           {!!discount && (
-            <>
-              <h4>Subtotal: $ {subtotal}</h4>
-              <h4>Discount: $ -{discount}</h4>
-            </>
+            <div>
+              <h4>Subtotal:</h4>
+              <h4>$ {subtotal}</h4>
+              <h4>Discount:</h4>
+              <h4>$ -{discount}</h4>
+            </div>
           )}
-          <p>Total: $ {subtotal - discount}</p>
+          <div>
+            <p>Total:</p>
+            <p>$ {(Number(subtotal) - Number(discount)).toFixed(2)}</p>
+          </div>
         </TotalPrice>
         <ButtonWrapper>
           <Button
