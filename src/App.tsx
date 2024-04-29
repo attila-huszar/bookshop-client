@@ -1,20 +1,20 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import { useEffect } from 'react'
-import { useAppDispatch, useLocalStorage } from './hooks'
+import { useAppDispatch } from './hooks'
 import {
   fetchAllBooks,
   booksRandomize,
   fetchAllNews,
   getUserByID,
+  fetchCartItems,
 } from './store'
+import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
 
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
-  const { getFromLocalStorage } = useLocalStorage()
-  const uuid = getFromLocalStorage('uuid')
 
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
@@ -22,10 +22,18 @@ function App() {
     })
     dispatch(fetchAllNews())
 
+    const uuid: string | null = JSON.parse(
+      localStorage.getItem('uuid') || 'null',
+    )
     if (uuid) {
       dispatch(getUserByID(uuid))
     }
-  }, [dispatch, uuid])
+
+    const cart: ILocalCart[] = JSON.parse(localStorage.getItem('cart') || '[]')
+    if (cart.length) {
+      dispatch(fetchCartItems(cart))
+    }
+  }, [dispatch])
 
   return (
     <>

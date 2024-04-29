@@ -1,7 +1,7 @@
 import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector, useCart } from '../../hooks'
-import { fetchCartItems, cartLoadingSelector } from '../../store'
+import { useAppSelector, useCart } from '../../hooks'
+import { cartLoadingSelector } from '../../store'
 import { Button, IconButton, Loading, Price } from '../../components'
 import {
   StyledCart,
@@ -21,27 +21,16 @@ import {
 import { BOOKS } from '../../routes/pathConstants'
 import { enforceMinMax } from '../../utils/enforceInputValues'
 import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
-import { ICart, ILocalCart } from '../../interfaces'
+import { ICart } from '../../interfaces'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
 
 export function Cart() {
   const navigate = useNavigate()
-  const dispatch = useAppDispatch()
   const { cart, removeFromCart, addQuantity, removeQuantity, setQuantity } =
     useCart()
   const cartIsLoading = useAppSelector(cartLoadingSelector)
-
-  useEffect(() => {
-    const cartFromLocalStorage: ILocalCart[] = JSON.parse(
-      localStorage.getItem('cart') || '[]',
-    )
-
-    if (cartFromLocalStorage.length) {
-      dispatch(fetchCartItems(cartFromLocalStorage))
-    }
-  }, [dispatch])
 
   useEffect(() => {
     window.scrollTo(0, 0)
