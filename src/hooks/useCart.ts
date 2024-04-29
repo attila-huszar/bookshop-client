@@ -1,8 +1,7 @@
 import { useAppDispatch, useAppSelector } from '.'
 import {
-  cartSelector,
+  cartDataSelector,
   cartAdd,
-  cartAddFromLocalStorage,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
@@ -12,10 +11,8 @@ import { IBook, ICart } from '../interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()
-  const cart = useAppSelector(cartSelector)
+  const cart = useAppSelector(cartDataSelector)
   const addToCart = (payload: IBook) => dispatch(cartAdd(payload))
-  const addToCartFromLocalStorage = (payload: ICart[]) =>
-    dispatch(cartAddFromLocalStorage(payload))
   const removeFromCart = (payload: ICart) => dispatch(cartRemove(payload))
   const addQuantity = (payload: ICart) => dispatch(cartQuantityAdd(payload))
   const removeQuantity = (payload: ICart) =>
@@ -26,7 +23,6 @@ export function useCart() {
   return {
     cart,
     addToCart,
-    addToCartFromLocalStorage,
     removeFromCart,
     addQuantity,
     removeQuantity,

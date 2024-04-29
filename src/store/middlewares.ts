@@ -1,4 +1,4 @@
-import { Action, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import { AppDispatch, RootState } from './store'
 import {
   cartAdd,
@@ -7,7 +7,7 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
 } from './cartSlice'
-import { ICart, ILocalCart } from '../interfaces'
+import { ILocalCart } from '../interfaces'
 
 export const localStorageMiddleware = createListenerMiddleware()
 
@@ -22,44 +22,43 @@ localStorageMiddlewareTyped({
     cartQuantityRemove,
     cartQuantitySet,
   ),
-  effect: (action: Action) => {
+  effect: (action) => {
     const cartFromLocalStorage: ILocalCart[] = JSON.parse(
       localStorage.getItem('cart') || '[]',
     )
 
-    const newAction = action.payload
     let cartToStore: ILocalCart[] = []
 
     switch (action.type) {
       case cartAdd.type:
         cartToStore = [
           ...cartFromLocalStorage,
-          { id: newAction.id, quantity: 1 },
+          { id: action.payload.id, quantity: 1 },
         ]
         break
       case cartRemove.type:
         cartToStore = cartFromLocalStorage.filter(
-          (item) => item.id !== newAction.id,
+          (item) => item.id !== action.payload.id,
         )
         break
       case cartQuantityAdd.type:
         cartToStore = cartFromLocalStorage.map((item) =>
-          item.id === newAction.id
+          item.id === action.payload.id
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         )
         break
       case cartQuantityRemove.type:
         cartToStore = cartFromLocalStorage.map((item) =>
-          item.id === newAction.id
+          item.id === action.payload.id
             ? { ...item, quantity: item.quantity - 1 }
             : item,
         )
         break
       case cartQuantitySet.type:
         cartToStore = cartFromLocalStorage.map((item) =>
-          item.id === newAction.item.id
-            ? { ...item, quantity: newAction.value }
+          item.id === action.payload.item.id
+            ? { ...item, quantity: action.payload.value }
             : item,
         )
         break

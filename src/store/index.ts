@@ -4,11 +4,11 @@ export { fetchAllNews } from './newsSlice'
 export { loginUser, registerUser, getUserByID } from './userSlice'
 export {
   cartAdd,
-  cartAddFromLocalStorage,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  fetchCartItems,
 } from './cartSlice'
 export {
   booksSelector,
@@ -16,6 +16,7 @@ export {
   bookByIdSelector,
   authorByIdSelector,
   bookErrorSelector,
+  bookLoadingSelector,
   authorErrorSelector,
   newsSelector,
   newsErrorSelector,
@@ -24,6 +25,8 @@ export {
   userErrorSelector,
   loginErrorSelector,
   registerErrorSelector,
-  cartSelector,
+  cartDataSelector,
+  cartLoadingSelector,
+  cartErrorSelector,
 } from './selectors'
 export { localStorageMiddleware } from './middlewares'

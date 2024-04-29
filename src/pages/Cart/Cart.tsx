@@ -1,7 +1,8 @@
 import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppDispatch, useCart, useLocalStorage } from '../../hooks'
-import { Button, IconButton, Price } from '../../components'
+import { useAppDispatch, useAppSelector, useCart } from '../../hooks'
+import { fetchCartItems, cartLoadingSelector } from '../../store'
+import { Button, IconButton, Loading, Price } from '../../components'
 import {
   StyledCart,
   CartGrid,
@@ -20,45 +21,27 @@ import {
 import { BOOKS } from '../../routes/pathConstants'
 import { enforceMinMax } from '../../utils/enforceInputValues'
 import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
-import { ICart } from '../../interfaces'
+import { ICart, ILocalCart } from '../../interfaces'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
-import { fetchBookById } from '../../store'
 
 export function Cart() {
-  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const {
-    cart,
-    addToCartFromLocalStorage,
-    removeFromCart,
-    addQuantity,
-    removeQuantity,
-    setQuantity,
-  } = useCart()
-  const { getFromLocalStorage } = useLocalStorage()
-  const cartFromLocalStorage: { id: number; quantity: number }[] =
-    getFromLocalStorage('cart')
+  const dispatch = useAppDispatch()
+  const { cart, removeFromCart, addQuantity, removeQuantity, setQuantity } =
+    useCart()
+  const cartIsLoading = useAppSelector(cartLoadingSelector)
 
   useEffect(() => {
-    if (cartFromLocalStorage && cartFromLocalStorage.length) {
-      const promises = cartFromLocalStorage.map((item) =>
-        dispatch(fetchBookById(`${item.id}`)).then((response) => ({
-          id: item.id,
-          title: response.payload.title,
-          imgUrl: response.payload.imgUrl,
-          price: response.payload.price,
-          discount: response.payload.discount,
-          quantity: item.quantity,
-        })),
-      )
+    const cartFromLocalStorage: ILocalCart[] = JSON.parse(
+      localStorage.getItem('cart') || '[]',
+    )
 
-      Promise.all(promises).then((response) => {
-        addToCartFromLocalStorage(response)
-      })
+    if (cartFromLocalStorage.length) {
+      dispatch(fetchCartItems(cartFromLocalStorage))
     }
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -85,6 +68,10 @@ export function Cart() {
   ) => {
     const value = enforceMinMax(event.target)
     setQuantity({ item, value })
+  }
+
+  if (cartIsLoading) {
+    return <Loading />
   }
 
   if (cart.length) {
@@ -162,9 +149,9 @@ export function Cart() {
           {!!discount && (
             <div>
               <h4>Subtotal:</h4>
-              <h4>$ {subtotal}</h4>
+              <h4>$ {subtotal.toFixed(2)}</h4>
               <h4>Discount:</h4>
-              <h4>$ -{discount}</h4>
+              <h4>$ -{discount.toFixed(2)}</h4>
             </div>
           )}
           <div>

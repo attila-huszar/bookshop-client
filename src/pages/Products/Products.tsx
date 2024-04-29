@@ -6,10 +6,10 @@ import { Loading } from '../../components'
 import { Error } from '../../components'
 
 export function Products() {
-  const { booksData, booksIsLoading, booksError } =
+  const { booksData, booksAreLoading, booksError } =
     useAppSelector(booksSelector)
 
-  if (booksIsLoading) {
+  if (booksAreLoading) {
     return <Loading />
   }
 

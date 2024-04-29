@@ -1,5 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { IBook, ICart, ICartStore } from '../interfaces'
+import {
+  SerializedError,
+  createAsyncThunk,
+  createSlice,
+} from '@reduxjs/toolkit'
+import { fetchBooks } from '../api/fetchData'
+import { IBook, ICart, ICartStore, ILocalCart } from '../interfaces'
 
 const initialState: ICartStore = {
   cartData: [],
@@ -29,9 +34,6 @@ const cartSlice = createSlice({
       if (existingItemIdx === -1) {
         state.cartData = [...state.cartData, cartItem]
       }
-    },
-    cartAddFromLocalStorage: (state, action) => {
-      state.cartData = action.payload
     },
     cartClear: (state) => {
       state.cartData = []
@@ -73,13 +75,55 @@ const cartSlice = createSlice({
       }
     },
   },
-  extraReducers: () => {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCartItems.pending, (state) => {
+        state.cartIsLoading = true
+      })
+      .addCase(fetchCartItems.fulfilled, (state, action) => {
+        state.cartData = action.payload
+        state.cartIsLoading = false
+      })
+      .addCase(fetchCartItems.rejected, (state, action) => {
+        state.cartError = action.payload as SerializedError
+        state.cartIsLoading = false
+      })
+  },
 })
+
+export const fetchCartItems = createAsyncThunk(
+  'fetchCartItems',
+  async (cartArray: ILocalCart[], { rejectWithValue }) => {
+    const promises = cartArray.map(async (item) => {
+      const book: IBook = await fetchBooks(`${item.id}`, rejectWithValue)
+      const {
+        author,
+        genre,
+        favorite,
+        description,
+        yearOfPublishing,
+        rating,
+        new: isNew,
+        topSellers,
+        price,
+        ...rest
+      } = book
+
+      return {
+        ...rest,
+        price: Number(price),
+        quantity: item.quantity,
+      }
+    })
+
+    const resolvedItems = await Promise.all(promises)
+    return resolvedItems
+  },
+)
 
 export const cartReducer = cartSlice.reducer
 export const {
   cartAdd,
-  cartAddFromLocalStorage,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
