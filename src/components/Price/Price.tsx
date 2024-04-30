@@ -21,17 +21,19 @@ export function Price({
 
   const Component = componentMap[component]
 
+  const originalPrice = Number(price)
+  const discountedPrice = originalPrice - (originalPrice * discount!) / 100
+  const formattedPrice = Number.isInteger(discountedPrice)
+    ? discountedPrice
+    : discountedPrice.toFixed(2)
+
   return (
     <Component>
       {discount ? (
         <p>
           <span>
             <Currency>{currency}</Currency>
-            <span>
-              {Number(
-                (Number(price) - (Number(price) * discount) / 100).toFixed(2),
-              )}
-            </span>
+            <span>{formattedPrice}</span>
           </span>
           <Strikethrough>
             <Currency>{currency}</Currency>

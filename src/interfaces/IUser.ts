@@ -11,4 +11,10 @@ export interface IUser {
   id?: number
 }
 
-export type IUserStore = Omit<IUser, 'password'>
+export type IUserOmitPassword = Omit<IUser, 'password'>
+
+export interface IUserUpdate {
+  uuid: string
+  field: string | 'avatar'
+  value: string | File
+}

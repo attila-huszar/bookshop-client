@@ -116,17 +116,25 @@ export const TotalPrice = styled.div`
   background-color: var(--whitesmoke);
   text-align: right;
 
+  div {
+    display: grid;
+    grid-template-columns: 1fr minmax(6.5rem, max-content);
+    justify-content: end;
+    column-gap: 1rem;
+  }
+
   h3 {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    font-size: 1.25rem;
     border-bottom: 1px solid var(--light-grey);
   }
 
-  h3,
   h4 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
   p {
-    margin-top: 1rem;
     font-size: 1.25rem;
     font-weight: 700;
   }
@@ -137,4 +145,12 @@ export const ButtonWrapper = styled.div`
   justify-content: end;
   flex-wrap: wrap;
   gap: 3rem;
+`
+
+export const EmptyCart = styled.div`
+  text-align: center;
+  margin: 2rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--grey);
 `

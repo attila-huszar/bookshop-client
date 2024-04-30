@@ -12,7 +12,7 @@ export function Recommended() {
       <h2>Recommended for you</h2>
       <SwiperComponent>
         {booksRandomize.map((book) => (
-          <Card key={book.id} {...book} />
+          <Card key={book.id} book={book} />
         ))}
       </SwiperComponent>
     </StyledRecommended>

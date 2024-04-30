@@ -12,7 +12,7 @@ export function TopSellers() {
       <h2>Top Sellers</h2>
       <SwiperComponent>
         {bookTopSellers.map((book) => (
-          <Card key={book.id} {...book} />
+          <Card key={book.id} book={book} />
         ))}
       </SwiperComponent>
     </StyledTopSellers>

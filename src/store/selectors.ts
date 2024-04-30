@@ -7,6 +7,9 @@ export const bookByIdSelector = (id: string) => (state: RootState) => {
   return state.books.booksData.find((book) => book.id === Number(id))
 }
 
+export const bookLoadingSelector = (state: RootState) =>
+  state.books.bookIsLoading
+
 export const booksTopSellersSelector = createSelector(
   [booksSelector],
   (books) => {
@@ -46,3 +49,10 @@ export const loginErrorSelector = (state: RootState) => state.user.loginError
 
 export const registerErrorSelector = (state: RootState) =>
   state.user.registerError
+
+export const cartDataSelector = (state: RootState) => state.cart.cartData
+
+export const cartLoadingSelector = (state: RootState) =>
+  state.cart.cartIsLoading
+
+export const cartErrorSelector = (state: RootState) => state.cart.cartError

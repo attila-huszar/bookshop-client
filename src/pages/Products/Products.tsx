@@ -6,10 +6,10 @@ import { Loading } from '../../components'
 import { Error } from '../../components'
 
 export function Products() {
-  const { booksData, booksIsLoading, booksError } =
+  const { booksData, booksAreLoading, booksError } =
     useAppSelector(booksSelector)
 
-  if (booksIsLoading) {
+  if (booksAreLoading) {
     return <Loading />
   }
 
@@ -19,8 +19,8 @@ export function Products() {
 
   return (
     <StyledProducts>
-      {booksData.map((item) => (
-        <Card key={item.id} {...item} />
+      {booksData.map((book) => (
+        <Card key={book.id} book={book} />
       ))}
     </StyledProducts>
   )

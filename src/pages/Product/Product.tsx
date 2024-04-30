@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useCart } from '../../hooks'
 import {
   StyledProduct,
   Breadcrumb,
@@ -21,10 +22,12 @@ import {
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
-import { BOOKS } from '../../routes/pathConstants'
+import { BOOKS, CART } from '../../routes/pathConstants'
 
 export function Product() {
   const { id } = useParams()
+  const { cart, addToCart } = useCart()
+  const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
@@ -33,6 +36,7 @@ export function Product() {
   )
   const bookError = useAppSelector(bookErrorSelector)
   const authorError = useAppSelector(authorErrorSelector)
+  const isBookInCart = cart.some((item) => item.id === book?.id)
 
   useEffect(() => {
     if (!book) {
@@ -50,9 +54,7 @@ export function Product() {
     <>
       <StyledProduct>
         <Breadcrumb>
-          <Link to={`/${BOOKS}`} preventScrollReset={true}>
-            Book Details
-          </Link>
+          <Link to={`/${BOOKS}`}>Book Details</Link>
         </Breadcrumb>
         <DetailsSection>
           <ImageWrapper>
@@ -70,8 +72,14 @@ export function Product() {
             <p>{book.description}</p>
           </Description>
           <ButtonWrapper>
-            <Button onClick={() => {}} $withCart $textSize="lg" $padding="lg">
-              Add to basket
+            <Button
+              onClick={() => {
+                isBookInCart ? navigate(`/${CART}`) : addToCart(book)
+              }}
+              $withCart={!isBookInCart}
+              $textSize="lg"
+              $size="lg">
+              {isBookInCart ? 'View in Basket' : 'Add to Basket'}
             </Button>
           </ButtonWrapper>
         </DetailsSection>

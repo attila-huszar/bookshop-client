@@ -4,12 +4,13 @@ import {
   SerializedError,
 } from '@reduxjs/toolkit'
 import { fetchBooks } from '../api/fetchData'
-import { IBookStoreState } from '../interfaces'
+import { IBookStore } from '../interfaces'
 import { getRandomBooks } from '../utils/getRandomBooks'
 
-const initialState: IBookStoreState = {
+const initialState: IBookStore = {
   booksData: [],
-  booksIsLoading: false,
+  booksAreLoading: false,
+  bookIsLoading: false,
   booksError: null,
   booksRandomize: [],
 }
@@ -25,21 +26,26 @@ const booksSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllBooks.pending, (state) => {
-        state.booksIsLoading = true
+        state.booksAreLoading = true
       })
       .addCase(fetchAllBooks.fulfilled, (state, action) => {
-        state.booksIsLoading = false
         state.booksData = action.payload
+        state.booksAreLoading = false
       })
       .addCase(fetchAllBooks.rejected, (state, action) => {
-        state.booksIsLoading = false
         state.booksError = action.payload as SerializedError
+        state.booksAreLoading = false
+      })
+      .addCase(fetchBookById.pending, (state) => {
+        state.bookIsLoading = true
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
         state.booksData = [...state.booksData, action.payload]
+        state.bookIsLoading = false
       })
       .addCase(fetchBookById.rejected, (state, action) => {
         state.booksError = action.payload as SerializedError
+        state.bookIsLoading = false
       })
   },
 })

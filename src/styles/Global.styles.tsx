@@ -14,6 +14,7 @@ export default createGlobalStyle`
 
   #root {
     --primary-color: #ffce1a;
+    --primary-faded: #ffde67;
     --secondary-color: #ecb346;
     --white: #fdfdfd;
     --whitesmoke: #f7f7f7;
@@ -31,5 +32,15 @@ export default createGlobalStyle`
   a { 
     text-decoration: none;
     color: var(--black);
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number]{
+    -moz-appearance: textfield;
   }
 `
