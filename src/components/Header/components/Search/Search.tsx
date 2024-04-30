@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Formik } from 'formik'
+import { Link, useNavigate } from 'react-router-dom'
+import { Formik, Form } from 'formik'
 import {
   StyledForm,
   SearchButton,
@@ -7,20 +8,24 @@ import {
   Dropdown,
   DropdownList,
   MenuItem,
+  ErrorItem,
+  ClearButton,
 } from './Search.styles'
-import { Link } from 'react-router-dom'
-import { useAppSelector } from '../../../../hooks'
-import { booksSelector } from '../../../../store'
 import { BOOKS } from '../../../../routes/pathConstants'
+import { getBooksBySearch } from '../../../../api/fetchData'
+import { debounce } from '../../../../utils/debounce'
+import { IBook } from '../../../../interfaces'
 import LinkIcon from './../../../../assets/svg/link-square-02-stroke-rounded'
+import { searchSchema } from '../../../../utils/validationSchema'
 
 export function Search() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [searchResults, setSearchResults] = useState([] as IBook[])
   const searchRef = useRef<HTMLDivElement>(null)
-  const { booksRandomize } = useAppSelector(booksSelector)
+  const navigate = useNavigate()
 
-  const toggleDropdown = () => {
-    setDropdownOpen((prevState) => !prevState)
+  const closeDropdown = () => {
+    setDropdownOpen(false)
   }
 
   const handleClickOutside = useCallback(
@@ -35,6 +40,25 @@ export function Search() {
     [dropdownOpen],
   )
 
+  const handleSearch = async (searchString: string) => {
+    if (searchString.length) {
+      const responseBooks = getBooksBySearch(searchString)
+      const books = await responseBooks
+
+      setSearchResults(books)
+      setDropdownOpen(true)
+    } else {
+      setSearchResults([])
+      setDropdownOpen(false)
+    }
+  }
+
+  const handleClick = () => {
+    if (searchResults.length) {
+      setDropdownOpen(true)
+    }
+  }
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
 
@@ -43,62 +67,75 @@ export function Search() {
     }
   }, [handleClickOutside])
 
+  const initialValues = { search: '' }
+
   return (
     <StyledForm ref={searchRef}>
       <Formik
-        initialValues={{ search: '' }}
-        validate={(values) => {
-          const errors = { search: '' }
-          if (!/^[A-Z0-9.'-]+$/i.test(values.search)) {
-            errors.search = 'Invalid search string'
+        initialValues={initialValues}
+        validationSchema={searchSchema}
+        onSubmit={(_, { setSubmitting }) => {
+          if (searchResults.length) {
+            navigate(`/${BOOKS}/${searchResults[0].id}`)
           }
-          return errors
-        }}
-        onSubmit={() => {}}>
-        {({
-          values,
-          errors,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          isSubmitting,
-        }) => (
-          <form onSubmit={handleSubmit}>
+
+          setTimeout(() => {
+            setSubmitting(false)
+          }, 500)
+        }}>
+        {({ values, handleChange, handleBlur, isSubmitting }) => (
+          <Form>
             <SearchField
               type="text"
               name="search"
               placeholder="What are you looking for?"
               autoComplete="off"
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e)
+                debounce(handleSearch(e.target.value))
+              }}
+              onClick={handleClick}
               onBlur={handleBlur}
               value={values.search}
-              onClick={toggleDropdown}
-              $error={!!values.search && !!errors.search}
+              $error={!!values.search && !searchResults.length}
             />
             <Dropdown
               $show={dropdownOpen}
-              $error={!!values.search && !!errors.search}>
-              <DropdownList>
-                {booksRandomize.map((book) => (
-                  <li key={book.id}>
-                    <Link to={`/${BOOKS}/${book.id}`} onClick={toggleDropdown}>
-                      <MenuItem>
-                        <img
-                          src={book.imgUrl}
-                          alt={book.title}
-                          width="24"
-                          height="24"
-                        />
-                        <span>{book.title}</span>
-                        <LinkIcon />
-                      </MenuItem>
-                    </Link>
-                  </li>
-                ))}
-              </DropdownList>
+              $error={!!values.search && !searchResults.length}>
+              {searchResults.length ? (
+                <DropdownList>
+                  {searchResults.map((book) => (
+                    <li key={book.id}>
+                      <Link to={`/${BOOKS}/${book.id}`} onClick={closeDropdown}>
+                        <MenuItem>
+                          <img
+                            src={book.imgUrl}
+                            alt={book.title}
+                            width="24"
+                            height="24"
+                          />
+                          <span>{book.title}</span>
+                          <LinkIcon />
+                        </MenuItem>
+                      </Link>
+                    </li>
+                  ))}
+                </DropdownList>
+              ) : (
+                <DropdownList>
+                  <ErrorItem>No search results...</ErrorItem>
+                </DropdownList>
+              )}
             </Dropdown>
             <SearchButton type="submit" disabled={isSubmitting} />
-          </form>
+            <ClearButton
+              type="button"
+              onClick={() => {
+                values.search = ''
+                setDropdownOpen(false)
+              }}
+            />
+          </Form>
         )}
       </Formik>
     </StyledForm>

@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import searchIcon from '../../../../assets/svg/search.svg'
+import clearIcon from '../../../../assets/svg/cancel-circle-stroke-rounded.svg'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
@@ -47,22 +48,44 @@ export const SearchButton = styled.button`
   width: 20px;
   padding: 0;
   color: inherit;
-  background: url(${searchIcon}) center no-repeat;
   border: none;
   outline: inherit;
   cursor: pointer;
+  background: url(${searchIcon}) center no-repeat;
+`
+
+export const ClearButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  height: 20px;
+  width: 20px;
+  padding: 0;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+  background-image: url(${clearIcon});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+
+  &:hover {
+    background-color: transparent;
+  }
 `
 
 export const DropdownList = styled.ul`
+  max-height: 14rem;
   margin-top: 6px;
   padding: 0;
   font-size: 0.875rem;
   list-style: none;
   background-color: var(--white);
   border-radius: 5px;
-  cursor: pointer;
+
   z-index: 10;
-  overflow: hidden;
+  overflow-y: auto;
 
   li:hover {
     background-color: var(--primary-faded);
@@ -87,6 +110,7 @@ export const MenuItem = styled.div`
   gap: 0.875rem;
   height: 3.5rem;
   padding: 0.5rem 1rem;
+  cursor: pointer;
 
   img {
     height: auto;
@@ -96,4 +120,11 @@ export const MenuItem = styled.div`
     margin-left: auto;
     color: var(--grey);
   }
+`
+
+export const ErrorItem = styled.div`
+  display: flex;
+  align-items: center;
+  height: 3.5rem;
+  padding: 0.5rem 1rem;
 `

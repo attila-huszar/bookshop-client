@@ -77,3 +77,7 @@ export const loginSchema = Yup.object().shape({
     .max(30, 'Max 30 characters')
     .required('Required'),
 })
+
+export const searchSchema = Yup.object().shape({
+  search: Yup.string().required(),
+})
