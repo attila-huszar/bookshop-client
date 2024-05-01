@@ -13,19 +13,49 @@ import {
 } from './Search.styles'
 import { BOOKS } from '../../../../routes/pathConstants'
 import { getBooksBySearch } from '../../../../api/fetchData'
-import { debounce } from '../../../../utils/debounce'
 import { IBook } from '../../../../interfaces'
-import LinkIcon from './../../../../assets/svg/link-square-02-stroke-rounded'
 import { searchSchema } from '../../../../utils/validationSchema'
+import { useDebounce } from '../../../../hooks'
+import LinkIcon from './../../../../assets/svg/link-square-02-stroke-rounded'
 
 export function Search() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchResults, setSearchResults] = useState([] as IBook[])
   const searchRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const debouncedSearchResults = useDebounce(getSearchResults)
+  const initialValues = { search: '' }
 
-  const closeDropdown = () => {
+  async function getSearchResults(searchString: string) {
+    if (searchString.length) {
+      const responseBooks = getBooksBySearch(searchString)
+      const books = await responseBooks
+
+      setSearchResults(books)
+      setDropdownOpen(true)
+    } else {
+      setSearchResults([])
+      setDropdownOpen(false)
+    }
+  }
+
+  const handleSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  ) => {
+    handleChange(e)
+    debouncedSearchResults(e.target.value)
+  }
+
+  const handleClose = (values: { search: string }) => {
+    values.search = ''
     setDropdownOpen(false)
+  }
+
+  const handleClick = () => {
+    if (searchResults.length) {
+      setDropdownOpen(true)
+    }
   }
 
   const handleClickOutside = useCallback(
@@ -40,25 +70,6 @@ export function Search() {
     [dropdownOpen],
   )
 
-  const handleSearch = async (searchString: string) => {
-    if (searchString.length) {
-      const responseBooks = getBooksBySearch(searchString)
-      const books = await responseBooks
-
-      setSearchResults(books)
-      setDropdownOpen(true)
-    } else {
-      setSearchResults([])
-      setDropdownOpen(false)
-    }
-  }
-
-  const handleClick = () => {
-    if (searchResults.length) {
-      setDropdownOpen(true)
-    }
-  }
-
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
 
@@ -66,8 +77,6 @@ export function Search() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [handleClickOutside])
-
-  const initialValues = { search: '' }
 
   return (
     <StyledForm ref={searchRef}>
@@ -90,10 +99,7 @@ export function Search() {
               name="search"
               placeholder="What are you looking for?"
               autoComplete="off"
-              onChange={(e) => {
-                handleChange(e)
-                debounce(handleSearch(e.target.value))
-              }}
+              onChange={(e) => handleSearchChange(e, handleChange)}
               onClick={handleClick}
               onBlur={handleBlur}
               value={values.search}
@@ -106,7 +112,9 @@ export function Search() {
                 <DropdownList>
                   {searchResults.map((book) => (
                     <li key={book.id}>
-                      <Link to={`/${BOOKS}/${book.id}`} onClick={closeDropdown}>
+                      <Link
+                        to={`/${BOOKS}/${book.id}`}
+                        onClick={() => handleClose(values)}>
                         <MenuItem>
                           <img
                             src={book.imgUrl}
@@ -128,13 +136,7 @@ export function Search() {
               )}
             </Dropdown>
             <SearchButton type="submit" disabled={isSubmitting} />
-            <ClearButton
-              type="button"
-              onClick={() => {
-                values.search = ''
-                setDropdownOpen(false)
-              }}
-            />
+            <ClearButton type="button" onClick={() => handleClose(values)} />
           </Form>
         )}
       </Formik>
