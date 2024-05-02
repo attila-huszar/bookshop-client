@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IconButton } from '../../../../components'
 import { useAppDispatch, useAppSelector } from '../../../../hooks'
@@ -14,7 +14,7 @@ import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
 import AccountDefaultIcon from '../../../../assets/svg/account_default.svg?react'
 import toast from 'react-hot-toast'
-import { useLocalStorage } from '../../../../hooks'
+import { useLocalStorage, useClickOutside } from '../../../../hooks'
 import { LOGIN } from '../../../../routes/pathConstants'
 import { Avatar } from '../../../Avatar/Avatar'
 
@@ -25,19 +25,11 @@ export function Account() {
   const dispatch = useAppDispatch()
   const { removeFromLocalStorage } = useLocalStorage()
   const navigate = useNavigate()
+  useClickOutside(menuOpen, setMenuOpen, menuRef)
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
   }
-
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
-      if (menuOpen && !menuRef.current?.contains(event.target as Element)) {
-        setMenuOpen(false)
-      }
-    },
-    [menuOpen],
-  )
 
   const handleLogout = () => {
     toggleMenu()
@@ -45,14 +37,6 @@ export function Account() {
     toast.success(`${user?.email} successfully logged out`)
     dispatch(logoutUser())
   }
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [handleClickOutside])
 
   return (
     <StyledMenu ref={menuRef}>

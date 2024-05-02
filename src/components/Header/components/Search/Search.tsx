@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import {
@@ -15,16 +15,18 @@ import { BOOKS } from '../../../../routes/pathConstants'
 import { getBooksBySearch } from '../../../../api/fetchData'
 import { IBook } from '../../../../interfaces'
 import { searchSchema } from '../../../../utils/validationSchema'
-import { useDebounce } from '../../../../hooks'
+import { useDebounce, useClickOutside } from '../../../../hooks'
 import LinkIcon from './../../../../assets/svg/link-square-02-stroke-rounded'
 
 export function Search() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchResults, setSearchResults] = useState([] as IBook[])
   const searchRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
+  useClickOutside(dropdownOpen, setDropdownOpen, searchRef)
 
   async function getSearchResults(searchString: string) {
     if (searchString.length) {
@@ -47,36 +49,17 @@ export function Search() {
     debouncedSearchResults(e.target.value)
   }
 
-  const handleClose = (values: { search: string }) => {
-    values.search = ''
-    setDropdownOpen(false)
-  }
-
   const handleClick = () => {
     if (searchResults.length) {
       setDropdownOpen(true)
     }
   }
 
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
-      if (
-        dropdownOpen &&
-        !searchRef.current?.contains(event.target as Element)
-      ) {
-        setDropdownOpen(false)
-      }
-    },
-    [dropdownOpen],
-  )
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [handleClickOutside])
+  const handleReset = (values: { search: string }) => {
+    setDropdownOpen(false)
+    values.search = ''
+    setSearchResults([])
+  }
 
   return (
     <StyledForm ref={searchRef}>
@@ -95,6 +78,7 @@ export function Search() {
         {({ values, handleChange, handleBlur, isSubmitting }) => (
           <Form>
             <SearchField
+              ref={inputRef}
               type="text"
               name="search"
               placeholder="What are you looking for?"
@@ -103,18 +87,15 @@ export function Search() {
               onClick={handleClick}
               onBlur={handleBlur}
               value={values.search}
-              $error={!!values.search && !searchResults.length}
             />
-            <Dropdown
-              $show={dropdownOpen}
-              $error={!!values.search && !searchResults.length}>
+            <Dropdown $show={dropdownOpen}>
               {searchResults.length ? (
                 <DropdownList>
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
                         to={`/${BOOKS}/${book.id}`}
-                        onClick={() => handleClose(values)}>
+                        onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img
                             src={book.imgUrl}
@@ -136,7 +117,13 @@ export function Search() {
               )}
             </Dropdown>
             <SearchButton type="submit" disabled={isSubmitting} />
-            <ClearButton type="button" onClick={() => handleClose(values)} />
+            <ClearButton
+              type="button"
+              onClick={() => {
+                handleReset(values)
+                inputRef.current?.focus()
+              }}
+            />
           </Form>
         )}
       </Formik>

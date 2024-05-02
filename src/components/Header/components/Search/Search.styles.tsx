@@ -13,16 +13,14 @@ export const StyledForm = styled.div`
   }
 `
 
-export const SearchField = styled.input<SearchTypes>`
+export const SearchField = styled.input`
   height: 36px;
   width: 20rem;
   padding: 0 12px 0 40px;
-  background-color: ${({ $error }) =>
-    $error ? 'rgb(255, 220, 220)' : 'var(--light-grey)'};
   border: none;
   border-radius: 10px;
   outline: none;
-  transition: background-color 0.3s ease;
+  background-color: var(--light-grey);
 `
 
 export const Dropdown = styled.div<SearchTypes>`
@@ -32,10 +30,8 @@ export const Dropdown = styled.div<SearchTypes>`
   display: none;
   width: 20rem;
   padding: 0.5rem;
-  background-color: ${({ $error }) =>
-    $error ? 'rgb(255, 220, 220)' : 'var(--light-grey)'};
   border-radius: 0 0 10px 10px;
-  transition: background-color 0.3s ease;
+  background-color: var(--light-grey);
 
   ${({ $show }) => $show && 'display: block;'}
 `
