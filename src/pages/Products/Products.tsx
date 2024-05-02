@@ -4,6 +4,7 @@ import { StyledProducts } from './Products.styles'
 import { Card } from '../../components'
 import { Loading } from '../../components'
 import { Error } from '../../components'
+import { Filter } from './components/Filter/Filter'
 
 export function Products() {
   const { booksData, booksAreLoading, booksError } =
@@ -19,9 +20,12 @@ export function Products() {
 
   return (
     <StyledProducts>
-      {booksData.map((book) => (
-        <Card key={book.id} book={book} />
-      ))}
+      <div>
+        {booksData.map((book) => (
+          <Card key={book.id} book={book} />
+        ))}
+      </div>
+      <Filter />
     </StyledProducts>
   )
 }
