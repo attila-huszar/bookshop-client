@@ -61,20 +61,18 @@ export function Search() {
     setSearchResults([])
   }
 
+  const handleSubmit = () => {
+    if (searchResults.length) {
+      navigate(`/${BOOKS}/${searchResults[0].id}`)
+    }
+  }
+
   return (
     <StyledForm ref={searchRef}>
       <Formik
         initialValues={initialValues}
         validationSchema={searchSchema}
-        onSubmit={(_, { setSubmitting }) => {
-          if (searchResults.length) {
-            navigate(`/${BOOKS}/${searchResults[0].id}`)
-          }
-
-          setTimeout(() => {
-            setSubmitting(false)
-          }, 500)
-        }}>
+        onSubmit={handleSubmit}>
         {({ values, handleChange, handleBlur, isSubmitting }) => (
           <Form>
             <SearchField
