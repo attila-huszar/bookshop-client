@@ -1,189 +1,286 @@
-import { useState } from 'react'
+import { Formik, Form, Field } from 'formik'
 import {
   StyledFilter,
   FilterOptions,
   InputFields,
-  Genre,
+  GenreCheckBoxes,
+  DiscountRadioButtons,
   Rating,
 } from './Filter.styles'
+import { IconButton } from '../../../../components'
 import { enforceMinMax } from '../../../../utils/enforceInputValues'
+import {
+  ControlledAccordion,
+  AccordionItem,
+  useAccordionProvider,
+} from '@szhsin/react-accordion'
+import Star from '../../../../assets/svg/star.svg?react'
+import StarSolid from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
-import RatingIcon from '../../../../assets/svg/star-stroke-rounded'
+
+const initialValues = {
+  genre: [],
+  price: [0, 50],
+  discount: 'all',
+  publishYear: [1700, 2020],
+  rating: 3,
+}
+
+const genreOptions = [
+  { value: 'sci-fi', label: 'Sci-fi' },
+  { value: 'drama', label: 'Drama' },
+  { value: 'horror', label: 'Horror' },
+]
+
+const priceOptions = [
+  { value: 'all', label: 'All Books' },
+  { value: 'discountedOnly', label: 'With Discount' },
+  { value: 'fullPriceOnly', label: 'Without Discount' },
+]
+
+const priceMin = initialValues.price[0]
+const priceMax = initialValues.price[1]
+const yearMin = initialValues.publishYear[0]
+const yearMax = initialValues.publishYear[1]
 
 const priceMarks = {
-  0: '$ 0',
-  50: '$ 50',
+  [priceMin]: `$ ${priceMin}`,
+  [priceMax]: `$ ${priceMax}`,
 }
 
 const yearMarks = {
-  1700: '1700',
-  2020: '2020',
+  [yearMin]: `${yearMin}`,
+  [yearMax]: `${yearMax}`,
 }
 
-const min = 0
-const max = 50
+interface InputEvent {
+  target: EventTarget & HTMLInputElement
+}
 
 export function Filter() {
-  const [priceValues, setPriceValues] = useState([0, 50])
-  const [discountSelect, setDiscountSelect] = useState('all')
-  const [yearValues, setYearValues] = useState([1700, 2020])
-  const [genreSelect, setGenreSelect] = useState()
-  const [ratingSelect, setRatingSelect] = useState()
+  const accordionProvider = useAccordionProvider({
+    allowMultiple: true,
+    transition: true,
+    transitionTimeout: 250,
+  })
+
+  const handleSubmit = () => {}
 
   return (
     <StyledFilter>
       <FilterOptions draggable="false">
-        <div>
-          <p>Price</p>
-          <Slider
-            range
-            min={min}
-            max={max}
-            value={priceValues}
-            defaultValue={priceValues}
-            step={1}
-            marks={priceMarks}
-            styles={{
-              track: {
-                backgroundColor: 'var(--secondary-color',
-              },
-              handle: {
-                opacity: 1,
-                border: 'none',
-                backgroundColor: 'var(--secondary-color)',
-              },
-              rail: { backgroundColor: 'var(--grey)' },
-            }}
-            onChange={(value) => setPriceValues(value as number[])}
-            allowCross={false}
-          />
-          <InputFields>
-            <input
-              type="number"
-              value={priceValues[0]}
-              onChange={(e) =>
-                setPriceValues([enforceMinMax(e.target), priceValues[1]])
-              }
-              min={min}
-              max={max}
-            />
-            -
-            <input
-              type="number"
-              value={priceValues[1]}
-              onChange={(e) =>
-                setPriceValues([priceValues[0], enforceMinMax(e.target)])
-              }
-              min={min}
-              max={max}
-            />
-          </InputFields>
-        </div>
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {({ values, handleChange, setFieldValue, setValues }) => {
+            return (
+              <Form>
+                <ControlledAccordion providerValue={accordionProvider}>
+                  <AccordionItem header="Genre" initialEntered>
+                    {genreOptions.map((item) => (
+                      <GenreCheckBoxes key={item.value}>
+                        <Field
+                          name="genre"
+                          type="checkbox"
+                          value={item.value}
+                          id={item.value}
+                        />
+                        <label htmlFor={item.value}>{item.label}</label>
+                      </GenreCheckBoxes>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setValues((prev) => ({ ...prev, genre: [] }))
+                      }>
+                      Clear selection
+                    </button>
+                  </AccordionItem>
 
-        <div>
-          <p>Discount</p>
-          <div>
-            <input
-              type="radio"
-              id="all"
-              name="discountSelect"
-              value="all"
-              checked={discountSelect === 'all'}
-              onChange={() => setDiscountSelect('all')}
-            />
-            <label htmlFor="all">All Books</label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              id="discountOnly"
-              name="discountSelect"
-              value="discountOnly"
-              checked={discountSelect === 'discountOnly'}
-              onChange={() => setDiscountSelect('discountOnly')}
-            />
-            <label htmlFor="discountOnly">With discount only</label>
-          </div>
-        </div>
+                  <AccordionItem header="Price" initialEntered>
+                    <Slider
+                      range
+                      min={priceMin}
+                      max={priceMax}
+                      value={values.price}
+                      defaultValue={values.price}
+                      step={1}
+                      marks={priceMarks}
+                      styles={{
+                        track: {
+                          backgroundColor: 'var(--secondary-color',
+                        },
+                        handle: {
+                          opacity: 1,
+                          border: 'none',
+                          backgroundColor: 'var(--secondary-color)',
+                        },
+                        rail: { backgroundColor: 'var(--grey)' },
+                      }}
+                      onChange={(value) => setFieldValue('price', value)}
+                      allowCross={false}
+                    />
+                    <InputFields>
+                      <Field
+                        type="number"
+                        inputMode="numeric"
+                        value={values.price[0]}
+                        onChange={(e: InputEvent) =>
+                          setFieldValue('price', [
+                            e.target.value,
+                            values.price[1],
+                          ])
+                        }
+                        onBlur={(e: InputEvent) =>
+                          setFieldValue('price', [
+                            enforceMinMax(e.target),
+                            values.price[1],
+                          ])
+                        }
+                        min={priceMin}
+                        max={priceMax}
+                      />
+                      -
+                      <Field
+                        type="number"
+                        inputMode="numeric"
+                        value={values.price[1]}
+                        onChange={(e: InputEvent) =>
+                          setFieldValue('price', [
+                            values.price[0],
+                            e.target.value,
+                          ])
+                        }
+                        onBlur={(e: InputEvent) =>
+                          setFieldValue('price', [
+                            values.price[0],
+                            enforceMinMax(e.target),
+                          ])
+                        }
+                        min={priceMin}
+                        max={priceMax}
+                      />
+                    </InputFields>
+                  </AccordionItem>
 
-        <div>
-          <p>Publication Year</p>
-          <Slider
-            range
-            min={1700}
-            max={2020}
-            value={yearValues}
-            defaultValue={yearValues}
-            step={10}
-            marks={yearMarks}
-            styles={{
-              track: {
-                backgroundColor: 'var(--secondary-color',
-              },
-              handle: {
-                opacity: 1,
-                border: 'none',
-                backgroundColor: 'var(--secondary-color)',
-              },
-              rail: { backgroundColor: 'var(--grey)' },
-            }}
-            onChange={(value) => setYearValues(value as number[])}
-            allowCross={false}
-          />
-          <InputFields>
-            <input
-              type="number"
-              value={yearValues[0]}
-              onChange={(e) =>
-                setYearValues([enforceMinMax(e.target), yearValues[1]])
-              }
-              min={min}
-              max={max}
-            />
-            -
-            <input
-              type="number"
-              value={yearValues[1]}
-              onChange={(e) =>
-                setYearValues([yearValues[0], enforceMinMax(e.target)])
-              }
-              min={min}
-              max={max}
-            />
-          </InputFields>
-        </div>
+                  <AccordionItem header="Discount">
+                    {priceOptions.map((item) => (
+                      <DiscountRadioButtons key={item.value}>
+                        <Field
+                          type="radio"
+                          name="discount"
+                          value={item.value}
+                          id={item.value}
+                          onChange={handleChange}
+                        />
+                        <label htmlFor={item.value}>{item.label}</label>
+                      </DiscountRadioButtons>
+                    ))}
+                  </AccordionItem>
 
-        <div>
-          <p>Genre</p>
-          <Genre>
-            <input
-              type="checkbox"
-              id="sci-fi"
-              checked={genreSelect}
-              onChange={() => setGenreSelect}
-            />
-            <label htmlFor="sci-fi">Sci-fi</label>
-            <input
-              type="checkbox"
-              id="drama"
-              checked={genreSelect}
-              onChange={() => setGenreSelect}
-            />
-            <label htmlFor="drama">Drama</label>
-          </Genre>
-        </div>
+                  <AccordionItem header="Publication Year">
+                    <Slider
+                      range
+                      min={yearMin}
+                      max={yearMax}
+                      value={values.publishYear}
+                      defaultValue={values.publishYear}
+                      step={10}
+                      marks={yearMarks}
+                      styles={{
+                        track: {
+                          backgroundColor: 'var(--secondary-color',
+                        },
+                        handle: {
+                          opacity: 1,
+                          border: 'none',
+                          backgroundColor: 'var(--secondary-color)',
+                        },
+                        rail: { backgroundColor: 'var(--grey)' },
+                      }}
+                      onChange={(value) => setFieldValue('publishYear', value)}
+                      allowCross={false}
+                    />
+                    <InputFields>
+                      <Field
+                        type="number"
+                        inputMode="numeric"
+                        value={values.publishYear[0]}
+                        onChange={(e: InputEvent) =>
+                          setFieldValue('publishYear', [
+                            e.target.value,
+                            values.publishYear[1],
+                          ])
+                        }
+                        onBlur={(e: InputEvent) =>
+                          setFieldValue('publishYear', [
+                            enforceMinMax(e.target),
+                            values.publishYear[1],
+                          ])
+                        }
+                        min={yearMin}
+                        max={yearMax}
+                      />
+                      -
+                      <Field
+                        type="number"
+                        inputMode="numeric"
+                        value={values.publishYear[1]}
+                        onChange={(e: InputEvent) =>
+                          setFieldValue('publishYear', [
+                            values.publishYear[0],
+                            e.target.value,
+                          ])
+                        }
+                        onBlur={(e: InputEvent) =>
+                          setFieldValue('publishYear', [
+                            values.publishYear[0],
+                            enforceMinMax(e.target),
+                          ])
+                        }
+                        min={yearMin}
+                        max={yearMax}
+                      />
+                    </InputFields>
+                  </AccordionItem>
 
-        <div>
-          <p>Rating</p>
-          <Rating>
-            <RatingIcon />
-            <RatingIcon />
-            <RatingIcon />
-            <RatingIcon />
-            <RatingIcon />
-          </Rating>
-        </div>
+                  <AccordionItem header="Rating">
+                    <Rating>
+                      {[...Array(values.rating)].map((_, idx) => {
+                        const ratingValue = idx + 1
+                        return (
+                          <IconButton
+                            key={ratingValue}
+                            icon={<StarSolid color="var(--secondary-color)" />}
+                            type="button"
+                            onClick={() => {
+                              setFieldValue('rating', ratingValue)
+                            }}
+                          />
+                        )
+                      })}
+                      {[...Array(5 - values.rating)].map((_, idx) => {
+                        const ratingValue = idx + 1
+                        return (
+                          <IconButton
+                            key={ratingValue}
+                            icon={<Star color="var(--grey)" />}
+                            type="button"
+                            onClick={() => {
+                              setFieldValue(
+                                'rating',
+                                values.rating + ratingValue,
+                              )
+                            }}
+                          />
+                        )
+                      })}
+                    </Rating>
+                  </AccordionItem>
+                </ControlledAccordion>
+              </Form>
+            )
+          }}
+        </Formik>
       </FilterOptions>
     </StyledFilter>
   )

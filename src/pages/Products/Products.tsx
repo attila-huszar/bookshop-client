@@ -20,11 +20,11 @@ export function Products() {
 
   return (
     <StyledProducts>
-      <div>
+      <main>
         {booksData.map((book) => (
           <Card key={book.id} book={book} />
         ))}
-      </div>
+      </main>
       <Filter />
     </StyledProducts>
   )
