@@ -1,34 +1,19 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
 import { IconButton } from '../../../../components'
 import { menuLinks } from '../../../../lib/menuLinks'
+import { useClickOutside } from '../../../../hooks'
 import MenuIcon from '../../../../assets/svg/menu.svg?react'
 
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  useClickOutside(menuOpen, setMenuOpen, menuRef)
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
   }
-
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
-      if (menuOpen && !menuRef.current?.contains(event.target as Element)) {
-        setMenuOpen(false)
-      }
-    },
-    [menuOpen],
-  )
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [handleClickOutside])
 
   return (
     <StyledMenu ref={menuRef}>
