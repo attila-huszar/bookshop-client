@@ -8,6 +8,7 @@ import {
   fetchAllNews,
   getUserByID,
   fetchCartItems,
+  booksGenres,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -19,6 +20,7 @@ function App() {
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
       dispatch(booksRandomize())
+      dispatch(booksGenres())
     })
     dispatch(fetchAllNews())
 

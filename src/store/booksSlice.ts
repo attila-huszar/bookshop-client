@@ -3,9 +3,10 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchBooks } from '../api/fetchData'
+import { fetchBooks, getFilteredBooks } from '../api/fetchData'
 import { IBookStore } from '../interfaces'
 import { getRandomBooks } from '../utils/getRandomBooks'
+import { IFilter } from '../interfaces/IFilter'
 
 const initialState: IBookStore = {
   booksData: [],
@@ -13,6 +14,7 @@ const initialState: IBookStore = {
   bookIsLoading: false,
   booksError: null,
   booksRandomize: [],
+  booksGenres: [],
 }
 
 const booksSlice = createSlice({
@@ -21,6 +23,16 @@ const booksSlice = createSlice({
   reducers: {
     booksRandomize: (state) => {
       state.booksRandomize = getRandomBooks(state.booksData, 4)
+    },
+    booksGenres: (state) => {
+      const genreSet = new Set(state.booksData.map((book) => book.genre))
+
+      const genres = Array.from(genreSet).map((genre) => ({
+        value: genre,
+        label: genre,
+      }))
+
+      state.booksGenres = genres
     },
   },
   extraReducers: (builder) => {
@@ -47,6 +59,9 @@ const booksSlice = createSlice({
         state.booksError = action.payload as SerializedError
         state.bookIsLoading = false
       })
+      .addCase(filterBooks.fulfilled, (state, action) => {
+        state.booksData = action.payload
+      })
   },
 })
 
@@ -60,5 +75,11 @@ export const fetchBookById = createAsyncThunk(
   (id: string, { rejectWithValue }) => fetchBooks(id, rejectWithValue),
 )
 
+export const filterBooks = createAsyncThunk(
+  'filterBooks',
+  (criteria: IFilter, { rejectWithValue }) =>
+    getFilteredBooks(criteria, rejectWithValue),
+)
+
 export const booksReducer = booksSlice.reducer
-export const { booksRandomize } = booksSlice.actions
+export const { booksRandomize, booksGenres } = booksSlice.actions

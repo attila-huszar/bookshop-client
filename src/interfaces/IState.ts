@@ -7,6 +7,7 @@ export interface IBookStore {
   bookIsLoading: boolean
   booksError: SerializedError | null
   booksRandomize: IBook[]
+  booksGenres: { value: string; label: string }[]
 }
 
 export interface IAuthorStore {

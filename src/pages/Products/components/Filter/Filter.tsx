@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../../../hooks'
+import { booksSelector, filterBooks } from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
   StyledFilter,
@@ -21,7 +24,7 @@ import StarFilled from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
-import { useRef, useState } from 'react'
+import { IFilter } from '../../../../interfaces/IFilter'
 
 const initialValues = {
   genre: [],
@@ -30,12 +33,6 @@ const initialValues = {
   publishYear: [1700, 2020],
   rating: 3,
 }
-
-const genreOptions = [
-  { value: 'sci-fi', label: 'Sci-fi' },
-  { value: 'drama', label: 'Drama' },
-  { value: 'horror', label: 'Horror' },
-]
 
 const priceOptions = [
   { value: 'all', label: 'All Books' },
@@ -63,6 +60,8 @@ interface InputEvent {
 }
 
 export function Filter() {
+  const dispatch = useAppDispatch()
+  const { booksGenres } = useAppSelector(booksSelector)
   const [isOverflowing, setIsOverflowing] = useState(false)
   const overflowingElem = useRef(null)
 
@@ -100,19 +99,23 @@ export function Filter() {
     observer.observe(element)
   }
 
-  const handleSubmit = () => {}
+  const handleSubmit = (values: IFilter) => {
+    dispatch(filterBooks(values))
+  }
 
   return (
     <StyledFilter ref={overflowingElem}>
       <FilterOptions draggable="false">
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={(values) => handleSubmit(values)}>
           {({ values, handleChange, setFieldValue, setValues }) => {
             return (
               <Form>
                 <ControlledAccordion providerValue={accordionProvider}>
                   <AccordionItem header="Genre" itemKey="0" initialEntered>
                     <GenreCheckBoxes>
-                      {genreOptions.map((item) => (
+                      {booksGenres.map((item) => (
                         <div key={item.value}>
                           <Field
                             name="genre"
