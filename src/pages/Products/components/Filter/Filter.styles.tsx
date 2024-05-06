@@ -3,9 +3,9 @@ import caretDown from '../../../../assets/svg/caret_down.svg'
 import { StyleTypes } from '../../../../components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
-  position: absolute;
-  top: 10.25rem;
-  right: 6rem;
+  position: sticky;
+  top: 8rem;
+  right: 0;
   height: fit-content;
   width: auto;
   padding: 1rem;
@@ -68,7 +68,11 @@ export const FilterOptions = styled.div`
 
 export const GenreCheckBoxes = styled.div`
   display: flex;
-  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+
+  & > div {
+    width: 50%;
+  }
 
   input {
     margin-right: 0.5rem;

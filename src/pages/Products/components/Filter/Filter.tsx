@@ -17,9 +17,11 @@ import {
   useAccordionProvider,
 } from '@szhsin/react-accordion'
 import Star from '../../../../assets/svg/star.svg?react'
-import StarSolid from '../../../../assets/svg/star_solid.svg?react'
+import StarFilled from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
+import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
+import { useRef, useState } from 'react'
 
 const initialValues = {
   genre: [],
@@ -61,34 +63,67 @@ interface InputEvent {
 }
 
 export function Filter() {
+  const [isOverflowing, setIsOverflowing] = useState(false)
+  const overflowingElem = useRef(null)
+
   const accordionProvider = useAccordionProvider({
     allowMultiple: true,
     transition: true,
     transitionTimeout: 250,
+    onStateChange(e) {
+      const currentItem = Number(e.key)
+
+      if (e.current.status === 'preEnter' && currentItem > 0) {
+        checkOverflow()
+        isOverflowing && toggle(`${currentItem - 1}`)
+      }
+    },
   })
+
+  const { toggle } = accordionProvider
+
+  function checkOverflow() {
+    const element = overflowingElem.current
+
+    if (!element) return
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1,
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsOverflowing(!entry.isIntersecting)
+    }, observerOptions)
+
+    observer.observe(element)
+  }
 
   const handleSubmit = () => {}
 
   return (
-    <StyledFilter>
+    <StyledFilter ref={overflowingElem}>
       <FilterOptions draggable="false">
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
           {({ values, handleChange, setFieldValue, setValues }) => {
             return (
               <Form>
                 <ControlledAccordion providerValue={accordionProvider}>
-                  <AccordionItem header="Genre" initialEntered>
-                    {genreOptions.map((item) => (
-                      <GenreCheckBoxes key={item.value}>
-                        <Field
-                          name="genre"
-                          type="checkbox"
-                          value={item.value}
-                          id={item.value}
-                        />
-                        <label htmlFor={item.value}>{item.label}</label>
-                      </GenreCheckBoxes>
-                    ))}
+                  <AccordionItem header="Genre" itemKey="0" initialEntered>
+                    <GenreCheckBoxes>
+                      {genreOptions.map((item) => (
+                        <div key={item.value}>
+                          <Field
+                            name="genre"
+                            type="checkbox"
+                            value={item.value}
+                            id={item.value}
+                          />
+                          <label htmlFor={item.value}>{item.label}</label>
+                        </div>
+                      ))}
+                    </GenreCheckBoxes>
                     <button
                       type="button"
                       onClick={() =>
@@ -98,7 +133,7 @@ export function Filter() {
                     </button>
                   </AccordionItem>
 
-                  <AccordionItem header="Price" initialEntered>
+                  <AccordionItem header="Price" itemKey="1" initialEntered>
                     <Slider
                       range
                       min={priceMin}
@@ -107,17 +142,7 @@ export function Filter() {
                       defaultValue={values.price}
                       step={1}
                       marks={priceMarks}
-                      styles={{
-                        track: {
-                          backgroundColor: 'var(--secondary-color',
-                        },
-                        handle: {
-                          opacity: 1,
-                          border: 'none',
-                          backgroundColor: 'var(--secondary-color)',
-                        },
-                        rail: { backgroundColor: 'var(--grey)' },
-                      }}
+                      styles={sliderStyles}
                       onChange={(value) => setFieldValue('price', value)}
                       allowCross={false}
                     />
@@ -164,7 +189,7 @@ export function Filter() {
                     </InputFields>
                   </AccordionItem>
 
-                  <AccordionItem header="Discount" initialEntered>
+                  <AccordionItem header="Discount" itemKey="2" initialEntered>
                     {priceOptions.map((item) => (
                       <DiscountRadioButtons key={item.value}>
                         <Field
@@ -179,7 +204,7 @@ export function Filter() {
                     ))}
                   </AccordionItem>
 
-                  <AccordionItem header="Publication Year">
+                  <AccordionItem header="Publication Year" itemKey="3">
                     <Slider
                       range
                       min={yearMin}
@@ -188,17 +213,7 @@ export function Filter() {
                       defaultValue={values.publishYear}
                       step={10}
                       marks={yearMarks}
-                      styles={{
-                        track: {
-                          backgroundColor: 'var(--secondary-color',
-                        },
-                        handle: {
-                          opacity: 1,
-                          border: 'none',
-                          backgroundColor: 'var(--secondary-color)',
-                        },
-                        rail: { backgroundColor: 'var(--grey)' },
-                      }}
+                      styles={sliderStyles}
                       onChange={(value) => setFieldValue('publishYear', value)}
                       allowCross={false}
                     />
@@ -251,34 +266,25 @@ export function Filter() {
                     </InputFields>
                   </AccordionItem>
 
-                  <AccordionItem header="Rating">
+                  <AccordionItem header="Rating" itemKey="4">
                     <Rating>
-                      {[...Array(values.rating)].map((_, idx) => {
-                        const ratingValue = idx + 1
+                      {Array.from({ length: 5 }, (_, idx) => {
+                        const isFilled = idx < values.rating
+                        const color = isFilled
+                          ? 'var(--secondary-color)'
+                          : 'var(--grey)'
                         return (
                           <IconButton
-                            key={`rating-${ratingValue}`}
-                            icon={<StarSolid color="var(--secondary-color)" />}
-                            type="button"
-                            onClick={() => {
-                              setFieldValue('rating', ratingValue)
-                            }}
-                          />
-                        )
-                      })}
-                      {[...Array(5 - values.rating)].map((_, idx) => {
-                        const ratingValue = idx + 1
-                        return (
-                          <IconButton
-                            key={`rating-minus-${ratingValue}`}
-                            icon={<Star color="var(--grey)" />}
-                            type="button"
-                            onClick={() => {
-                              setFieldValue(
-                                'rating',
-                                values.rating + ratingValue,
+                            key={`rating-${idx + 1}`}
+                            icon={
+                              isFilled ? (
+                                <StarFilled color={color} />
+                              ) : (
+                                <Star color={color} />
                               )
-                            }}
+                            }
+                            type="button"
+                            onClick={() => setFieldValue('rating', idx + 1)}
                           />
                         )
                       })}
