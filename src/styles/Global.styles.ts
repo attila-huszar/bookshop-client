@@ -44,3 +44,15 @@ export default createGlobalStyle`
     -moz-appearance: textfield;
   }
 `
+
+export const sliderStyles = {
+  track: {
+    backgroundColor: 'var(--secondary-color',
+  },
+  handle: {
+    opacity: 1,
+    border: 'none',
+    backgroundColor: 'var(--secondary-color)',
+  },
+  rail: { backgroundColor: 'var(--grey)' },
+}

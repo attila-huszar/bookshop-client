@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { StyleTypes } from './Button.types'
 
 const height = {
+  xs: '1.5rem',
   sm: '2.25rem',
   md: '2.5rem',
   lg: '3rem',
@@ -9,6 +10,7 @@ const height = {
 }
 
 const width = {
+  xs: '5rem',
   sm: '7.5rem',
   md: '12rem',
   lg: '15rem',
