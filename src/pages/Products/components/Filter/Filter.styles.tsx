@@ -1,9 +1,10 @@
 import styled from 'styled-components'
 import caretDown from '../../../../assets/svg/caret_down.svg'
+import { StyleTypes } from '../../../../components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
-  position: fixed;
-  top: 11rem;
+  position: absolute;
+  top: 10.25rem;
   right: 6rem;
   height: fit-content;
   width: auto;
@@ -85,9 +86,10 @@ export const DiscountRadioButtons = styled.div`
 export const InputFields = styled.div`
   display: flex;
   justify-content: space-between;
+  height: 1.25rem;
+  line-height: normal;
 
   input {
-    height: 1.25rem;
     width: 4rem;
     text-align: center;
   }
@@ -96,17 +98,43 @@ export const InputFields = styled.div`
 export const Rating = styled.div`
   display: flex;
   justify-content: space-between;
+`
 
-  input[type='radio'] {
-    appearance: none;
-    background-color: #fff;
-    margin: 0;
-    font: inherit;
-    color: currentColor;
-    width: 1.15em;
-    height: 1.15em;
-    border: 0.15em solid currentColor;
-    border-radius: 50%;
-    transform: translateY(-0.075em);
+export const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: space-around;
+`
+
+export const CustomButton = styled.button<StyleTypes>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  height: 1.5rem;
+  width: ${({ $inverted }) => ($inverted ? '3rem' : '6rem')};
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
+  background-color: ${({ $inverted }) =>
+    $inverted ? '#fff' : 'var(--primary-color)'};
+  box-shadow: ${({ $shadowed }) =>
+    $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
+  border: none;
+  border-radius: 5px;
+  outline: 1px solid var(--primary-color);
+  outline-offset: -1px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    color: ${({ $inverted }) => ($inverted ? '#fff' : 'var(--primary-color)')};
+    background-color: ${({ $inverted }) =>
+      $inverted ? 'var(--primary-color)' : '#fff'};
+  }
+
+  &:disabled {
+    color: #fff;
+    background-color: var(--primary-faded);
+    outline: 1px solid var(--primary-faded);
   }
 `

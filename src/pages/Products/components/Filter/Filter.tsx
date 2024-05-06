@@ -6,6 +6,8 @@ import {
   GenreCheckBoxes,
   DiscountRadioButtons,
   Rating,
+  ButtonWrapper,
+  CustomButton,
 } from './Filter.styles'
 import { IconButton } from '../../../../components'
 import { enforceMinMax } from '../../../../utils/enforceInputValues'
@@ -132,7 +134,7 @@ export function Filter() {
                         }
                         onBlur={(e: InputEvent) =>
                           setFieldValue('price', [
-                            enforceMinMax(e.target),
+                            Math.min(enforceMinMax(e.target), values.price[1]),
                             values.price[1],
                           ])
                         }
@@ -153,7 +155,7 @@ export function Filter() {
                         onBlur={(e: InputEvent) =>
                           setFieldValue('price', [
                             values.price[0],
-                            enforceMinMax(e.target),
+                            Math.max(enforceMinMax(e.target), values.price[0]),
                           ])
                         }
                         min={priceMin}
@@ -162,7 +164,7 @@ export function Filter() {
                     </InputFields>
                   </AccordionItem>
 
-                  <AccordionItem header="Discount">
+                  <AccordionItem header="Discount" initialEntered>
                     {priceOptions.map((item) => (
                       <DiscountRadioButtons key={item.value}>
                         <Field
@@ -213,7 +215,10 @@ export function Filter() {
                         }
                         onBlur={(e: InputEvent) =>
                           setFieldValue('publishYear', [
-                            enforceMinMax(e.target),
+                            Math.min(
+                              enforceMinMax(e.target),
+                              values.publishYear[1],
+                            ),
                             values.publishYear[1],
                           ])
                         }
@@ -234,7 +239,10 @@ export function Filter() {
                         onBlur={(e: InputEvent) =>
                           setFieldValue('publishYear', [
                             values.publishYear[0],
-                            enforceMinMax(e.target),
+                            Math.max(
+                              enforceMinMax(e.target),
+                              values.publishYear[0],
+                            ),
                           ])
                         }
                         min={yearMin}
@@ -249,7 +257,7 @@ export function Filter() {
                         const ratingValue = idx + 1
                         return (
                           <IconButton
-                            key={ratingValue}
+                            key={`rating-${ratingValue}`}
                             icon={<StarSolid color="var(--secondary-color)" />}
                             type="button"
                             onClick={() => {
@@ -262,7 +270,7 @@ export function Filter() {
                         const ratingValue = idx + 1
                         return (
                           <IconButton
-                            key={ratingValue}
+                            key={`rating-minus-${ratingValue}`}
                             icon={<Star color="var(--grey)" />}
                             type="button"
                             onClick={() => {
@@ -277,6 +285,12 @@ export function Filter() {
                     </Rating>
                   </AccordionItem>
                 </ControlledAccordion>
+                <ButtonWrapper>
+                  <CustomButton type="reset" $inverted>
+                    Reset
+                  </CustomButton>
+                  <CustomButton type="submit">Submit</CustomButton>
+                </ButtonWrapper>
               </Form>
             )
           }}

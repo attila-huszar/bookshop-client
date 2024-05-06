@@ -1,5 +1,5 @@
 export type StyleTypes = {
-  $size?: 'sm' | 'md' | 'lg' | 'wide'
+  $size?: 'xs' | 'sm' | 'md' | 'lg' | 'wide'
   $textSize?: 'sm' | 'md' | 'lg' | 'xl'
   $shadowed?: boolean
   $withCart?: boolean
