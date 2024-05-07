@@ -1,6 +1,11 @@
 import { useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../../hooks'
-import { booksSelector, filterBooks } from '../../../../store'
+import {
+  booksSelector,
+  fetchAllBooks,
+  filterBooks,
+  setBooksFilters,
+} from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
   StyledFilter,
@@ -19,12 +24,12 @@ import {
   AccordionItem,
   useAccordionProvider,
 } from '@szhsin/react-accordion'
+import { IFilter, IInputEvent } from '../../../../interfaces'
 import Star from '../../../../assets/svg/star.svg?react'
 import StarFilled from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
-import { IFilter } from '../../../../interfaces/IFilter'
 
 const initialValues = {
   genre: [],
@@ -55,13 +60,9 @@ const yearMarks = {
   [yearMax]: `${yearMax}`,
 }
 
-interface InputEvent {
-  target: EventTarget & HTMLInputElement
-}
-
 export function Filter() {
   const dispatch = useAppDispatch()
-  const { booksGenres } = useAppSelector(booksSelector)
+  const { booksFilters } = useAppSelector(booksSelector)
   const [isOverflowing, setIsOverflowing] = useState(false)
   const overflowingElem = useRef(null)
 
@@ -100,7 +101,33 @@ export function Filter() {
   }
 
   const handleSubmit = (values: IFilter) => {
-    dispatch(filterBooks(values))
+    dispatch(filterBooks({ ...values, genre: booksFilters.active.genre }))
+  }
+
+  const handleFormReset = () => {
+    dispatch(fetchAllBooks())
+    dispatch(
+      setBooksFilters({
+        ...booksFilters,
+        active: {},
+      }),
+    )
+  }
+
+  const handleGenreFilterChange = (e: IInputEvent) => {
+    dispatch(setBooksFilters(e.target.value))
+  }
+
+  const handleGenreFilterClear = () => {
+    dispatch(
+      setBooksFilters({
+        ...booksFilters,
+        active: {
+          ...booksFilters.active,
+          genre: [],
+        },
+      }),
+    )
   }
 
   return (
@@ -108,30 +135,31 @@ export function Filter() {
       <FilterOptions draggable="false">
         <Formik
           initialValues={initialValues}
-          onSubmit={(values) => handleSubmit(values)}>
-          {({ values, handleChange, setFieldValue, setValues }) => {
+          onSubmit={(values) => handleSubmit(values)}
+          onReset={handleFormReset}>
+          {({ values, handleChange, setFieldValue }) => {
             return (
               <Form>
                 <ControlledAccordion providerValue={accordionProvider}>
                   <AccordionItem header="Genre" itemKey="0" initialEntered>
                     <GenreCheckBoxes>
-                      {booksGenres.map((item) => (
-                        <div key={item.value}>
+                      {booksFilters.available.genre.map((filter) => (
+                        <div key={filter}>
                           <Field
                             name="genre"
                             type="checkbox"
-                            value={item.value}
-                            id={item.value}
+                            value={filter}
+                            id={filter}
+                            onChange={(e: IInputEvent) =>
+                              handleGenreFilterChange(e)
+                            }
+                            checked={booksFilters.active.genre.includes(filter)}
                           />
-                          <label htmlFor={item.value}>{item.label}</label>
+                          <label htmlFor={filter}>{filter}</label>
                         </div>
                       ))}
                     </GenreCheckBoxes>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setValues((prev) => ({ ...prev, genre: [] }))
-                      }>
+                    <button type="button" onClick={handleGenreFilterClear}>
                       Clear selection
                     </button>
                   </AccordionItem>
@@ -154,13 +182,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.price[0]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('price', [
                             e.target.value,
                             values.price[1],
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('price', [
                             Math.min(enforceMinMax(e.target), values.price[1]),
                             values.price[1],
@@ -174,13 +202,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.price[1]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('price', [
                             values.price[0],
                             e.target.value,
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('price', [
                             values.price[0],
                             Math.max(enforceMinMax(e.target), values.price[0]),
@@ -225,13 +253,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.publishYear[0]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             e.target.value,
                             values.publishYear[1],
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             Math.min(
                               enforceMinMax(e.target),
@@ -248,13 +276,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.publishYear[1]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             values.publishYear[0],
                             e.target.value,
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             values.publishYear[0],
                             Math.max(

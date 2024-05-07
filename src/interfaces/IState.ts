@@ -6,8 +6,11 @@ export interface IBookStore {
   booksAreLoading: boolean
   bookIsLoading: boolean
   booksError: SerializedError | null
-  booksRandomize: IBook[]
-  booksGenres: { value: string; label: string }[]
+  booksRandomized: IBook[]
+  booksFilters: {
+    available: { genre: string[] }
+    active: { genre: string[] }
+  }
 }
 
 export interface IAuthorStore {

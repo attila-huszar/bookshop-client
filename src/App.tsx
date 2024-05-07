@@ -4,11 +4,11 @@ import { useEffect } from 'react'
 import { useAppDispatch } from './hooks'
 import {
   fetchAllBooks,
-  booksRandomize,
   fetchAllNews,
-  getUserByID,
   fetchCartItems,
-  booksGenres,
+  getUserByID,
+  getBooksRandomized,
+  getBooksFilters,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -19,8 +19,8 @@ function App() {
 
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
-      dispatch(booksRandomize())
-      dispatch(booksGenres())
+      dispatch(getBooksRandomized())
+      dispatch(getBooksFilters())
     })
     dispatch(fetchAllNews())
 

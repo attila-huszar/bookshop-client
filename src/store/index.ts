@@ -1,9 +1,10 @@
 export {
   fetchAllBooks,
   fetchBookById,
-  booksRandomize,
-  booksGenres,
+  getBooksRandomized,
   filterBooks,
+  getBooksFilters,
+  setBooksFilters,
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'

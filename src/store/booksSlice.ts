@@ -13,26 +13,40 @@ const initialState: IBookStore = {
   booksAreLoading: false,
   bookIsLoading: false,
   booksError: null,
-  booksRandomize: [],
-  booksGenres: [],
+  booksFilters: {
+    available: {
+      genre: [],
+    },
+    active: {
+      genre: [],
+    },
+  },
+  booksRandomized: [],
 }
 
 const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {
-    booksRandomize: (state) => {
-      state.booksRandomize = getRandomBooks(state.booksData, 4)
+    getBooksRandomized: (state) => {
+      state.booksRandomized = getRandomBooks(state.booksData, 4)
     },
-    booksGenres: (state) => {
-      const genreSet = new Set(state.booksData.map((book) => book.genre))
+    getBooksFilters: (state) => {
+      const genres = [...new Set(state.booksData.map((book) => book.genre))]
+      state.booksFilters.available.genre = genres
+    },
+    setBooksFilters: (state, action) => {
+      if (typeof action.payload === 'string') {
+        const genreIdx = state.booksFilters.active.genre.indexOf(action.payload)
 
-      const genres = Array.from(genreSet).map((genre) => ({
-        value: genre,
-        label: genre,
-      }))
-
-      state.booksGenres = genres
+        if (genreIdx !== -1) {
+          state.booksFilters.active.genre.splice(genreIdx, 1)
+        } else {
+          state.booksFilters.active.genre.push(action.payload)
+        }
+      } else {
+        state.booksFilters.active.genre = []
+      }
     },
   },
   extraReducers: (builder) => {
@@ -82,4 +96,5 @@ export const filterBooks = createAsyncThunk(
 )
 
 export const booksReducer = booksSlice.reducer
-export const { booksRandomize, booksGenres } = booksSlice.actions
+export const { getBooksRandomized, getBooksFilters, setBooksFilters } =
+  booksSlice.actions
