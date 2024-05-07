@@ -2,8 +2,8 @@ export {
   fetchAllBooks,
   fetchBookById,
   getBooksRandomized,
+  getSearchOptions,
   filterBooks,
-  getBooksFilters,
   setBooksFilters,
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'

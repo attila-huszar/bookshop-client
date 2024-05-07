@@ -142,23 +142,27 @@ export function Filter() {
               <Form>
                 <ControlledAccordion providerValue={accordionProvider}>
                   <AccordionItem header="Genre" itemKey="0" initialEntered>
-                    <GenreCheckBoxes>
-                      {booksFilters.available.genre.map((filter) => (
-                        <div key={filter}>
-                          <Field
-                            name="genre"
-                            type="checkbox"
-                            value={filter}
-                            id={filter}
-                            onChange={(e: IInputEvent) =>
-                              handleGenreFilterChange(e)
-                            }
-                            checked={booksFilters.active.genre.includes(filter)}
-                          />
-                          <label htmlFor={filter}>{filter}</label>
-                        </div>
-                      ))}
-                    </GenreCheckBoxes>
+                    {booksFilters.available.genre && (
+                      <GenreCheckBoxes>
+                        {booksFilters.available.genre.map((filter) => (
+                          <div key={filter}>
+                            <Field
+                              name="genre"
+                              type="checkbox"
+                              value={filter}
+                              id={filter}
+                              onChange={(e: IInputEvent) =>
+                                handleGenreFilterChange(e)
+                              }
+                              checked={booksFilters.active.genre.includes(
+                                filter,
+                              )}
+                            />
+                            <label htmlFor={filter}>{filter}</label>
+                          </div>
+                        ))}
+                      </GenreCheckBoxes>
+                    )}
                     <button type="button" onClick={handleGenreFilterClear}>
                       Clear selection
                     </button>
@@ -242,7 +246,7 @@ export function Filter() {
                       max={yearMax}
                       value={values.publishYear}
                       defaultValue={values.publishYear}
-                      step={10}
+                      step={25}
                       marks={yearMarks}
                       styles={sliderStyles}
                       onChange={(value) => setFieldValue('publishYear', value)}

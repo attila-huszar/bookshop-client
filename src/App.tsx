@@ -8,7 +8,7 @@ import {
   fetchCartItems,
   getUserByID,
   getBooksRandomized,
-  getBooksFilters,
+  getSearchOptions,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -20,9 +20,9 @@ function App() {
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
       dispatch(getBooksRandomized())
-      dispatch(getBooksFilters())
     })
     dispatch(fetchAllNews())
+    dispatch(getSearchOptions())
 
     const uuid: string | null = JSON.parse(
       localStorage.getItem('uuid') || 'null',

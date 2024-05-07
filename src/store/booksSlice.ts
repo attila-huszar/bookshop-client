@@ -3,7 +3,11 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchBooks, getFilteredBooks } from '../api/fetchData'
+import {
+  fetchBooks,
+  getBookSearchOptions,
+  getFilteredBooks,
+} from '../api/fetchData'
 import { IBookStore } from '../interfaces'
 import { getRandomBooks } from '../utils/getRandomBooks'
 import { IFilter } from '../interfaces/IFilter'
@@ -30,10 +34,6 @@ const booksSlice = createSlice({
   reducers: {
     getBooksRandomized: (state) => {
       state.booksRandomized = getRandomBooks(state.booksData, 4)
-    },
-    getBooksFilters: (state) => {
-      const genres = [...new Set(state.booksData.map((book) => book.genre))]
-      state.booksFilters.available.genre = genres
     },
     setBooksFilters: (state, action) => {
       if (typeof action.payload === 'string') {
@@ -76,6 +76,9 @@ const booksSlice = createSlice({
       .addCase(filterBooks.fulfilled, (state, action) => {
         state.booksData = action.payload
       })
+      .addCase(getSearchOptions.fulfilled, (state, action) => {
+        state.booksFilters.available = action.payload
+      })
   },
 })
 
@@ -95,6 +98,10 @@ export const filterBooks = createAsyncThunk(
     getFilteredBooks(criteria, rejectWithValue),
 )
 
+export const getSearchOptions = createAsyncThunk(
+  'getSearchOptions',
+  (_, { rejectWithValue }) => getBookSearchOptions(rejectWithValue),
+)
+
 export const booksReducer = booksSlice.reducer
-export const { getBooksRandomized, getBooksFilters, setBooksFilters } =
-  booksSlice.actions
+export const { getBooksRandomized, setBooksFilters } = booksSlice.actions

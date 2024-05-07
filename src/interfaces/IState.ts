@@ -1,6 +1,10 @@
 import { IBook, IAuthor, INews, IUserOmitPassword, ICart } from '.'
 import { SerializedError } from '@reduxjs/toolkit'
 
+type BookFilters = {
+  genre: string[]
+}
+
 export interface IBookStore {
   booksData: IBook[]
   booksAreLoading: boolean
@@ -8,8 +12,8 @@ export interface IBookStore {
   booksError: SerializedError | null
   booksRandomized: IBook[]
   booksFilters: {
-    available: { genre: string[] }
-    active: { genre: string[] }
+    available: BookFilters
+    active: BookFilters
   }
 }
 

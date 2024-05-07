@@ -658,5 +658,22 @@
     }
   ],
   "users": [],
-  "orders": []
+  "orders": [],
+  "searchOptions": {
+    "genre": [
+      "Novel",
+      "Political fiction",
+      "Gothic fiction",
+      "Fantasy",
+      "Magical realism",
+      "Historical novel",
+      "Epic poetry",
+      "Adventure novel",
+      "Absurdist fiction",
+      "Satire",
+      "Science fiction"
+    ],
+    "price": [15, 30],
+    "publishYear": [1320, 1967]
+  }
 }
