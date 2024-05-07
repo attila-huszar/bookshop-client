@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../../hooks'
 import {
   booksSelector,
@@ -20,9 +21,8 @@ import {
   ButtonWrapper,
   CustomButton,
 } from './Filter.styles'
-import { IconButton } from '../../../../components'
+import { Accordion, IconButton } from '../../../../components'
 import { enforceMinMax, generateFilterArray } from '../../../../utils'
-import { Accordion, AccordionItem } from '@szhsin/react-accordion'
 import {
   IFilter,
   IInputEvent,
@@ -51,6 +51,24 @@ const discountOptions: { value: IFilter['discount']; label: string }[] = [
 export function Filter() {
   const dispatch = useAppDispatch()
   const { booksFilters } = useAppSelector(booksSelector)
+  const [panelsOpen, setPanelsOpen] = useState([0, 1])
+
+  function togglePanel(panelKey: number) {
+    setPanelsOpen((prevState) => {
+      const newPanelsOpen = [...prevState]
+
+      if (newPanelsOpen.includes(panelKey)) {
+        newPanelsOpen.splice(newPanelsOpen.indexOf(panelKey), 1)
+      } else {
+        if (newPanelsOpen.length > 2) {
+          newPanelsOpen.shift()
+        }
+        newPanelsOpen.push(panelKey)
+      }
+
+      return newPanelsOpen
+    })
+  }
 
   const [priceMinInitial, priceMaxInitial] = booksFilters.initial.price
   const [priceMin, priceMax] = booksFilters.active.price
@@ -130,192 +148,211 @@ export function Filter() {
           onSubmit={handleFormSubmit}
           onReset={handleFormReset}>
           <Form>
-            <Accordion>
-              <AccordionItem header="Genre" initialEntered>
-                {booksFilters.initial.genre && (
-                  <GenreCheckBoxes>
-                    {booksFilters.initial.genre.map((filter) => (
-                      <div key={filter}>
-                        <Field
-                          name="genre"
-                          type="checkbox"
-                          value={filter}
-                          id={filter}
-                          onChange={(e: IInputEvent) => handleGenreChange(e)}
-                          checked={booksFilters.active.genre.includes(filter)}
-                        />
-                        <label htmlFor={filter}>{filter}</label>
-                      </div>
-                    ))}
-                  </GenreCheckBoxes>
-                )}
-                <button type="button" onClick={handleGenreClear}>
-                  Clear selection
-                </button>
-              </AccordionItem>
+            <Accordion
+              header="Genre"
+              panelKey={0}
+              isOpen={panelsOpen.includes(0)}
+              setIsOpen={(panelKey) => togglePanel(panelKey)}>
+              {booksFilters.initial.genre && (
+                <GenreCheckBoxes>
+                  {booksFilters.initial.genre.map((filter) => (
+                    <div key={filter}>
+                      <Field
+                        name="genre"
+                        type="checkbox"
+                        value={filter}
+                        id={filter}
+                        onChange={(e: IInputEvent) => handleGenreChange(e)}
+                        checked={booksFilters.active.genre.includes(filter)}
+                      />
+                      <label htmlFor={filter}>{filter}</label>
+                    </div>
+                  ))}
+                </GenreCheckBoxes>
+              )}
+              <button type="button" onClick={handleGenreClear}>
+                Clear selection
+              </button>
+            </Accordion>
 
-              <AccordionItem header="Price" initialEntered>
-                {booksFilters.initial.price && (
-                  <>
-                    <Slider
-                      range
+            <Accordion
+              header="Price"
+              panelKey={1}
+              isOpen={panelsOpen.includes(1)}
+              setIsOpen={(panelKey) => togglePanel(panelKey)}>
+              {booksFilters.initial.price && (
+                <>
+                  <Slider
+                    range
+                    min={priceMinInitial}
+                    max={priceMaxInitial}
+                    value={booksFilters.active.price}
+                    defaultValue={booksFilters.initial.price}
+                    step={1}
+                    marks={priceMarks}
+                    styles={sliderStyles}
+                    onChange={(value) => handlePriceChange(value as number[])}
+                    allowCross={false}
+                  />
+                  <InputFields>
+                    <Field
+                      type="number"
+                      inputMode="numeric"
+                      value={priceMin}
+                      onChange={(e: IInputEvent) =>
+                        handlePriceChange([Number(e.target.value), priceMax])
+                      }
+                      onBlur={(e: IInputEvent) =>
+                        handlePriceChange([
+                          Math.min(enforceMinMax(e.target), priceMax),
+                          priceMax,
+                        ])
+                      }
                       min={priceMinInitial}
                       max={priceMaxInitial}
-                      value={booksFilters.active.price}
-                      defaultValue={booksFilters.initial.price}
-                      step={1}
-                      marks={priceMarks}
-                      styles={sliderStyles}
-                      onChange={(value) => handlePriceChange(value as number[])}
-                      allowCross={false}
                     />
-                    <InputFields>
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={priceMin}
-                        onChange={(e: IInputEvent) =>
-                          handlePriceChange([Number(e.target.value), priceMax])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          handlePriceChange([
-                            Math.min(enforceMinMax(e.target), priceMax),
-                            priceMax,
-                          ])
-                        }
-                        min={priceMinInitial}
-                        max={priceMaxInitial}
-                      />
-                      -
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={priceMax}
-                        onChange={(e: IInputEvent) =>
-                          handlePriceChange([priceMin, Number(e.target.value)])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          handlePriceChange([
-                            priceMin,
-                            Math.max(enforceMinMax(e.target), priceMin),
-                          ])
-                        }
-                        min={priceMinInitial}
-                        max={priceMaxInitial}
-                      />
-                    </InputFields>
-                  </>
-                )}
-              </AccordionItem>
-
-              <AccordionItem header="Discount">
-                {discountOptions.map((item) => (
-                  <DiscountRadioButtons key={item.value}>
+                    -
                     <Field
-                      type="radio"
-                      name="discount"
-                      value={item.value}
-                      id={item.value}
-                      onChange={(e: IDiscountChangeEvent) =>
-                        handleDiscountChange(e.target.value)
+                      type="number"
+                      inputMode="numeric"
+                      value={priceMax}
+                      onChange={(e: IInputEvent) =>
+                        handlePriceChange([priceMin, Number(e.target.value)])
                       }
-                      checked={item.value === booksFilters.active.discount}
+                      onBlur={(e: IInputEvent) =>
+                        handlePriceChange([
+                          priceMin,
+                          Math.max(enforceMinMax(e.target), priceMin),
+                        ])
+                      }
+                      min={priceMinInitial}
+                      max={priceMaxInitial}
                     />
-                    <label htmlFor={item.value}>{item.label}</label>
-                  </DiscountRadioButtons>
-                ))}
-              </AccordionItem>
+                  </InputFields>
+                </>
+              )}
+            </Accordion>
 
-              <AccordionItem header="Publication Year">
-                {booksFilters.initial.publishYear && (
-                  <>
-                    <Slider
-                      range
+            <Accordion
+              header="Discount"
+              panelKey={2}
+              isOpen={panelsOpen.includes(2)}
+              setIsOpen={(panelKey) => togglePanel(panelKey)}>
+              {discountOptions.map((item) => (
+                <DiscountRadioButtons key={item.value}>
+                  <Field
+                    type="radio"
+                    name="discount"
+                    value={item.value}
+                    id={item.value}
+                    onChange={(e: IDiscountChangeEvent) =>
+                      handleDiscountChange(e.target.value)
+                    }
+                    checked={item.value === booksFilters.active.discount}
+                  />
+                  <label htmlFor={item.value}>{item.label}</label>
+                </DiscountRadioButtons>
+              ))}
+            </Accordion>
+
+            <Accordion
+              header="Publication Year"
+              panelKey={3}
+              isOpen={panelsOpen.includes(3)}
+              setIsOpen={(panelKey) => togglePanel(panelKey)}>
+              {booksFilters.initial.publishYear && (
+                <>
+                  <Slider
+                    range
+                    min={yearMinInitial}
+                    max={yearMaxInitial}
+                    value={booksFilters.active.publishYear}
+                    defaultValue={booksFilters.initial.publishYear}
+                    step={25}
+                    marks={yearMarks}
+                    styles={sliderStyles}
+                    onChange={(value) =>
+                      handlePublishYearChange(value as number[])
+                    }
+                    allowCross={false}
+                  />
+                  <InputFields>
+                    <Field
+                      type="number"
+                      inputMode="numeric"
+                      value={yearMin}
+                      onChange={(e: IInputEvent) =>
+                        handlePublishYearChange([
+                          Number(e.target.value),
+                          yearMax,
+                        ])
+                      }
+                      onBlur={(e: IInputEvent) =>
+                        handlePublishYearChange([
+                          Math.min(enforceMinMax(e.target), yearMax),
+                          yearMax,
+                        ])
+                      }
                       min={yearMinInitial}
                       max={yearMaxInitial}
-                      value={booksFilters.active.publishYear}
-                      defaultValue={booksFilters.initial.publishYear}
-                      step={25}
-                      marks={yearMarks}
-                      styles={sliderStyles}
-                      onChange={(value) =>
-                        handlePublishYearChange(value as number[])
-                      }
-                      allowCross={false}
                     />
-                    <InputFields>
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={yearMin}
-                        onChange={(e: IInputEvent) =>
-                          handlePublishYearChange([
-                            Number(e.target.value),
-                            yearMax,
-                          ])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          handlePublishYearChange([
-                            Math.min(enforceMinMax(e.target), yearMax),
-                            yearMax,
-                          ])
-                        }
-                        min={yearMinInitial}
-                        max={yearMaxInitial}
-                      />
-                      -
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={yearMax}
-                        onChange={(e: IInputEvent) =>
-                          handlePublishYearChange([
-                            yearMin,
-                            Number(e.target.value),
-                          ])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          handlePublishYearChange([
-                            yearMin,
-                            Math.max(enforceMinMax(e.target), yearMin),
-                          ])
-                        }
-                        min={yearMinInitial}
-                        max={yearMaxInitial}
-                      />
-                    </InputFields>
-                  </>
-                )}
-              </AccordionItem>
-
-              <AccordionItem header="Rating">
-                <Rating>
-                  {Array.from({ length: 5 }, (_, idx) => {
-                    const isFilled = idx < booksFilters.active.rating
-                    const rating = (idx + 0.5) as IFilter['rating']
-                    const color = isFilled
-                      ? 'var(--secondary-color)'
-                      : 'var(--grey)'
-                    return (
-                      <IconButton
-                        key={`rating-${rating + 0.5}`}
-                        icon={
-                          isFilled ? (
-                            <StarFilled color={color} />
-                          ) : (
-                            <Star color={color} />
-                          )
-                        }
-                        type="button"
-                        onClick={() => {
-                          handleRatingChange(rating)
-                        }}
-                      />
-                    )
-                  })}
-                </Rating>
-              </AccordionItem>
+                    -
+                    <Field
+                      type="number"
+                      inputMode="numeric"
+                      value={yearMax}
+                      onChange={(e: IInputEvent) =>
+                        handlePublishYearChange([
+                          yearMin,
+                          Number(e.target.value),
+                        ])
+                      }
+                      onBlur={(e: IInputEvent) =>
+                        handlePublishYearChange([
+                          yearMin,
+                          Math.max(enforceMinMax(e.target), yearMin),
+                        ])
+                      }
+                      min={yearMinInitial}
+                      max={yearMaxInitial}
+                    />
+                  </InputFields>
+                </>
+              )}
             </Accordion>
+
+            <Accordion
+              header="Rating"
+              panelKey={4}
+              isOpen={panelsOpen.includes(4)}
+              setIsOpen={(panelKey) => togglePanel(panelKey)}>
+              <Rating>
+                {Array.from({ length: 5 }, (_, idx) => {
+                  const isFilled = idx < booksFilters.active.rating
+                  const rating = (idx + 0.5) as IFilter['rating']
+                  const color = isFilled
+                    ? 'var(--secondary-color)'
+                    : 'var(--grey)'
+                  return (
+                    <IconButton
+                      key={`rating-${rating + 0.5}`}
+                      icon={
+                        isFilled ? (
+                          <StarFilled color={color} />
+                        ) : (
+                          <Star color={color} />
+                        )
+                      }
+                      type="button"
+                      onClick={() => {
+                        handleRatingChange(rating)
+                      }}
+                    />
+                  )
+                })}
+              </Rating>
+            </Accordion>
+
             <ButtonWrapper>
               <CustomButton type="reset" $inverted>
                 Reset

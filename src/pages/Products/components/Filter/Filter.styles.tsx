@@ -1,5 +1,4 @@
 import styled from 'styled-components'
-import caretDown from '../../../../assets/svg/caret_down.svg'
 import { StyleTypes } from '../../../../components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
@@ -8,13 +7,13 @@ export const StyledFilter = styled.aside`
   bottom: 0;
   height: fit-content;
   width: auto;
-  padding: 1rem;
+  padding: 0.375rem;
   border-radius: 10px;
   background-color: var(--light-grey);
 `
 
 export const FilterOptions = styled.div`
-  width: 11rem;
+  width: 12rem;
   user-select: none;
 
   & > div:not(:last-child) {
@@ -23,7 +22,7 @@ export const FilterOptions = styled.div`
 
   div > div.rc-slider {
     width: auto;
-    margin: 0 0.875rem 2rem;
+    margin: 0.375rem 0.875rem 2rem;
   }
 
   label {
@@ -33,36 +32,6 @@ export const FilterOptions = styled.div`
   span {
     font-weight: 700;
     white-space: pre;
-  }
-
-  .szh-accordion__item-panel {
-    padding-bottom: 1rem;
-
-    button {
-      display: block;
-      margin: 0.5rem auto 0;
-      border: none;
-      background-color: initial;
-      cursor: pointer;
-    }
-  }
-
-  .szh-accordion__item-content {
-    transition: height 0.25s cubic-bezier(0, 0, 0, 1);
-  }
-
-  .szh-accordion__item-btn {
-    display: flex;
-    width: 100%;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-    border: none;
-    cursor: pointer;
-    background-color: initial;
-    background-image: url(${caretDown});
-    background-position: right center;
-    background-repeat: no-repeat;
-    background-size: 1rem;
   }
 `
 
@@ -78,7 +47,7 @@ export const GenreCheckBoxes = styled.div`
   }
 
   label {
-    padding-right: 0.375rem;
+    margin-right: 0.375rem;
     font-size: 0.75rem;
     hyphens: auto;
   }
@@ -116,6 +85,7 @@ export const Rating = styled.div`
 export const ButtonWrapper = styled.div`
   display: flex;
   justify-content: space-around;
+  margin-bottom: 0.5rem;
 `
 
 export const CustomButton = styled.button<StyleTypes>`
