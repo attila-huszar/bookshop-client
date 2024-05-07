@@ -69,13 +69,22 @@ export const FilterOptions = styled.div`
 export const GenreCheckBoxes = styled.div`
   display: flex;
   flex-wrap: wrap;
+  row-gap: 0.5rem;
 
   & > div {
+    display: flex;
+    align-items: center;
     width: 50%;
   }
 
+  label {
+    padding-right: 0.375rem;
+    font-size: 0.75rem;
+    hyphens: auto;
+  }
+
   input {
-    margin-right: 0.5rem;
+    margin-right: 0.375rem;
   }
 `
 

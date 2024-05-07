@@ -1,3 +1,11 @@
+import { useRef, useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../../../hooks'
+import {
+  booksSelector,
+  fetchAllBooks,
+  filterBooks,
+  setBooksFilters,
+} from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
   StyledFilter,
@@ -16,12 +24,12 @@ import {
   AccordionItem,
   useAccordionProvider,
 } from '@szhsin/react-accordion'
+import { IFilter, IInputEvent } from '../../../../interfaces'
 import Star from '../../../../assets/svg/star.svg?react'
 import StarFilled from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
-import { useRef, useState } from 'react'
 
 const initialValues = {
   genre: [],
@@ -30,12 +38,6 @@ const initialValues = {
   publishYear: [1700, 2020],
   rating: 3,
 }
-
-const genreOptions = [
-  { value: 'sci-fi', label: 'Sci-fi' },
-  { value: 'drama', label: 'Drama' },
-  { value: 'horror', label: 'Horror' },
-]
 
 const priceOptions = [
   { value: 'all', label: 'All Books' },
@@ -58,11 +60,9 @@ const yearMarks = {
   [yearMax]: `${yearMax}`,
 }
 
-interface InputEvent {
-  target: EventTarget & HTMLInputElement
-}
-
 export function Filter() {
+  const dispatch = useAppDispatch()
+  const { booksFilters } = useAppSelector(booksSelector)
   const [isOverflowing, setIsOverflowing] = useState(false)
   const overflowingElem = useRef(null)
 
@@ -100,35 +100,70 @@ export function Filter() {
     observer.observe(element)
   }
 
-  const handleSubmit = () => {}
+  const handleSubmit = (values: IFilter) => {
+    dispatch(filterBooks({ ...values, genre: booksFilters.active.genre }))
+  }
+
+  const handleFormReset = () => {
+    dispatch(fetchAllBooks())
+    dispatch(
+      setBooksFilters({
+        ...booksFilters,
+        active: {},
+      }),
+    )
+  }
+
+  const handleGenreFilterChange = (e: IInputEvent) => {
+    dispatch(setBooksFilters(e.target.value))
+  }
+
+  const handleGenreFilterClear = () => {
+    dispatch(
+      setBooksFilters({
+        ...booksFilters,
+        active: {
+          ...booksFilters.active,
+          genre: [],
+        },
+      }),
+    )
+  }
 
   return (
     <StyledFilter ref={overflowingElem}>
       <FilterOptions draggable="false">
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ values, handleChange, setFieldValue, setValues }) => {
+        <Formik
+          initialValues={initialValues}
+          onSubmit={(values) => handleSubmit(values)}
+          onReset={handleFormReset}>
+          {({ values, handleChange, setFieldValue }) => {
             return (
               <Form>
                 <ControlledAccordion providerValue={accordionProvider}>
                   <AccordionItem header="Genre" itemKey="0" initialEntered>
-                    <GenreCheckBoxes>
-                      {genreOptions.map((item) => (
-                        <div key={item.value}>
-                          <Field
-                            name="genre"
-                            type="checkbox"
-                            value={item.value}
-                            id={item.value}
-                          />
-                          <label htmlFor={item.value}>{item.label}</label>
-                        </div>
-                      ))}
-                    </GenreCheckBoxes>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setValues((prev) => ({ ...prev, genre: [] }))
-                      }>
+                    {booksFilters.available.genre && (
+                      <GenreCheckBoxes>
+                        {booksFilters.available.genre.map((filter) => (
+                          <div key={filter}>
+                            <Field
+                              name="genre"
+                              type="checkbox"
+                              value={filter}
+                              id={filter}
+                              onChange={(e: IInputEvent) =>
+                                handleGenreFilterChange(e)
+                              }
+                              checked={booksFilters.active.genre.includes(
+                                filter,
+                              )}
+                            />
+                            <label htmlFor={filter}>{filter}</label>
+                          </div>
+                        ))}
+                      </GenreCheckBoxes>
+                    )}
+                    <button type="button" onClick={handleGenreFilterClear}>
                       Clear selection
                     </button>
                   </AccordionItem>
@@ -151,13 +186,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.price[0]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('price', [
                             e.target.value,
                             values.price[1],
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('price', [
                             Math.min(enforceMinMax(e.target), values.price[1]),
                             values.price[1],
@@ -171,13 +206,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.price[1]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('price', [
                             values.price[0],
                             e.target.value,
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('price', [
                             values.price[0],
                             Math.max(enforceMinMax(e.target), values.price[0]),
@@ -211,7 +246,7 @@ export function Filter() {
                       max={yearMax}
                       value={values.publishYear}
                       defaultValue={values.publishYear}
-                      step={10}
+                      step={25}
                       marks={yearMarks}
                       styles={sliderStyles}
                       onChange={(value) => setFieldValue('publishYear', value)}
@@ -222,13 +257,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.publishYear[0]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             e.target.value,
                             values.publishYear[1],
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             Math.min(
                               enforceMinMax(e.target),
@@ -245,13 +280,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={values.publishYear[1]}
-                        onChange={(e: InputEvent) =>
+                        onChange={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             values.publishYear[0],
                             e.target.value,
                           ])
                         }
-                        onBlur={(e: InputEvent) =>
+                        onBlur={(e: IInputEvent) =>
                           setFieldValue('publishYear', [
                             values.publishYear[0],
                             Math.max(

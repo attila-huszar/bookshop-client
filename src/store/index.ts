@@ -1,4 +1,11 @@
-export { fetchAllBooks, fetchBookById, booksRandomize } from './booksSlice'
+export {
+  fetchAllBooks,
+  fetchBookById,
+  getBooksRandomized,
+  getSearchOptions,
+  filterBooks,
+  setBooksFilters,
+} from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
 export { loginUser, registerUser, getUserByID } from './userSlice'

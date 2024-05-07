@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
 import { IUser } from '../interfaces'
 import { cloudName, unsignedUploadPreset } from '../lib/envVariables'
+import { IFilter } from '../interfaces/IFilter'
 
 export const fetchBooks = async (
   id: string | void,
@@ -142,6 +143,45 @@ export const putUser = async (
 ) => {
   try {
     const response = await axios.put(`${URL.users}/${user.id}`, user)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getFilteredBooks = async (
+  criteria: IFilter,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const genreFilter = (crit: string[]) => {
+      return crit.join('&genre_like=')
+    }
+
+    const response = await axios.get(
+      `${URL.books}?genre_like=${genreFilter(criteria.genre)}`,
+    )
+
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getBookSearchOptions = async (
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.searchOptions}`)
+
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
