@@ -165,8 +165,10 @@ export const getFilteredBooks = async (
         filterString.push(`genre_like=${genre}`)
       })
 
-    criteria.price[0] && filterString.push(`price_gte=${criteria.price[0]}`)
-    criteria.price[1] && filterString.push(`price_lte=${criteria.price[1]}`)
+    criteria.price[0] &&
+      filterString.push(`discountPrice_gte=${criteria.price[0]}`)
+    criteria.price[1] &&
+      filterString.push(`discountPrice_lte=${criteria.price[1]}`)
 
     const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
 
