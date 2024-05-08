@@ -20,9 +20,11 @@ const initialState: IBookStore = {
   booksFilters: {
     available: {
       genre: [],
+      price: [],
     },
     active: {
       genre: [],
+      price: [],
     },
   },
   booksRandomized: [],
@@ -35,7 +37,7 @@ const booksSlice = createSlice({
     getBooksRandomized: (state) => {
       state.booksRandomized = getRandomBooks(state.booksData, 4)
     },
-    setBooksFilters: (state, action) => {
+    setBooksFilterGenre: (state, action) => {
       if (typeof action.payload === 'string') {
         const genreIdx = state.booksFilters.active.genre.indexOf(action.payload)
 
@@ -47,6 +49,9 @@ const booksSlice = createSlice({
       } else {
         state.booksFilters.active.genre = []
       }
+    },
+    setBooksFilterPrice: (state, action) => {
+      state.booksFilters.active.price = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -78,6 +83,7 @@ const booksSlice = createSlice({
       })
       .addCase(getSearchOptions.fulfilled, (state, action) => {
         state.booksFilters.available = action.payload
+        state.booksFilters.active.price = action.payload.price
       })
   },
 })
@@ -104,4 +110,5 @@ export const getSearchOptions = createAsyncThunk(
 )
 
 export const booksReducer = booksSlice.reducer
-export const { getBooksRandomized, setBooksFilters } = booksSlice.actions
+export const { getBooksRandomized, setBooksFilterGenre, setBooksFilterPrice } =
+  booksSlice.actions

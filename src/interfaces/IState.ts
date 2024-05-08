@@ -3,6 +3,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 
 type BookFilters = {
   genre: string[]
+  price: number[]
 }
 
 export interface IBookStore {

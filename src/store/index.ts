@@ -4,7 +4,8 @@ export {
   getBooksRandomized,
   getSearchOptions,
   filterBooks,
-  setBooksFilters,
+  setBooksFilterGenre,
+  setBooksFilterPrice,
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
