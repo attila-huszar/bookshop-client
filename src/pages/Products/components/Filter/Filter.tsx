@@ -60,12 +60,33 @@ export function Filter() {
     [yearMax]: `${yearMax}`,
   }
 
+  const priceFilterValues = () => {
+    if (
+      booksFilters.active.price[0] === booksFilters.available.price[0] &&
+      booksFilters.active.price[1] === booksFilters.available.price[1]
+    ) {
+      return []
+    } else if (
+      booksFilters.active.price[0] === booksFilters.available.price[0] &&
+      booksFilters.active.price[1] !== booksFilters.available.price[1]
+    ) {
+      return [null, booksFilters.active.price[1]]
+    } else if (
+      booksFilters.active.price[0] !== booksFilters.available.price[0] &&
+      booksFilters.active.price[1] === booksFilters.available.price[1]
+    ) {
+      return [booksFilters.active.price[0], null]
+    } else {
+      return booksFilters.active.price
+    }
+  }
+
   const handleSubmit = (values: IFilter) => {
     dispatch(
       filterBooks({
         ...values,
         genre: booksFilters.active.genre,
-        price: booksFilters.active.price,
+        price: priceFilterValues(),
       }),
     )
   }

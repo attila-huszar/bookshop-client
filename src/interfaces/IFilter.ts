@@ -1,6 +1,6 @@
 export interface IFilter {
   genre: string[]
-  price: number[]
+  price: (number | null)[]
   discount: string
   publishYear: number[]
   rating: number
