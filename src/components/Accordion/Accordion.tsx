@@ -11,13 +11,13 @@ export function Accordion({
 }: {
   panelKey: number
   isOpen: boolean
-  setIsOpen: (value: boolean) => void
+  setIsOpen: (panelKey: number) => void
   header: string
   children: React.ReactNode
 }) {
   return (
     <StyledAccordion>
-      <Header onClick={() => setIsOpen(!isOpen)}>
+      <Header onClick={() => setIsOpen(panelKey)}>
         <p>{header}</p>
         {isOpen ? (
           <CaretUp color="var(--grey)" />
