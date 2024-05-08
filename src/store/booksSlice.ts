@@ -18,7 +18,7 @@ const initialState: IBookStore = {
   bookIsLoading: false,
   booksError: null,
   booksFilters: {
-    available: {
+    initial: {
       genre: [],
       price: [],
     },
@@ -82,7 +82,7 @@ const booksSlice = createSlice({
         state.booksData = action.payload
       })
       .addCase(getSearchOptions.fulfilled, (state, action) => {
-        state.booksFilters.available = action.payload
+        state.booksFilters.initial = action.payload
         state.booksFilters.active.price = action.payload.price
       })
   },

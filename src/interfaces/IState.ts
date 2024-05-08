@@ -13,7 +13,7 @@ export interface IBookStore {
   booksError: SerializedError | null
   booksRandomized: IBook[]
   booksFilters: {
-    available: BookFilters
+    initial: BookFilters
     active: BookFilters
   }
 }

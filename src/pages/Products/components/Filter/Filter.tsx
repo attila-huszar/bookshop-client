@@ -45,14 +45,13 @@ export function Filter() {
   const dispatch = useAppDispatch()
   const { booksFilters } = useAppSelector(booksSelector)
 
-  const priceMin = booksFilters.available.price[0]
-  const priceMax = booksFilters.available.price[1]
-  const yearMin = initialValues.publishYear[0]
-  const yearMax = initialValues.publishYear[1]
+  const [priceMinInitial, priceMaxInitial] = booksFilters.initial.price
+  const [priceMin, priceMax] = booksFilters.active.price
+  const [yearMin, yearMax] = initialValues.publishYear
 
   const priceMarks = {
-    [priceMin]: `$ ${priceMin}`,
-    [priceMax]: `$ ${priceMax}`,
+    [priceMinInitial]: `$ ${priceMinInitial}`,
+    [priceMaxInitial]: `$ ${priceMaxInitial}`,
   }
 
   const yearMarks = {
@@ -61,23 +60,14 @@ export function Filter() {
   }
 
   const priceFilterValues = () => {
-    if (
-      booksFilters.active.price[0] === booksFilters.available.price[0] &&
-      booksFilters.active.price[1] === booksFilters.available.price[1]
-    ) {
+    if (priceMin === priceMinInitial && priceMax === priceMaxInitial) {
       return []
-    } else if (
-      booksFilters.active.price[0] === booksFilters.available.price[0] &&
-      booksFilters.active.price[1] !== booksFilters.available.price[1]
-    ) {
-      return [null, booksFilters.active.price[1]]
-    } else if (
-      booksFilters.active.price[0] !== booksFilters.available.price[0] &&
-      booksFilters.active.price[1] === booksFilters.available.price[1]
-    ) {
-      return [booksFilters.active.price[0], null]
+    } else if (priceMin === priceMinInitial && priceMax !== priceMaxInitial) {
+      return [null, priceMax]
+    } else if (priceMin !== priceMinInitial && priceMax === priceMaxInitial) {
+      return [priceMin, null]
     } else {
-      return booksFilters.active.price
+      return [priceMin, priceMax]
     }
   }
 
@@ -94,7 +84,7 @@ export function Filter() {
   const handleFormReset = () => {
     dispatch(fetchAllBooks())
     dispatch(setBooksFilterGenre([]))
-    dispatch(setBooksFilterPrice(booksFilters.available.price))
+    dispatch(setBooksFilterPrice(booksFilters.initial.price))
   }
 
   const handleGenreFilterChange = (e: IInputEvent) => {
@@ -121,9 +111,9 @@ export function Filter() {
               <Form>
                 <Accordion>
                   <AccordionItem header="Genre" initialEntered>
-                    {booksFilters.available.genre && (
+                    {booksFilters.initial.genre && (
                       <GenreCheckBoxes>
-                        {booksFilters.available.genre.map((filter) => (
+                        {booksFilters.initial.genre.map((filter) => (
                           <div key={filter}>
                             <Field
                               name="genre"
@@ -148,14 +138,14 @@ export function Filter() {
                   </AccordionItem>
 
                   <AccordionItem header="Price" initialEntered>
-                    {booksFilters.available.price && (
+                    {booksFilters.initial.price && (
                       <>
                         <Slider
                           range
-                          min={priceMin}
-                          max={priceMax}
+                          min={priceMinInitial}
+                          max={priceMaxInitial}
                           value={booksFilters.active.price}
-                          defaultValue={booksFilters.available.price}
+                          defaultValue={booksFilters.initial.price}
                           step={1}
                           marks={priceMarks}
                           styles={sliderStyles}
@@ -168,47 +158,41 @@ export function Filter() {
                           <Field
                             type="number"
                             inputMode="numeric"
-                            value={booksFilters.active.price[0]}
+                            value={priceMin}
                             onChange={(e: IInputEvent) =>
                               handlePriceFilterChange([
                                 Number(e.target.value),
-                                booksFilters.active.price[1],
+                                priceMax,
                               ])
                             }
                             onBlur={(e: IInputEvent) =>
                               handlePriceFilterChange([
-                                Math.min(
-                                  enforceMinMax(e.target),
-                                  booksFilters.active.price[1],
-                                ),
-                                booksFilters.active.price[1],
+                                Math.min(enforceMinMax(e.target), priceMax),
+                                priceMax,
                               ])
                             }
-                            min={priceMin}
-                            max={priceMax}
+                            min={priceMinInitial}
+                            max={priceMaxInitial}
                           />
                           -
                           <Field
                             type="number"
                             inputMode="numeric"
-                            value={booksFilters.active.price[1]}
+                            value={priceMax}
                             onChange={(e: IInputEvent) =>
                               handlePriceFilterChange([
-                                booksFilters.active.price[0],
+                                priceMin,
                                 Number(e.target.value),
                               ])
                             }
                             onBlur={(e: IInputEvent) =>
                               handlePriceFilterChange([
-                                booksFilters.active.price[0],
-                                Math.max(
-                                  enforceMinMax(e.target),
-                                  booksFilters.active.price[0],
-                                ),
+                                priceMin,
+                                Math.max(enforceMinMax(e.target), priceMin),
                               ])
                             }
-                            min={priceMin}
-                            max={priceMax}
+                            min={priceMinInitial}
+                            max={priceMaxInitial}
                           />
                         </InputFields>
                       </>
