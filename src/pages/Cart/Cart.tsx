@@ -19,7 +19,7 @@ import {
   EmptyCart,
 } from './Cart.styles'
 import { BOOKS } from '../../routes/pathConstants'
-import { enforceMinMax } from '../../utils/enforceInputValues'
+import { enforceMinMax } from '../../utils/enforceMinMax'
 import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
 import { ICart } from '../../interfaces'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'

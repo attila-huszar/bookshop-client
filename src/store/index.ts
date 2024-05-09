@@ -7,6 +7,7 @@ export {
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
+  setBooksFilterPublishYear,
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'

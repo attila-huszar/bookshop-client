@@ -176,6 +176,11 @@ export const getFilteredBooks = async (
       filterString.push(`discount=0`)
     }
 
+    criteria.publishYear[0] &&
+      filterString.push(`yearOfPublishing_gte=${criteria.publishYear[0]}`)
+    criteria.publishYear[1] &&
+      filterString.push(`yearOfPublishing_lte=${criteria.publishYear[1]}`)
+
     const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
 
     return response.data
