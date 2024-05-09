@@ -2,15 +2,15 @@ import {
   createSlice,
   createAsyncThunk,
   SerializedError,
+  PayloadAction,
 } from '@reduxjs/toolkit'
 import {
   fetchBooks,
   getBookSearchOptions,
   getFilteredBooks,
 } from '../api/fetchData'
-import { IBookStore } from '../interfaces'
+import { IBookStore, IFilter } from '../interfaces'
 import { getRandomBooks } from '../utils/getRandomBooks'
-import { IFilter } from '../interfaces/IFilter'
 
 const initialState: IBookStore = {
   booksData: [],
@@ -21,10 +21,16 @@ const initialState: IBookStore = {
     initial: {
       genre: [],
       price: [],
+      discount: 'allBooks',
+      publishYear: [],
+      rating: 1,
     },
     active: {
       genre: [],
       price: [],
+      discount: 'allBooks',
+      publishYear: [],
+      rating: 1,
     },
   },
   booksRandomized: [],
@@ -57,6 +63,12 @@ const booksSlice = createSlice({
         state.booksFilters.active.price = state.booksFilters.initial.price
       }
     },
+    setBooksFilterDiscount: (
+      state,
+      action: PayloadAction<IFilter['discount']>,
+    ) => {
+      state.booksFilters.active.discount = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -86,7 +98,10 @@ const booksSlice = createSlice({
         state.booksData = action.payload
       })
       .addCase(getSearchOptions.fulfilled, (state, action) => {
-        state.booksFilters.initial = action.payload
+        state.booksFilters.initial = {
+          ...state.booksFilters.initial,
+          ...action.payload,
+        }
         state.booksFilters.active.price = action.payload.price
       })
   },
@@ -114,5 +129,9 @@ export const getSearchOptions = createAsyncThunk(
 )
 
 export const booksReducer = booksSlice.reducer
-export const { getBooksRandomized, setBooksFilterGenre, setBooksFilterPrice } =
-  booksSlice.actions
+export const {
+  getBooksRandomized,
+  setBooksFilterGenre,
+  setBooksFilterPrice,
+  setBooksFilterDiscount,
+} = booksSlice.actions
