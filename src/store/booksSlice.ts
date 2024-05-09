@@ -23,14 +23,14 @@ const initialState: IBookStore = {
       price: [],
       discount: 'allBooks',
       publishYear: [],
-      rating: 1,
+      rating: 0.5,
     },
     active: {
       genre: [],
       price: [],
       discount: 'allBooks',
       publishYear: [],
-      rating: 1,
+      rating: 0.5,
     },
   },
   booksRandomized: [],
@@ -76,6 +76,9 @@ const booksSlice = createSlice({
         state.booksFilters.active.publishYear =
           state.booksFilters.initial.publishYear
       }
+    },
+    setBooksFilterRating: (state, action: PayloadAction<IFilter['rating']>) => {
+      state.booksFilters.active.rating = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -144,4 +147,5 @@ export const {
   setBooksFilterPrice,
   setBooksFilterDiscount,
   setBooksFilterPublishYear,
+  setBooksFilterRating,
 } = booksSlice.actions

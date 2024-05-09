@@ -3,5 +3,5 @@ export interface IFilter {
   price: number[]
   discount: 'allBooks' | 'discountOnly' | 'fullPriceOnly'
   publishYear: number[]
-  rating: 1 | 2 | 3 | 4 | 5
+  rating: 0.5 | 1.5 | 2.5 | 3.5 | 4.5
 }
