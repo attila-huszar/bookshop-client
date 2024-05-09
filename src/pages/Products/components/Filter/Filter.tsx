@@ -6,6 +6,7 @@ import {
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
+  setBooksFilterPublishYear,
 } from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
@@ -19,7 +20,7 @@ import {
   CustomButton,
 } from './Filter.styles'
 import { IconButton } from '../../../../components'
-import { enforceMinMax } from '../../../../utils/enforceInputValues'
+import { enforceMinMax, generateFilterArray } from '../../../../utils'
 import { Accordion, AccordionItem } from '@szhsin/react-accordion'
 import {
   IFilter,
@@ -36,7 +37,7 @@ const initialValues: IFilter = {
   genre: [],
   price: [],
   discount: 'allBooks',
-  publishYear: [1700, 2020],
+  publishYear: [],
   rating: 1,
 }
 
@@ -52,7 +53,8 @@ export function Filter() {
 
   const [priceMinInitial, priceMaxInitial] = booksFilters.initial.price
   const [priceMin, priceMax] = booksFilters.active.price
-  const [yearMin, yearMax] = initialValues.publishYear
+  const [yearMinInitial, yearMaxInitial] = booksFilters.initial.publishYear
+  const [yearMin, yearMax] = booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,
@@ -60,20 +62,8 @@ export function Filter() {
   }
 
   const yearMarks = {
-    [yearMin]: `${yearMin}`,
-    [yearMax]: `${yearMax}`,
-  }
-
-  const priceFilterValues = () => {
-    if (priceMin === priceMinInitial && priceMax === priceMaxInitial) {
-      return []
-    } else if (priceMin === priceMinInitial && priceMax !== priceMaxInitial) {
-      return [null, priceMax]
-    } else if (priceMin !== priceMinInitial && priceMax === priceMaxInitial) {
-      return [priceMin, null]
-    } else {
-      return [priceMin, priceMax]
-    }
+    [yearMinInitial]: `${yearMinInitial}`,
+    [yearMaxInitial]: `${yearMaxInitial}`,
   }
 
   const handleSubmit = (values: IFilter) => {
@@ -81,8 +71,19 @@ export function Filter() {
       filterBooks({
         ...values,
         genre: booksFilters.active.genre,
-        price: priceFilterValues() as number[],
+        price: generateFilterArray(
+          priceMin,
+          priceMax,
+          priceMinInitial,
+          priceMaxInitial,
+        ) as number[],
         discount: booksFilters.active.discount,
+        publishYear: generateFilterArray(
+          yearMin,
+          yearMax,
+          yearMinInitial,
+          yearMaxInitial,
+        ) as number[],
       }),
     )
   }
@@ -92,6 +93,7 @@ export function Filter() {
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))
+    dispatch(setBooksFilterPublishYear([]))
   }
 
   const handleGenreFilterChange = (e: IInputEvent) => {
@@ -108,6 +110,10 @@ export function Filter() {
 
   const handleDiscountFilterChange = (value: IFilter['discount']) => {
     dispatch(setBooksFilterDiscount(value))
+  }
+
+  const handlePublishYearFilterChange = (value: IFilter['publishYear']) => {
+    dispatch(setBooksFilterPublishYear(value))
   }
 
   return (
@@ -229,65 +235,65 @@ export function Filter() {
                   </AccordionItem>
 
                   <AccordionItem header="Publication Year">
-                    <Slider
-                      range
-                      min={yearMin}
-                      max={yearMax}
-                      value={values.publishYear}
-                      defaultValue={values.publishYear}
-                      step={25}
-                      marks={yearMarks}
-                      styles={sliderStyles}
-                      onChange={(value) => setFieldValue('publishYear', value)}
-                      allowCross={false}
-                    />
-                    <InputFields>
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={values.publishYear[0]}
-                        onChange={(e: IInputEvent) =>
-                          setFieldValue('publishYear', [
-                            e.target.value,
-                            values.publishYear[1],
-                          ])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          setFieldValue('publishYear', [
-                            Math.min(
-                              enforceMinMax(e.target),
-                              values.publishYear[1],
-                            ),
-                            values.publishYear[1],
-                          ])
-                        }
-                        min={yearMin}
-                        max={yearMax}
-                      />
-                      -
-                      <Field
-                        type="number"
-                        inputMode="numeric"
-                        value={values.publishYear[1]}
-                        onChange={(e: IInputEvent) =>
-                          setFieldValue('publishYear', [
-                            values.publishYear[0],
-                            e.target.value,
-                          ])
-                        }
-                        onBlur={(e: IInputEvent) =>
-                          setFieldValue('publishYear', [
-                            values.publishYear[0],
-                            Math.max(
-                              enforceMinMax(e.target),
-                              values.publishYear[0],
-                            ),
-                          ])
-                        }
-                        min={yearMin}
-                        max={yearMax}
-                      />
-                    </InputFields>
+                    {booksFilters.initial.publishYear && (
+                      <>
+                        <Slider
+                          range
+                          min={yearMinInitial}
+                          max={yearMaxInitial}
+                          value={booksFilters.active.publishYear}
+                          defaultValue={booksFilters.initial.publishYear}
+                          step={25}
+                          marks={yearMarks}
+                          styles={sliderStyles}
+                          onChange={(value) =>
+                            handlePublishYearFilterChange(value as number[])
+                          }
+                          allowCross={false}
+                        />
+                        <InputFields>
+                          <Field
+                            type="number"
+                            inputMode="numeric"
+                            value={yearMin}
+                            onChange={(e: IInputEvent) =>
+                              handlePublishYearFilterChange([
+                                Number(e.target.value),
+                                yearMax,
+                              ])
+                            }
+                            onBlur={(e: IInputEvent) =>
+                              handlePublishYearFilterChange([
+                                Math.min(enforceMinMax(e.target), yearMax),
+                                yearMax,
+                              ])
+                            }
+                            min={yearMinInitial}
+                            max={yearMaxInitial}
+                          />
+                          -
+                          <Field
+                            type="number"
+                            inputMode="numeric"
+                            value={yearMax}
+                            onChange={(e: IInputEvent) =>
+                              handlePublishYearFilterChange([
+                                yearMin,
+                                Number(e.target.value),
+                              ])
+                            }
+                            onBlur={(e: IInputEvent) =>
+                              handlePublishYearFilterChange([
+                                yearMin,
+                                Math.max(enforceMinMax(e.target), yearMin),
+                              ])
+                            }
+                            min={yearMinInitial}
+                            max={yearMaxInitial}
+                          />
+                        </InputFields>
+                      </>
+                    )}
                   </AccordionItem>
 
                   <AccordionItem header="Rating">

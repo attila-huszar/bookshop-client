@@ -5,6 +5,7 @@ import {
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
+  setBooksFilterPublishYear,
 } from '../../../../store'
 import { StyledEmptyFilterResults } from './EmptyFilterResults.styles'
 import NoResultsIcon from '../../../../assets/svg/nofilter.svg?react'
@@ -17,6 +18,7 @@ export function EmptyFilterResults() {
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))
+    dispatch(setBooksFilterPublishYear([]))
   }
 
   return (

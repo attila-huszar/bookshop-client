@@ -69,6 +69,14 @@ const booksSlice = createSlice({
     ) => {
       state.booksFilters.active.discount = action.payload
     },
+    setBooksFilterPublishYear: (state, action) => {
+      if (action.payload.length) {
+        state.booksFilters.active.publishYear = action.payload
+      } else {
+        state.booksFilters.active.publishYear =
+          state.booksFilters.initial.publishYear
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -103,6 +111,7 @@ const booksSlice = createSlice({
           ...action.payload,
         }
         state.booksFilters.active.price = action.payload.price
+        state.booksFilters.active.publishYear = action.payload.publishYear
       })
   },
 })
@@ -134,4 +143,5 @@ export const {
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
+  setBooksFilterPublishYear,
 } = booksSlice.actions
