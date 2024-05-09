@@ -20,6 +20,23 @@ export const fetchBooks = async (
   }
 }
 
+export const fetchBooksByProperty = async (
+  property: string,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.books}?${property}=true`)
+
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
 export const getBooksBySearch = async (searchString: string) => {
   try {
     const response = await axios.get(`${URL.books}?title_like=${searchString}`)

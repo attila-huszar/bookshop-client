@@ -9,6 +9,7 @@ import {
   getUserByID,
   getBooksRandomized,
   getSearchOptions,
+  getBooksByProperty,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -21,6 +22,8 @@ function App() {
     dispatch(fetchAllBooks()).then(() => {
       dispatch(getBooksRandomized())
     })
+    dispatch(getBooksByProperty('new'))
+    dispatch(getBooksByProperty('topSellers'))
     dispatch(fetchAllNews())
     dispatch(getSearchOptions())
 

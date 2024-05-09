@@ -1,12 +1,12 @@
+import { useMemo } from 'react'
+import { StyledAvatar } from './Avatar.styles'
 import { CloudinaryImage } from '@cloudinary/url-gen'
 import { cloudConfig } from '../../utils/cloudinaryConfig'
 import { thumbnail } from '@cloudinary/url-gen/actions/resize'
 import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
 import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
 import { AdvancedImage } from '@cloudinary/react'
-import { StyledAvatar } from './Avatar.styles'
 import { IAvatar } from '../../interfaces'
-import { useMemo } from 'react'
 
 export const Avatar = ({ imgUrl, onClick, title }: IAvatar) => {
   const avatar = useMemo(

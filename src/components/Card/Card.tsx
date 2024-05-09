@@ -1,15 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useCart } from '../../hooks'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
 import { Button, Price } from '../../components'
+import { useCart } from '../../hooks'
 import { BOOKS, CART } from '../../routes/pathConstants'
 import { IBook } from '../../interfaces'
 import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
 
 export function Card({ book }: { book: IBook }) {
   const navigate = useNavigate()
-  const { cart, addToCart } = useCart()
-  const isBookInCart = cart.some((item) => item.id === book.id)
+  const { cartData, addToCart } = useCart()
+  const isBookInCart = cartData.some((item) => item.id === book.id)
 
   return (
     <Link to={`/${BOOKS}/${book.id}`}>
