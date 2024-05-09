@@ -170,6 +170,12 @@ export const getFilteredBooks = async (
     criteria.price[1] &&
       filterString.push(`discountPrice_lte=${criteria.price[1]}`)
 
+    if (criteria.discount === 'discountOnly') {
+      filterString.push(`discount_gte=1`)
+    } else if (criteria.discount === 'fullPriceOnly') {
+      filterString.push(`discount=0`)
+    }
+
     const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
 
     return response.data

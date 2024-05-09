@@ -5,6 +5,7 @@ import {
   filterBooks,
   setBooksFilterGenre,
   setBooksFilterPrice,
+  setBooksFilterDiscount,
 } from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
@@ -20,25 +21,29 @@ import {
 import { IconButton } from '../../../../components'
 import { enforceMinMax } from '../../../../utils/enforceInputValues'
 import { Accordion, AccordionItem } from '@szhsin/react-accordion'
-import { IFilter, IInputEvent } from '../../../../interfaces'
+import {
+  IFilter,
+  IInputEvent,
+  IDiscountChangeEvent,
+} from '../../../../interfaces'
 import Star from '../../../../assets/svg/star.svg?react'
 import StarFilled from '../../../../assets/svg/star_solid.svg?react'
 import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
 
-const initialValues = {
+const initialValues: IFilter = {
   genre: [],
   price: [],
-  discount: 'all',
+  discount: 'allBooks',
   publishYear: [1700, 2020],
   rating: 1,
 }
 
-const priceOptions = [
-  { value: 'all', label: 'All Books' },
-  { value: 'discountedOnly', label: 'With Discount' },
-  { value: 'fullPriceOnly', label: 'Without Discount' },
+const discountOptions: { value: IFilter['discount']; label: string }[] = [
+  { value: 'allBooks', label: 'All Books' },
+  { value: 'discountOnly', label: 'With Discount' },
+  { value: 'fullPriceOnly', label: 'Full Price Books' },
 ]
 
 export function Filter() {
@@ -76,7 +81,8 @@ export function Filter() {
       filterBooks({
         ...values,
         genre: booksFilters.active.genre,
-        price: priceFilterValues(),
+        price: priceFilterValues() as number[],
+        discount: booksFilters.active.discount,
       }),
     )
   }
@@ -85,6 +91,7 @@ export function Filter() {
     dispatch(fetchAllBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
+    dispatch(setBooksFilterDiscount('allBooks'))
   }
 
   const handleGenreFilterChange = (e: IInputEvent) => {
@@ -95,8 +102,12 @@ export function Filter() {
     dispatch(setBooksFilterGenre([]))
   }
 
-  const handlePriceFilterChange = (value: number[]) => {
+  const handlePriceFilterChange = (value: IFilter['price']) => {
     dispatch(setBooksFilterPrice(value))
+  }
+
+  const handleDiscountFilterChange = (value: IFilter['discount']) => {
+    dispatch(setBooksFilterDiscount(value))
   }
 
   return (
@@ -106,7 +117,7 @@ export function Filter() {
           initialValues={initialValues}
           onSubmit={(values) => handleSubmit(values)}
           onReset={handleFormReset}>
-          {({ values, handleChange, setFieldValue }) => {
+          {({ values, setFieldValue }) => {
             return (
               <Form>
                 <Accordion>
@@ -200,14 +211,17 @@ export function Filter() {
                   </AccordionItem>
 
                   <AccordionItem header="Discount">
-                    {priceOptions.map((item) => (
+                    {discountOptions.map((item) => (
                       <DiscountRadioButtons key={item.value}>
                         <Field
                           type="radio"
                           name="discount"
                           value={item.value}
                           id={item.value}
-                          onChange={handleChange}
+                          onChange={(e: IDiscountChangeEvent) =>
+                            handleDiscountFilterChange(e.target.value)
+                          }
+                          checked={item.value === booksFilters.active.discount}
                         />
                         <label htmlFor={item.value}>{item.label}</label>
                       </DiscountRadioButtons>
