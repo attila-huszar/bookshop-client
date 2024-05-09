@@ -51,7 +51,11 @@ const booksSlice = createSlice({
       }
     },
     setBooksFilterPrice: (state, action) => {
-      state.booksFilters.active.price = action.payload
+      if (action.payload.length) {
+        state.booksFilters.active.price = action.payload
+      } else {
+        state.booksFilters.active.price = state.booksFilters.initial.price
+      }
     },
   },
   extraReducers: (builder) => {

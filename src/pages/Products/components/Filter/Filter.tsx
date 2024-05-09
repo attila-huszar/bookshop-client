@@ -84,7 +84,7 @@ export function Filter() {
   const handleFormReset = () => {
     dispatch(fetchAllBooks())
     dispatch(setBooksFilterGenre([]))
-    dispatch(setBooksFilterPrice(booksFilters.initial.price))
+    dispatch(setBooksFilterPrice([]))
   }
 
   const handleGenreFilterChange = (e: IInputEvent) => {
