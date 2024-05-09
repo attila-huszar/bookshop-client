@@ -6,7 +6,7 @@ import { StyledProducts } from './Products.styles'
 import { Card } from '../../components'
 import { Loading } from '../../components'
 import { Error } from '../../components'
-import { Filter } from './components/Filter/Filter'
+import { Filter, EmptyFilterResults } from './components'
 
 export function Products() {
   const { booksData, booksError } = useAppSelector(booksSelector)
@@ -16,9 +16,11 @@ export function Products() {
       <ErrorBoundary fallback={<Error error={booksError} />}>
         <Suspense fallback={<Loading />}>
           <main>
-            {booksData.map((book) => (
-              <Card key={book.id} book={book} />
-            ))}
+            {booksData.length ? (
+              booksData.map((book) => <Card key={book.id} book={book} />)
+            ) : (
+              <EmptyFilterResults />
+            )}
           </main>
         </Suspense>
         <Filter />

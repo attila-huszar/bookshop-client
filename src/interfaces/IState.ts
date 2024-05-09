@@ -3,6 +3,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 
 type BookFilters = {
   genre: string[]
+  price: number[]
 }
 
 export interface IBookStore {
@@ -12,7 +13,7 @@ export interface IBookStore {
   booksError: SerializedError | null
   booksRandomized: IBook[]
   booksFilters: {
-    available: BookFilters
+    initial: BookFilters
     active: BookFilters
   }
 }

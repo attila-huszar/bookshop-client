@@ -12,4 +12,5 @@ export interface IBook {
   discount: number
   new: boolean
   topSellers?: boolean
+  discountPrice: number
 }

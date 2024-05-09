@@ -158,13 +158,19 @@ export const getFilteredBooks = async (
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const genreFilter = (crit: string[]) => {
-      return crit.join('&genre_like=')
-    }
+    const filterString: string[] = []
 
-    const response = await axios.get(
-      `${URL.books}?genre_like=${genreFilter(criteria.genre)}`,
-    )
+    criteria.genre.length &&
+      criteria.genre.forEach((genre) => {
+        filterString.push(`genre_like=${genre}`)
+      })
+
+    criteria.price[0] &&
+      filterString.push(`discountPrice_gte=${criteria.price[0]}`)
+    criteria.price[1] &&
+      filterString.push(`discountPrice_lte=${criteria.price[1]}`)
+
+    const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
 
     return response.data
   } catch (error) {
