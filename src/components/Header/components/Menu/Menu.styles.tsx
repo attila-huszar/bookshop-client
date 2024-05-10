@@ -8,12 +8,12 @@ export const StyledMenu = styled.div`
 export const Dropdown = styled.div<MenuTypes>`
   position: absolute;
   width: 12rem;
-  top: 3rem;
+  top: 3.5rem;
   left: 0;
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 
   ${({ $show }) => {
     if ($show) {

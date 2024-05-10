@@ -1,14 +1,15 @@
 import styled from 'styled-components'
+import { StyleTypes } from './Avatar.types'
+import cameraIcon from '../../assets/svg/camera.svg'
 
-export const StyledAvatar = styled.button`
-  display: flex;
+export const StyledAvatar = styled.button<StyleTypes>`
   position: relative;
-  width: 48px;
-  height: 48px;
+  display: flex;
+  width: fit-content;
   border-radius: 50%;
   border: 2px solid var(--secondary-color);
   cursor: pointer;
-  transition: all 0.3s ease-out;
+  transition: all 0.2s ease-out;
 
   &::after {
     content: '';
@@ -18,8 +19,17 @@ export const StyledAvatar = styled.button`
     left: 0;
     height: 100%;
     width: 100%;
-    background-color: #ecb34630;
+    background-color: #f7f7f775;
     border-radius: 50%;
+    transition: all 0.2s ease-out;
+    ${({ $clip }) => $clip && 'clip-path: inset(75% 0 0 0);'}
+    ${({ $camera }) =>
+      $camera &&
+      `background-image: url(${cameraIcon});
+      background-repeat: no-repeat;
+      background-position: bottom 6px center;
+      background-size: 20px 20px;
+      `}
   }
 
   &:hover::after {

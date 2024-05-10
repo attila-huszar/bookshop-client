@@ -6,9 +6,11 @@ import {
   Registration,
   Login,
   Cart,
+  Account,
   NotFound,
 } from '../pages'
-import { BOOKS, REGISTRATION, LOGIN, CART } from './pathConstants'
+import { BOOKS, REGISTRATION, LOGIN, CART, ACCOUNT } from './pathConstants'
+import { ProtectedRoutes } from './ProtectedRoutes'
 
 export const routes = [
   {
@@ -38,6 +40,10 @@ export const routes = [
       {
         path: CART,
         element: <Cart />,
+      },
+      {
+        element: <ProtectedRoutes />,
+        children: [{ path: ACCOUNT, element: <Account /> }],
       },
       {
         path: '*',
