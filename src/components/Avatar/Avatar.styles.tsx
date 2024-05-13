@@ -5,7 +5,9 @@ import cameraIcon from '../../assets/svg/camera.svg'
 export const StyledAvatar = styled.button<StyleTypes>`
   position: relative;
   display: flex;
-  width: fit-content;
+  height: ${({ $size }) => $size + 'px'};
+  width: ${({ $size }) => $size + 'px'};
+  aspect-ratio: 1;
   border-radius: 50%;
   border: 2px solid var(--secondary-color);
   cursor: pointer;
@@ -27,7 +29,7 @@ export const StyledAvatar = styled.button<StyleTypes>`
       $camera &&
       `background-image: url(${cameraIcon});
       background-repeat: no-repeat;
-      background-position: bottom 6px center;
+      background-position: bottom 10% center;
       background-size: 20px 20px;
       `}
   }
@@ -39,6 +41,12 @@ export const StyledAvatar = styled.button<StyleTypes>`
   img {
     padding: 2px;
     border-radius: 50%;
-    overflow: hidden;
+  }
+
+  svg {
+    height: auto;
+    width: ${({ $size }) => $size + 'px'};
+    padding: 3px;
+    border-radius: 50%;
   }
 `

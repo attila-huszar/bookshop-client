@@ -17,7 +17,6 @@ import {
 import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
 import { LOGIN } from '../../../../routes/pathConstants'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
-import AccountDefaultIcon from '../../../../assets/svg/account_default.svg?react'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {
@@ -43,25 +42,16 @@ export function AccountMenu() {
   return (
     <StyledMenu ref={menuRef}>
       {userData ? (
-        typeof userData.avatar === 'string' ? (
-          <Avatar
-            imgUrl={userData.avatar}
-            onClick={toggleMenu}
-            title={userData.firstName}
-          />
-        ) : (
-          <IconButton
-            onClick={toggleMenu}
-            icon={<AccountDefaultIcon />}
-            title={userData.firstName}
-            $bordered
-          />
-        )
+        <Avatar
+          imgUrl={userData.avatar as string}
+          onClick={toggleMenu}
+          title={userData.firstName}
+        />
       ) : (
         <IconButton
           onClick={() => navigate(LOGIN)}
           icon={<AccountIcon />}
-          title={'Account'}
+          title={'Login/Register'}
         />
       )}
       {userData && (

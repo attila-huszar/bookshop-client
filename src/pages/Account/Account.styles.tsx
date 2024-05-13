@@ -5,7 +5,7 @@ export const StyledAccount = styled.main`
 
   > h2 {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 
     > span {
       font-weight: 700;
@@ -14,27 +14,99 @@ export const StyledAccount = styled.main`
 `
 
 export const UserDataFields = styled.div`
-  display: flex;
   font-size: 1.125rem;
-
-  div:not(:last-child) {
-    border-right: 2px solid grey;
-  }
 `
 
-export const BaseDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  width: 50%;
+export const Details = styled.div`
+  position: relative;
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--light-grey);
+  border-radius: 10px;
+  background-color: var(--whitesmoke);
+
+  > h5 {
+    margin-bottom: 1rem;
+  }
 
   > div {
     display: flex;
-    gap: 1rem;
+  }
+
+  > button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
   }
 `
 
-export const OtherDetails = styled.div`
-  padding: 0 2rem;
+export const AvatarPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+`
+
+export const General = styled.div`
+  margin-left: 2rem;
+  width: 100%;
+`
+
+export const GeneralLine = styled.div`
+  display: flex;
+  gap: 3rem;
+
+  > div {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+`
+
+export const Address = styled.div`
+  > form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  input[name='number'] {
+    width: 10rem;
+  }
+
+  input[name='state'] {
+    width: 12rem;
+  }
+
+  input[name='postCode'] {
+    width: 10rem;
+  }
+
+  input[name='country'] {
+    width: 20rem;
+  }
+`
+
+export const AddressLine = styled.div`
+  display: flex;
+  gap: 3rem;
+
+  > div:first-child {
+    width: 100%;
+  }
+
+  > div:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  > div:last-child {
+    width: auto;
+  }
+`
+
+export const ButtonWrapper = styled.div`
+  position: absolute;
+  bottom: 1rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 1rem;
 `

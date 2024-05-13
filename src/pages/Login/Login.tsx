@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { Label, ButtonWrapper } from '../../styles/Form.styles'
+import { ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { loginSchema } from '../../utils/validationSchema'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
@@ -43,7 +43,7 @@ export function Login() {
         }}>
         {({ isSubmitting }) => (
           <Form>
-            <Label>Email</Label>
+            <p>Email</p>
             <FormikField
               name="email"
               placeholder="Email"
@@ -51,14 +51,12 @@ export function Login() {
               inputMode="email"
               focus
             />
-
-            <Label>Password</Label>
+            <p>Password</p>
             <FormikField
               name="password"
               placeholder="Password"
               type="password"
             />
-
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}

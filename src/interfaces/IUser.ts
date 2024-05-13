@@ -3,12 +3,22 @@ export interface IUser {
   firstName: string
   lastName: string
   email: string
-  phone?: string
   password: string
-  createdAt?: Date
-  updatedAt?: Date
+  phone?: string
+  address?: IAddress
   avatar?: string | File | null
   id?: number
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface IAddress {
+  street: string
+  number: string
+  city: string
+  state?: string
+  postCode: string
+  country: string
 }
 
 export type IUserOmitPassword = Omit<IUser, 'password'>

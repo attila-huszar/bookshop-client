@@ -1,4 +1,5 @@
 export type StyleTypes = {
+  $size?: number
   $clip?: boolean
   $camera?: boolean
 }
@@ -6,4 +7,4 @@ export type StyleTypes = {
 export type AvatarTypes = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
-> & { imgUrl: string; size?: number } & StyleTypes
+> & { imgUrl: string } & StyleTypes

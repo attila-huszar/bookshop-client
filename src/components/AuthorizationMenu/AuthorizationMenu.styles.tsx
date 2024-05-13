@@ -8,6 +8,10 @@ export const StyledAuthorizationMenu = styled.main`
 
   form {
     width: 30rem;
+
+    > div {
+      margin-bottom: 1rem;
+    }
   }
 `
 

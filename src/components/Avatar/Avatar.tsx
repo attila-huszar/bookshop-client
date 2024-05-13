@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { StyledAvatar } from './Avatar.styles'
 import { AvatarTypes } from './Avatar.types'
 import { CloudinaryImage } from '@cloudinary/url-gen'
@@ -7,26 +6,29 @@ import { thumbnail } from '@cloudinary/url-gen/actions/resize'
 import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
 import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
 import { AdvancedImage } from '@cloudinary/react'
+import AccountDefaultIcon from '../../assets/svg/account_default.svg?react'
 
 export function Avatar({
   imgUrl,
-  size = 40,
   onClick,
   title,
+  $size = 40,
   ...props
 }: AvatarTypes) {
-  const avatar = useMemo(
-    () =>
-      new CloudinaryImage(
+  const avatar = imgUrl
+    ? new CloudinaryImage(
         `bookstore/avatars/${imgUrl.split('/').pop()}`,
         cloudConfig,
-      ).resize(thumbnail().width(size).height(size).gravity(focusOn(face()))),
-    [imgUrl, size],
-  )
+      ).resize(thumbnail().width($size).height($size).gravity(focusOn(face())))
+    : null
 
   return (
-    <StyledAvatar onClick={onClick} title={title} {...props}>
-      <AdvancedImage cldImg={avatar} />
+    <StyledAvatar onClick={onClick} $size={$size} title={title} {...props}>
+      {avatar ? (
+        <AdvancedImage cldImg={avatar} />
+      ) : (
+        <AccountDefaultIcon color="var(--light-black)" />
+      )}
     </StyledAvatar>
   )
 }

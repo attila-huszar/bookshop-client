@@ -9,6 +9,7 @@ export function FormikField({
   type,
   inputMode,
   focus,
+  readOnly,
 }: IFormikField) {
   const formikRef = useRef<HTMLInputElement>(null)
   const formikContext = useFormikContext()
@@ -40,6 +41,7 @@ export function FormikField({
           type="file"
           accept="image/*"
           onChange={handleImgChange}
+          readOnly={readOnly}
           $valid={shouldShowError && !fileMeta.error}
           $error={shouldShowError && fileMeta.error}
         />
@@ -64,6 +66,7 @@ export function FormikField({
               type={type}
               inputMode={inputMode}
               ref={formikRef}
+              readOnly={readOnly}
               {...field}
             />
             {shouldShowError && meta.error && (

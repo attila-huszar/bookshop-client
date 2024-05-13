@@ -1,12 +1,7 @@
 import styled from 'styled-components'
 
-export const Label = styled.p`
-  margin-top: 1rem;
-`
-
 export const InputWrapper = styled.div`
   position: relative;
-  margin-bottom: 1rem;
 `
 
 export const Input = styled.input<FormTypes>`
@@ -16,6 +11,11 @@ export const Input = styled.input<FormTypes>`
   border: 1px solid lightgrey;
   border-radius: 5px;
   background-color: #fff;
+
+  &:read-only {
+    color: var(--black);
+    background-color: var(--whitesmoke);
+  }
 
   &:focus,
   &:active {
@@ -74,7 +74,7 @@ export const ErrorMessage = styled.div`
 
 export const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   margin-top: 2rem;
 `
 

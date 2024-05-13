@@ -11,7 +11,7 @@ const height = {
 
 const width = {
   xs: '5rem',
-  sm: '7.5rem',
+  sm: '8rem',
   md: '12rem',
   lg: '15rem',
   wide: '18rem',

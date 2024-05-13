@@ -13,4 +13,5 @@ export interface IFormikField {
     | 'decimal'
     | undefined
   focus?: boolean
+  readOnly?: boolean
 }
