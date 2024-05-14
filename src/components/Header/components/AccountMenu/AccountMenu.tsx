@@ -20,12 +20,13 @@ import AccountIcon from '../../../../assets/svg/account.svg?react'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const { userData } = useAppSelector(userSelector)
-  const dispatch = useAppDispatch()
-  const { removeFromLocalStorage } = useLocalStorage()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { removeFromLocalStorage } = useLocalStorage()
+  const { userData } = useAppSelector(userSelector)
+  const { firstName, email, avatar } = { ...userData }
   useClickOutside(menuOpen, setMenuOpen, menuRef)
 
   const toggleMenu = () => {
@@ -35,7 +36,7 @@ export function AccountMenu() {
   const handleLogout = () => {
     toggleMenu()
     removeFromLocalStorage('uuid')
-    toast.success(`${userData?.email} successfully logged out`)
+    toast.success(`${email} successfully logged out`)
     dispatch(logoutUser())
   }
 
@@ -43,9 +44,9 @@ export function AccountMenu() {
     <StyledMenu ref={menuRef}>
       {userData ? (
         <Avatar
-          imgUrl={userData.avatar as string}
+          imgUrl={avatar as string}
           onClick={toggleMenu}
-          title={userData.firstName}
+          title={firstName}
         />
       ) : (
         <IconButton
@@ -61,7 +62,7 @@ export function AccountMenu() {
               <Link to={userAccountLink.path} onClick={toggleMenu}>
                 <MenuItem>
                   <img src={userAccountLink.icon} width={24} height={22} />
-                  <span>{userData.firstName}</span>
+                  <span>{firstName}</span>
                 </MenuItem>
               </Link>
             </li>

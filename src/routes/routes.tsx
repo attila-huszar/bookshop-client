@@ -1,5 +1,5 @@
+import { Suspense, lazy } from 'react'
 import {
-  Layout,
   Home,
   Products,
   Product,
@@ -10,12 +10,24 @@ import {
   NotFound,
 } from '../pages'
 import { BOOKS, REGISTRATION, LOGIN, CART, ACCOUNT } from './pathConstants'
-import { ProtectedRoutes } from './ProtectedRoutes'
+import { ProtectedRoutes } from '../routes/ProtectedRoutes'
+import { protectedRouteLoader } from '../utils/protectedRouteLoader'
+import { Loading } from '../components'
+
+const Layout = lazy(() =>
+  import('../pages').then(({ Layout }) => ({
+    default: Layout,
+  })),
+)
 
 export const routes = [
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Layout />
+      </Suspense>
+    ),
     children: [
       {
         index: true,
@@ -43,7 +55,13 @@ export const routes = [
       },
       {
         element: <ProtectedRoutes />,
-        children: [{ path: ACCOUNT, element: <Account /> }],
+        loader: protectedRouteLoader,
+        children: [
+          {
+            path: ACCOUNT,
+            element: <Account />,
+          },
+        ],
       },
       {
         path: '*',

@@ -25,7 +25,6 @@ import {
   accountGeneralSchema,
   accountAddressSchema,
 } from '../../utils/validationSchema'
-import { IUserOmitPassword } from '../../interfaces'
 import EditIcon from '../../assets/svg/edit.svg?react'
 
 export function Account() {
@@ -35,8 +34,11 @@ export function Account() {
     lastName,
     email,
     phone,
-    address: { street, number, city, state, postCode, country } = {},
-  } = userData as IUserOmitPassword
+    avatar,
+    address: { street, number, city, state, postCode, country } = {
+      ...userData?.address,
+    },
+  } = { ...userData }
   const [editingGeneral, setEditingGeneral] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -64,7 +66,7 @@ export function Account() {
   return (
     <StyledAccount>
       <h2>
-        Hello, <span>{userData?.firstName}</span>!
+        Hello, <span>{firstName}</span>!
       </h2>
       <UserDataFields>
         <Details>
@@ -72,7 +74,7 @@ export function Account() {
           <div>
             <AvatarPanel>
               <Avatar
-                imgUrl={userData?.avatar as string}
+                imgUrl={avatar as string}
                 title="Change Profile Picture"
                 $size={160}
                 $clip

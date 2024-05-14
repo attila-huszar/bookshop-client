@@ -1,20 +1,7 @@
-import { Navigate, Outlet } from 'react-router-dom'
-import { useAppSelector } from '../hooks'
-import { userSelector } from '../store'
-import { Loading } from '../components'
+import { Navigate, Outlet, useLoaderData } from 'react-router-dom'
 
 export function ProtectedRoutes() {
-  const { userData, userIsLoading } = useAppSelector(userSelector)
+  const isUserLoggedIn = useLoaderData()
 
-  if (userIsLoading) {
-    return <Loading />
-  }
-
-  if (!userData && userIsLoading) {
-    return <Navigate to={'/'} replace />
-  }
-
-  if (userData) {
-    return <Outlet />
-  }
+  return isUserLoggedIn ? <Outlet /> : <Navigate to={'/'} replace />
 }

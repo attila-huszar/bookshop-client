@@ -116,6 +116,20 @@ export const getUserByUUID = async (
   }
 }
 
+export const checkUserLoggedIn = async (uuid: string) => {
+  try {
+    const response = await axios.get(`${URL.users}?uuid=${uuid}`)
+
+    if (response.data.length) {
+      return response.data[0].uuid === uuid
+    } else {
+      return false
+    }
+  } catch (error) {
+    return false
+  }
+}
+
 export const postUserRegister = async (
   user: IUser,
   rejectWithValue: (value: unknown) => void,
