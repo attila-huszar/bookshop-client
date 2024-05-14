@@ -7,27 +7,26 @@ import { registrationSchema, passwordEncrypt } from '../../utils'
 import { registrationInitialValues } from '../../lib/defaultValues'
 import { v4 as uuidv4 } from 'uuid'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
-import { userSelector, registerUser, registerErrorSelector } from '../../store'
+import { userSelector, registerUser } from '../../store'
 import toast from 'react-hot-toast'
 
 export function Registration() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
-  const user = useAppSelector(userSelector)
-  const registerError = useAppSelector(registerErrorSelector)
+  const { userData, registerError } = useAppSelector(userSelector)
 
   useEffect(() => {
-    if (user) {
+    if (userData) {
       navigate('/', { replace: true })
       toast.success(
-        `${user.email} registered successfully! You are now logged in!`,
+        `${userData.email} registered successfully! You are now logged in!`,
       )
-      setToLocalStorage('uuid', user.uuid)
+      setToLocalStorage('uuid', userData.uuid)
     } else if (registerError) {
       toast.error(registerError as string)
     }
-  }, [user, registerError])
+  }, [navigate, registerError, setToLocalStorage, userData])
 
   useEffect(() => {
     window.scrollTo(0, 0)

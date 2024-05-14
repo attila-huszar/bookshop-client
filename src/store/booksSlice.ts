@@ -6,11 +6,12 @@ import {
 } from '@reduxjs/toolkit'
 import {
   fetchBooks,
+  fetchBooksByProperty,
   getBookSearchOptions,
   getFilteredBooks,
 } from '../api/fetchData'
+import { getRandomBooks } from '../utils'
 import { IBookStore, IFilter } from '../interfaces'
-import { getRandomBooks } from '../utils/getRandomBooks'
 
 const initialState: IBookStore = {
   booksData: [],
@@ -34,6 +35,8 @@ const initialState: IBookStore = {
     },
   },
   booksRandomized: [],
+  booksTopSellers: [],
+  booksReleases: [],
 }
 
 const booksSlice = createSlice({
@@ -116,6 +119,13 @@ const booksSlice = createSlice({
         state.booksFilters.active.price = action.payload.price
         state.booksFilters.active.publishYear = action.payload.publishYear
       })
+      .addCase(getBooksByProperty.fulfilled, (state, action) => {
+        if (action.meta.arg === 'topSellers') {
+          state.booksTopSellers = action.payload
+        } else if (action.meta.arg === 'new') {
+          state.booksReleases = action.payload
+        }
+      })
   },
 })
 
@@ -127,6 +137,12 @@ export const fetchAllBooks = createAsyncThunk(
 export const fetchBookById = createAsyncThunk(
   'fetchBookById',
   (id: string, { rejectWithValue }) => fetchBooks(id, rejectWithValue),
+)
+
+export const getBooksByProperty = createAsyncThunk(
+  'getBooksByProperty',
+  (property: string, { rejectWithValue }) =>
+    fetchBooksByProperty(property, rejectWithValue),
 )
 
 export const filterBooks = createAsyncThunk(

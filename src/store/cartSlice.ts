@@ -61,17 +61,20 @@ const cartSlice = createSlice({
         state.cartData[itemIdx].quantity--
       }
     },
-    cartQuantitySet: (state, action) => {
+    cartQuantitySet: (
+      state,
+      action: { payload: { cartItem: ICart; newQuantity: number } },
+    ) => {
       const itemIdx = state.cartData.findIndex(
-        (item) => item.id === action.payload.item.id,
+        (item) => item.id === action.payload.cartItem.id,
       )
 
       if (
         itemIdx !== -1 &&
-        action.payload.value >= 1 &&
-        action.payload.value <= 50
+        action.payload.newQuantity >= 1 &&
+        action.payload.newQuantity <= 50
       ) {
-        state.cartData[itemIdx].quantity = action.payload.value
+        state.cartData[itemIdx].quantity = action.payload.newQuantity
       }
     },
   },

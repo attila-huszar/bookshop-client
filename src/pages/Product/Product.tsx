@@ -15,10 +15,10 @@ import { useAppSelector, useAppDispatch } from '../../hooks'
 import {
   fetchBookById,
   fetchAuthorById,
+  booksSelector,
   bookByIdSelector,
+  authorsSelector,
   authorByIdSelector,
-  bookErrorSelector,
-  authorErrorSelector,
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
@@ -26,7 +26,7 @@ import { BOOKS, CART } from '../../routes/pathConstants'
 
 export function Product() {
   const { id } = useParams()
-  const { cart, addToCart } = useCart()
+  const { cartData, addToCart } = useCart()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
@@ -34,9 +34,9 @@ export function Product() {
   const author: IAuthor | undefined = useAppSelector(
     authorByIdSelector(book?.author as number),
   )
-  const bookError = useAppSelector(bookErrorSelector)
-  const authorError = useAppSelector(authorErrorSelector)
-  const isBookInCart = cart.some((item) => item.id === book?.id)
+  const { booksError } = useAppSelector(booksSelector)
+  const { authorsError } = useAppSelector(authorsSelector)
+  const isBookInCart = cartData.some((item) => item.id === book?.id)
 
   useEffect(() => {
     if (!book) {
@@ -61,7 +61,7 @@ export function Product() {
             <img src={book.imgUrl} alt={book.title} width="100%" />
           </ImageWrapper>
           <Title>{book.title}</Title>
-          <Author>{author ? author.name : (authorError as string)}</Author>
+          <Author>{author ? author.name : (authorsError as string)}</Author>
           <Price
             component="product"
             price={book.price}
@@ -88,6 +88,6 @@ export function Product() {
       <Recommended />
     </>
   ) : (
-    <Error error={bookError} />
+    <Error error={booksError} />
   )
 }

@@ -1,5 +1,5 @@
 import { useAppSelector } from '../../../../hooks'
-import { booksReleasesSelector } from '../../../../store/selectors'
+import { booksSelector } from '../../../../store'
 import {
   StyledReleases,
   ImageWrapper,
@@ -11,7 +11,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 
 export function Releases() {
-  const bookReleases = useAppSelector(booksReleasesSelector)
+  const { booksReleases } = useAppSelector(booksSelector)
 
   return (
     <StyledReleases>
@@ -29,7 +29,7 @@ export function Releases() {
       </div>
       <div>
         <Swiper slidesPerView={'auto'}>
-          {bookReleases.map((book) => (
+          {booksReleases.map((book) => (
             <SwiperSlide key={book.id} style={{ width: 'fit-content' }}>
               <ImageWrapper>
                 <OriginalImg>

@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { useCart } from '../../../../hooks'
 import { StyledBasketButton, CartItemCount } from './BasketButton.styles'
 import { Button } from '../../../../components'
+import { useCart } from '../../../../hooks'
 import { CART } from '../../../../routes/pathConstants'
 
 export function BasketButton() {
-  const { cart } = useCart()
+  const { cartData } = useCart()
   const navigate = useNavigate()
 
   return (
@@ -17,9 +17,9 @@ export function BasketButton() {
         title="Basket">
         Basket
       </Button>
-      {cart?.length ? (
+      {cartData?.length ? (
         <CartItemCount>
-          {cart.reduce((acc, item) => acc + item.quantity, 0)}
+          {cartData.reduce((acc, item) => acc + item.quantity, 0)}
         </CartItemCount>
       ) : null}
     </StyledBasketButton>
