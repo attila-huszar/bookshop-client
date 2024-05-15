@@ -81,7 +81,7 @@ export const Address = styled.div`
     width: 10rem;
   }
 
-  input[name='country'] {
+  select[name='country'] {
     width: 20rem;
   }
 `

@@ -68,6 +68,7 @@ const userSlice = createSlice({
         state.userError = null
       })
       .addCase(updateUser.fulfilled, (state, action) => {
+        console.log(action.payload)
         state.userIsLoading = false
         state.userData = action.payload
         state.userError = null
@@ -157,12 +158,12 @@ export const uploadImage = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, field, value }: IUserUpdate, { rejectWithValue }) => {
+  async ({ uuid, fields }: IUserUpdate, { rejectWithValue }) => {
     const userResponse = await getUserByUUID(uuid, rejectWithValue)
 
     if (userResponse) {
       const updatedUser = await putUser(
-        { ...userResponse, [field]: value },
+        { ...userResponse, ...fields },
         rejectWithValue,
       )
 

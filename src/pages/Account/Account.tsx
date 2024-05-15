@@ -7,8 +7,8 @@ import {
   IconButton,
   PasswordChange,
 } from '../../components'
-import { useAppSelector } from '../../hooks'
-import { userSelector } from '../../store'
+import { useAppDispatch, useAppSelector } from '../../hooks'
+import { userSelector, updateUser } from '../../store'
 import {
   StyledAccount,
   UserDataFields,
@@ -25,11 +25,13 @@ import {
   accountGeneralSchema,
   accountAddressSchema,
 } from '../../utils/validationSchema'
+import { countryList } from '../../lib/countryList'
 import EditIcon from '../../assets/svg/edit.svg?react'
 
 export function Account() {
   const { userData } = useAppSelector(userSelector)
   const {
+    uuid,
     firstName,
     lastName,
     email,
@@ -42,15 +44,16 @@ export function Account() {
   const [editingGeneral, setEditingGeneral] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const dispatch = useAppDispatch()
 
-  const generalInfo = {
+  const userBasicData = {
     firstName,
     lastName,
     email,
     phone,
   }
 
-  const addressInfo = {
+  const userAddressData = {
     street,
     number,
     city,
@@ -92,59 +95,200 @@ export function Account() {
                 )}
             </AvatarPanel>
             <General>
+              {userData && (
+                <Formik
+                  initialValues={userBasicData}
+                  enableReinitialize
+                  validationSchema={accountGeneralSchema}
+                  onSubmit={(values, actions) => {
+                    dispatch(
+                      updateUser({
+                        uuid: uuid as string,
+                        fields: { ...values },
+                      }),
+                    )
+                    actions.setSubmitting(false)
+                  }}
+                  onReset={handleResetGeneral}>
+                  {({ values, handleChange, isSubmitting }) => (
+                    <Form>
+                      <GeneralLine>
+                        <div>
+                          <p>First name</p>
+                          <FormikField
+                            name="firstName"
+                            value={values.firstName}
+                            onChange={handleChange}
+                            placeholder="First name"
+                            type="text"
+                            readOnly={!editingGeneral}
+                          />
+                        </div>
+                        <div>
+                          <p>Last name</p>
+                          <FormikField
+                            name="lastName"
+                            value={values.lastName}
+                            onChange={handleChange}
+                            placeholder="Last name"
+                            type="text"
+                            readOnly={!editingGeneral}
+                          />
+                        </div>
+                      </GeneralLine>
+                      <GeneralLine>
+                        <div>
+                          <p>Email</p>
+                          <FormikField
+                            name="email"
+                            value={values.email}
+                            onChange={handleChange}
+                            placeholder="Email"
+                            type="email"
+                            readOnly
+                          />
+                        </div>
+                        <div>
+                          <p>Phone</p>
+                          <FormikField
+                            name="phone"
+                            value={values.phone}
+                            onChange={handleChange}
+                            placeholder="Phone"
+                            type="tel"
+                            inputMode="numeric"
+                            readOnly={!editingGeneral}
+                          />
+                        </div>
+                      </GeneralLine>
+                      {editingGeneral && (
+                        <ButtonWrapper>
+                          <Button type="reset" $size="sm" $inverted>
+                            Cancel
+                          </Button>
+                          <Button
+                            $size="sm"
+                            type="submit"
+                            disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : 'Save'}
+                          </Button>
+                        </ButtonWrapper>
+                      )}
+                    </Form>
+                  )}
+                </Formik>
+              )}
+            </General>
+          </div>
+          {!editingGeneral && (
+            <IconButton
+              onClick={() => setEditingGeneral((prev) => !prev)}
+              icon={<EditIcon />}
+            />
+          )}
+        </Details>
+        <Details>
+          <h5>Address</h5>
+          <Address>
+            {userData && (
               <Formik
-                initialValues={generalInfo}
-                validationSchema={accountGeneralSchema}
+                initialValues={userAddressData}
+                enableReinitialize
+                validationSchema={accountAddressSchema}
                 onSubmit={(values, actions) => {
+                  dispatch(
+                    updateUser({
+                      uuid: uuid as string,
+                      fields: { ...userData, address: values },
+                    }),
+                  )
                   actions.setSubmitting(false)
                 }}
-                onReset={handleResetGeneral}>
-                {({ isSubmitting }) => (
+                onReset={handleResetAddress}>
+                {({ values, handleChange, isSubmitting }) => (
                   <Form>
-                    <GeneralLine>
+                    <AddressLine>
                       <div>
-                        <p>First name</p>
+                        <p>Street</p>
                         <FormikField
-                          name="firstName"
-                          placeholder="First name"
+                          name="street"
+                          value={values.street}
+                          onChange={handleChange}
+                          placeholder="Street"
                           type="text"
-                          readOnly={!editingGeneral}
+                          readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>Last name</p>
+                        <p>Number</p>
                         <FormikField
-                          name="lastName"
-                          placeholder="Last name"
+                          name="number"
+                          value={values.number}
+                          onChange={handleChange}
+                          placeholder="Number"
                           type="text"
-                          readOnly={!editingGeneral}
+                          readOnly={!editingAddress}
                         />
                       </div>
-                    </GeneralLine>
-                    <GeneralLine>
+                    </AddressLine>
+                    <AddressLine>
                       <div>
-                        <p>Email</p>
+                        <p>City</p>
                         <FormikField
-                          name="email"
-                          placeholder="Email"
-                          type="email"
-                          readOnly
+                          name="city"
+                          value={values.city}
+                          onChange={handleChange}
+                          placeholder="City"
+                          type="text"
+                          readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>Phone</p>
+                        <p>State</p>
                         <FormikField
-                          name="phone"
-                          placeholder="Phone"
-                          type="tel"
-                          inputMode="numeric"
-                          readOnly={!editingGeneral}
+                          name="state"
+                          value={values.state}
+                          onChange={handleChange}
+                          placeholder="State"
+                          type="text"
+                          readOnly={!editingAddress}
                         />
                       </div>
-                    </GeneralLine>
-                    {editingGeneral && (
+                      <div>
+                        <p>Post Code</p>
+                        <FormikField
+                          name="postCode"
+                          value={values.postCode}
+                          onChange={handleChange}
+                          placeholder="Post Code"
+                          type="text"
+                          readOnly={!editingAddress}
+                        />
+                      </div>
+                    </AddressLine>
+                    <AddressLine>
+                      <div>
+                        <p>Country</p>
+                        <FormikField
+                          name="country"
+                          value={values.country}
+                          onChange={handleChange}
+                          type="select"
+                          readOnly={!editingAddress}>
+                          <option value="" disabled selected hidden>
+                            Please select a country...
+                          </option>
+                          {countryList.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              {country.flag} {country.name}
+                            </option>
+                          ))}
+                        </FormikField>
+                      </div>
+                    </AddressLine>
+                    {editingAddress && (
                       <ButtonWrapper>
-                        <Button type="reset" $size="sm" $inverted>
+                        <Button $size="sm" type="reset" $inverted>
                           Cancel
                         </Button>
                         <Button
@@ -158,100 +302,7 @@ export function Account() {
                   </Form>
                 )}
               </Formik>
-            </General>
-          </div>
-          {!editingGeneral && (
-            <IconButton
-              onClick={() => setEditingGeneral((prev) => !prev)}
-              icon={<EditIcon />}
-            />
-          )}
-        </Details>
-        <Details>
-          <h5>Address</h5>
-          <Address>
-            <Formik
-              initialValues={addressInfo}
-              validationSchema={accountAddressSchema}
-              onSubmit={(values, actions) => {
-                actions.setSubmitting(false)
-              }}
-              onReset={handleResetAddress}>
-              {({ isSubmitting }) => (
-                <Form>
-                  <AddressLine>
-                    <div>
-                      <p>Street</p>
-                      <FormikField
-                        name="street"
-                        placeholder="Street"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                    <div>
-                      <p>Number</p>
-                      <FormikField
-                        name="number"
-                        placeholder="Number"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                  </AddressLine>
-                  <AddressLine>
-                    <div>
-                      <p>City</p>
-                      <FormikField
-                        name="city"
-                        placeholder="City"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                    <div>
-                      <p>State</p>
-                      <FormikField
-                        name="state"
-                        placeholder="State"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                    <div>
-                      <p>Post Code</p>
-                      <FormikField
-                        name="postCode"
-                        placeholder="Post Code"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                  </AddressLine>
-                  <AddressLine>
-                    <div>
-                      <p>Country</p>
-                      <FormikField
-                        name="country"
-                        placeholder="Country"
-                        type="text"
-                        readOnly={!editingAddress}
-                      />
-                    </div>
-                  </AddressLine>
-                  {editingAddress && (
-                    <ButtonWrapper>
-                      <Button $size="sm" type="reset" $inverted>
-                        Cancel
-                      </Button>
-                      <Button $size="sm" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Saving...' : 'Save'}
-                      </Button>
-                    </ButtonWrapper>
-                  )}
-                </Form>
-              )}
-            </Formik>
+            )}
           </Address>
           {!editingAddress && (
             <IconButton

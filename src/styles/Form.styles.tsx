@@ -1,21 +1,16 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const InputWrapper = styled.div`
   position: relative;
 `
 
-export const Input = styled.input<FormTypes>`
+const baseInputStyles = css<FormTypes>`
   width: 100%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
   border: 1px solid lightgrey;
   border-radius: 5px;
   background-color: #fff;
-
-  &:read-only {
-    color: var(--black);
-    background-color: var(--whitesmoke);
-  }
 
   &:focus,
   &:active {
@@ -57,6 +52,23 @@ export const Input = styled.input<FormTypes>`
         outline: none;
       }
     `}
+`
+
+export const Input = styled.input<FormTypes>`
+  ${baseInputStyles}
+
+  &:read-only {
+    background-color: var(--whitesmoke);
+  }
+`
+
+export const Select = styled.select<FormTypes>`
+  ${baseInputStyles}
+
+  &:disabled {
+    color: var(--black);
+    background-color: var(--whitesmoke);
+  }
 `
 
 export const ErrorMessage = styled.div`

@@ -1,15 +1,23 @@
 import { useEffect, useRef } from 'react'
 import { Field, useFormikContext } from 'formik'
-import { InputWrapper, Input, ErrorMessage } from '../../styles/Form.styles'
+import {
+  InputWrapper,
+  Input,
+  Select,
+  ErrorMessage,
+} from '../../styles/Form.styles'
 import { IFormik, IFormikField } from '../../interfaces'
 
 export function FormikField({
   name,
+  value,
+  onChange,
   placeholder,
   type,
   inputMode,
   focus,
   readOnly,
+  children,
 }: IFormikField) {
   const formikRef = useRef<HTMLInputElement>(null)
   const formikContext = useFormikContext()
@@ -38,9 +46,9 @@ export function FormikField({
       <InputWrapper>
         <Input
           name={name}
+          onChange={handleImgChange}
           type="file"
           accept="image/*"
-          onChange={handleImgChange}
           readOnly={readOnly}
           $valid={shouldShowError && !fileMeta.error}
           $error={shouldShowError && fileMeta.error}
@@ -52,8 +60,33 @@ export function FormikField({
     )
   }
 
+  if (type === 'select') {
+    return (
+      <Field as="select" name={name} value={value} onChange={onChange}>
+        {({ field, form, meta }: IFormik) => {
+          const shouldShowError = meta.touched && form.submitCount > 0
+
+          return (
+            <InputWrapper>
+              <Select
+                disabled={readOnly}
+                $valid={shouldShowError && !meta.error}
+                $error={shouldShowError && meta.error}
+                {...field}>
+                {children}
+              </Select>
+              {shouldShowError && meta.error && (
+                <ErrorMessage>{meta.error}</ErrorMessage>
+              )}
+            </InputWrapper>
+          )
+        }}
+      </Field>
+    )
+  }
+
   return (
-    <Field name={name}>
+    <Field name={name} value={value} onChange={onChange}>
       {({ field, form, meta }: IFormik) => {
         const shouldShowError = meta.touched && form.submitCount > 0
 
