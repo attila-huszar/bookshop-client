@@ -6,25 +6,24 @@ import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { loginSchema } from '../../utils/validationSchema'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
 import { loginInitialValues } from '../../lib/defaultValues'
-import { userSelector, loginUser, loginErrorSelector } from '../../store'
+import { userSelector, loginUser } from '../../store'
 import toast from 'react-hot-toast'
 
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
-  const user = useAppSelector(userSelector)
-  const loginError = useAppSelector(loginErrorSelector)
+  const { userData, loginError } = useAppSelector(userSelector)
 
   useEffect(() => {
-    if (user) {
+    if (userData) {
       navigate('/', { replace: true })
-      toast.success(`Welcome back, ${user.firstName}!`)
-      setToLocalStorage('uuid', user.uuid)
+      toast.success(`Welcome back, ${userData.firstName}!`)
+      setToLocalStorage('uuid', userData.uuid)
     } else if (loginError) {
       toast.error(loginError as string)
     }
-  }, [user, loginError])
+  }, [loginError, navigate, setToLocalStorage, userData])
 
   useEffect(() => {
     window.scrollTo(0, 0)

@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
 import { IUser } from '../interfaces'
 import { cloudName, unsignedUploadPreset } from '../lib/envVariables'
+import { IFilter } from '../interfaces/IFilter'
 
 export const fetchBooks = async (
   id: string | void,
@@ -9,6 +10,23 @@ export const fetchBooks = async (
 ) => {
   try {
     const response = await axios.get(id ? `${URL.books}/${id}` : URL.books)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const fetchBooksByProperty = async (
+  property: string,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.books}?${property}=true`)
+
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -142,6 +160,64 @@ export const putUser = async (
 ) => {
   try {
     const response = await axios.put(`${URL.users}/${user.id}`, user)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getFilteredBooks = async (
+  criteria: IFilter,
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const filterString: string[] = []
+
+    criteria.genre.length &&
+      criteria.genre.forEach((genre) => {
+        filterString.push(`genre_like=${genre}`)
+      })
+
+    criteria.price[0] &&
+      filterString.push(`discountPrice_gte=${criteria.price[0]}`)
+    criteria.price[1] &&
+      filterString.push(`discountPrice_lte=${criteria.price[1]}`)
+
+    if (criteria.discount === 'discountOnly') {
+      filterString.push(`discount_gte=1`)
+    } else if (criteria.discount === 'fullPriceOnly') {
+      filterString.push(`discount=0`)
+    }
+
+    criteria.publishYear[0] &&
+      filterString.push(`yearOfPublishing_gte=${criteria.publishYear[0]}`)
+    criteria.publishYear[1] &&
+      filterString.push(`yearOfPublishing_lte=${criteria.publishYear[1]}`)
+
+    criteria.rating > 1 && filterString.push(`rating_gte=${criteria.rating}`)
+
+    const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
+
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getBookSearchOptions = async (
+  rejectWithValue: (value: unknown) => void,
+) => {
+  try {
+    const response = await axios.get(`${URL.searchOptions}`)
+
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {

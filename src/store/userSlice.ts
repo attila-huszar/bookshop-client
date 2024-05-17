@@ -10,8 +10,8 @@ import {
   postUserRegister,
   putUser,
 } from '../api/fetchData'
+import { passwordEncrypt } from '../utils'
 import { IUser, IUserUpdate, IUserStore } from '../interfaces'
-import { passwordEncrypt } from '../utils/passwordEncrypt'
 
 const initialState: IUserStore = {
   userData: null,

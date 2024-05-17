@@ -4,10 +4,12 @@ import { useEffect } from 'react'
 import { useAppDispatch } from './hooks'
 import {
   fetchAllBooks,
-  booksRandomize,
   fetchAllNews,
-  getUserByID,
   fetchCartItems,
+  getUserByID,
+  getBooksRandomized,
+  getSearchOptions,
+  getBooksByProperty,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -18,9 +20,12 @@ function App() {
 
   useEffect(() => {
     dispatch(fetchAllBooks()).then(() => {
-      dispatch(booksRandomize())
+      dispatch(getBooksRandomized())
     })
+    dispatch(getBooksByProperty('new'))
+    dispatch(getBooksByProperty('topSellers'))
     dispatch(fetchAllNews())
+    dispatch(getSearchOptions())
 
     const uuid: string | null = JSON.parse(
       localStorage.getItem('uuid') || 'null',

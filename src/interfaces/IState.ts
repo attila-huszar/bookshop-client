@@ -1,4 +1,11 @@
-import { IBook, IAuthor, INews, IUserOmitPassword, ICart } from '.'
+import {
+  IBook,
+  IAuthor,
+  INews,
+  IUserOmitPassword,
+  ICart,
+  IFilter,
+} from '../interfaces'
 import { SerializedError } from '@reduxjs/toolkit'
 
 export interface IBookStore {
@@ -6,7 +13,13 @@ export interface IBookStore {
   booksAreLoading: boolean
   bookIsLoading: boolean
   booksError: SerializedError | null
-  booksRandomize: IBook[]
+  booksRandomized: IBook[]
+  booksTopSellers: IBook[]
+  booksReleases: IBook[]
+  booksFilters: {
+    initial: IFilter
+    active: IFilter
+  }
 }
 
 export interface IAuthorStore {

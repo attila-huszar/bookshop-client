@@ -1,7 +1,19 @@
-export { fetchAllBooks, fetchBookById, booksRandomize } from './booksSlice'
+export {
+  fetchAllBooks,
+  fetchBookById,
+  getBooksRandomized,
+  getBooksByProperty,
+  getSearchOptions,
+  filterBooks,
+  setBooksFilterGenre,
+  setBooksFilterPrice,
+  setBooksFilterDiscount,
+  setBooksFilterPublishYear,
+  setBooksFilterRating,
+} from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
-export { loginUser, registerUser, getUserByID } from './userSlice'
+export { loginUser, registerUser, getUserByID, logoutUser } from './userSlice'
 export {
   cartAdd,
   cartRemove,
@@ -12,21 +24,11 @@ export {
 } from './cartSlice'
 export {
   booksSelector,
-  authorsSelector,
   bookByIdSelector,
+  authorsSelector,
   authorByIdSelector,
-  bookErrorSelector,
-  bookLoadingSelector,
-  authorErrorSelector,
   newsSelector,
-  newsErrorSelector,
   userSelector,
-  userVerifiedSelector,
-  userErrorSelector,
-  loginErrorSelector,
-  registerErrorSelector,
-  cartDataSelector,
-  cartLoadingSelector,
-  cartErrorSelector,
+  cartSelector,
 } from './selectors'
 export { localStorageMiddleware } from './middlewares'

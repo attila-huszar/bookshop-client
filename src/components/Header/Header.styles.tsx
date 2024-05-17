@@ -9,9 +9,10 @@ export const StyledHeader = styled.header`
   gap: 2.5rem;
   height: 6.5rem;
   width: 100%;
+  min-width: 56rem;
   max-width: 90rem;
   padding: 0 6.25rem;
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: #ffffff85;
   backdrop-filter: blur(10px);
   z-index: 2;
 `
@@ -21,8 +22,9 @@ export const ExtraSpace = styled.div`
   top: 0;
   height: 1.5rem;
   width: 100%;
+  min-width: 56rem;
   max-width: 90rem;
-  background-color: #ecb346;
+  background-color: var(--secondary-color);
   z-index: 3;
 
   &::before {

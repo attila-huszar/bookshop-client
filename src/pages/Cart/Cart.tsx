@@ -1,7 +1,7 @@
 import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppSelector, useCart } from '../../hooks'
-import { cartLoadingSelector } from '../../store'
+import { cartSelector } from '../../store'
 import { Button, IconButton, Loading, Price } from '../../components'
 import {
   StyledCart,
@@ -19,8 +19,7 @@ import {
   EmptyCart,
 } from './Cart.styles'
 import { BOOKS } from '../../routes/pathConstants'
-import { enforceMinMax } from '../../utils/enforceInputValues'
-import { calcSubtotalOrDiscount } from '../../utils/calcSubtotalOrDiscount'
+import { enforceMinMax, calcSubtotalOrDiscount } from '../../utils'
 import { ICart } from '../../interfaces'
 import AddQuantityIcon from '../../assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
@@ -28,16 +27,16 @@ import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
 
 export function Cart() {
   const navigate = useNavigate()
-  const { cart, removeFromCart, addQuantity, removeQuantity, setQuantity } =
+  const { cartData, removeFromCart, addQuantity, removeQuantity, setQuantity } =
     useCart()
-  const cartIsLoading = useAppSelector(cartLoadingSelector)
+  const { cartIsLoading } = useAppSelector(cartSelector)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const subtotal = calcSubtotalOrDiscount(cart, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cart, 'discount')
+  const subtotal = calcSubtotalOrDiscount(cartData, 'subtotal')
+  const discount = calcSubtotalOrDiscount(cartData, 'discount')
 
   const handleRemoveQuantity = (item: ICart) => {
     if (item.quantity > 0) {
@@ -52,18 +51,18 @@ export function Cart() {
   }
 
   const handleSetQuantity = (
-    item: ICart,
+    cartItem: ICart,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    const value = enforceMinMax(event.target)
-    setQuantity({ item, value })
+    const newQuantity = enforceMinMax(event.target)
+    setQuantity({ cartItem, newQuantity })
   }
 
   if (cartIsLoading) {
     return <Loading />
   }
 
-  if (cart.length) {
+  if (cartData.length) {
     return (
       <StyledCart>
         <h2>Cart</h2>
@@ -72,7 +71,7 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          {cart.map((item: ICart) => (
+          {cartData.map((item: ICart) => (
             <Fragment key={item.id}>
               <Book>
                 <Link to={`/${BOOKS}/${item.id}`}>

@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from '.'
 import {
-  cartDataSelector,
+  cartSelector,
   cartAdd,
   cartRemove,
   cartQuantityAdd,
@@ -11,17 +11,17 @@ import { IBook, ICart } from '../interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()
-  const cart = useAppSelector(cartDataSelector)
+  const { cartData } = useAppSelector(cartSelector)
   const addToCart = (payload: IBook) => dispatch(cartAdd(payload))
   const removeFromCart = (payload: ICart) => dispatch(cartRemove(payload))
   const addQuantity = (payload: ICart) => dispatch(cartQuantityAdd(payload))
   const removeQuantity = (payload: ICart) =>
     dispatch(cartQuantityRemove(payload))
-  const setQuantity = (payload: { item: ICart; value: number }) =>
+  const setQuantity = (payload: { cartItem: ICart; newQuantity: number }) =>
     dispatch(cartQuantitySet(payload))
 
   return {
-    cart,
+    cartData,
     addToCart,
     removeFromCart,
     addQuantity,
