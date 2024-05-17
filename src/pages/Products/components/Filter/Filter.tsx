@@ -23,6 +23,7 @@ import {
 } from './Filter.styles'
 import { Accordion, IconButton } from '../../../../components'
 import { enforceMinMax, generateFilterArray } from '../../../../utils'
+import { filterInitialValues, discountOptions } from '../../../../lib'
 import {
   IFilter,
   IInputEvent,
@@ -34,24 +35,10 @@ import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
 
-const initialValues: IFilter = {
-  genre: [],
-  price: [],
-  discount: 'allBooks',
-  publishYear: [],
-  rating: 0.5,
-}
-
-const discountOptions: { value: IFilter['discount']; label: string }[] = [
-  { value: 'allBooks', label: 'All Books' },
-  { value: 'discountOnly', label: 'With Discount' },
-  { value: 'fullPriceOnly', label: 'Full Price Books' },
-]
-
 export function Filter() {
-  const dispatch = useAppDispatch()
   const { booksFilters } = useAppSelector(booksSelector)
   const [panelsOpen, setPanelsOpen] = useState([0, 1])
+  const dispatch = useAppDispatch()
 
   function togglePanel(panelKey: number) {
     setPanelsOpen((prevState) => {
@@ -144,7 +131,7 @@ export function Filter() {
     <StyledFilter>
       <FilterOptions draggable="false">
         <Formik
-          initialValues={initialValues}
+          initialValues={filterInitialValues}
           onSubmit={handleFormSubmit}
           onReset={handleFormReset}>
           <Form>
@@ -153,9 +140,9 @@ export function Filter() {
               panelKey={0}
               isOpen={panelsOpen.includes(0)}
               setIsOpen={(panelKey) => togglePanel(panelKey)}>
-              {booksFilters.initial.genre && (
-                <GenreCheckBoxes>
-                  {booksFilters.initial.genre.map((filter) => (
+              <GenreCheckBoxes>
+                {booksFilters.initial.genre &&
+                  booksFilters.initial.genre.map((filter) => (
                     <div key={filter}>
                       <Field
                         name="genre"
@@ -168,8 +155,7 @@ export function Filter() {
                       <label htmlFor={filter}>{filter}</label>
                     </div>
                   ))}
-                </GenreCheckBoxes>
-              )}
+              </GenreCheckBoxes>
               <button type="button" onClick={handleGenreClear}>
                 Clear selection
               </button>
@@ -238,21 +224,22 @@ export function Filter() {
               panelKey={2}
               isOpen={panelsOpen.includes(2)}
               setIsOpen={(panelKey) => togglePanel(panelKey)}>
-              {discountOptions.map((item) => (
-                <DiscountRadioButtons key={item.value}>
-                  <Field
-                    type="radio"
-                    name="discount"
-                    value={item.value}
-                    id={item.value}
-                    onChange={(e: IDiscountChangeEvent) =>
-                      handleDiscountChange(e.target.value)
-                    }
-                    checked={item.value === booksFilters.active.discount}
-                  />
-                  <label htmlFor={item.value}>{item.label}</label>
-                </DiscountRadioButtons>
-              ))}
+              {booksFilters.initial.discount &&
+                discountOptions.map((item) => (
+                  <DiscountRadioButtons key={item.value}>
+                    <Field
+                      type="radio"
+                      name="discount"
+                      value={item.value}
+                      id={item.value}
+                      onChange={(e: IDiscountChangeEvent) =>
+                        handleDiscountChange(e.target.value)
+                      }
+                      checked={item.value === booksFilters.active.discount}
+                    />
+                    <label htmlFor={item.value}>{item.label}</label>
+                  </DiscountRadioButtons>
+                ))}
             </Accordion>
 
             <Accordion
