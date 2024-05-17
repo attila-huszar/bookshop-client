@@ -3,18 +3,27 @@ export interface IUser {
   firstName: string
   lastName: string
   email: string
-  phone?: string
   password: string
+  phone: string
+  address: IAddress
+  avatar: string | File | null
+  id?: number
   createdAt?: Date
   updatedAt?: Date
-  avatar?: string | File | null
-  id?: number
+}
+
+export interface IAddress {
+  street: string
+  number: string
+  city: string
+  state: string
+  postCode: string
+  country: string
 }
 
 export type IUserOmitPassword = Omit<IUser, 'password'>
 
 export interface IUserUpdate {
   uuid: string
-  field: string | 'avatar'
-  value: string | File
+  fields: Partial<IUser>
 }

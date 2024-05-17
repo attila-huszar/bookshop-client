@@ -1,15 +1,10 @@
-import styled from 'styled-components'
-
-export const Label = styled.p`
-  margin-top: 1rem;
-`
+import styled, { css } from 'styled-components'
 
 export const InputWrapper = styled.div`
   position: relative;
-  margin-bottom: 1rem;
 `
 
-export const Input = styled.input<FormTypes>`
+const baseInputStyles = css<FormTypes>`
   width: 100%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
@@ -59,6 +54,23 @@ export const Input = styled.input<FormTypes>`
     `}
 `
 
+export const Input = styled.input<FormTypes>`
+  ${baseInputStyles}
+
+  &:read-only {
+    background-color: var(--whitesmoke);
+  }
+`
+
+export const Select = styled.select<FormTypes>`
+  ${baseInputStyles}
+
+  &:disabled {
+    color: var(--black);
+    background-color: var(--whitesmoke);
+  }
+`
+
 export const ErrorMessage = styled.div`
   position: absolute;
   top: 50%;
@@ -74,7 +86,7 @@ export const ErrorMessage = styled.div`
 
 export const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   margin-top: 2rem;
 `
 

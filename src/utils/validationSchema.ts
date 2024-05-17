@@ -54,12 +54,6 @@ export const registrationSchema = Yup.object().shape({
   passwordConfirmation: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
     .required('Required'),
-  phone: Yup.string()
-    .matches(
-      /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,
-      'Invalid Phone number',
-    )
-    .required('Required'),
   avatar: Yup.mixed()
     .test('is-valid-type', 'Invalid image type', (file) =>
       isValidFileType(file as File, 'image'),
@@ -80,4 +74,50 @@ export const loginSchema = Yup.object().shape({
 
 export const searchSchema = Yup.object().shape({
   search: Yup.string().required(),
+})
+
+export const accountBasicSchema = Yup.object().shape({
+  firstName: Yup.string()
+    .min(2, 'Min 2 characters')
+    .max(50, 'Max 50 characters')
+    .matches(
+      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
+      'Latin letters only',
+    )
+    .required('Required'),
+  lastName: Yup.string()
+    .min(2, 'Min 2 characters')
+    .max(50, 'Max 50 characters')
+    .matches(
+      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
+      'Latin letters only',
+    )
+    .required('Required'),
+  phone: Yup.string().matches(
+    /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,
+    'Invalid Phone number',
+  ),
+})
+
+export const accountAddressSchema = Yup.object().shape({
+  street: Yup.string().required('Required'),
+  number: Yup.string().required('Required'),
+  city: Yup.string().required('Required'),
+  state: Yup.string(),
+  postCode: Yup.string().required('Required'),
+  country: Yup.string().required('Required'),
+})
+
+export const accountPasswordSchema = Yup.object().shape({
+  currentPassword: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
+    .required('Required'),
+  newPassword: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
+    .required('Required'),
+  newPasswordConfirmation: Yup.string()
+    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+    .required('Required'),
 })

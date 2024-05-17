@@ -5,5 +5,9 @@ export const StyledLoading = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 5rem 0 25rem;
+
+  p {
+    font-size: 1rem;
+    color: #fff;
+  }
 `

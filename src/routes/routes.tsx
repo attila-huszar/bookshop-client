@@ -1,19 +1,33 @@
+import { Suspense, lazy } from 'react'
 import {
-  Layout,
   Home,
   Products,
   Product,
   Registration,
   Login,
   Cart,
+  Account,
   NotFound,
 } from '../pages'
-import { BOOKS, REGISTRATION, LOGIN, CART } from './pathConstants'
+import { BOOKS, REGISTRATION, LOGIN, CART, ACCOUNT } from './pathConstants'
+import { ProtectedRoutes } from '../routes/ProtectedRoutes'
+import { protectedRouteLoader } from '../utils/protectedRouteLoader'
+import { Loading } from '../components'
+
+const Layout = lazy(() =>
+  import('../pages').then(({ Layout }) => ({
+    default: Layout,
+  })),
+)
 
 export const routes = [
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Layout />
+      </Suspense>
+    ),
     children: [
       {
         index: true,
@@ -38,6 +52,16 @@ export const routes = [
       {
         path: CART,
         element: <Cart />,
+      },
+      {
+        element: <ProtectedRoutes />,
+        loader: protectedRouteLoader,
+        children: [
+          {
+            path: ACCOUNT,
+            element: <Account />,
+          },
+        ],
       },
       {
         path: '*',

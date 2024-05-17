@@ -14,19 +14,19 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { logoutLink, userAccountLink } from '../../../../lib/menuLinks'
+import { logoutLink, accountLink } from '../../../../lib'
 import { LOGIN } from '../../../../routes/pathConstants'
 import AccountIcon from '../../../../assets/svg/account.svg?react'
-import AccountDefaultIcon from '../../../../assets/svg/account_default.svg?react'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const { userData } = useAppSelector(userSelector)
-  const dispatch = useAppDispatch()
-  const { removeFromLocalStorage } = useLocalStorage()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { removeFromLocalStorage } = useLocalStorage()
+  const { userData } = useAppSelector(userSelector)
+  const { firstName, email, avatar } = { ...userData }
   useClickOutside(menuOpen, setMenuOpen, menuRef)
 
   const toggleMenu = () => {
@@ -36,42 +36,33 @@ export function AccountMenu() {
   const handleLogout = () => {
     toggleMenu()
     removeFromLocalStorage('uuid')
-    toast.success(`${userData?.email} successfully logged out`)
+    toast.success(`${email} successfully logged out`)
     dispatch(logoutUser())
   }
 
   return (
     <StyledMenu ref={menuRef}>
       {userData ? (
-        typeof userData.avatar === 'string' ? (
-          <Avatar
-            imgUrl={userData.avatar}
-            onClick={toggleMenu}
-            title={userData.firstName}
-          />
-        ) : (
-          <IconButton
-            onClick={toggleMenu}
-            icon={<AccountDefaultIcon />}
-            title={userData.firstName}
-            $bordered
-          />
-        )
+        <Avatar
+          imgUrl={avatar as string}
+          onClick={toggleMenu}
+          title={firstName}
+        />
       ) : (
         <IconButton
           onClick={() => navigate(LOGIN)}
           icon={<AccountIcon />}
-          title={'Account'}
+          title={'Login/Register'}
         />
       )}
       {userData && (
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
-              <Link to={userAccountLink.path} onClick={toggleMenu}>
+              <Link to={accountLink.path} onClick={toggleMenu}>
                 <MenuItem>
-                  <img src={userAccountLink.icon} width={24} height={22} />
-                  <span>{userData.firstName}</span>
+                  <img src={accountLink.icon} width={24} height={22} />
+                  <span>{firstName}</span>
                 </MenuItem>
               </Link>
             </li>

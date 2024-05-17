@@ -13,7 +13,13 @@ export {
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
-export { loginUser, registerUser, getUserByID, logoutUser } from './userSlice'
+export {
+  loginUser,
+  registerUser,
+  getUserByID,
+  logoutUser,
+  updateUser,
+} from './userSlice'
 export {
   cartAdd,
   cartRemove,

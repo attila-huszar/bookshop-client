@@ -6,9 +6,9 @@ import {
 import {
   getUserByEmail,
   getUserByUUID,
-  postUserImg,
   postUserRegister,
   putUser,
+  uploadImage,
 } from '../api/fetchData'
 import { passwordEncrypt } from '../utils'
 import { IUser, IUserUpdate, IUserStore } from '../interfaces'
@@ -115,7 +115,7 @@ export const registerUser = createAsyncThunk(
 
     if (!response) {
       if (user.avatar instanceof File) {
-        const imageResponse = await postUserImg(user.avatar, rejectWithValue)
+        const imageResponse = await uploadImage(user.avatar, 'avatars')
         user.avatar = imageResponse.url
       }
 
@@ -143,26 +143,14 @@ export const getUserByID = createAsyncThunk(
     }),
 )
 
-export const uploadImage = createAsyncThunk(
-  'uploadImage',
-  (file: File, { rejectWithValue }) =>
-    postUserImg(file, rejectWithValue).then((imageResponse) => {
-      if (imageResponse.url) {
-        return imageResponse
-      } else {
-        throw rejectWithValue('Image upload failed')
-      }
-    }),
-)
-
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, field, value }: IUserUpdate, { rejectWithValue }) => {
+  async ({ uuid, fields }: IUserUpdate, { rejectWithValue }) => {
     const userResponse = await getUserByUUID(uuid, rejectWithValue)
 
     if (userResponse) {
       const updatedUser = await putUser(
-        { ...userResponse, [field]: value },
+        { ...userResponse, ...fields },
         rejectWithValue,
       )
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { Label, ButtonWrapper } from '../../styles/Form.styles'
+import { ButtonWrapper } from '../../styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from '../../components'
 import { registrationSchema, passwordEncrypt } from '../../utils'
 import { registrationInitialValues } from '../../lib/defaultValues'
@@ -44,8 +44,16 @@ export function Registration() {
             firstName: values.firstName,
             lastName: values.lastName,
             email: values.email,
-            phone: values.phone,
             password: passwordEncrypt(values.password),
+            address: {
+              street: '',
+              number: '',
+              city: '',
+              state: '',
+              postCode: '',
+              country: '',
+            },
+            phone: '',
             avatar: values.avatar,
           }
 
@@ -54,45 +62,31 @@ export function Registration() {
         }}>
         {({ isSubmitting }) => (
           <Form>
-            <Label>First Name</Label>
+            <p>First Name</p>
             <FormikField name="firstName" placeholder="First Name" focus />
-
-            <Label>Last Name</Label>
+            <p>Last Name</p>
             <FormikField name="lastName" placeholder="Last Name" />
-
-            <Label>Email</Label>
+            <p>Email</p>
             <FormikField
               name="email"
               placeholder="Email"
               type="email"
               inputMode="email"
             />
-
-            <Label>Password</Label>
+            <p>Password</p>
             <FormikField
               name="password"
               placeholder="Password"
               type="password"
             />
-
-            <Label>Password Confirm</Label>
+            <p>Password Confirm</p>
             <FormikField
               name="passwordConfirmation"
               placeholder="Confirm Password"
               type="password"
             />
-
-            <Label>Phone</Label>
-            <FormikField
-              name="phone"
-              placeholder="Phone"
-              type="tel"
-              inputMode="numeric"
-            />
-
-            <Label>Upload Avatar</Label>
+            <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
-
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit'}
