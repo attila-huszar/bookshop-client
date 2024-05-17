@@ -6,9 +6,9 @@ import {
 import {
   getUserByEmail,
   getUserByUUID,
-  postUserImg,
   postUserRegister,
   putUser,
+  uploadImage,
 } from '../api/fetchData'
 import { passwordEncrypt } from '../utils'
 import { IUser, IUserUpdate, IUserStore } from '../interfaces'
@@ -115,7 +115,7 @@ export const registerUser = createAsyncThunk(
 
     if (!response) {
       if (user.avatar instanceof File) {
-        const imageResponse = await postUserImg(user.avatar, rejectWithValue)
+        const imageResponse = await uploadImage(user.avatar, 'avatars')
         user.avatar = imageResponse.url
       }
 
@@ -139,18 +139,6 @@ export const getUserByID = createAsyncThunk(
         return userWithoutPassword
       } else {
         throw rejectWithValue('User not found')
-      }
-    }),
-)
-
-export const uploadImage = createAsyncThunk(
-  'uploadImage',
-  (file: File, { rejectWithValue }) =>
-    postUserImg(file, rejectWithValue).then((imageResponse) => {
-      if (imageResponse.url) {
-        return imageResponse
-      } else {
-        throw rejectWithValue('Image upload failed')
       }
     }),
 )

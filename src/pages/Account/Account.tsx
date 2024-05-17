@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, ChangeEvent } from 'react'
 import { createPortal } from 'react-dom'
 import {
   Avatar,
@@ -7,8 +7,9 @@ import {
   IconButton,
   PasswordChange,
 } from '../../components'
-import { useAppDispatch, useAppSelector } from '../../hooks'
+import { useAppDispatch, useAppSelector, useClickOutside } from '../../hooks'
 import { userSelector, updateUser } from '../../store'
+import { uploadImage } from '../../api/fetchData'
 import {
   StyledAccount,
   UserDataFields,
@@ -25,6 +26,7 @@ import { countryList } from '../../lib'
 import { accountBasicSchema, accountAddressSchema } from '../../utils'
 import { IUserOmitPassword, IAddress } from '../../interfaces'
 import EditIcon from '../../assets/svg/edit.svg?react'
+import toast from 'react-hot-toast'
 
 export function Account() {
   const { userData } = useAppSelector(userSelector)
@@ -34,7 +36,10 @@ export function Account() {
   const [editingBasicInfo, setEditingBasicInfo] = useState(false)
   const [editingAddressInfo, setEditingAddressInfo] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const inputFile = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
+  useClickOutside(showPasswordModal, setShowPasswordModal, passwordRef)
 
   const handleBasicInfoSubmit = (values: Partial<IUserOmitPassword>) => {
     dispatch(
@@ -49,14 +54,31 @@ export function Account() {
     dispatch(
       updateUser({
         uuid: uuid as string,
-        fields: { ...userData, address: values },
+        fields: { address: values },
       }),
     )
   }
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
-
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
+  const handleAvatarClick = () => {
+    inputFile.current?.click()
+  }
+
+  const handleImgChange = async (img: File) => {
+    try {
+      const imageResponse = await uploadImage(img, 'avatars')
+
+      dispatch(
+        updateUser({
+          uuid: uuid as string,
+          fields: { avatar: imageResponse.url },
+        }),
+      )
+    } catch (error) {
+      toast.error('Image upload failed')
+    }
+  }
 
   const openPasswordModal = () => setShowPasswordModal(true)
 
@@ -72,10 +94,22 @@ export function Account() {
             <AvatarPanel>
               <Avatar
                 imgUrl={avatar as string}
+                onClick={handleAvatarClick}
                 title="Change Profile Picture"
                 $size={160}
                 $clip
                 $camera
+              />
+              <input
+                type="file"
+                name="avatarChangeInput"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  if (!e.target.files) return
+                  handleImgChange(e.target.files[0])
+                }}
+                accept="image/*"
+                ref={inputFile}
+                style={{ display: 'none' }}
               />
               <Button onClick={openPasswordModal} $size="sm" $textSize="sm">
                 Change Password
@@ -83,6 +117,7 @@ export function Account() {
               {showPasswordModal &&
                 createPortal(
                   <PasswordChange
+                    ref={passwordRef}
                     uuid={uuid as string}
                     onClose={() => setShowPasswordModal(false)}
                   />,

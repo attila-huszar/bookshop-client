@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
-import { cloudName, unsignedUploadPreset } from '../lib'
+import { unsignedUploadPreset } from '../lib'
 import { passwordEncrypt } from '../utils'
 import { IUser, IFilter } from '../interfaces'
 
@@ -146,28 +146,6 @@ export const postUserRegister = async (
   }
 }
 
-export const postUserImg = async (
-  img: File,
-  rejectWithValue: (value: unknown) => void,
-) => {
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`
-  const formData = new FormData()
-  formData.append('upload_preset', unsignedUploadPreset)
-  formData.append('folder', '/bookstore/avatars')
-  formData.append('file', img)
-
-  try {
-    const response = await axios.post(url, formData)
-    return response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
 export const putUser = async (
   user: IUser,
   rejectWithValue: (value: unknown) => void,
@@ -256,5 +234,23 @@ export const verifyPassword = async (uuid: string, currentPassword: string) => {
     }
   } catch (error) {
     return false
+  }
+}
+
+export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
+  const formData = new FormData()
+  formData.append('upload_preset', unsignedUploadPreset)
+  formData.append('folder', `/${unsignedUploadPreset}/${folder}`)
+  formData.append('file', img)
+
+  try {
+    const response = await axios.post(URL.cloudinaryUpload, formData)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw error.message
+    } else {
+      throw 'Unknown error occurred'
+    }
   }
 }

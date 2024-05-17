@@ -29,7 +29,7 @@ export const StyledAvatar = styled.button<StyleTypes>`
       $camera &&
       `background-image: url(${cameraIcon});
       background-repeat: no-repeat;
-      background-position: bottom 10% center;
+      background-position: bottom 8% center;
       background-size: 20px 20px;
       `}
   }
