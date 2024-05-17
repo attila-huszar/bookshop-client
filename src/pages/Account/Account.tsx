@@ -21,50 +21,44 @@ import {
   ButtonWrapper,
 } from './Account.styles'
 import { Form, Formik } from 'formik'
-import {
-  accountGeneralSchema,
-  accountAddressSchema,
-} from '../../utils/validationSchema'
-import { countryList } from '../../lib/countryList'
+import { countryList } from '../../lib'
+import { accountBasicSchema, accountAddressSchema } from '../../utils'
+import { IUserOmitPassword, IAddress } from '../../interfaces'
 import EditIcon from '../../assets/svg/edit.svg?react'
 
 export function Account() {
   const { userData } = useAppSelector(userSelector)
-  const {
-    uuid,
-    firstName,
-    lastName,
-    email,
-    phone,
-    avatar,
-    address: { street, number, city, state, postCode, country } = {
-      ...userData?.address,
-    },
-  } = { ...userData }
-  const [editingGeneral, setEditingGeneral] = useState(false)
-  const [editingAddress, setEditingAddress] = useState(false)
+  const { uuid, firstName, lastName, email, phone, avatar, address } = {
+    ...userData,
+  } as IUserOmitPassword
+  const [editingBasicInfo, setEditingBasicInfo] = useState(false)
+  const [editingAddressInfo, setEditingAddressInfo] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const dispatch = useAppDispatch()
 
-  const userBasicData = {
-    firstName,
-    lastName,
-    email,
-    phone,
+  const handleBasicInfoSubmit = (values: Partial<IUserOmitPassword>) => {
+    dispatch(
+      updateUser({
+        uuid: uuid as string,
+        fields: { ...values },
+      }),
+    )
   }
 
-  const userAddressData = {
-    street,
-    number,
-    city,
-    state,
-    postCode,
-    country,
+  const handleAddressInfoSubmit = (values: IAddress) => {
+    dispatch(
+      updateUser({
+        uuid: uuid as string,
+        fields: { ...userData, address: values },
+      }),
+    )
   }
+
+  const handleBasicInfoReset = () => setEditingBasicInfo(false)
+
+  const handleAddressInfoReset = () => setEditingAddressInfo(false)
 
   const openPasswordModal = () => setShowPasswordModal(true)
-  const handleResetGeneral = () => setEditingGeneral(false)
-  const handleResetAddress = () => setEditingAddress(false)
 
   return (
     <StyledAccount>
@@ -89,6 +83,7 @@ export function Account() {
               {showPasswordModal &&
                 createPortal(
                   <PasswordChange
+                    uuid={uuid as string}
                     onClose={() => setShowPasswordModal(false)}
                   />,
                   document.getElementById('root')!,
@@ -97,19 +92,11 @@ export function Account() {
             <General>
               {userData && (
                 <Formik
-                  initialValues={userBasicData}
+                  initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
-                  validationSchema={accountGeneralSchema}
-                  onSubmit={(values, actions) => {
-                    dispatch(
-                      updateUser({
-                        uuid: uuid as string,
-                        fields: { ...values },
-                      }),
-                    )
-                    actions.setSubmitting(false)
-                  }}
-                  onReset={handleResetGeneral}>
+                  validationSchema={accountBasicSchema}
+                  onSubmit={(values) => handleBasicInfoSubmit(values)}
+                  onReset={handleBasicInfoReset}>
                   {({ values, handleChange, isSubmitting }) => (
                     <Form>
                       <GeneralLine>
@@ -121,7 +108,7 @@ export function Account() {
                             onChange={handleChange}
                             placeholder="First name"
                             type="text"
-                            readOnly={!editingGeneral}
+                            readOnly={!editingBasicInfo}
                           />
                         </div>
                         <div>
@@ -132,7 +119,7 @@ export function Account() {
                             onChange={handleChange}
                             placeholder="Last name"
                             type="text"
-                            readOnly={!editingGeneral}
+                            readOnly={!editingBasicInfo}
                           />
                         </div>
                       </GeneralLine>
@@ -157,11 +144,11 @@ export function Account() {
                             placeholder="Phone"
                             type="tel"
                             inputMode="numeric"
-                            readOnly={!editingGeneral}
+                            readOnly={!editingBasicInfo}
                           />
                         </div>
                       </GeneralLine>
-                      {editingGeneral && (
+                      {editingBasicInfo && (
                         <ButtonWrapper>
                           <Button type="reset" $size="sm" $inverted>
                             Cancel
@@ -180,9 +167,9 @@ export function Account() {
               )}
             </General>
           </div>
-          {!editingGeneral && (
+          {!editingBasicInfo && (
             <IconButton
-              onClick={() => setEditingGeneral((prev) => !prev)}
+              onClick={() => setEditingBasicInfo((prev) => !prev)}
               icon={<EditIcon />}
             />
           )}
@@ -192,19 +179,18 @@ export function Account() {
           <Address>
             {userData && (
               <Formik
-                initialValues={userAddressData}
+                initialValues={{
+                  street: address.street,
+                  number: address.number,
+                  city: address.city,
+                  state: address.state,
+                  postCode: address.postCode,
+                  country: address.country,
+                }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values, actions) => {
-                  dispatch(
-                    updateUser({
-                      uuid: uuid as string,
-                      fields: { ...userData, address: values },
-                    }),
-                  )
-                  actions.setSubmitting(false)
-                }}
-                onReset={handleResetAddress}>
+                onSubmit={(values: IAddress) => handleAddressInfoSubmit(values)}
+                onReset={handleAddressInfoReset}>
                 {({ values, handleChange, isSubmitting }) => (
                   <Form>
                     <AddressLine>
@@ -216,7 +202,7 @@ export function Account() {
                           onChange={handleChange}
                           placeholder="Street"
                           type="text"
-                          readOnly={!editingAddress}
+                          readOnly={!editingAddressInfo}
                         />
                       </div>
                       <div>
@@ -227,7 +213,7 @@ export function Account() {
                           onChange={handleChange}
                           placeholder="Number"
                           type="text"
-                          readOnly={!editingAddress}
+                          readOnly={!editingAddressInfo}
                         />
                       </div>
                     </AddressLine>
@@ -240,7 +226,7 @@ export function Account() {
                           onChange={handleChange}
                           placeholder="City"
                           type="text"
-                          readOnly={!editingAddress}
+                          readOnly={!editingAddressInfo}
                         />
                       </div>
                       <div>
@@ -251,7 +237,7 @@ export function Account() {
                           onChange={handleChange}
                           placeholder="State"
                           type="text"
-                          readOnly={!editingAddress}
+                          readOnly={!editingAddressInfo}
                         />
                       </div>
                       <div>
@@ -262,7 +248,7 @@ export function Account() {
                           onChange={handleChange}
                           placeholder="Post Code"
                           type="text"
-                          readOnly={!editingAddress}
+                          readOnly={!editingAddressInfo}
                         />
                       </div>
                     </AddressLine>
@@ -274,8 +260,8 @@ export function Account() {
                           value={values.country}
                           onChange={handleChange}
                           type="select"
-                          readOnly={!editingAddress}>
-                          <option value="" disabled selected hidden>
+                          readOnly={!editingAddressInfo}>
+                          <option value="" hidden>
                             Please select a country...
                           </option>
                           {countryList.map((country) => (
@@ -286,7 +272,7 @@ export function Account() {
                         </FormikField>
                       </div>
                     </AddressLine>
-                    {editingAddress && (
+                    {editingAddressInfo && (
                       <ButtonWrapper>
                         <Button $size="sm" type="reset" $inverted>
                           Cancel
@@ -304,9 +290,9 @@ export function Account() {
               </Formik>
             )}
           </Address>
-          {!editingAddress && (
+          {!editingAddressInfo && (
             <IconButton
-              onClick={() => setEditingAddress((prev) => !prev)}
+              onClick={() => setEditingAddressInfo((prev) => !prev)}
               icon={<EditIcon />}
             />
           )}

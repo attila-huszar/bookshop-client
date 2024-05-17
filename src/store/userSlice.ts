@@ -68,7 +68,6 @@ const userSlice = createSlice({
         state.userError = null
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        console.log(action.payload)
         state.userIsLoading = false
         state.userData = action.payload
         state.userError = null

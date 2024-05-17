@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from './urlConstants'
-import { IUser } from '../interfaces'
-import { cloudName, unsignedUploadPreset } from '../lib/envVariables'
-import { IFilter } from '../interfaces/IFilter'
+import { cloudName, unsignedUploadPreset } from '../lib'
+import { passwordEncrypt } from '../utils'
+import { IUser, IFilter } from '../interfaces'
 
 export const fetchBooks = async (
   id: string | void,
@@ -239,5 +239,22 @@ export const getBookSearchOptions = async (
     } else {
       throw rejectWithValue('Unknown error occurred')
     }
+  }
+}
+
+export const verifyPassword = async (uuid: string, currentPassword: string) => {
+  try {
+    const passwordResponse = await axios.get(`${URL.users}?uuid=${uuid}`)
+
+    if (
+      passwordResponse.data.length &&
+      passwordResponse.data[0].password === passwordEncrypt(currentPassword)
+    ) {
+      return true
+    } else {
+      return false
+    }
+  } catch (error) {
+    return false
   }
 }

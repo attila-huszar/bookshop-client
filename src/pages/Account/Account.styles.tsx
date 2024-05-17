@@ -74,7 +74,7 @@ export const Address = styled.div`
   }
 
   input[name='state'] {
-    width: 12rem;
+    width: 20rem;
   }
 
   input[name='postCode'] {

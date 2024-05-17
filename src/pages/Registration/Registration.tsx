@@ -45,6 +45,15 @@ export function Registration() {
             lastName: values.lastName,
             email: values.email,
             password: passwordEncrypt(values.password),
+            address: {
+              street: '',
+              number: '',
+              city: '',
+              state: '',
+              postCode: '',
+              country: '',
+            },
+            phone: '',
             avatar: values.avatar,
           }
 

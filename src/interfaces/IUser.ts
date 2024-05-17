@@ -4,9 +4,9 @@ export interface IUser {
   lastName: string
   email: string
   password: string
-  phone?: string
-  address?: Partial<IAddress>
-  avatar?: string | File | null
+  phone: string
+  address: IAddress
+  avatar: string | File | null
   id?: number
   createdAt?: Date
   updatedAt?: Date

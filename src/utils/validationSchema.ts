@@ -76,7 +76,7 @@ export const searchSchema = Yup.object().shape({
   search: Yup.string().required(),
 })
 
-export const accountGeneralSchema = Yup.object().shape({
+export const accountBasicSchema = Yup.object().shape({
   firstName: Yup.string()
     .min(2, 'Min 2 characters')
     .max(50, 'Max 50 characters')
@@ -117,7 +117,7 @@ export const accountPasswordSchema = Yup.object().shape({
     .min(6, 'Min 6 characters')
     .max(30, 'Max 30 characters')
     .required('Required'),
-  newPasswordConfirm: Yup.string()
+  newPasswordConfirmation: Yup.string()
     .oneOf([Yup.ref('newPassword')], 'Passwords must match')
     .required('Required'),
 })

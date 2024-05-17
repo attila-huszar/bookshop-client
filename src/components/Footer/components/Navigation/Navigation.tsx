@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { NavList } from '../../Footer.styles'
-import { navLinks } from '../../../../lib/navLinks'
 import { StyledLogo } from './Navigation.styles'
+import { navLinks } from '../../../../lib'
 import logo from '../../../../assets/svg/logo.svg'
 
 export function Navigation() {

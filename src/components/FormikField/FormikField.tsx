@@ -62,7 +62,7 @@ export function FormikField({
 
   if (type === 'select') {
     return (
-      <Field as="select" name={name} value={value} onChange={onChange}>
+      <Field name={name} value={value} onChange={onChange}>
         {({ field, form, meta }: IFormik) => {
           const shouldShowError = meta.touched && form.submitCount > 0
 

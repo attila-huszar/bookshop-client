@@ -2,25 +2,61 @@ import { Formik, Form } from 'formik'
 import { Button, FormikField } from '../../components'
 import { StyledPasswordChange } from './PasswordChange.styles'
 import { ButtonWrapper } from '../../styles/Form.styles'
-import { passwordChangeInitialValues } from '../../lib/defaultValues'
-import { accountPasswordSchema } from '../../utils/validationSchema'
+import { passwordChangeInitialValues } from '../../lib'
+import { accountPasswordSchema, passwordEncrypt } from '../../utils'
+import { useAppDispatch } from '../../hooks'
+import { updateUser } from '../../store'
+import { verifyPassword } from '../../api/fetchData'
+import toast from 'react-hot-toast'
 
-export function PasswordChange({ onClose }: { onClose: () => void }) {
+export function PasswordChange({
+  uuid,
+  onClose,
+}: {
+  uuid: string
+  onClose: () => void
+}) {
+  const dispatch = useAppDispatch()
+
+  const handlePasswordChange = async (values: {
+    currentPassword: string
+    newPassword: string
+    newPasswordConfirmation: string
+  }) => {
+    if (values.newPassword === values.newPasswordConfirmation) {
+      const isPasswordValid = await verifyPassword(uuid, values.currentPassword)
+
+      if (isPasswordValid) {
+        dispatch(
+          updateUser({
+            uuid,
+            fields: { password: passwordEncrypt(values.newPassword) },
+          }),
+        )
+
+        toast.success('Password Changed Successfully')
+        onClose()
+      } else {
+        toast.error('Current Password Invalid')
+      }
+    }
+  }
+
   return (
     <StyledPasswordChange>
       <h2>Change Password</h2>
       <Formik
         initialValues={passwordChangeInitialValues}
         validationSchema={accountPasswordSchema}
-        onSubmit={(values, actions) => {
-          actions.setSubmitting(false)
-        }}>
-        {({ isSubmitting }) => (
+        onSubmit={(values) => handlePasswordChange(values)}>
+        {({ values, handleChange, isSubmitting }) => (
           <Form>
             <div>
               <p>Current Password</p>
               <FormikField
                 name="currentPassword"
+                value={values.currentPassword}
+                onChange={handleChange}
                 placeholder="Current Password"
                 type="password"
               />
@@ -29,6 +65,8 @@ export function PasswordChange({ onClose }: { onClose: () => void }) {
               <p>New Password</p>
               <FormikField
                 name="newPassword"
+                value={values.newPassword}
+                onChange={handleChange}
                 placeholder="New Password"
                 type="password"
               />
@@ -36,7 +74,9 @@ export function PasswordChange({ onClose }: { onClose: () => void }) {
             <div>
               <p>Confirm New Password</p>
               <FormikField
-                name="newPasswordConfirm"
+                name="newPasswordConfirmation"
+                value={values.newPasswordConfirmation}
+                onChange={handleChange}
                 placeholder="Confirm New Password"
                 type="password"
               />
