@@ -10,14 +10,15 @@ export const Breadcrumb = styled.div`
   display: flex;
   align-items: center;
 
-  a {
-    display: inline-block;
+  button {
     position: relative;
-    z-index: 1;
     padding-left: 2rem;
     margin-left: -2rem;
     font-size: 1.25rem;
     font-weight: 700;
+    border: none;
+    background: none;
+    cursor: pointer;
   }
 
   &::before {

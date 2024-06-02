@@ -12,8 +12,8 @@ export function Card({ book }: { book: IBook }) {
   const isBookInCart = cartData.some((item) => item.id === book.id)
 
   return (
-    <Link to={`/${BOOKS}/${book.id}`}>
-      <StyledCard>
+    <StyledCard>
+      <Link to={`/${BOOKS}/${book.id}`}>
         <Image
           src={book.imgUrl}
           onError={(e) =>
@@ -33,7 +33,7 @@ export function Card({ book }: { book: IBook }) {
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}
           </Button>
         </Details>
-      </StyledCard>
-    </Link>
+      </Link>
+    </StyledCard>
   )
 }

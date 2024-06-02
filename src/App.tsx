@@ -3,13 +3,13 @@ import { routes } from './routes/routes'
 import { useEffect } from 'react'
 import { useAppDispatch } from './hooks'
 import {
-  fetchAllBooks,
+  fetchBooks,
+  fetchBooksByProperty,
+  fetchBookSearchOptions,
+  getBooksRandomized,
   fetchAllNews,
   fetchCartItems,
-  getUserByID,
-  getBooksRandomized,
-  getSearchOptions,
-  getBooksByProperty,
+  fetchUserByUUID,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -19,19 +19,19 @@ function App() {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    dispatch(fetchAllBooks()).then(() => {
+    dispatch(fetchBooks()).then(() => {
       dispatch(getBooksRandomized())
     })
-    dispatch(getBooksByProperty('new'))
-    dispatch(getBooksByProperty('topSellers'))
+    dispatch(fetchBooksByProperty('new'))
+    dispatch(fetchBooksByProperty('topSellers'))
     dispatch(fetchAllNews())
-    dispatch(getSearchOptions())
+    dispatch(fetchBookSearchOptions())
 
     const uuid: string | null = JSON.parse(
       localStorage.getItem('uuid') || 'null',
     )
     if (uuid) {
-      dispatch(getUserByID(uuid))
+      dispatch(fetchUserByUUID(uuid))
     }
 
     const cart: ILocalCart[] = JSON.parse(localStorage.getItem('cart') || '[]')

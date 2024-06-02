@@ -1,7 +1,7 @@
 import { Button } from '../../../../components'
 import { useAppDispatch } from '../../../../hooks'
 import {
-  fetchAllBooks,
+  fetchBooks,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
@@ -15,7 +15,7 @@ export function EmptyFilterResults() {
   const dispatch = useAppDispatch()
 
   const handleFormReset = () => {
-    dispatch(fetchAllBooks())
+    dispatch(fetchBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))

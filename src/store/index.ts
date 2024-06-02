@@ -1,10 +1,10 @@
 export {
-  fetchAllBooks,
+  fetchBooks,
   fetchBookById,
   getBooksRandomized,
-  getBooksByProperty,
-  getSearchOptions,
-  filterBooks,
+  fetchBooksByProperty,
+  fetchBookSearchOptions,
+  fetchFilteredBooks,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
@@ -14,9 +14,9 @@ export {
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
 export {
+  fetchUserByUUID,
   loginUser,
   registerUser,
-  getUserByID,
   logoutUser,
   updateUser,
 } from './userSlice'

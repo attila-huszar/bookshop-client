@@ -4,7 +4,6 @@ export const StyledEmptyFilterResults = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 35rem;
   margin: 1rem auto;
 
   div {

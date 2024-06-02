@@ -1,33 +1,52 @@
-import { StyledAccordion, Header, Item, Content } from './Accordion.styles'
-import CaretUp from '../../assets/svg/caret_up.svg?react'
-import CaretDown from '../../assets/svg/caret_down.svg?react'
+import { useState, ReactElement, isValidElement } from 'react'
+import { AccordionItem } from './AccordionItem'
 
 export function Accordion({
-  panelKey,
-  isOpen,
-  setIsOpen,
-  header,
+  defaultOpenPanels = [0],
+  numberOfAllowedOpenPanels = 3,
   children,
 }: {
-  panelKey: number
-  isOpen: boolean
-  setIsOpen: (panelKey: number) => void
-  header: string
-  children: React.ReactNode
+  defaultOpenPanels?: number[]
+  numberOfAllowedOpenPanels?: number | 'all'
+  children: ReactElement<typeof AccordionItem>[]
 }) {
-  return (
-    <StyledAccordion>
-      <Header onClick={() => setIsOpen(panelKey)}>
-        <p>{header}</p>
-        {isOpen ? (
-          <CaretUp color="var(--grey)" />
-        ) : (
-          <CaretDown color="var(--grey)" />
-        )}
-      </Header>
-      <Item $show={isOpen}>
-        <Content>{children}</Content>
-      </Item>
-    </StyledAccordion>
-  )
+  const [openPanels, setOpenPanels] = useState(defaultOpenPanels)
+
+  const togglePanel = (panelKey: number) => {
+    setOpenPanels((prevState) => {
+      const newPanelsOpen = [...prevState]
+
+      if (newPanelsOpen.includes(panelKey)) {
+        newPanelsOpen.splice(newPanelsOpen.indexOf(panelKey), 1)
+      } else {
+        if (
+          typeof numberOfAllowedOpenPanels === 'number' &&
+          newPanelsOpen.length > numberOfAllowedOpenPanels
+        ) {
+          newPanelsOpen.shift()
+        }
+        newPanelsOpen.push(panelKey)
+      }
+
+      return newPanelsOpen
+    })
+  }
+
+  function renderItem(child: React.ReactNode, panelKey: number) {
+    if (isValidElement(child) && child.type === AccordionItem) {
+      return (
+        <AccordionItem
+          key={panelKey}
+          panelKey={panelKey}
+          isOpen={openPanels.includes(panelKey)}
+          setIsOpen={togglePanel}
+          header={child.props.header}>
+          {child.props.children}
+        </AccordionItem>
+      )
+    }
+    return child
+  }
+
+  return children.map((child, panelKey) => renderItem(child, panelKey))
 }
