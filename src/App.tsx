@@ -1,7 +1,7 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import { useEffect } from 'react'
-import { useAppDispatch } from './hooks'
+import { useAppDispatch, useLocalStorage } from './hooks'
 import {
   fetchBooks,
   fetchBooksByProperty,
@@ -17,6 +17,7 @@ import GlobalStyle from './styles/Global.styles'
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
+  const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
     dispatch(fetchBooks()).then(() => {
@@ -27,18 +28,16 @@ function App() {
     dispatch(fetchAllNews())
     dispatch(fetchBookSearchOptions())
 
-    const uuid: string | null = JSON.parse(
-      localStorage.getItem('uuid') || 'null',
-    )
+    const uuid = getFromLocalStorage<string>('uuid')
     if (uuid) {
       dispatch(fetchUserByUUID(uuid))
     }
 
-    const cart: ILocalCart[] = JSON.parse(localStorage.getItem('cart') || '[]')
-    if (cart.length) {
+    const cart = getFromLocalStorage<ILocalCart[]>('cart')
+    if (cart) {
       dispatch(fetchCartItems(cart))
     }
-  }, [dispatch])
+  }, [dispatch, getFromLocalStorage])
 
   return (
     <>

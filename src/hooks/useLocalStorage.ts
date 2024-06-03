@@ -1,13 +1,28 @@
 export const useLocalStorage = () => {
-  const getFromLocalStorage = (key: string) => {
-    return JSON.parse(localStorage.getItem(key) as string)
+  const getFromLocalStorage = <T>(key: string): T | null => {
+    const storedValue = localStorage.getItem(key)
+
+    if (!storedValue) {
+      return null
+    }
+
+    try {
+      return JSON.parse(storedValue) as T
+    } catch {
+      return storedValue as T
+    }
   }
 
-  const setToLocalStorage = (
-    key: string,
-    value: string | number | boolean,
-  ): void => {
-    localStorage.setItem(key, JSON.stringify(value))
+  const setToLocalStorage = <T>(key: string, value: T): void => {
+    let stringValue: string
+
+    if (typeof value === 'object' && value !== null) {
+      stringValue = JSON.stringify(value)
+    } else {
+      stringValue = String(value)
+    }
+
+    localStorage.setItem(key, stringValue)
   }
 
   const removeFromLocalStorage = (key: string): void => {

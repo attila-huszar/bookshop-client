@@ -101,8 +101,8 @@ export const getUserByUUID = async (
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const response = await axios.get(`${URL.users}?uuid=${uuid}`)
-    return response.data[0]
+    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    return data.length && data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
@@ -115,7 +115,7 @@ export const getUserByUUID = async (
 export const checkUserLoggedIn = async (uuid: string) => {
   try {
     const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
-    return data.length ? data[0].uuid === uuid : false
+    return data.length && data[0].uuid === uuid
   } catch {
     return false
   }
