@@ -1,12 +1,12 @@
 import { StyledAvatar } from './Avatar.styles'
 import { AvatarTypes } from './Avatar.types'
 import { CloudinaryImage } from '@cloudinary/url-gen'
-import { cloudConfig } from '../../utils/cloudinaryConfig'
+import { cloudConfig } from 'helpers'
 import { thumbnail } from '@cloudinary/url-gen/actions/resize'
 import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
 import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
 import { AdvancedImage } from '@cloudinary/react'
-import AccountDefaultIcon from '../../assets/svg/account_default.svg?react'
+import AccountDefaultIcon from 'assets/svg/account_default.svg?react'
 
 export function Avatar({
   imgUrl,

@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Field, useFormikContext } from 'formik'
-import {
-  InputWrapper,
-  Input,
-  Select,
-  ErrorMessage,
-} from '../../styles/Form.styles'
-import { IFormik, IFormikField } from '../../interfaces'
+import { InputWrapper, Input, Select, ErrorMessage } from 'styles/Form.styles'
+import { IFormik, IFormikField } from 'interfaces'
 
 export function FormikField({
   name,

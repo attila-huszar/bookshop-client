@@ -1,8 +1,8 @@
 import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppSelector, useCart } from '../../hooks'
-import { cartSelector } from '../../store'
-import { Button, IconButton, Loading, Price } from '../../components'
+import { useAppSelector, useCart } from 'hooks'
+import { cartSelector } from 'store'
+import { Button, IconButton, Loading, Price } from 'components'
 import {
   StyledCart,
   CartGrid,
@@ -18,12 +18,12 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.styles'
-import { BOOKS } from '../../routes/pathConstants'
-import { enforceMinMax, calcSubtotalOrDiscount } from '../../utils'
-import { ICart } from '../../interfaces'
-import AddQuantityIcon from '../../assets/svg/plus.svg?react'
-import RemoveQuantityIcon from '../../assets/svg/minus.svg?react'
-import RemoveFromCartIcon from '../../assets/svg/xmark.svg?react'
+import { BOOKS } from 'routes'
+import { enforceMinMax, calcSubtotalOrDiscount } from 'helpers'
+import { ICart } from 'interfaces'
+import AddQuantityIcon from 'assets/svg/plus.svg?react'
+import RemoveQuantityIcon from 'assets/svg/minus.svg?react'
+import RemoveFromCartIcon from 'assets/svg/bin.svg?react'
 
 export function Cart() {
   const navigate = useNavigate()
@@ -126,6 +126,7 @@ export function Cart() {
                   onClick={() => removeFromCart(item)}
                   icon={<RemoveFromCartIcon />}
                   title="Remove from cart"
+                  $iconSize="sm"
                   $color="var(--orange)"
                 />
               </RemoveItem>

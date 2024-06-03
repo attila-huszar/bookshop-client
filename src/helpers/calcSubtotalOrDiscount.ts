@@ -1,4 +1,4 @@
-import { ICart } from '../interfaces'
+import { ICart } from 'interfaces'
 
 export function calcSubtotalOrDiscount(
   data: ICart[],

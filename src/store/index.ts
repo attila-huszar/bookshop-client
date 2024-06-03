@@ -1,3 +1,5 @@
+export { store } from './store'
+export type { RootState, AppDispatch } from './store'
 export {
   fetchBooks,
   fetchBookById,
@@ -37,4 +39,3 @@ export {
   userSelector,
   cartSelector,
 } from './selectors'
-export { localStorageMiddleware } from './middlewares'

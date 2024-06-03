@@ -3,8 +3,8 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchNews } from '../api/fetchData'
-import { INewsStore } from '../interfaces'
+import { fetchNews } from 'api/fetchData'
+import { INewsStore } from 'interfaces'
 
 const initialState: INewsStore = {
   newsData: [],

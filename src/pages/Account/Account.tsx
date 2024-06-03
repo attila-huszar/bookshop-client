@@ -6,10 +6,10 @@ import {
   FormikField,
   IconButton,
   PasswordChange,
-} from '../../components'
-import { useAppDispatch, useAppSelector, useClickOutside } from '../../hooks'
-import { userSelector, updateUser } from '../../store'
-import { uploadImage } from '../../api/fetchData'
+} from 'components'
+import { useAppDispatch, useAppSelector, useClickOutside } from 'hooks'
+import { userSelector, updateUser } from 'store'
+import { uploadImage } from 'api/fetchData'
 import {
   StyledAccount,
   UserDataFields,
@@ -22,10 +22,10 @@ import {
   ButtonWrapper,
 } from './Account.styles'
 import { Form, Formik } from 'formik'
-import { countryList } from '../../lib'
-import { accountBasicSchema, accountAddressSchema } from '../../utils'
-import { IUserOmitPassword, IAddress } from '../../interfaces'
-import EditIcon from '../../assets/svg/edit.svg?react'
+import { countryList } from 'lib'
+import { accountBasicSchema, accountAddressSchema } from 'helpers'
+import { IUserOmitPassword, IAddress } from 'interfaces'
+import EditIcon from 'assets/svg/edit.svg?react'
 import toast from 'react-hot-toast'
 
 export function Account() {

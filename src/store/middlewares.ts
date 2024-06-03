@@ -1,5 +1,5 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { AppDispatch, RootState } from './store'
+import { AppDispatch, RootState } from 'store'
 import {
   cartAdd,
   cartRemove,
@@ -7,7 +7,7 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
 } from './cartSlice'
-import { ICart, ILocalCart } from '../interfaces'
+import { ICart, ILocalCart } from 'interfaces'
 
 export const localStorageMiddleware = createListenerMiddleware()
 

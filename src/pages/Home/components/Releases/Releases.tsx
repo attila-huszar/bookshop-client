@@ -1,12 +1,12 @@
-import { useAppSelector } from '../../../../hooks'
-import { booksSelector } from '../../../../store'
 import {
   StyledReleases,
   ImageWrapper,
   OriginalImg,
   MirroredImg,
 } from './Releases.styles'
-import { Button } from '../../../../components'
+import { useAppSelector } from 'hooks'
+import { booksSelector } from 'store'
+import { Button } from 'components'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 

@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from '.'
+import { useAppDispatch, useAppSelector } from './redux'
 import {
   cartSelector,
   cartAdd,
@@ -6,8 +6,8 @@ import {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
-} from '../store'
-import { IBook, ICart } from '../interfaces'
+} from 'store'
+import { IBook, ICart } from 'interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()

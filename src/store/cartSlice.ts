@@ -3,8 +3,8 @@ import {
   createAsyncThunk,
   createSlice,
 } from '@reduxjs/toolkit'
-import { getBooks } from '../api/fetchData'
-import { IBook, ICart, ICartStore, ILocalCart } from '../interfaces'
+import { getBooks } from 'api/fetchData'
+import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
 
 const initialState: ICartStore = {
   cartData: [],

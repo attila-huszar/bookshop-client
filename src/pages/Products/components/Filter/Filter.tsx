@@ -1,14 +1,3 @@
-import { useAppDispatch, useAppSelector } from '../../../../hooks'
-import {
-  booksSelector,
-  fetchBooks,
-  fetchFilteredBooks,
-  setBooksFilterGenre,
-  setBooksFilterPrice,
-  setBooksFilterDiscount,
-  setBooksFilterPublishYear,
-  setBooksFilterRating,
-} from '../../../../store'
 import { Formik, Form, Field } from 'formik'
 import {
   StyledFilter,
@@ -20,19 +9,26 @@ import {
   ButtonWrapper,
   CustomButton,
 } from './Filter.styles'
-import { Accordion, AccordionItem, IconButton } from '../../../../components'
-import { enforceMinMax, generateFilterArray } from '../../../../utils'
-import { filterInitialValues, discountOptions } from '../../../../lib'
+import { useAppDispatch, useAppSelector } from 'hooks'
 import {
-  IFilter,
-  IInputEvent,
-  IDiscountChangeEvent,
-} from '../../../../interfaces'
-import Star from '../../../../assets/svg/star.svg?react'
-import StarFilled from '../../../../assets/svg/star_solid.svg?react'
+  booksSelector,
+  fetchBooks,
+  fetchFilteredBooks,
+  setBooksFilterGenre,
+  setBooksFilterPrice,
+  setBooksFilterDiscount,
+  setBooksFilterPublishYear,
+  setBooksFilterRating,
+} from 'store'
+import { Accordion, AccordionItem, IconButton } from 'components'
+import { enforceMinMax, generateFilterArray } from 'helpers'
+import { filterInitialValues, discountOptions } from 'lib'
 import Slider from 'rc-slider'
-import { sliderStyles } from '../../../../styles/Global.styles'
+import { sliderStyles } from 'styles/Global.styles'
 import 'rc-slider/assets/index.css'
+import Star from 'assets/svg/star.svg?react'
+import StarFilled from 'assets/svg/star_solid.svg?react'
+import { IFilter, IInputEvent, IDiscountChangeEvent } from 'interfaces'
 
 export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)

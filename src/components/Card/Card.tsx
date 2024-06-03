@@ -1,10 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
-import { Button, Price } from '../../components'
-import { useCart } from '../../hooks'
-import { BOOKS, CART } from '../../routes/pathConstants'
-import { IBook } from '../../interfaces'
-import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
+import { useCart } from 'hooks'
+import { BOOKS, CART } from 'routes'
+import { Button, Price } from 'components'
+import { IBook } from 'interfaces'
+import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Card({ book }: { book: IBook }) {
   const navigate = useNavigate()

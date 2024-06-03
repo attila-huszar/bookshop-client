@@ -8,11 +8,17 @@ import {
   Cart,
   Account,
   NotFound,
-} from '../pages'
-import { BOOKS, REGISTRATION, LOGIN, CART, ACCOUNT } from './pathConstants'
-import { ProtectedRoutes } from '../routes/ProtectedRoutes'
-import { protectedRouteLoader } from '../utils/protectedRouteLoader'
-import { Loading } from '../components'
+} from 'pages'
+import {
+  BOOKS,
+  REGISTRATION,
+  LOGIN,
+  CART,
+  ACCOUNT,
+  ProtectedRoutes,
+} from 'routes'
+import { protectedRouteLoader } from 'helpers'
+import { Loading } from 'components'
 
 const Layout = lazy(() =>
   import('../pages').then(({ Layout }) => ({

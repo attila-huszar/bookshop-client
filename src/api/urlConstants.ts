@@ -1,11 +1,5 @@
-import {
-  BOOKS,
-  AUTHORS,
-  NEWS,
-  USERS,
-  SEARCHOPTS,
-} from '../routes/pathConstants'
-import { cloudName } from '../lib'
+import { BOOKS, AUTHORS, NEWS, USERS, SEARCHOPTS } from 'routes'
+import { cloudName } from 'lib'
 
 export const URL: Record<string, string> = {
   books: `${import.meta.env.VITE_BASE_URL}/${BOOKS}`,

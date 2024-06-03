@@ -5,7 +5,7 @@ import {
   Currency,
   Strikethrough,
 } from './Price.styles'
-import { IPriceProps } from '../../interfaces'
+import { IPriceProps } from 'interfaces'
 
 export function Price({
   component,

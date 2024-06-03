@@ -1,22 +1,22 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { IconButton, Avatar } from '../../../../components'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useLocalStorage,
-  useClickOutside,
-} from '../../../../hooks'
-import { userSelector, logoutUser } from '../../../../store'
 import {
   StyledMenu,
   Dropdown,
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { logoutLink, accountLink } from '../../../../lib'
-import { LOGIN } from '../../../../routes/pathConstants'
-import AccountIcon from '../../../../assets/svg/account.svg?react'
+import { IconButton, Avatar } from 'components'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useLocalStorage,
+  useClickOutside,
+} from 'hooks'
+import { userSelector, logoutUser } from 'store'
+import { logoutLink, accountLink } from 'lib'
+import { LOGIN } from 'routes'
+import AccountIcon from 'assets/svg/account.svg?react'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {

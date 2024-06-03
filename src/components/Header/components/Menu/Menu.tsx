@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
-import { IconButton } from '../../../../components'
-import { menuLinks } from '../../../../lib'
-import { useClickOutside } from '../../../../hooks'
-import MenuIcon from '../../../../assets/svg/menu.svg?react'
+import { IconButton } from 'components'
+import { menuLinks } from 'lib'
+import { useClickOutside } from 'hooks'
+import MenuIcon from 'assets/svg/menu.svg?react'
 
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)

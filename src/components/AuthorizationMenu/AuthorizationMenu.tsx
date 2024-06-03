@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom'
-import { LOGIN, REGISTRATION } from '../../routes/pathConstants'
 import {
   StyledAuthorizationMenu,
   FormChangeLinks,
 } from './AuthorizationMenu.styles'
+import { LOGIN, REGISTRATION } from 'routes'
 
 export function AuthorizationMenu({ children }: React.PropsWithChildren) {
   return (
