@@ -15,14 +15,7 @@ export const Dropdown = styled.div<MenuTypes>`
   opacity: 0;
   transition: all 0.2s ease;
 
-  ${({ $show }) => {
-    if ($show) {
-      return `
-        grid-template-rows: 1fr;
-        opacity: 1;
-      `
-    }
-  }}
+  ${({ $show }) => $show && 'grid-template-rows: 1fr; opacity: 1;'}
 `
 
 export const DropdownList = styled.ul`

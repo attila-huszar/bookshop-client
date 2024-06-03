@@ -10,6 +10,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 
 export interface IBookStore {
   booksData: IBook[]
+  booksViewed: IBook[]
   booksAreLoading: boolean
   bookIsLoading: boolean
   booksError: SerializedError | null

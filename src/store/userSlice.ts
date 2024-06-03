@@ -78,16 +78,16 @@ const userSlice = createSlice({
         state.userData = null
       })
 
-      .addCase(getUserByID.pending, (state) => {
+      .addCase(fetchUserByUUID.pending, (state) => {
         state.userIsLoading = true
         state.userError = null
       })
-      .addCase(getUserByID.fulfilled, (state, action) => {
+      .addCase(fetchUserByUUID.fulfilled, (state, action) => {
         state.userIsLoading = false
         state.userData = action.payload
         state.userError = null
       })
-      .addCase(getUserByID.rejected, (state, action) => {
+      .addCase(fetchUserByUUID.rejected, (state, action) => {
         state.userIsLoading = false
         state.userError = action.payload as SerializedError
         state.userData = null
@@ -130,8 +130,8 @@ export const registerUser = createAsyncThunk(
   },
 )
 
-export const getUserByID = createAsyncThunk(
-  'getUserByID',
+export const fetchUserByUUID = createAsyncThunk(
+  'fetchUserByUUID',
   (uuid: string, { rejectWithValue }) =>
     getUserByUUID(uuid, rejectWithValue).then((response) => {
       if (response) {

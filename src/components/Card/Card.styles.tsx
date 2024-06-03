@@ -1,15 +1,20 @@
 import styled from 'styled-components'
 
 export const StyledCard = styled.div`
-  display: flex;
   height: 17.5rem;
   width: 30rem;
-  padding: 1rem;
   border-radius: 10px;
   transition: background-color 0.3s ease-out;
 
   &:hover {
     background-color: var(--whitesmoke);
+  }
+
+  a {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    padding: 1rem;
   }
 `
 

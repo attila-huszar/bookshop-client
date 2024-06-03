@@ -4,7 +4,7 @@ import { unsignedUploadPreset } from '../lib'
 import { passwordEncrypt } from '../utils'
 import { IUser, IFilter } from '../interfaces'
 
-export const fetchBooks = async (
+export const getBooks = async (
   id: string | void,
   rejectWithValue: (value: unknown) => void,
 ) => {
@@ -20,7 +20,7 @@ export const fetchBooks = async (
   }
 }
 
-export const fetchBooksByProperty = async (
+export const getBooksByProperty = async (
   property: string,
   rejectWithValue: (value: unknown) => void,
 ) => {
@@ -39,14 +39,10 @@ export const fetchBooksByProperty = async (
 
 export const getBooksBySearch = async (searchString: string) => {
   try {
-    const response = await axios.get(`${URL.books}?title_like=${searchString}`)
-    return response.data
+    const { data } = await axios.get(`${URL.books}?title_like=${searchString}`)
+    return data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw Error(error.message)
-    } else {
-      throw Error('Unknown error occurred')
-    }
+    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
   }
 }
 
@@ -105,8 +101,8 @@ export const getUserByUUID = async (
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const response = await axios.get(`${URL.users}?uuid=${uuid}`)
-    return response.data[0]
+    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    return data.length && data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
@@ -118,14 +114,9 @@ export const getUserByUUID = async (
 
 export const checkUserLoggedIn = async (uuid: string) => {
   try {
-    const response = await axios.get(`${URL.users}?uuid=${uuid}`)
-
-    if (response.data.length) {
-      return response.data[0].uuid === uuid
-    } else {
-      return false
-    }
-  } catch (error) {
+    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    return data.length && data[0].uuid === uuid
+  } catch {
     return false
   }
 }
@@ -208,7 +199,7 @@ export const getBookSearchOptions = async (
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
-    const response = await axios.get(`${URL.searchOptions}`)
+    const response = await axios.get(URL.searchOptions)
 
     return response.data
   } catch (error) {
@@ -220,19 +211,14 @@ export const getBookSearchOptions = async (
   }
 }
 
-export const verifyPassword = async (uuid: string, currentPassword: string) => {
+export const verifyPassword = async (
+  uuid: string,
+  currentPassword: string,
+): Promise<boolean> => {
   try {
-    const passwordResponse = await axios.get(`${URL.users}?uuid=${uuid}`)
-
-    if (
-      passwordResponse.data.length &&
-      passwordResponse.data[0].password === passwordEncrypt(currentPassword)
-    ) {
-      return true
-    } else {
-      return false
-    }
-  } catch (error) {
+    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    return data.length && data[0].password === passwordEncrypt(currentPassword)
+  } catch {
     return false
   }
 }
@@ -244,13 +230,9 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   formData.append('file', img)
 
   try {
-    const response = await axios.post(URL.cloudinaryUpload, formData)
-    return response.data
+    const { data } = await axios.post(URL.cloudinaryUpload, formData)
+    return data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw error.message
-    } else {
-      throw 'Unknown error occurred'
-    }
+    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
   }
 }

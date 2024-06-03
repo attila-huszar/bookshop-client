@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { memo, useEffect, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useCart } from '../../hooks'
 import {
   StyledProduct,
@@ -22,7 +22,7 @@ import {
 } from '../../store'
 import { IAuthor, IBook } from '../../interfaces'
 import { Button, Error, Price, Recommended } from '../../components'
-import { BOOKS, CART } from '../../routes/pathConstants'
+import { CART } from '../../routes/pathConstants'
 
 export function Product() {
   const { id } = useParams()
@@ -36,25 +36,38 @@ export function Product() {
   )
   const { booksError } = useAppSelector(booksSelector)
   const { authorsError } = useAppSelector(authorsSelector)
-  const isBookInCart = cartData.some((item) => item.id === book?.id)
+  const RecommendedMemoized = memo(Recommended)
+  const isBookInCart = useMemo(() => {
+    return cartData.some((item) => item.id === book?.id)
+  }, [cartData, book])
 
   useEffect(() => {
-    if (!book) {
-      dispatch(fetchBookById(id!))
-    } else if (!author) {
+    if (!book && id) {
+      dispatch(fetchBookById(id))
+    } else if (!author && book) {
       dispatch(fetchAuthorById(`${book.author}`))
     }
-  }, [book, author, id, dispatch])
+  }, [author, book, dispatch, id])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
+  const handleGoBack = () => {
+    if (window.history?.length && window.history.length > 2) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return book ? (
     <>
       <StyledProduct>
         <Breadcrumb>
-          <Link to={`/${BOOKS}`}>Book Details</Link>
+          <button onClick={handleGoBack} type="button">
+            Book Details
+          </button>
         </Breadcrumb>
         <DetailsSection>
           <ImageWrapper>
@@ -84,8 +97,7 @@ export function Product() {
           </ButtonWrapper>
         </DetailsSection>
       </StyledProduct>
-
-      <Recommended />
+      <RecommendedMemoized />
     </>
   ) : (
     <Error error={booksError} />

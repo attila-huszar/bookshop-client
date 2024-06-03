@@ -5,8 +5,8 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit'
 import {
-  fetchBooks,
-  fetchBooksByProperty,
+  getBooks,
+  getBooksByProperty,
   getBookSearchOptions,
   getFilteredBooks,
 } from '../api/fetchData'
@@ -15,6 +15,7 @@ import { IBookStore, IFilter } from '../interfaces'
 
 const initialState: IBookStore = {
   booksData: [],
+  booksViewed: [],
   booksAreLoading: false,
   bookIsLoading: false,
   booksError: null,
@@ -86,14 +87,14 @@ const booksSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAllBooks.pending, (state) => {
+      .addCase(fetchBooks.pending, (state) => {
         state.booksAreLoading = true
       })
-      .addCase(fetchAllBooks.fulfilled, (state, action) => {
+      .addCase(fetchBooks.fulfilled, (state, action) => {
         state.booksData = action.payload
         state.booksAreLoading = false
       })
-      .addCase(fetchAllBooks.rejected, (state, action) => {
+      .addCase(fetchBooks.rejected, (state, action) => {
         state.booksError = action.payload as SerializedError
         state.booksAreLoading = false
       })
@@ -101,17 +102,22 @@ const booksSlice = createSlice({
         state.bookIsLoading = true
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
-        state.booksData = [...state.booksData, action.payload]
+        const bookExists = state.booksViewed.some(
+          (book) => book.id === action.payload.id,
+        )
+        if (!bookExists) {
+          state.booksViewed.push(action.payload)
+        }
         state.bookIsLoading = false
       })
       .addCase(fetchBookById.rejected, (state, action) => {
         state.booksError = action.payload as SerializedError
         state.bookIsLoading = false
       })
-      .addCase(filterBooks.fulfilled, (state, action) => {
+      .addCase(fetchFilteredBooks.fulfilled, (state, action) => {
         state.booksData = action.payload
       })
-      .addCase(getSearchOptions.fulfilled, (state, action) => {
+      .addCase(fetchBookSearchOptions.fulfilled, (state, action) => {
         state.booksFilters.initial = {
           ...state.booksFilters.initial,
           ...action.payload,
@@ -119,7 +125,7 @@ const booksSlice = createSlice({
         state.booksFilters.active.price = action.payload.price
         state.booksFilters.active.publishYear = action.payload.publishYear
       })
-      .addCase(getBooksByProperty.fulfilled, (state, action) => {
+      .addCase(fetchBooksByProperty.fulfilled, (state, action) => {
         if (action.meta.arg === 'topSellers') {
           state.booksTopSellers = action.payload
         } else if (action.meta.arg === 'new') {
@@ -129,30 +135,30 @@ const booksSlice = createSlice({
   },
 })
 
-export const fetchAllBooks = createAsyncThunk(
-  'fetchAllBooks',
-  (_, { rejectWithValue }) => fetchBooks(_, rejectWithValue),
+export const fetchBooks = createAsyncThunk(
+  'fetchBooks',
+  (_, { rejectWithValue }) => getBooks(_, rejectWithValue),
 )
 
 export const fetchBookById = createAsyncThunk(
   'fetchBookById',
-  (id: string, { rejectWithValue }) => fetchBooks(id, rejectWithValue),
+  (id: string, { rejectWithValue }) => getBooks(id, rejectWithValue),
 )
 
-export const getBooksByProperty = createAsyncThunk(
-  'getBooksByProperty',
+export const fetchBooksByProperty = createAsyncThunk(
+  'fetchBooksByProperty',
   (property: string, { rejectWithValue }) =>
-    fetchBooksByProperty(property, rejectWithValue),
+    getBooksByProperty(property, rejectWithValue),
 )
 
-export const filterBooks = createAsyncThunk(
-  'filterBooks',
+export const fetchFilteredBooks = createAsyncThunk(
+  'fetchFilteredBooks',
   (criteria: IFilter, { rejectWithValue }) =>
     getFilteredBooks(criteria, rejectWithValue),
 )
 
-export const getSearchOptions = createAsyncThunk(
-  'getSearchOptions',
+export const fetchBookSearchOptions = createAsyncThunk(
+  'fetchBookSearchOptions',
   (_, { rejectWithValue }) => getBookSearchOptions(rejectWithValue),
 )
 

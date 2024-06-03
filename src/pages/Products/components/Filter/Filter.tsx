@@ -1,8 +1,8 @@
 import { useAppDispatch, useAppSelector } from '../../../../hooks'
 import {
   booksSelector,
-  fetchAllBooks,
-  filterBooks,
+  fetchBooks,
+  fetchFilteredBooks,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
@@ -20,9 +20,9 @@ import {
   ButtonWrapper,
   CustomButton,
 } from './Filter.styles'
-import { IconButton } from '../../../../components'
+import { Accordion, AccordionItem, IconButton } from '../../../../components'
 import { enforceMinMax, generateFilterArray } from '../../../../utils'
-import { Accordion, AccordionItem } from '@szhsin/react-accordion'
+import { filterInitialValues, discountOptions } from '../../../../lib'
 import {
   IFilter,
   IInputEvent,
@@ -34,23 +34,9 @@ import Slider from 'rc-slider'
 import { sliderStyles } from '../../../../styles/Global.styles'
 import 'rc-slider/assets/index.css'
 
-const initialValues: IFilter = {
-  genre: [],
-  price: [],
-  discount: 'allBooks',
-  publishYear: [],
-  rating: 0.5,
-}
-
-const discountOptions: { value: IFilter['discount']; label: string }[] = [
-  { value: 'allBooks', label: 'All Books' },
-  { value: 'discountOnly', label: 'With Discount' },
-  { value: 'fullPriceOnly', label: 'Full Price Books' },
-]
-
 export function Filter() {
-  const dispatch = useAppDispatch()
   const { booksFilters } = useAppSelector(booksSelector)
+  const dispatch = useAppDispatch()
 
   const [priceMinInitial, priceMaxInitial] = booksFilters.initial.price
   const [priceMin, priceMax] = booksFilters.active.price
@@ -69,7 +55,7 @@ export function Filter() {
 
   const handleFormSubmit = () => {
     dispatch(
-      filterBooks({
+      fetchFilteredBooks({
         genre: booksFilters.active.genre,
         price: generateFilterArray(
           priceMin,
@@ -90,7 +76,7 @@ export function Filter() {
   }
 
   const handleFormReset = () => {
-    dispatch(fetchAllBooks())
+    dispatch(fetchBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))
@@ -126,15 +112,17 @@ export function Filter() {
     <StyledFilter>
       <FilterOptions draggable="false">
         <Formik
-          initialValues={initialValues}
+          initialValues={filterInitialValues}
           onSubmit={handleFormSubmit}
           onReset={handleFormReset}>
           <Form>
-            <Accordion>
-              <AccordionItem header="Genre" initialEntered>
-                {booksFilters.initial.genre && (
-                  <GenreCheckBoxes>
-                    {booksFilters.initial.genre.map((filter) => (
+            <Accordion
+              numberOfAllowedOpenPanels="all"
+              defaultOpenPanels={[0, 1]}>
+              <AccordionItem header="Genre">
+                <GenreCheckBoxes>
+                  {booksFilters.initial.genre &&
+                    booksFilters.initial.genre.map((filter) => (
                       <div key={filter}>
                         <Field
                           name="genre"
@@ -147,14 +135,13 @@ export function Filter() {
                         <label htmlFor={filter}>{filter}</label>
                       </div>
                     ))}
-                  </GenreCheckBoxes>
-                )}
+                </GenreCheckBoxes>
                 <button type="button" onClick={handleGenreClear}>
                   Clear selection
                 </button>
               </AccordionItem>
 
-              <AccordionItem header="Price" initialEntered>
+              <AccordionItem header="Price">
                 {booksFilters.initial.price && (
                   <>
                     <Slider
@@ -209,21 +196,22 @@ export function Filter() {
               </AccordionItem>
 
               <AccordionItem header="Discount">
-                {discountOptions.map((item) => (
-                  <DiscountRadioButtons key={item.value}>
-                    <Field
-                      type="radio"
-                      name="discount"
-                      value={item.value}
-                      id={item.value}
-                      onChange={(e: IDiscountChangeEvent) =>
-                        handleDiscountChange(e.target.value)
-                      }
-                      checked={item.value === booksFilters.active.discount}
-                    />
-                    <label htmlFor={item.value}>{item.label}</label>
-                  </DiscountRadioButtons>
-                ))}
+                {booksFilters.initial.discount &&
+                  discountOptions.map((item) => (
+                    <DiscountRadioButtons key={item.value}>
+                      <Field
+                        type="radio"
+                        name="discount"
+                        value={item.value}
+                        id={item.value}
+                        onChange={(e: IDiscountChangeEvent) =>
+                          handleDiscountChange(e.target.value)
+                        }
+                        checked={item.value === booksFilters.active.discount}
+                      />
+                      <label htmlFor={item.value}>{item.label}</label>
+                    </DiscountRadioButtons>
+                  ))}
               </AccordionItem>
 
               <AccordionItem header="Publication Year">
@@ -293,19 +281,11 @@ export function Filter() {
                   {Array.from({ length: 5 }, (_, idx) => {
                     const isFilled = idx < booksFilters.active.rating
                     const rating = (idx + 0.5) as IFilter['rating']
-                    const color = isFilled
-                      ? 'var(--secondary-color)'
-                      : 'var(--grey)'
+
                     return (
                       <IconButton
                         key={`rating-${rating + 0.5}`}
-                        icon={
-                          isFilled ? (
-                            <StarFilled color={color} />
-                          ) : (
-                            <Star color={color} />
-                          )
-                        }
+                        icon={isFilled ? <StarFilled /> : <Star />}
                         type="button"
                         onClick={() => {
                           handleRatingChange(rating)

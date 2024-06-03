@@ -1,15 +1,15 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { routes } from './routes/routes'
 import { useEffect } from 'react'
-import { useAppDispatch } from './hooks'
+import { useAppDispatch, useLocalStorage } from './hooks'
 import {
-  fetchAllBooks,
+  fetchBooks,
+  fetchBooksByProperty,
+  fetchBookSearchOptions,
+  getBooksRandomized,
   fetchAllNews,
   fetchCartItems,
-  getUserByID,
-  getBooksRandomized,
-  getSearchOptions,
-  getBooksByProperty,
+  fetchUserByUUID,
 } from './store'
 import { ILocalCart } from './interfaces'
 import GlobalStyle from './styles/Global.styles'
@@ -17,28 +17,27 @@ import GlobalStyle from './styles/Global.styles'
 function App() {
   const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
+  const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
-    dispatch(fetchAllBooks()).then(() => {
+    dispatch(fetchBooks()).then(() => {
       dispatch(getBooksRandomized())
     })
-    dispatch(getBooksByProperty('new'))
-    dispatch(getBooksByProperty('topSellers'))
+    dispatch(fetchBooksByProperty('new'))
+    dispatch(fetchBooksByProperty('topSellers'))
     dispatch(fetchAllNews())
-    dispatch(getSearchOptions())
+    dispatch(fetchBookSearchOptions())
 
-    const uuid: string | null = JSON.parse(
-      localStorage.getItem('uuid') || 'null',
-    )
+    const uuid = getFromLocalStorage<string>('uuid')
     if (uuid) {
-      dispatch(getUserByID(uuid))
+      dispatch(fetchUserByUUID(uuid))
     }
 
-    const cart: ILocalCart[] = JSON.parse(localStorage.getItem('cart') || '[]')
-    if (cart.length) {
+    const cart = getFromLocalStorage<ILocalCart[]>('cart')
+    if (cart) {
       dispatch(fetchCartItems(cart))
     }
-  }, [dispatch])
+  }, [dispatch, getFromLocalStorage])
 
   return (
     <>

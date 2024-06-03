@@ -1,9 +1,14 @@
 import { RootState } from './store'
+import { IBook } from '../interfaces'
 
 export const booksSelector = (state: RootState) => state.books
 
-export const bookByIdSelector = (id: string) => (state: RootState) =>
-  state.books.booksData.find((book) => book.id === Number(id))
+export const bookByIdSelector = (id: string) => (state: RootState) => {
+  const bookId = Number(id)
+  const findBook = (books: IBook[]) => books.find((book) => book.id === bookId)
+
+  return findBook(state.books.booksData) || findBook(state.books.booksViewed)
+}
 
 export const authorsSelector = (state: RootState) => state.authors
 
