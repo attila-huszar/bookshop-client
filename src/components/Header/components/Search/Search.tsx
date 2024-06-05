@@ -11,12 +11,12 @@ import {
   ErrorItem,
   ClearButton,
 } from './Search.styles'
-import { BOOKS } from '../../../../routes/pathConstants'
-import { getBooksBySearch } from '../../../../api/fetchData'
-import { IBook } from '../../../../interfaces'
-import { searchSchema } from '../../../../utils/validationSchema'
-import { useDebounce, useClickOutside } from '../../../../hooks'
-import LinkIcon from './../../../../assets/svg/link-square-02-stroke-rounded'
+import { getBooksBySearch } from 'api/fetchData'
+import { searchSchema } from 'helpers'
+import { useDebounce, useClickOutside } from 'hooks'
+import { PATH } from 'lib'
+import { IBook } from 'interfaces'
+import LinkIcon from 'assets/svg/link.svg?react'
 
 export function Search() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -63,7 +63,7 @@ export function Search() {
 
   const handleSubmit = () => {
     if (searchResults.length) {
-      navigate(`/${BOOKS}/${searchResults[0].id}`)
+      navigate(`/${PATH.books}/${searchResults[0].id}`)
     }
   }
 
@@ -92,7 +92,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${BOOKS}/${book.id}`}
+                        to={`/${PATH.books}/${book.id}`}
                         onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img
@@ -102,7 +102,7 @@ export function Search() {
                             height="24"
                           />
                           <span>{book.title}</span>
-                          <LinkIcon />
+                          <LinkIcon width="16" height="16" />
                         </MenuItem>
                       </Link>
                     </li>

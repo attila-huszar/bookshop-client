@@ -1,6 +1,5 @@
 import { memo, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCart } from '../../hooks'
 import {
   StyledProduct,
   Breadcrumb,
@@ -11,7 +10,7 @@ import {
   Author,
   ButtonWrapper,
 } from './Product.styles'
-import { useAppSelector, useAppDispatch } from '../../hooks'
+import { useAppSelector, useAppDispatch, useCart } from 'hooks'
 import {
   fetchBookById,
   fetchAuthorById,
@@ -19,10 +18,10 @@ import {
   bookByIdSelector,
   authorsSelector,
   authorByIdSelector,
-} from '../../store'
-import { IAuthor, IBook } from '../../interfaces'
-import { Button, Error, Price, Recommended } from '../../components'
-import { CART } from '../../routes/pathConstants'
+} from 'store'
+import { Button, Error, Price, Recommended } from 'components'
+import { PATH } from 'lib'
+import { IAuthor, IBook } from 'interfaces'
 
 export function Product() {
   const { id } = useParams()
@@ -87,7 +86,7 @@ export function Product() {
           <ButtonWrapper>
             <Button
               onClick={() => {
-                isBookInCart ? navigate(`/${CART}`) : addToCart(book)
+                isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
               }}
               $withCart={!isBookInCart}
               $textSize="lg"

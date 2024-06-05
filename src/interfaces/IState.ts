@@ -1,3 +1,4 @@
+import { SerializedError } from '@reduxjs/toolkit'
 import {
   IBook,
   IAuthor,
@@ -5,8 +6,7 @@ import {
   IUserOmitPassword,
   ICart,
   IFilter,
-} from '../interfaces'
-import { SerializedError } from '@reduxjs/toolkit'
+} from 'interfaces'
 
 export interface IBookStore {
   booksData: IBook[]

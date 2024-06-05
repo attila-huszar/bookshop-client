@@ -8,11 +8,10 @@ import {
   Cart,
   Account,
   NotFound,
-} from '../pages'
-import { BOOKS, REGISTRATION, LOGIN, CART, ACCOUNT } from './pathConstants'
-import { ProtectedRoutes } from '../routes/ProtectedRoutes'
-import { protectedRouteLoader } from '../utils/protectedRouteLoader'
-import { Loading } from '../components'
+} from 'pages'
+import { PATH } from 'lib'
+import { ProtectedRoute, Loading } from 'components'
+import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
   import('../pages').then(({ Layout }) => ({
@@ -34,31 +33,31 @@ export const routes = [
         element: <Home />,
       },
       {
-        path: BOOKS,
+        path: PATH.books,
         element: <Products />,
       },
       {
-        path: `${BOOKS}/:id`,
+        path: `${PATH.books}/:id`,
         element: <Product />,
       },
       {
-        path: REGISTRATION,
+        path: PATH.registration,
         element: <Registration />,
       },
       {
-        path: LOGIN,
+        path: PATH.login,
         element: <Login />,
       },
       {
-        path: CART,
+        path: PATH.cart,
         element: <Cart />,
       },
       {
-        element: <ProtectedRoutes />,
+        element: <ProtectedRoute />,
         loader: protectedRouteLoader,
         children: [
           {
-            path: ACCOUNT,
+            path: PATH.account,
             element: <Account />,
           },
         ],

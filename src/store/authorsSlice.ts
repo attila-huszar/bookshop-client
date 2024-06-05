@@ -3,8 +3,8 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchAuthors } from '../api/fetchData'
-import { IAuthorStore } from '../interfaces'
+import { fetchAuthors } from 'api/fetchData'
+import { IAuthorStore } from 'interfaces'
 
 const initialState: IAuthorStore = {
   authorsData: [],

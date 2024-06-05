@@ -9,9 +9,9 @@ import {
   getBooksByProperty,
   getBookSearchOptions,
   getFilteredBooks,
-} from '../api/fetchData'
-import { getRandomBooks } from '../utils'
-import { IBookStore, IFilter } from '../interfaces'
+} from 'api/fetchData'
+import { getRandomBooks } from 'helpers'
+import { IBookStore, IFilter } from 'interfaces'
 
 const initialState: IBookStore = {
   booksData: [],

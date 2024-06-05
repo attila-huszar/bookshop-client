@@ -47,7 +47,7 @@ export default createGlobalStyle`
 
 export const sliderStyles = {
   track: {
-    backgroundColor: 'var(--secondary-color',
+    backgroundColor: 'var(--secondary-color)',
   },
   handle: {
     opacity: 1,

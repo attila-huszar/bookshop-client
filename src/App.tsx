@@ -1,7 +1,7 @@
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { routes } from './routes/routes'
 import { useEffect } from 'react'
-import { useAppDispatch, useLocalStorage } from './hooks'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { routes } from 'routes/routes'
+import { useAppDispatch, useLocalStorage } from 'hooks'
 import {
   fetchBooks,
   fetchBooksByProperty,
@@ -10,9 +10,9 @@ import {
   fetchAllNews,
   fetchCartItems,
   fetchUserByUUID,
-} from './store'
-import { ILocalCart } from './interfaces'
-import GlobalStyle from './styles/Global.styles'
+} from 'store'
+import { ILocalCart } from 'interfaces'
+import GlobalStyle from 'styles/Global.styles'
 
 function App() {
   const router = createBrowserRouter(routes)

@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { ButtonWrapper } from '../../styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button } from '../../components'
-import { loginSchema } from '../../utils/validationSchema'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '../../hooks'
-import { loginInitialValues } from '../../lib/defaultValues'
-import { userSelector, loginUser } from '../../store'
+import { ButtonWrapper } from 'styles/Form.styles'
+import { AuthorizationMenu, FormikField, Button } from 'components'
+import { loginSchema } from 'helpers'
+import { useAppDispatch, useAppSelector, useLocalStorage } from 'hooks'
+import { loginInitialValues } from 'lib'
+import { userSelector, loginUser } from 'store'
 import toast from 'react-hot-toast'
 
 export function Login() {

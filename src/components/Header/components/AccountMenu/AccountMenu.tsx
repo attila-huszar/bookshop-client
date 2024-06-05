@@ -1,22 +1,23 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { IconButton, Avatar } from '../../../../components'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useLocalStorage,
-  useClickOutside,
-} from '../../../../hooks'
-import { userSelector, logoutUser } from '../../../../store'
 import {
   StyledMenu,
   Dropdown,
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { logoutLink, accountLink } from '../../../../lib'
-import { LOGIN } from '../../../../routes/pathConstants'
-import AccountIcon from '../../../../assets/svg/account.svg?react'
+import { IconButton, Avatar } from 'components'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useLocalStorage,
+  useClickOutside,
+} from 'hooks'
+import { userSelector, logoutUser } from 'store'
+import { PATH } from 'lib'
+import LoginIcon from 'assets/svg/account.svg?react'
+import accountIcon from 'assets/svg/user_account.svg'
+import logoutIcon from 'assets/svg/logout.svg'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {
@@ -50,8 +51,8 @@ export function AccountMenu() {
         />
       ) : (
         <IconButton
-          onClick={() => navigate(LOGIN)}
-          icon={<AccountIcon />}
+          onClick={() => navigate(PATH.login)}
+          icon={<LoginIcon />}
           title={'Login/Register'}
         />
       )}
@@ -59,23 +60,18 @@ export function AccountMenu() {
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
-              <Link to={accountLink.path} onClick={toggleMenu}>
+              <Link to={`/${PATH.account}`} onClick={toggleMenu}>
                 <MenuItem>
-                  <img src={accountLink.icon} width={24} height={22} />
+                  <img src={accountIcon} alt="account" />
                   <span>{firstName}</span>
                 </MenuItem>
               </Link>
             </li>
             <li>
-              <Link to={logoutLink.path} onClick={handleLogout}>
+              <Link to={'/'} onClick={handleLogout}>
                 <MenuItem>
-                  <img
-                    src={logoutLink.icon}
-                    alt={logoutLink.name}
-                    width={24}
-                    height={22}
-                  />
-                  <span>{logoutLink.name}</span>
+                  <img src={logoutIcon} alt="logout" />
+                  <span>Logout</span>
                 </MenuItem>
               </Link>
             </li>

@@ -1,10 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { StyledCard, Details, Image, Title, Description } from './Card.styles'
-import { Button, Price } from '../../components'
-import { useCart } from '../../hooks'
-import { BOOKS, CART } from '../../routes/pathConstants'
-import { IBook } from '../../interfaces'
-import imagePlaceholder from '../../assets/svg/image_placeholder.svg'
+import { Button, Price } from 'components'
+import { useCart } from 'hooks'
+import { PATH } from 'lib'
+import { IBook } from 'interfaces'
+import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Card({ book }: { book: IBook }) {
   const navigate = useNavigate()
@@ -13,7 +13,7 @@ export function Card({ book }: { book: IBook }) {
 
   return (
     <StyledCard>
-      <Link to={`/${BOOKS}/${book.id}`}>
+      <Link to={`/${PATH.books}/${book.id}`}>
         <Image
           src={book.imgUrl}
           onError={(e) =>
@@ -27,7 +27,7 @@ export function Card({ book }: { book: IBook }) {
           <Button
             onClick={(e) => {
               e.preventDefault()
-              isBookInCart ? navigate(`/${CART}`) : addToCart(book)
+              isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
             }}
             $withCart={!isBookInCart}>
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}

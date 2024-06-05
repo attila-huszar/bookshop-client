@@ -1,5 +1,5 @@
 import { StyledLoading } from './Loading.styles'
-import LoadingIcon from '../../assets/svg/loading.svg?react'
+import LoadingIcon from 'assets/svg/loading.svg?react'
 
 export function Loading() {
   return (

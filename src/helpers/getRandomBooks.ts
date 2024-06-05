@@ -1,4 +1,4 @@
-import { IBook } from '../interfaces'
+import { IBook } from 'interfaces'
 
 export function getRandomBooks(booksArray: IBook[], count: number) {
   const bookCopy: IBook[] = [...booksArray]

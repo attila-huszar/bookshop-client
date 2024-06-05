@@ -1,8 +1,8 @@
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
-import { ISwiper } from '../../interfaces'
 import 'swiper/css'
 import 'swiper/css/navigation'
+import { ISwiper } from 'interfaces'
 
 export function SwiperComponent({ children }: ISwiper) {
   return (

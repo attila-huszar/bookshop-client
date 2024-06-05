@@ -9,9 +9,9 @@ import {
   postUserRegister,
   putUser,
   uploadImage,
-} from '../api/fetchData'
-import { passwordEncrypt } from '../utils'
-import { IUser, IUserUpdate, IUserStore } from '../interfaces'
+} from 'api/fetchData'
+import { passwordEncrypt } from 'helpers'
+import { IUser, IUserUpdate, IUserStore } from 'interfaces'
 
 const initialState: IUserStore = {
   userData: null,

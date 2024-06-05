@@ -1,8 +1,7 @@
 import axios, { AxiosError } from 'axios'
-import { URL } from './urlConstants'
-import { unsignedUploadPreset } from '../lib'
-import { passwordEncrypt } from '../utils'
-import { IUser, IFilter } from '../interfaces'
+import { URL, unsignedUploadPreset } from 'lib'
+import { passwordEncrypt } from 'helpers'
+import { IUser, IFilter } from 'interfaces'
 
 export const getBooks = async (
   id: string | void,

@@ -1,17 +1,18 @@
 import styled from 'styled-components'
+import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`
   display: flex;
   width: 100%;
   max-width: 90rem;
-  padding: 1.5rem 6.25rem;
+  padding: 2.5rem 6.25rem;
 
   div {
     width: 50%;
   }
 
   h1 {
-    margin: 1rem 0 2rem;
+    margin-bottom: 2rem;
   }
 
   p {
@@ -21,24 +22,48 @@ export const StyledReleases = styled.section`
 `
 
 export const ImageWrapper = styled.div`
-  height: 20rem;
-  padding: 0.5rem;
+  display: grid;
+  align-items: center;
+  margin: 0 auto;
 `
 
-export const OriginalImg = styled.div`
+export const ImageItem = styled.div<ReleasesTypes>`
   position: relative;
-  height: 95%;
+  grid-row: 1;
+
+  ${({ $idx }) => {
+    if ($idx % 3 === 0) {
+      return `
+        z-index: 3;
+        height: 20rem;
+      `
+    } else if ($idx % 3 === 1) {
+      return `
+        z-index: 2;
+        height: 18rem;
+        margin-left: -50%;
+      `
+    } else {
+      return `
+        z-index: 1;
+        height: 16rem;
+        margin-left: -100%;
+      `
+    }
+  }}
 
   img {
-    border-radius: 5px;
+    height: 100%;
+    border-radius: 3px;
   }
 `
 
-export const MirroredImg = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  transform: scaleY(-1);
-  filter: blur(5px);
-  opacity: 0.8;
+export const MirrorImg = styled.div`
+  img {
+    position: absolute;
+    margin-top: -5px;
+    transform: scale(1.025, -1);
+    filter: blur(4px);
+    mask-image: linear-gradient(to bottom, transparent 95%, black 100%);
+  }
 `

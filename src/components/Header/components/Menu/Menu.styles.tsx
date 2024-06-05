@@ -50,5 +50,16 @@ export const MenuItem = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
+
+  img {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 `

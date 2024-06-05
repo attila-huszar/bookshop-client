@@ -1,14 +1,14 @@
-import { useAppSelector } from '../../../../hooks'
-import { booksSelector } from '../../../../store'
+import { Link } from 'react-router-dom'
 import {
   StyledReleases,
   ImageWrapper,
-  OriginalImg,
-  MirroredImg,
+  ImageItem,
+  MirrorImg,
 } from './Releases.styles'
-import { Button } from '../../../../components'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import 'swiper/css'
+import { useAppSelector } from 'hooks'
+import { booksSelector } from 'store'
+import { Button } from 'components'
+import { PATH } from 'lib'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)
@@ -28,20 +28,18 @@ export function Releases() {
         </Button>
       </div>
       <div>
-        <Swiper slidesPerView={'auto'}>
-          {booksReleases.map((book) => (
-            <SwiperSlide key={book.id} style={{ width: 'fit-content' }}>
-              <ImageWrapper>
-                <OriginalImg>
-                  <img src={book.imgUrl} alt={book.title} height="100%" />
-                  <MirroredImg>
-                    <img src={book.imgUrl} alt={book.title} height="100%" />
-                  </MirroredImg>
-                </OriginalImg>
-              </ImageWrapper>
-            </SwiperSlide>
+        <ImageWrapper>
+          {booksReleases.map((book, idx) => (
+            <ImageItem key={book.id} $idx={idx}>
+              <Link to={`/${PATH.books}/${book.id}`}>
+                <img src={book.imgUrl} alt={book.title} />
+              </Link>
+              <MirrorImg>
+                <img src={book.imgUrl} alt={book.title} aria-hidden="true" />
+              </MirrorImg>
+            </ImageItem>
           ))}
-        </Swiper>
+        </ImageWrapper>
       </div>
     </StyledReleases>
   )

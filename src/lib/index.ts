@@ -1,11 +1,6 @@
-export {
-  menuLinks,
-  logoutLink,
-  accountLink,
-  navLinks,
-  socialLinks,
-  legalLinks,
-} from './links'
+export { URL } from './urlConstants'
+export { PATH } from './pathConstants'
+export { navLinks, socialLinks, legalLinks } from './links'
 export {
   loginInitialValues,
   registrationInitialValues,

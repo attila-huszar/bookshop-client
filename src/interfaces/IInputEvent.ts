@@ -1,4 +1,4 @@
-import { IFilter } from '.'
+import { IFilter } from './IFilter'
 
 export interface IInputEvent {
   target: EventTarget & HTMLInputElement

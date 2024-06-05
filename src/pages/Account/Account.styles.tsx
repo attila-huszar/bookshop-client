@@ -83,6 +83,30 @@ export const Address = styled.div`
 
   select[name='country'] {
     width: 20rem;
+    padding-right: 2.25rem;
+    appearance: none;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" fill="dimgray"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--black);
+  }
+
+  select[name='country']:disabled {
+    color: var(--black);
+  }
+
+  select[name='country'],
+  select[name='country'] > option {
+    font-family: 'Noto Color Emoji', 'Montserrat', sans-serif;
+  }
+
+  option[hidden] {
+    color: var(--grey);
   }
 `
 

@@ -1,5 +1,5 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { AppDispatch, RootState } from './store'
+import { AppDispatch, RootState } from 'store'
 import {
   cartAdd,
   cartRemove,
@@ -7,7 +7,7 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
 } from './cartSlice'
-import { ICart, ILocalCart } from '../interfaces'
+import { ICart, ILocalCart } from 'interfaces'
 
 export const localStorageMiddleware = createListenerMiddleware()
 
@@ -27,7 +27,7 @@ localStorageMiddlewareTyped({
       localStorage.getItem('cart') || '[]',
     )
 
-    let cartToStore: ILocalCart[] = []
+    let cartToLocalStorage: ILocalCart[] = []
     const actionPayload = action.payload as ICart
     const { cartItem, newQuantity } = actionPayload as unknown as {
       cartItem: ICart
@@ -36,40 +36,39 @@ localStorageMiddlewareTyped({
 
     switch (action.type) {
       case cartAdd.type:
-        cartToStore = [
+        cartToLocalStorage = [
           ...cartFromLocalStorage,
           { id: actionPayload.id, quantity: 1 },
         ]
         break
       case cartRemove.type:
-        cartToStore = cartFromLocalStorage.filter(
+        cartToLocalStorage = cartFromLocalStorage.filter(
           (item) => item.id !== actionPayload.id,
         )
         break
       case cartQuantityAdd.type:
-        cartToStore = cartFromLocalStorage.map((item) =>
+        cartToLocalStorage = cartFromLocalStorage.map((item) =>
           item.id === actionPayload.id
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         )
         break
       case cartQuantityRemove.type:
-        cartToStore = cartFromLocalStorage.map((item) =>
+        cartToLocalStorage = cartFromLocalStorage.map((item) =>
           item.id === actionPayload.id
             ? { ...item, quantity: item.quantity - 1 }
             : item,
         )
         break
       case cartQuantitySet.type:
-        cartToStore = cartFromLocalStorage.map((item) =>
+        cartToLocalStorage = cartFromLocalStorage.map((item) =>
           item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
         )
-
         break
       default:
         break
     }
 
-    localStorage.setItem('cart', JSON.stringify(cartToStore))
+    localStorage.setItem('cart', JSON.stringify(cartToLocalStorage))
   },
 })
