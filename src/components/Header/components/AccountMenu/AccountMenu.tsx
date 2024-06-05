@@ -14,8 +14,10 @@ import {
   useClickOutside,
 } from 'hooks'
 import { userSelector, logoutUser } from 'store'
-import { PATH, logoutLink, accountLink } from 'lib'
-import AccountIcon from 'assets/svg/account.svg?react'
+import { PATH } from 'lib'
+import LoginIcon from 'assets/svg/account.svg?react'
+import accountIcon from 'assets/svg/user_account.svg'
+import logoutIcon from 'assets/svg/logout.svg'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {
@@ -50,7 +52,7 @@ export function AccountMenu() {
       ) : (
         <IconButton
           onClick={() => navigate(PATH.login)}
-          icon={<AccountIcon />}
+          icon={<LoginIcon />}
           title={'Login/Register'}
         />
       )}
@@ -58,23 +60,18 @@ export function AccountMenu() {
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
-              <Link to={accountLink.path} onClick={toggleMenu}>
+              <Link to={`/${PATH.account}`} onClick={toggleMenu}>
                 <MenuItem>
-                  <img src={accountLink.icon} width={24} height={22} />
+                  <img src={accountIcon} alt="account" />
                   <span>{firstName}</span>
                 </MenuItem>
               </Link>
             </li>
             <li>
-              <Link to={logoutLink.path} onClick={handleLogout}>
+              <Link to={'/'} onClick={handleLogout}>
                 <MenuItem>
-                  <img
-                    src={logoutLink.icon}
-                    alt={logoutLink.name}
-                    width={24}
-                    height={22}
-                  />
-                  <span>{logoutLink.name}</span>
+                  <img src={logoutIcon} alt="logout" />
+                  <span>Logout</span>
                 </MenuItem>
               </Link>
             </li>

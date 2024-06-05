@@ -4,7 +4,7 @@ import { authorsReducer } from './authorsSlice'
 import { newsReducer } from './newsSlice'
 import { userReducer } from './userSlice'
 import { cartReducer } from './cartSlice'
-import { localStorageMiddleware } from 'store/middlewares'
+import { localStorageMiddleware } from './middlewares'
 
 export const store = configureStore({
   reducer: {

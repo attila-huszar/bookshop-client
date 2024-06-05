@@ -1,38 +1,24 @@
-import { PATH } from 'lib'
-import homeIcon from 'assets/svg/home.svg'
-import bookIcon from 'assets/svg/book.svg'
-import logoutIcon from 'assets/svg/logout.svg'
-import accountIcon from 'assets/svg/user_account.svg'
 import instagramIcon from 'assets/svg/instagram.svg'
 import googleIcon from 'assets/svg/google.svg'
 import fbIcon from 'assets/svg/facebook.svg'
 
-export const menuLinks = [
-  { path: '/', name: 'Home', icon: homeIcon },
-  { path: `/${PATH.books}`, name: 'Shop', icon: bookIcon },
+export const navLinks = [
+  { path: '#', name: 'About', key: 'about' },
+  { path: '#', name: 'Features', key: 'features' },
+  { path: '#', name: 'Pricing', key: 'pricing' },
+  { path: '#', name: 'Gallery', key: 'gallery' },
+  { path: '#', name: 'Team', key: 'team' },
 ]
 
-export const logoutLink = { path: '/', name: 'Logout', icon: logoutIcon }
-
-export const accountLink = { path: `/${PATH.account}`, icon: accountIcon }
-
-export const navLinks: { [key: string]: [string, string] }[] = [
-  { about: ['', 'About'] },
-  { features: ['', 'Features'] },
-  { pricing: ['', 'Pricing'] },
-  { gallery: ['', 'Gallery'] },
-  { team: ['', 'Team'] },
+export const socialLinks = [
+  { path: '#', name: 'Instagram', key: 'instagram', icon: instagramIcon },
+  { path: '#', name: 'Google', key: 'google', icon: googleIcon },
+  { path: '#', name: 'Facebook', key: 'facebook', icon: fbIcon },
 ]
 
-export const socialLinks: { [key: string]: [string, string] }[] = [
-  { instagram: ['', instagramIcon] },
-  { google: ['', googleIcon] },
-  { facebook: ['', fbIcon] },
-]
-
-export const legalLinks: { [key: string]: [string, string] }[] = [
-  { privacyPolicy: ['', 'Privacy Policy'] },
-  { termsOfUse: ['', 'Terms of Use'] },
-  { salesAndRefunds: ['', 'Sales and Refunds'] },
-  { legal: ['', 'Legal'] },
+export const legalLinks = [
+  { path: '#', name: 'Privacy Policy', key: 'privacyPolicy' },
+  { path: '#', name: 'Terms of Use', key: 'termsOfUse' },
+  { path: '#', name: 'Sales and Refunds', key: 'salesAndRefunds' },
+  { path: '#', name: 'Legal', key: 'legal' },
 ]

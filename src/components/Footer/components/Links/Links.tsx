@@ -6,20 +6,16 @@ export function Links() {
   return (
     <>
       <NavList>
-        {legalLinks.map((el) => (
-          <li key={Object.keys(el)[0]}>
-            <a href={Object.values(el)[0][0]}>{Object.values(el)[0][1]}</a>
+        {legalLinks.map((link) => (
+          <li key={link.key}>
+            <a href={link.path}>{link.name}</a>
           </li>
         ))}
       </NavList>
       <SocialLinks>
-        {socialLinks.map((el) => (
-          <a href={Object.values(el)[0][0]} key={Object.keys(el)[0]}>
-            <img
-              src={Object.values(el)[0][1]}
-              alt={Object.keys(el)[0]}
-              height={24}
-            />
+        {socialLinks.map((link) => (
+          <a href={link.path} key={link.key}>
+            <img src={link.icon} alt={link.name} height={24} />
           </a>
         ))}
       </SocialLinks>

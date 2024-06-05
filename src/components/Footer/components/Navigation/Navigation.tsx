@@ -21,9 +21,9 @@ export function Navigation() {
         </Link>
       </StyledLogo>
       <NavList>
-        {navLinks.map((el) => (
-          <li key={Object.keys(el)[0]}>
-            <a href={Object.values(el)[0][0]}>{Object.values(el)[0][1]}</a>
+        {navLinks.map((link) => (
+          <li key={link.key}>
+            <a href={link.path}>{link.name}</a>
           </li>
         ))}
       </NavList>
