@@ -1,20 +1,20 @@
-import { BOOKS, ACCOUNT } from 'routes/pathConstants'
-import HomeIcon from 'assets/svg/home.svg'
-import BookIcon from 'assets/svg/book.svg'
-import LogoutIcon from 'assets/svg/logout.svg'
-import AccountIcon from 'assets/svg/user_account.svg'
+import { PATH } from 'lib'
+import homeIcon from 'assets/svg/home.svg'
+import bookIcon from 'assets/svg/book.svg'
+import logoutIcon from 'assets/svg/logout.svg'
+import accountIcon from 'assets/svg/user_account.svg'
 import instagramIcon from 'assets/svg/instagram.svg'
 import googleIcon from 'assets/svg/google.svg'
 import fbIcon from 'assets/svg/facebook.svg'
 
 export const menuLinks = [
-  { path: '/', name: 'Home', icon: HomeIcon },
-  { path: `/${BOOKS}`, name: 'Shop', icon: BookIcon },
+  { path: '/', name: 'Home', icon: homeIcon },
+  { path: `/${PATH.books}`, name: 'Shop', icon: bookIcon },
 ]
 
-export const logoutLink = { path: '/', name: 'Logout', icon: LogoutIcon }
+export const logoutLink = { path: '/', name: 'Logout', icon: logoutIcon }
 
-export const accountLink = { path: `/${ACCOUNT}`, icon: AccountIcon }
+export const accountLink = { path: `/${PATH.account}`, icon: accountIcon }
 
 export const navLinks: { [key: string]: [string, string] }[] = [
   { about: ['', 'About'] },

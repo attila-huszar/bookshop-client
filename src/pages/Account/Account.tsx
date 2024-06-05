@@ -301,7 +301,7 @@ export function Account() {
                           </option>
                           {countryList.map((country) => (
                             <option key={country.code} value={country.code}>
-                              {country.flag} {country.name}
+                              {`${country.flag} ${country.name}`}
                             </option>
                           ))}
                         </FormikField>

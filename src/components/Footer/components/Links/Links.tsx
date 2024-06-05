@@ -15,7 +15,11 @@ export function Links() {
       <SocialLinks>
         {socialLinks.map((el) => (
           <a href={Object.values(el)[0][0]} key={Object.keys(el)[0]}>
-            <img src={Object.values(el)[0][1]} alt={Object.keys(el)[0]} />
+            <img
+              src={Object.values(el)[0][1]}
+              alt={Object.keys(el)[0]}
+              height={24}
+            />
           </a>
         ))}
       </SocialLinks>

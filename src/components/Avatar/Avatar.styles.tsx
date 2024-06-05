@@ -8,9 +8,11 @@ export const StyledAvatar = styled.button<StyleTypes>`
   height: ${({ $size }) => $size + 'px'};
   width: ${({ $size }) => $size + 'px'};
   aspect-ratio: 1;
+  border: 2px solid transparent;
   border-radius: 50%;
-  border: 2px solid var(--secondary-color);
+  outline: 2px solid var(--secondary-color);
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.2s ease-out;
 
   &::after {
@@ -22,7 +24,6 @@ export const StyledAvatar = styled.button<StyleTypes>`
     height: 100%;
     width: 100%;
     background-color: #f7f7f775;
-    border-radius: 50%;
     transition: all 0.2s ease-out;
     ${({ $clip }) => $clip && 'clip-path: inset(75% 0 0 0);'}
     ${({ $camera }) =>
@@ -38,15 +39,10 @@ export const StyledAvatar = styled.button<StyleTypes>`
     opacity: 1;
   }
 
-  img {
-    padding: 2px;
-    border-radius: 50%;
-  }
-
   svg {
     height: auto;
     width: ${({ $size }) => $size + 'px'};
-    padding: 3px;
+    padding: 4px;
     border-radius: 50%;
   }
 `

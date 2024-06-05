@@ -14,7 +14,7 @@ import {
 import { getBooksBySearch } from 'api/fetchData'
 import { searchSchema } from 'helpers'
 import { useDebounce, useClickOutside } from 'hooks'
-import { BOOKS } from 'routes'
+import { PATH } from 'lib'
 import { IBook } from 'interfaces'
 import LinkIcon from 'assets/svg/link.svg?react'
 
@@ -63,7 +63,7 @@ export function Search() {
 
   const handleSubmit = () => {
     if (searchResults.length) {
-      navigate(`/${BOOKS}/${searchResults[0].id}`)
+      navigate(`/${PATH.books}/${searchResults[0].id}`)
     }
   }
 
@@ -92,7 +92,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${BOOKS}/${book.id}`}
+                        to={`/${PATH.books}/${book.id}`}
                         onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img

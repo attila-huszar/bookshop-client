@@ -20,7 +20,7 @@ import {
   authorByIdSelector,
 } from 'store'
 import { Button, Error, Price, Recommended } from 'components'
-import { CART } from 'routes'
+import { PATH } from 'lib'
 import { IAuthor, IBook } from 'interfaces'
 
 export function Product() {
@@ -86,7 +86,7 @@ export function Product() {
           <ButtonWrapper>
             <Button
               onClick={() => {
-                isBookInCart ? navigate(`/${CART}`) : addToCart(book)
+                isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
               }}
               $withCart={!isBookInCart}
               $textSize="lg"

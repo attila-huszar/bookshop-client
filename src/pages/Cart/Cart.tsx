@@ -18,7 +18,7 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.styles'
-import { BOOKS } from 'routes'
+import { PATH } from 'lib'
 import { enforceMinMax, calcSubtotalOrDiscount } from 'helpers'
 import { ICart } from 'interfaces'
 import AddQuantityIcon from 'assets/svg/plus.svg?react'
@@ -74,7 +74,7 @@ export function Cart() {
           {cartData.map((item: ICart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${BOOKS}/${item.id}`}>
+                <Link to={`/${PATH.books}/${item.id}`}>
                   <ImageWrapper>
                     <img src={item.imgUrl} alt={item.title} />
                   </ImageWrapper>
@@ -153,7 +153,7 @@ export function Cart() {
             $size="lg"
             $textSize="lg"
             $inverted
-            onClick={() => navigate(`/${BOOKS}`)}>
+            onClick={() => navigate(`/${PATH.books}`)}>
             Continue Shopping
           </Button>
           <Button $size="lg" $textSize="lg" $withCart $shadowed>

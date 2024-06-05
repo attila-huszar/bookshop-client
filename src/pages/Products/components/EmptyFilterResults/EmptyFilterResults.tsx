@@ -9,7 +9,7 @@ import {
   setBooksFilterRating,
 } from 'store'
 import { Button } from 'components'
-import NoResultsIcon from 'assets/svg/nofilter.svg?react'
+import NoResultsIcon from 'assets/svg/empty_filter_result.svg?react'
 
 export function EmptyFilterResults() {
   const dispatch = useAppDispatch()

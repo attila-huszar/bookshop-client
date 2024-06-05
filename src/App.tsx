@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { routes } from 'routes'
+import { routes } from 'routes/routes'
 import { useAppDispatch, useLocalStorage } from 'hooks'
 import {
   fetchBooks,

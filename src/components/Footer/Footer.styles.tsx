@@ -18,7 +18,6 @@ export const StyledFooter = styled.footer`
 
 export const LeftSection = styled.section`
   grid-area: 1 / 1 / 2 / 2;
-  padding: 3rem 0;
 `
 
 export const RightSection = styled.section`

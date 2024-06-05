@@ -14,8 +14,7 @@ import {
   useClickOutside,
 } from 'hooks'
 import { userSelector, logoutUser } from 'store'
-import { logoutLink, accountLink } from 'lib'
-import { LOGIN } from 'routes'
+import { PATH, logoutLink, accountLink } from 'lib'
 import AccountIcon from 'assets/svg/account.svg?react'
 import toast from 'react-hot-toast'
 
@@ -50,7 +49,7 @@ export function AccountMenu() {
         />
       ) : (
         <IconButton
-          onClick={() => navigate(LOGIN)}
+          onClick={() => navigate(PATH.login)}
           icon={<AccountIcon />}
           title={'Login/Register'}
         />

@@ -3,14 +3,14 @@ import {
   StyledAuthorizationMenu,
   FormChangeLinks,
 } from './AuthorizationMenu.styles'
-import { LOGIN, REGISTRATION } from 'routes'
+import { PATH } from 'lib'
 
 export function AuthorizationMenu({ children }: React.PropsWithChildren) {
   return (
     <StyledAuthorizationMenu>
       <FormChangeLinks>
-        <NavLink to={`/${LOGIN}`}>Log In</NavLink>
-        <NavLink to={`/${REGISTRATION}`}>Register</NavLink>
+        <NavLink to={`/${PATH.login}`}>Log In</NavLink>
+        <NavLink to={`/${PATH.registration}`}>Register</NavLink>
       </FormChangeLinks>
       {children}
     </StyledAuthorizationMenu>

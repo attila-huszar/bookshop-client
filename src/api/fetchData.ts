@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import { URL } from './urlConstants'
-import { unsignedUploadPreset } from 'lib'
+import { URL, unsignedUploadPreset } from 'lib'
 import { passwordEncrypt } from 'helpers'
 import { IUser, IFilter } from 'interfaces'
 
