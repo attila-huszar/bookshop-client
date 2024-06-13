@@ -8,4 +8,5 @@ export const PATH = {
   account: 'account',
   cart: 'cart',
   searchOptions: 'searchOptions',
+  verify: 'verify',
 }

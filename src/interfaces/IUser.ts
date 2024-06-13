@@ -1,4 +1,5 @@
 export interface IUser {
+  id?: number
   uuid: string
   firstName: string
   lastName: string
@@ -7,9 +8,12 @@ export interface IUser {
   phone: string
   address: IAddress
   avatar: string | File | null
-  id?: number
-  createdAt?: Date
-  updatedAt?: Date
+  role: 'user' | 'admin'
+  verified: boolean
+  verificationCode: string
+  verificationCodeExpiresAt: Date
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface IAddress {
@@ -21,7 +25,10 @@ export interface IAddress {
   country: string
 }
 
-export type IUserOmitPassword = Omit<IUser, 'password'>
+export type IUserToStore = Omit<
+  IUser,
+  'password' | 'verificationCode' | 'verificationCodeExpiresAt'
+>
 
 export interface IUserUpdate {
   uuid: string

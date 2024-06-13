@@ -16,7 +16,7 @@ const menuLinks = [
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  useClickOutside(menuOpen, setMenuOpen, menuRef)
+  useClickOutside(menuRef, menuOpen, setMenuOpen)
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)

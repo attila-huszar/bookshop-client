@@ -9,7 +9,7 @@ export function AuthorizationMenu({ children }: React.PropsWithChildren) {
   return (
     <StyledAuthorizationMenu>
       <FormChangeLinks>
-        <NavLink to={`/${PATH.login}`}>Log In</NavLink>
+        <NavLink to={`/${PATH.login}`}>Login</NavLink>
         <NavLink to={`/${PATH.registration}`}>Register</NavLink>
       </FormChangeLinks>
       {children}

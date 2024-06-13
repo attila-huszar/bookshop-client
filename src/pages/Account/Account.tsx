@@ -1,15 +1,4 @@
 import { useState, useRef, ChangeEvent } from 'react'
-import { createPortal } from 'react-dom'
-import {
-  Avatar,
-  Button,
-  FormikField,
-  IconButton,
-  PasswordChange,
-} from 'components'
-import { useAppDispatch, useAppSelector, useClickOutside } from 'hooks'
-import { userSelector, updateUser } from 'store'
-import { uploadImage } from 'api/fetchData'
 import {
   StyledAccount,
   UserDataFields,
@@ -21,10 +10,15 @@ import {
   AddressLine,
   ButtonWrapper,
 } from './Account.styles'
+import { Avatar, Button, FormikField, IconButton } from 'components'
+import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
+import { useAppDispatch, useAppSelector } from 'hooks'
+import { userSelector, updateUser } from 'store'
+import { uploadImage } from 'api/fetchData'
 import { Form, Formik } from 'formik'
 import { countryList } from 'lib'
 import { accountBasicSchema, accountAddressSchema } from 'helpers'
-import { IUserOmitPassword, IAddress } from 'interfaces'
+import { IUserToStore, IAddress } from 'interfaces'
 import EditIcon from 'assets/svg/edit.svg?react'
 import toast from 'react-hot-toast'
 
@@ -32,16 +26,14 @@ export function Account() {
   const { userData } = useAppSelector(userSelector)
   const { uuid, firstName, lastName, email, phone, avatar, address } = {
     ...userData,
-  } as IUserOmitPassword
+  } as IUserToStore
   const [editingBasicInfo, setEditingBasicInfo] = useState(false)
   const [editingAddressInfo, setEditingAddressInfo] = useState(false)
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
   const inputFile = useRef<HTMLInputElement>(null)
-  const passwordRef = useRef<HTMLDivElement>(null)
+  const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
-  useClickOutside(showPasswordModal, setShowPasswordModal, passwordRef)
 
-  const handleBasicInfoSubmit = (values: Partial<IUserOmitPassword>) => {
+  const handleBasicInfoSubmit = (values: Partial<IUserToStore>) => {
     dispatch(
       updateUser({
         uuid: uuid as string,
@@ -80,7 +72,9 @@ export function Account() {
     }
   }
 
-  const openPasswordModal = () => setShowPasswordModal(true)
+  const handlePasswordDialogOpen = () => {
+    passwordDialog.current?.showModal()
+  }
 
   return (
     <StyledAccount>
@@ -111,18 +105,13 @@ export function Account() {
                 ref={inputFile}
                 style={{ display: 'none' }}
               />
-              <Button onClick={openPasswordModal} $size="sm" $textSize="sm">
+              <Button
+                onClick={handlePasswordDialogOpen}
+                $size="sm"
+                $textSize="sm">
                 Change Password
               </Button>
-              {showPasswordModal &&
-                createPortal(
-                  <PasswordChange
-                    ref={passwordRef}
-                    uuid={uuid as string}
-                    onClose={() => setShowPasswordModal(false)}
-                  />,
-                  document.getElementById('root')!,
-                )}
+              <PasswordDialogRef ref={passwordDialog} uuid={uuid as string} />
             </AvatarPanel>
             <General>
               {userData && (
@@ -132,15 +121,13 @@ export function Account() {
                   validationSchema={accountBasicSchema}
                   onSubmit={(values) => handleBasicInfoSubmit(values)}
                   onReset={handleBasicInfoReset}>
-                  {({ values, handleChange, isSubmitting }) => (
+                  {({ isSubmitting }) => (
                     <Form>
                       <GeneralLine>
                         <div>
                           <p>First name</p>
                           <FormikField
                             name="firstName"
-                            value={values.firstName}
-                            onChange={handleChange}
                             placeholder="First name"
                             type="text"
                             readOnly={!editingBasicInfo}
@@ -150,8 +137,6 @@ export function Account() {
                           <p>Last name</p>
                           <FormikField
                             name="lastName"
-                            value={values.lastName}
-                            onChange={handleChange}
                             placeholder="Last name"
                             type="text"
                             readOnly={!editingBasicInfo}
@@ -163,8 +148,6 @@ export function Account() {
                           <p>Email</p>
                           <FormikField
                             name="email"
-                            value={values.email}
-                            onChange={handleChange}
                             placeholder="Email"
                             type="email"
                             readOnly
@@ -174,8 +157,6 @@ export function Account() {
                           <p>Phone</p>
                           <FormikField
                             name="phone"
-                            value={values.phone}
-                            onChange={handleChange}
                             placeholder="Phone"
                             type="tel"
                             inputMode="numeric"
@@ -226,15 +207,13 @@ export function Account() {
                 validationSchema={accountAddressSchema}
                 onSubmit={(values: IAddress) => handleAddressInfoSubmit(values)}
                 onReset={handleAddressInfoReset}>
-                {({ values, handleChange, isSubmitting }) => (
+                {({ isSubmitting }) => (
                   <Form>
                     <AddressLine>
                       <div>
                         <p>Street</p>
                         <FormikField
                           name="street"
-                          value={values.street}
-                          onChange={handleChange}
                           placeholder="Street"
                           type="text"
                           readOnly={!editingAddressInfo}
@@ -244,8 +223,6 @@ export function Account() {
                         <p>Number</p>
                         <FormikField
                           name="number"
-                          value={values.number}
-                          onChange={handleChange}
                           placeholder="Number"
                           type="text"
                           readOnly={!editingAddressInfo}
@@ -257,8 +234,6 @@ export function Account() {
                         <p>City</p>
                         <FormikField
                           name="city"
-                          value={values.city}
-                          onChange={handleChange}
                           placeholder="City"
                           type="text"
                           readOnly={!editingAddressInfo}
@@ -268,8 +243,6 @@ export function Account() {
                         <p>State</p>
                         <FormikField
                           name="state"
-                          value={values.state}
-                          onChange={handleChange}
                           placeholder="State"
                           type="text"
                           readOnly={!editingAddressInfo}
@@ -279,8 +252,6 @@ export function Account() {
                         <p>Post Code</p>
                         <FormikField
                           name="postCode"
-                          value={values.postCode}
-                          onChange={handleChange}
                           placeholder="Post Code"
                           type="text"
                           readOnly={!editingAddressInfo}
@@ -292,8 +263,6 @@ export function Account() {
                         <p>Country</p>
                         <FormikField
                           name="country"
-                          value={values.country}
-                          onChange={handleChange}
                           type="select"
                           readOnly={!editingAddressInfo}>
                           <option value="" hidden>

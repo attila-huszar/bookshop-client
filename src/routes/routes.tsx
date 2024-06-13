@@ -10,7 +10,7 @@ import {
   NotFound,
 } from 'pages'
 import { PATH } from 'lib'
-import { ProtectedRoute, Loading } from 'components'
+import { ProtectedRoute, Loading, VerifyEmail } from 'components'
 import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
@@ -51,6 +51,10 @@ export const routes = [
       {
         path: PATH.cart,
         element: <Cart />,
+      },
+      {
+        path: PATH.verify,
+        element: <VerifyEmail />,
       },
       {
         element: <ProtectedRoute />,

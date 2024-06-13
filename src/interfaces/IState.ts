@@ -1,12 +1,5 @@
 import { SerializedError } from '@reduxjs/toolkit'
-import {
-  IBook,
-  IAuthor,
-  INews,
-  IUserOmitPassword,
-  ICart,
-  IFilter,
-} from 'interfaces'
+import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
 export interface IBookStore {
   booksData: IBook[]
@@ -36,8 +29,7 @@ export interface INewsStore {
 }
 
 export interface IUserStore {
-  userData: IUserOmitPassword | null
-  userIsVerified: boolean
+  userData: IUserToStore | null
   userIsLoading: boolean
   userError: SerializedError | null
   loginError: SerializedError | null

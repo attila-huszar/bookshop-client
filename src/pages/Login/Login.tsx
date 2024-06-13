@@ -4,30 +4,46 @@ import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
 import { AuthorizationMenu, FormikField, Button } from 'components'
 import { loginSchema } from 'helpers'
-import { useAppDispatch, useAppSelector, useLocalStorage } from 'hooks'
+import { useAppDispatch, useLocalStorage } from 'hooks'
+import { loginUser } from 'store'
 import { loginInitialValues } from 'lib'
-import { userSelector, loginUser } from 'store'
+import { IUserToStore } from 'interfaces'
 import toast from 'react-hot-toast'
 
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
-  const { userData, loginError } = useAppSelector(userSelector)
-
-  useEffect(() => {
-    if (userData) {
-      navigate('/', { replace: true })
-      toast.success(`Welcome back, ${userData.firstName}!`)
-      setToLocalStorage('uuid', userData.uuid)
-    } else if (loginError) {
-      toast.error(loginError as string)
-    }
-  }, [loginError, navigate, setToLocalStorage, userData])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  const handleSubmit = async (values: { email: string; password: string }) => {
+    const user = {
+      email: values.email,
+      password: values.password,
+    }
+
+    try {
+      const loginResponse = await dispatch(loginUser(user))
+
+      if (loginResponse.type.includes('fulfilled')) {
+        navigate('/', { replace: true })
+        toast.success(
+          `Welcome back, ${(loginResponse.payload as IUserToStore).firstName}!`,
+        )
+
+        setToLocalStorage('uuid', (loginResponse.payload as IUserToStore).uuid)
+      } else if (loginResponse.type.includes('rejected')) {
+        toast.error(loginResponse.payload as string, {
+          id: 'login-error',
+        })
+      }
+    } catch (error) {
+      toast.error(error as string)
+    }
+  }
 
   return (
     <AuthorizationMenu>
@@ -35,14 +51,9 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={(values, actions) => {
-          dispatch(
-            loginUser({ email: values.email, password: values.password }),
-          )
-          actions.setSubmitting(false)
-        }}>
+        onSubmit={(values) => handleSubmit(values)}>
         {({ isSubmitting }) => (
-          <Form>
+          <Form noValidate>
             <p>Email</p>
             <FormikField
               name="email"
@@ -58,6 +69,13 @@ export function Login() {
               type="password"
             />
             <ButtonWrapper>
+              <Button
+                type="reset"
+                disabled={isSubmitting}
+                onClick={() => navigate('/')}
+                $inverted>
+                Cancel
+              </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>

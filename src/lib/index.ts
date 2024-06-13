@@ -8,5 +8,11 @@ export {
   filterInitialValues,
   discountOptions,
 } from './defaultValues'
-export { cloudName, unsignedUploadPreset } from './envVariables'
+export {
+  cloudName,
+  unsignedUploadPreset,
+  emailjsKey,
+  emailjsService,
+  emailjsTemplate,
+} from './envVariables'
 export { countryList } from './countryList'
