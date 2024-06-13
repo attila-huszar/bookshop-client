@@ -31,26 +31,11 @@ export const ImageItem = styled.div<ReleasesTypes>`
   position: relative;
   grid-row: 1;
 
-  ${({ $idx }) => {
-    if ($idx % 3 === 0) {
-      return `
-        z-index: 3;
-        height: 20rem;
-      `
-    } else if ($idx % 3 === 1) {
-      return `
-        z-index: 2;
-        height: 18rem;
-        margin-left: -50%;
-      `
-    } else {
-      return `
-        z-index: 1;
-        height: 16rem;
-        margin-left: -100%;
-      `
-    }
-  }}
+  ${({ $idx }) =>
+    ($idx === 0 && 'height: 20rem; z-index: 2;') ||
+    ($idx === 1 && 'height: 18rem; margin-left: -50%; z-index: 1;') ||
+    ($idx === 2 && 'height: 16rem; margin-left: -100%;') ||
+    ($idx > 2 && 'display: none;')}
 
   img {
     height: 100%;

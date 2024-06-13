@@ -3,19 +3,12 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import {
-  getUserByEmail,
-  getUserByUUID,
-  postUserRegister,
-  putUser,
-  uploadImage,
-} from 'api/fetchData'
+import { getUserByEmail, getUserByUUID, putUser } from 'api/fetchData'
 import { passwordEncrypt } from 'helpers'
-import { IUser, IUserUpdate, IUserStore } from 'interfaces'
+import { IUserUpdate, IUserStore, IUserToStore } from 'interfaces'
 
 const initialState: IUserStore = {
   userData: null,
-  userIsVerified: false,
   userIsLoading: false,
   userError: null,
   loginError: null,
@@ -32,22 +25,6 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
-        state.userIsLoading = true
-        state.registerError = null
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.userIsLoading = false
-        state.userData = action.payload
-        state.userIsVerified = true
-        state.registerError = null
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.userIsLoading = false
-        state.userIsVerified = false
-        state.registerError = action.payload as SerializedError
-      })
-
       .addCase(loginUser.pending, (state) => {
         state.userIsLoading = true
         state.loginError = null
@@ -97,46 +74,45 @@ const userSlice = createSlice({
 
 export const loginUser = createAsyncThunk(
   'loginUser',
-  (user: { email: string; password: string }, { rejectWithValue }) =>
-    getUserByEmail(user.email, rejectWithValue).then((response) => {
-      if (response && response.password === passwordEncrypt(user.password)) {
-        const { password, ...userWithoutPassword } = response
-        return userWithoutPassword
+  (
+    user: { email: string; password: string },
+    { rejectWithValue },
+  ): Promise<IUserToStore> =>
+    getUserByEmail(user.email).then((response) => {
+      if (
+        response &&
+        response.verified &&
+        response.password === passwordEncrypt(user.password)
+      ) {
+        const {
+          password,
+          verificationCode,
+          verificationCodeExpiresAt,
+          ...userToStore
+        } = response
+
+        return userToStore
+      } else if (response && !response.verified) {
+        throw rejectWithValue('Please verify your email first')
       } else {
-        throw rejectWithValue('Username or password is incorrect')
+        throw rejectWithValue('User email or password is incorrect')
       }
     }),
 )
 
-export const registerUser = createAsyncThunk(
-  'registerUser',
-  async (user: IUser, { rejectWithValue }) => {
-    const response = await getUserByEmail(user.email, rejectWithValue)
-
-    if (!response) {
-      if (user.avatar instanceof File) {
-        const imageResponse = await uploadImage(user.avatar, 'avatars')
-        user.avatar = imageResponse.url
-      }
-
-      const registerResponse = await postUserRegister(user, rejectWithValue)
-      const { password, ...userWithoutPassword } = registerResponse
-      return userWithoutPassword
-    } else if (response.email === user.email) {
-      throw rejectWithValue(`${user.email} is already taken!`)
-    } else {
-      throw rejectWithValue('Registration Failed')
-    }
-  },
-)
-
 export const fetchUserByUUID = createAsyncThunk(
   'fetchUserByUUID',
-  (uuid: string, { rejectWithValue }) =>
+  (uuid: string, { rejectWithValue }): Promise<IUserToStore> =>
     getUserByUUID(uuid, rejectWithValue).then((response) => {
       if (response) {
-        const { password, ...userWithoutPassword } = response
-        return userWithoutPassword
+        const {
+          password,
+          verificationCode,
+          verificationCodeExpiresAt,
+          ...userToStore
+        } = response
+
+        return userToStore
       } else {
         throw rejectWithValue('User not found')
       }
@@ -145,17 +121,25 @@ export const fetchUserByUUID = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, fields }: IUserUpdate, { rejectWithValue }) => {
+  async (
+    { uuid, fields }: IUserUpdate,
+    { rejectWithValue },
+  ): Promise<IUserToStore> => {
     const userResponse = await getUserByUUID(uuid, rejectWithValue)
 
     if (userResponse) {
       const updatedUser = await putUser(
-        { ...userResponse, ...fields },
+        { ...userResponse, ...fields, updatedAt: new Date() },
         rejectWithValue,
       )
 
-      const { password, ...userWithoutPassword } = updatedUser
-      return userWithoutPassword
+      const {
+        password,
+        verificationCode,
+        verificationCodeExpiresAt,
+        ...userToStore
+      } = updatedUser
+      return userToStore
     } else {
       throw rejectWithValue('User not found')
     }

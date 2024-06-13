@@ -19,14 +19,14 @@ import { IBook } from 'interfaces'
 import LinkIcon from 'assets/svg/link.svg?react'
 
 export function Search() {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [searchResults, setSearchResults] = useState([] as IBook[])
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
-  useClickOutside(dropdownOpen, setDropdownOpen, searchRef)
+  useClickOutside(searchRef, searchOpen, setSearchOpen)
 
   async function getSearchResults(searchString: string) {
     if (searchString.length) {
@@ -34,10 +34,10 @@ export function Search() {
       const books = await responseBooks
 
       setSearchResults(books)
-      setDropdownOpen(true)
+      setSearchOpen(true)
     } else {
       setSearchResults([])
-      setDropdownOpen(false)
+      setSearchOpen(false)
     }
   }
 
@@ -51,12 +51,12 @@ export function Search() {
 
   const handleClick = () => {
     if (searchResults.length) {
-      setDropdownOpen(true)
+      setSearchOpen(true)
     }
   }
 
   const handleReset = (values: { search: string }) => {
-    setDropdownOpen(false)
+    setSearchOpen(false)
     values.search = ''
     setSearchResults([])
   }
@@ -86,7 +86,7 @@ export function Search() {
               onBlur={handleBlur}
               value={values.search}
             />
-            <Dropdown $show={dropdownOpen}>
+            <Dropdown $show={searchOpen}>
               {searchResults.length ? (
                 <DropdownList>
                   {searchResults.map((book) => (

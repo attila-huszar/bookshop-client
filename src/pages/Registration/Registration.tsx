@@ -2,35 +2,61 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { useAppDispatch, useAppSelector, useLocalStorage } from 'hooks'
-import { userSelector, registerUser } from 'store'
 import { AuthorizationMenu, FormikField, Button } from 'components'
+import { postUserRegister } from 'api/fetchData'
 import { registrationSchema, passwordEncrypt } from 'helpers'
 import { registrationInitialValues } from 'lib'
 import { v4 as uuidv4 } from 'uuid'
+import { IUser } from 'interfaces'
 import toast from 'react-hot-toast'
 
 export function Registration() {
-  const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { setToLocalStorage } = useLocalStorage()
-  const { userData, registerError } = useAppSelector(userSelector)
-
-  useEffect(() => {
-    if (userData) {
-      navigate('/', { replace: true })
-      toast.success(
-        `${userData.email} registered successfully! You are now logged in!`,
-      )
-      setToLocalStorage('uuid', userData.uuid)
-    } else if (registerError) {
-      toast.error(registerError as string)
-    }
-  }, [navigate, registerError, setToLocalStorage, userData])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  const handleSubmit = async (values: {
+    firstName: string
+    lastName: string
+    email: string
+    password: string
+    avatar: null | File
+  }) => {
+    const user: IUser = {
+      uuid: uuidv4(),
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      password: passwordEncrypt(values.password),
+      address: {
+        street: '',
+        number: '',
+        city: '',
+        state: '',
+        postCode: '',
+        country: '',
+      },
+      phone: '',
+      avatar: values.avatar,
+      role: 'user',
+      verified: false,
+      verificationCode: uuidv4(),
+      verificationCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    try {
+      const registerResponse = await postUserRegister(user)
+
+      navigate('/', { replace: true })
+      toast.success(registerResponse)
+    } catch (error) {
+      toast.error(error as string)
+    }
+  }
 
   return (
     <AuthorizationMenu>
@@ -38,30 +64,9 @@ export function Registration() {
         initialValues={registrationInitialValues}
         validationSchema={registrationSchema}
         validateOnBlur={false}
-        onSubmit={(values, actions) => {
-          const user = {
-            uuid: uuidv4() as string,
-            firstName: values.firstName,
-            lastName: values.lastName,
-            email: values.email,
-            password: passwordEncrypt(values.password),
-            address: {
-              street: '',
-              number: '',
-              city: '',
-              state: '',
-              postCode: '',
-              country: '',
-            },
-            phone: '',
-            avatar: values.avatar,
-          }
-
-          dispatch(registerUser(user))
-          actions.setSubmitting(false)
-        }}>
+        onSubmit={(values) => handleSubmit(values)}>
         {({ isSubmitting }) => (
-          <Form>
+          <Form noValidate>
             <p>First Name</p>
             <FormikField name="firstName" placeholder="First Name" focus />
             <p>Last Name</p>
@@ -88,8 +93,15 @@ export function Registration() {
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>
+              <Button
+                type="reset"
+                disabled={isSubmitting}
+                onClick={() => navigate('/')}
+                $inverted>
+                Cancel
+              </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit'}
+                {isSubmitting ? 'Registering...' : 'Register'}
               </Button>
             </ButtonWrapper>
           </Form>

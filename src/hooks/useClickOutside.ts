@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { RefObject, useEffect } from 'react'
 
 export const useClickOutside = (
+  ref: RefObject<HTMLElement>,
   state: boolean,
   setter: React.Dispatch<React.SetStateAction<boolean>>,
-  ref: React.RefObject<HTMLElement>,
 ): void => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -17,5 +17,5 @@ export const useClickOutside = (
     return () => {
       document.removeEventListener('mouseup', handleClickOutside)
     }
-  }, [state, setter, ref])
+  }, [ref, state, setter])
 }

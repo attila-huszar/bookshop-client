@@ -14,7 +14,7 @@ export const StyledHeader = styled.header`
   padding: 0 6.25rem;
   background-color: #ffffff85;
   backdrop-filter: blur(10px);
-  z-index: 2;
+  z-index: 3;
 `
 
 export const ExtraSpace = styled.div`
@@ -25,7 +25,7 @@ export const ExtraSpace = styled.div`
   min-width: 56rem;
   max-width: 90rem;
   background-color: var(--secondary-color);
-  z-index: 3;
+  z-index: 4;
 
   &::before {
     content: '';

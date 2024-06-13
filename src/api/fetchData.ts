@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
-import { passwordEncrypt } from 'helpers'
+import { passwordEncrypt, sendVerificationEmail } from 'helpers'
 import { IUser, IFilter } from 'interfaces'
 
 export const getBooks = async (
@@ -79,18 +79,15 @@ export const fetchNews = async (
   }
 }
 
-export const getUserByEmail = async (
-  email: string,
-  rejectWithValue: (value: unknown) => void,
-) => {
+export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {
-    const response = await axios.get(`${URL.users}?email=${email}`)
-    return response.data[0]
+    const { data } = await axios.get(`${URL.users}?email=${email}`)
+    return data.length && data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
+      throw error.message
     } else {
-      throw rejectWithValue('Unknown error occurred')
+      throw 'User not found'
     }
   }
 }
@@ -98,7 +95,7 @@ export const getUserByEmail = async (
 export const getUserByUUID = async (
   uuid: string,
   rejectWithValue: (value: unknown) => void,
-) => {
+): Promise<IUser> => {
   try {
     const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
     return data.length && data[0]
@@ -111,7 +108,7 @@ export const getUserByUUID = async (
   }
 }
 
-export const checkUserLoggedIn = async (uuid: string) => {
+export const checkUserLoggedIn = async (uuid: string): Promise<boolean> => {
   try {
     const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
     return data.length && data[0].uuid === uuid
@@ -120,18 +117,43 @@ export const checkUserLoggedIn = async (uuid: string) => {
   }
 }
 
-export const postUserRegister = async (
-  user: IUser,
-  rejectWithValue: (value: unknown) => void,
-) => {
+export const postUserRegister = async (user: IUser): Promise<string> => {
   try {
-    const response = await axios.post(`${URL.users}`, user)
-    return response.data
+    const userResponse = await getUserByEmail(user.email)
+
+    if (!userResponse) {
+      if (user.avatar instanceof File) {
+        const imageResponse = await uploadImage(user.avatar, 'avatars')
+        user.avatar = imageResponse.url
+      }
+
+      const emailVerifyResponse = await sendVerificationEmail(
+        user.email,
+        user.firstName,
+        user.verificationCode,
+      )
+
+      const registerResponse = await axios.post(`${URL.users}`, user)
+
+      if (emailVerifyResponse.status < 300 && registerResponse.status < 300) {
+        return `${user.email} registered successfully! Please verify your email address!`
+      } else if (emailVerifyResponse.status >= 300) {
+        throw emailVerifyResponse.text
+      } else if (registerResponse.status >= 300) {
+        throw registerResponse.statusText
+      } else {
+        throw 'Registration Failed'
+      }
+    } else if (userResponse.email === user.email) {
+      throw `${user.email} is already taken!`
+    } else {
+      throw 'Unknown error occurred'
+    }
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
+      throw error.message
     } else {
-      throw rejectWithValue('Unknown error occurred')
+      throw error
     }
   }
 }
@@ -139,7 +161,7 @@ export const postUserRegister = async (
 export const putUser = async (
   user: IUser,
   rejectWithValue: (value: unknown) => void,
-) => {
+): Promise<IUser> => {
   try {
     const response = await axios.put(`${URL.users}/${user.id}`, user)
     return response.data
@@ -215,10 +237,47 @@ export const verifyPassword = async (
   currentPassword: string,
 ): Promise<boolean> => {
   try {
-    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
-    return data.length && data[0].password === passwordEncrypt(currentPassword)
+    const { data }: { data: IUser[] } = await axios.get(
+      `${URL.users}?uuid=${uuid}`,
+    )
+    return data.length
+      ? data[0].password === passwordEncrypt(currentPassword)
+      : false
   } catch {
     return false
+  }
+}
+
+export const verifyEmail = async (
+  verificationCode: string,
+): Promise<string> => {
+  try {
+    const { data }: { data: IUser[] } = await axios.get(
+      `${URL.users}?verificationCode=${verificationCode}`,
+    )
+
+    if (data.length && data[0].verified) {
+      return 'Email already verified! Log in with your email and password'
+    } else if (
+      data.length &&
+      data[0].verificationCode === verificationCode &&
+      new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
+    ) {
+      const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
+        ...data[0],
+        verified: true,
+      })
+
+      if (verifyResponse.status < 300) {
+        return 'Verification successful! You can now log in'
+      } else {
+        throw verifyResponse.statusText
+      }
+    } else {
+      throw 'Verification code expired or invalid'
+    }
+  } catch (error) {
+    throw error
   }
 }
 

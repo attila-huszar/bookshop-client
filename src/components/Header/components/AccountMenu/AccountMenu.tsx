@@ -28,7 +28,7 @@ export function AccountMenu() {
   const { removeFromLocalStorage } = useLocalStorage()
   const { userData } = useAppSelector(userSelector)
   const { firstName, email, avatar } = { ...userData }
-  useClickOutside(menuOpen, setMenuOpen, menuRef)
+  useClickOutside(menuRef, menuOpen, setMenuOpen)
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)

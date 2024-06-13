@@ -15,13 +15,7 @@ export {
 } from './booksSlice'
 export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
 export { fetchAllNews } from './newsSlice'
-export {
-  fetchUserByUUID,
-  loginUser,
-  registerUser,
-  logoutUser,
-  updateUser,
-} from './userSlice'
+export { fetchUserByUUID, loginUser, logoutUser, updateUser } from './userSlice'
 export {
   cartAdd,
   cartRemove,
