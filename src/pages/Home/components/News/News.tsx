@@ -5,7 +5,7 @@ import { newsSelector } from 'store'
 import { Loading, Error, SwiperComponent } from 'components'
 
 export function News() {
-  const { newsData, newsIsLoading, newsError } = useAppSelector(newsSelector)
+  const { newsArray, newsIsLoading, newsError } = useAppSelector(newsSelector)
 
   if (newsIsLoading) {
     return <Loading />
@@ -19,7 +19,7 @@ export function News() {
     <StyledNews>
       <h2>News</h2>
       <SwiperComponent>
-        {newsData.map((newsItem) => (
+        {newsArray.map((newsItem) => (
           <NewsCard key={newsItem.id} {...newsItem} />
         ))}
       </SwiperComponent>

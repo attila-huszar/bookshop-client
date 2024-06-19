@@ -37,6 +37,9 @@ export const StyledIconButton = styled.button<StyleTypes>`
     width: ${({ $iconSize = 'md', $bordered }) =>
       $bordered ? '38px' : iconWidth[$iconSize]};
     border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
+
+    ${({ $flipHorizontal }) => $flipHorizontal && 'transform: scaleX(-1);'}
+    ${({ $flipVertical }) => $flipVertical && 'transform: scaleY(-1);'}
   }
 
   &:disabled {

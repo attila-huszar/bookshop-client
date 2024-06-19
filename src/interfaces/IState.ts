@@ -2,12 +2,14 @@ import { SerializedError } from '@reduxjs/toolkit'
 import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
 export interface IBookStore {
-  booksData: IBook[]
+  booksInShop: IBook[]
   booksViewed: IBook[]
+  booksTotal: number
+  booksCurrentPage: number
+  booksPerPage: number
   booksAreLoading: boolean
-  bookIsLoading: boolean
   booksError: SerializedError | null
-  booksRandomized: IBook[]
+  booksRecommended: IBook[]
   booksTopSellers: IBook[]
   booksReleases: IBook[]
   booksFilters: {
@@ -17,13 +19,13 @@ export interface IBookStore {
 }
 
 export interface IAuthorStore {
-  authorsData: IAuthor[]
-  authorsIsLoading: boolean
-  authorsError: SerializedError | null
+  authorArray: IAuthor[]
+  authorIsLoading: boolean
+  authorError: SerializedError | null
 }
 
 export interface INewsStore {
-  newsData: INews[]
+  newsArray: INews[]
   newsIsLoading: boolean
   newsError: SerializedError | null
 }
@@ -37,7 +39,7 @@ export interface IUserStore {
 }
 
 export interface ICartStore {
-  cartData: ICart[]
+  cartArray: ICart[]
   cartIsLoading: boolean
   cartError: SerializedError | null
 }

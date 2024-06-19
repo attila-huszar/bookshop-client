@@ -4,13 +4,13 @@ import { booksSelector } from 'store'
 import { Card, SwiperComponent } from 'components'
 
 export function Recommended() {
-  const { booksRandomized } = useAppSelector(booksSelector)
+  const { booksRecommended } = useAppSelector(booksSelector)
 
   return (
     <StyledRecommended>
       <h2>Recommended for you</h2>
       <SwiperComponent>
-        {booksRandomized.map((book) => (
+        {booksRecommended.map((book) => (
           <Card key={book.id} book={book} />
         ))}
       </SwiperComponent>

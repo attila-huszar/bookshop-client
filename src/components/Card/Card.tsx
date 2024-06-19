@@ -8,8 +8,8 @@ import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Card({ book }: { book: IBook }) {
   const navigate = useNavigate()
-  const { cartData, addToCart } = useCart()
-  const isBookInCart = cartData.some((item) => item.id === book.id)
+  const { cartArray, addToCart } = useCart()
+  const isBookInCart = cartArray.some((item) => item.id === book.id)
 
   return (
     <StyledCard>

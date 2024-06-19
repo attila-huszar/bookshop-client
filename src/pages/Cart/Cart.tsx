@@ -24,19 +24,25 @@ import { ICart } from 'interfaces'
 import AddQuantityIcon from 'assets/svg/plus.svg?react'
 import RemoveQuantityIcon from 'assets/svg/minus.svg?react'
 import RemoveFromCartIcon from 'assets/svg/bin.svg?react'
+import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Cart() {
   const navigate = useNavigate()
-  const { cartData, removeFromCart, addQuantity, removeQuantity, setQuantity } =
-    useCart()
+  const {
+    cartArray,
+    removeFromCart,
+    addQuantity,
+    removeQuantity,
+    setQuantity,
+  } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const subtotal = calcSubtotalOrDiscount(cartData, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cartData, 'discount')
+  const subtotal = calcSubtotalOrDiscount(cartArray, 'subtotal')
+  const discount = calcSubtotalOrDiscount(cartArray, 'discount')
 
   const handleRemoveQuantity = (item: ICart) => {
     if (item.quantity > 0) {
@@ -62,7 +68,7 @@ export function Cart() {
     return <Loading />
   }
 
-  if (cartData.length) {
+  if (cartArray.length) {
     return (
       <StyledCart>
         <h2>Cart</h2>
@@ -71,12 +77,18 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          {cartData.map((item: ICart) => (
+          {cartArray.map((item: ICart) => (
             <Fragment key={item.id}>
               <Book>
                 <Link to={`/${PATH.books}/${item.id}`}>
                   <ImageWrapper>
-                    <img src={item.imgUrl} alt={item.title} />
+                    <img
+                      src={item.imgUrl}
+                      alt={item.title}
+                      onError={(e) =>
+                        ((e.target as HTMLImageElement).src = imagePlaceholder)
+                      }
+                    />
                   </ImageWrapper>
                   <p>{item.title}</p>
                 </Link>

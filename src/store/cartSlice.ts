@@ -3,11 +3,11 @@ import {
   createAsyncThunk,
   createSlice,
 } from '@reduxjs/toolkit'
-import { getBooks } from 'api/fetchData'
+import { getBookById } from 'api/fetchData'
 import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
 
 const initialState: ICartStore = {
-  cartData: [],
+  cartArray: [],
   cartIsLoading: false,
   cartError: null,
 }
@@ -27,45 +27,45 @@ const cartSlice = createSlice({
         imgUrl,
       }
 
-      const existingItemIdx = state.cartData.findIndex(
+      const existingItemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
 
       if (existingItemIdx === -1) {
-        state.cartData = [...state.cartData, cartItem]
+        state.cartArray = [...state.cartArray, cartItem]
       }
     },
     cartClear: (state) => {
-      state.cartData = []
+      state.cartArray = []
     },
     cartRemove: (state, action) => {
-      state.cartData = state.cartData.filter(
+      state.cartArray = state.cartArray.filter(
         (item) => item.id !== action.payload.id,
       )
     },
     cartQuantityAdd: (state, action) => {
-      const itemIdx = state.cartData.findIndex(
+      const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartData[itemIdx].quantity < 50) {
-        state.cartData[itemIdx].quantity++
+      if (itemIdx !== -1 && state.cartArray[itemIdx].quantity < 50) {
+        state.cartArray[itemIdx].quantity++
       }
     },
     cartQuantityRemove: (state, action) => {
-      const itemIdx = state.cartData.findIndex(
+      const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartData[itemIdx].quantity > 1) {
-        state.cartData[itemIdx].quantity--
+      if (itemIdx !== -1 && state.cartArray[itemIdx].quantity > 1) {
+        state.cartArray[itemIdx].quantity--
       }
     },
     cartQuantitySet: (
       state,
       action: { payload: { cartItem: ICart; newQuantity: number } },
     ) => {
-      const itemIdx = state.cartData.findIndex(
+      const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.cartItem.id,
       )
 
@@ -74,7 +74,7 @@ const cartSlice = createSlice({
         action.payload.newQuantity >= 1 &&
         action.payload.newQuantity <= 50
       ) {
-        state.cartData[itemIdx].quantity = action.payload.newQuantity
+        state.cartArray[itemIdx].quantity = action.payload.newQuantity
       }
     },
   },
@@ -84,7 +84,7 @@ const cartSlice = createSlice({
         state.cartIsLoading = true
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
-        state.cartData = action.payload
+        state.cartArray = action.payload
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
@@ -98,7 +98,7 @@ export const fetchCartItems = createAsyncThunk(
   'fetchCartItems',
   async (cartArray: ILocalCart[], { rejectWithValue }) => {
     const promises = cartArray.map(async (item) => {
-      const book: IBook = await getBooks(`${item.id}`, rejectWithValue)
+      const book: IBook = await getBookById(item.id, rejectWithValue)
       const {
         author,
         genre,

@@ -7,7 +7,6 @@ export const StyledPasswordDialog = styled.dialog`
   border: none;
   border-radius: 10px;
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
-  z-index: 8;
 
   h2 {
     margin-bottom: 2rem;

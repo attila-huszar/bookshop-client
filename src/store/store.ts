@@ -4,7 +4,7 @@ import { authorsReducer } from './authorsSlice'
 import { newsReducer } from './newsSlice'
 import { userReducer } from './userSlice'
 import { cartReducer } from './cartSlice'
-import { localStorageMiddleware } from './middlewares'
+import { localStorageMiddleware, authorFetchMiddleware } from './middlewares'
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +15,10 @@ export const store = configureStore({
     cart: cartReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(localStorageMiddleware.middleware),
+    getDefaultMiddleware().prepend(
+      authorFetchMiddleware.middleware,
+      localStorageMiddleware.middleware,
+    ),
 })
 
 export type RootState = ReturnType<typeof store.getState>

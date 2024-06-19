@@ -3,11 +3,11 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchNews } from 'api/fetchData'
+import { getNews } from 'api/fetchData'
 import { INewsStore } from 'interfaces'
 
 const initialState: INewsStore = {
-  newsData: [],
+  newsArray: [],
   newsIsLoading: false,
   newsError: null,
 }
@@ -18,23 +18,23 @@ const newsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAllNews.pending, (state) => {
+      .addCase(fetchNews.pending, (state) => {
         state.newsIsLoading = true
       })
-      .addCase(fetchAllNews.fulfilled, (state, action) => {
+      .addCase(fetchNews.fulfilled, (state, action) => {
         state.newsIsLoading = false
-        state.newsData = action.payload
+        state.newsArray = action.payload
       })
-      .addCase(fetchAllNews.rejected, (state, action) => {
+      .addCase(fetchNews.rejected, (state, action) => {
         state.newsIsLoading = false
         state.newsError = action.payload as SerializedError
       })
   },
 })
 
-export const fetchAllNews = createAsyncThunk(
-  'fetchAllNews',
-  (_, { rejectWithValue }) => fetchNews(_, rejectWithValue),
+export const fetchNews = createAsyncThunk(
+  'fetchNews',
+  (_, { rejectWithValue }) => getNews(_, rejectWithValue),
 )
 
 export const newsReducer = newsSlice.reducer

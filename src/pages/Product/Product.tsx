@@ -13,7 +13,6 @@ import {
 import { useAppSelector, useAppDispatch, useCart } from 'hooks'
 import {
   fetchBookById,
-  fetchAuthorById,
   booksSelector,
   bookByIdSelector,
   authorsSelector,
@@ -22,10 +21,11 @@ import {
 import { Button, Error, Price, Recommended } from 'components'
 import { PATH } from 'lib'
 import { IAuthor, IBook } from 'interfaces'
+import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Product() {
   const { id } = useParams()
-  const { cartData, addToCart } = useCart()
+  const { cartArray, addToCart } = useCart()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
@@ -34,19 +34,17 @@ export function Product() {
     authorByIdSelector(book?.author as number),
   )
   const { booksError } = useAppSelector(booksSelector)
-  const { authorsError } = useAppSelector(authorsSelector)
+  const { authorError } = useAppSelector(authorsSelector)
   const RecommendedMemoized = memo(Recommended)
   const isBookInCart = useMemo(() => {
-    return cartData.some((item) => item.id === book?.id)
-  }, [cartData, book])
+    return cartArray.some((item) => item.id === book?.id)
+  }, [cartArray, book])
 
   useEffect(() => {
     if (!book && id) {
-      dispatch(fetchBookById(id))
-    } else if (!author && book) {
-      dispatch(fetchAuthorById(`${book.author}`))
+      dispatch(fetchBookById(Number(id)))
     }
-  }, [author, book, dispatch, id])
+  }, [book, dispatch, id])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -70,10 +68,17 @@ export function Product() {
         </Breadcrumb>
         <DetailsSection>
           <ImageWrapper>
-            <img src={book.imgUrl} alt={book.title} width="100%" />
+            <img
+              src={book.imgUrl}
+              alt={book.title}
+              onError={(e) =>
+                ((e.target as HTMLImageElement).src = imagePlaceholder)
+              }
+              width="100%"
+            />
           </ImageWrapper>
           <Title>{book.title}</Title>
-          <Author>{author ? author.name : (authorsError as string)}</Author>
+          <Author>{author ? author.name : (authorError as string)}</Author>
           <Price
             component="product"
             price={book.price}

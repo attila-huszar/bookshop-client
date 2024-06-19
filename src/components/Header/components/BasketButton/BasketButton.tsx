@@ -5,7 +5,7 @@ import { useCart } from 'hooks'
 import { PATH } from 'lib'
 
 export function BasketButton() {
-  const { cartData } = useCart()
+  const { cartArray } = useCart()
   const navigate = useNavigate()
 
   return (
@@ -17,9 +17,9 @@ export function BasketButton() {
         title="Basket">
         Basket
       </Button>
-      {cartData?.length ? (
+      {cartArray?.length ? (
         <CartItemCount>
-          {cartData.reduce((acc, item) => acc + item.quantity, 0)}
+          {cartArray.reduce((acc, item) => acc + item.quantity, 0)}
         </CartItemCount>
       ) : null}
     </StyledBasketButton>

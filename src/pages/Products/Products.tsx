@@ -4,22 +4,30 @@ import { StyledProducts } from './Products.styles'
 import { useAppSelector } from 'hooks'
 import { booksSelector } from 'store'
 import { Card, Loading, Error } from 'components'
-import { Filter, EmptyFilterResults } from './components'
+import { Filter, EmptyFilterResults, Pagination } from './components'
 
 export function Products() {
-  const { booksData, booksError } = useAppSelector(booksSelector)
+  const { booksInShop, booksAreLoading, booksError } =
+    useAppSelector(booksSelector)
 
   return (
     <StyledProducts>
       <ErrorBoundary fallback={<Error error={booksError} />}>
         <Suspense fallback={<Loading />}>
-          <main>
-            {booksData.length ? (
-              booksData.map((book) => <Card key={book.id} book={book} />)
+          <section>
+            {booksInShop.length ? (
+              <>
+                <div>
+                  {booksInShop.map((book) => (
+                    <Card key={book.id} book={book} />
+                  ))}
+                </div>
+                <Pagination />
+              </>
             ) : (
-              <EmptyFilterResults />
+              !booksAreLoading && <EmptyFilterResults />
             )}
-          </main>
+          </section>
         </Suspense>
         <Filter />
       </ErrorBoundary>
