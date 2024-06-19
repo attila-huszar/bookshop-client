@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Loading } from 'components'
 import { verifyEmail } from 'api/fetchData'
 import { PATH } from 'lib'
-import { StyledVerifyEmail } from './VerifyEmail.styles'
-import LoadingIcon from 'assets/svg/loading.svg?react'
 import toast from 'react-hot-toast'
 
 export function VerifyEmail() {
@@ -30,10 +29,5 @@ export function VerifyEmail() {
     }
   }, [code, navigate])
 
-  return (
-    <StyledVerifyEmail>
-      <LoadingIcon color="#fff" />
-      <p>Verifying...</p>
-    </StyledVerifyEmail>
-  )
+  return <Loading text="Verifying..." />
 }

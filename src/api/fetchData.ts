@@ -1,14 +1,82 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
 import { passwordEncrypt, sendVerificationEmail } from 'helpers'
-import { IUser, IFilter } from 'interfaces'
+import { IUser, IFilter, IBook, IAuthor } from 'interfaces'
 
 export const getBooks = async (
-  id: string | void,
+  {
+    _page,
+    _limit,
+    criteria,
+  }: {
+    _page: number
+    _limit: number
+    criteria?: IFilter
+  },
   rejectWithValue: (value: unknown) => void,
-) => {
+): Promise<{
+  books: IBook[]
+  total: number
+}> => {
   try {
-    const response = await axios.get(id ? `${URL.books}/${id}` : URL.books)
+    const params = new URLSearchParams()
+
+    params.append('_page', `${_page}`)
+    params.append('_limit', `${_limit}`)
+
+    if (criteria?.genre?.length) {
+      criteria.genre.forEach((genre) => params.append('genre', genre))
+    }
+
+    if (criteria?.price[0]) {
+      params.append('discountPrice_gte', `${criteria.price[0]}`)
+    }
+
+    if (criteria?.price[1]) {
+      params.append('discountPrice_lte', `${criteria.price[1]}`)
+    }
+
+    if (criteria?.discount === 'discountOnly') {
+      params.append('discount_gte', '1')
+    } else if (criteria?.discount === 'fullPriceOnly') {
+      params.append('discount', '0')
+    }
+
+    if (criteria?.publishYear[0]) {
+      params.append('yearOfPublishing_gte', `${criteria.publishYear[0]}`)
+    }
+
+    if (criteria?.publishYear[1]) {
+      params.append('yearOfPublishing_lte', `${criteria.publishYear[1]}`)
+    }
+
+    if (criteria?.rating && criteria.rating > 1) {
+      params.append('rating_gte', `${criteria.rating}`)
+    }
+
+    const booksResponse = await axios.get(URL.books, {
+      params,
+    })
+
+    return {
+      books: booksResponse.data,
+      total: booksResponse.headers['x-total-count'],
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getBookById = async (
+  id: number,
+  rejectWithValue: (value: unknown) => void,
+): Promise<IBook> => {
+  try {
+    const response = await axios.get(`${URL.books}/${id}`)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -22,11 +90,11 @@ export const getBooks = async (
 export const getBooksByProperty = async (
   property: string,
   rejectWithValue: (value: unknown) => void,
-) => {
+): Promise<IBook[]> => {
   try {
-    const response = await axios.get(`${URL.books}?${property}=true`)
+    const { data } = await axios.get(`${URL.books}?${property}=true`)
 
-    return response.data
+    return data
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
@@ -36,39 +104,81 @@ export const getBooksByProperty = async (
   }
 }
 
-export const getBooksBySearch = async (searchString: string) => {
+export const getBooksBySearch = async (
+  searchString: string,
+  rejectWithValue: (value: unknown) => void,
+): Promise<IBook[]> => {
   try {
     const { data } = await axios.get(`${URL.books}?title_like=${searchString}`)
-    return data
-  } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
-  }
-}
 
-export const fetchAuthors = async (
-  id: string | void,
-  rejectWithValue: (value: unknown) => void,
-) => {
-  try {
-    const response = await axios.get(id ? `${URL.authors}/${id}` : URL.authors)
-    return response.data
+    return data
   } catch (error) {
     if (error instanceof AxiosError) {
       throw rejectWithValue(error.message)
     } else {
-      throw rejectWithValue(
-        id ? 'Unable to display author' : 'Unknown error occurred',
-      )
+      throw rejectWithValue('Unknown error occurred')
     }
   }
 }
 
-export const fetchNews = async (
+export const getBooksByAuthor = async (
+  id: number,
+  rejectWithValue: (value: unknown) => void,
+): Promise<IBook[]> => {
+  try {
+    const { data } = await axios.get(`${URL.books}?author=${id}`)
+
+    return data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getAuthorById = async (
+  id: number,
+  rejectWithValue: (value: unknown) => void,
+): Promise<IAuthor> => {
+  try {
+    const { data } = await axios.get(`${URL.authors}/${id}`)
+
+    return data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getAuthorsBySearch = async (
+  searchString: string,
+  rejectWithValue: (value: unknown) => void,
+): Promise<IAuthor[]> => {
+  try {
+    const { data } = await axios.get(`${URL.authors}?name_like=${searchString}`)
+
+    return data
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw rejectWithValue(error.message)
+    } else {
+      throw rejectWithValue('Unknown error occurred')
+    }
+  }
+}
+
+export const getNews = async (
   id: string | void,
   rejectWithValue: (value: unknown) => void,
 ) => {
   try {
     const response = await axios.get(id ? `${URL.news}/${id}` : URL.news)
+
     return response.data
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -82,6 +192,7 @@ export const fetchNews = async (
 export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {
     const { data } = await axios.get(`${URL.users}?email=${email}`)
+
     return data.length && data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -98,6 +209,7 @@ export const getUserByUUID = async (
 ): Promise<IUser> => {
   try {
     const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+
     return data.length && data[0]
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -111,6 +223,7 @@ export const getUserByUUID = async (
 export const checkUserLoggedIn = async (uuid: string): Promise<boolean> => {
   try {
     const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+
     return data.length && data[0].uuid === uuid
   } catch {
     return false
@@ -164,47 +277,6 @@ export const putUser = async (
 ): Promise<IUser> => {
   try {
     const response = await axios.put(`${URL.users}/${user.id}`, user)
-    return response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getFilteredBooks = async (
-  criteria: IFilter,
-  rejectWithValue: (value: unknown) => void,
-) => {
-  try {
-    const filterString: string[] = []
-
-    criteria.genre.length &&
-      criteria.genre.forEach((genre) => {
-        filterString.push(`genre_like=${genre}`)
-      })
-
-    criteria.price[0] &&
-      filterString.push(`discountPrice_gte=${criteria.price[0]}`)
-    criteria.price[1] &&
-      filterString.push(`discountPrice_lte=${criteria.price[1]}`)
-
-    if (criteria.discount === 'discountOnly') {
-      filterString.push(`discount_gte=1`)
-    } else if (criteria.discount === 'fullPriceOnly') {
-      filterString.push(`discount=0`)
-    }
-
-    criteria.publishYear[0] &&
-      filterString.push(`yearOfPublishing_gte=${criteria.publishYear[0]}`)
-    criteria.publishYear[1] &&
-      filterString.push(`yearOfPublishing_lte=${criteria.publishYear[1]}`)
-
-    criteria.rating > 1 && filterString.push(`rating_gte=${criteria.rating}`)
-
-    const response = await axios.get(`${URL.books}?${filterString.join('&')}`)
 
     return response.data
   } catch (error) {
@@ -218,7 +290,7 @@ export const getFilteredBooks = async (
 
 export const getBookSearchOptions = async (
   rejectWithValue: (value: unknown) => void,
-) => {
+): Promise<Pick<IFilter, 'genre' | 'price' | 'publishYear'>> => {
   try {
     const response = await axios.get(URL.searchOptions)
 
@@ -240,6 +312,7 @@ export const verifyPassword = async (
     const { data }: { data: IUser[] } = await axios.get(
       `${URL.users}?uuid=${uuid}`,
     )
+
     return data.length
       ? data[0].password === passwordEncrypt(currentPassword)
       : false
@@ -289,6 +362,7 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
 
   try {
     const { data } = await axios.post(URL.cloudinaryUpload, formData)
+
     return data
   } catch (error) {
     throw error instanceof AxiosError ? error.message : 'Unknown error occurred'

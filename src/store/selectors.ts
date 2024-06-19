@@ -7,13 +7,13 @@ export const bookByIdSelector = (id: string) => (state: RootState) => {
   const bookId = Number(id)
   const findBook = (books: IBook[]) => books.find((book) => book.id === bookId)
 
-  return findBook(state.books.booksData) || findBook(state.books.booksViewed)
+  return findBook(state.books.booksInShop) || findBook(state.books.booksViewed)
 }
 
 export const authorsSelector = (state: RootState) => state.authors
 
 export const authorByIdSelector = (id: number) => (state: RootState) =>
-  state.authors.authorsData.find((author) => author.id === id)
+  state.authors.authorArray.find((author) => author.id === id)
 
 export const newsSelector = (state: RootState) => state.news
 

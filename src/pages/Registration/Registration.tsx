@@ -6,7 +6,6 @@ import { AuthorizationMenu, FormikField, Button } from 'components'
 import { postUserRegister } from 'api/fetchData'
 import { registrationSchema, passwordEncrypt } from 'helpers'
 import { registrationInitialValues } from 'lib'
-import { v4 as uuidv4 } from 'uuid'
 import { IUser } from 'interfaces'
 import toast from 'react-hot-toast'
 
@@ -25,7 +24,7 @@ export function Registration() {
     avatar: null | File
   }) => {
     const user: IUser = {
-      uuid: uuidv4(),
+      uuid: crypto.randomUUID(),
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
@@ -42,7 +41,7 @@ export function Registration() {
       avatar: values.avatar,
       role: 'user',
       verified: false,
-      verificationCode: uuidv4(),
+      verificationCode: crypto.randomUUID(),
       verificationCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       createdAt: new Date(),
       updatedAt: new Date(),

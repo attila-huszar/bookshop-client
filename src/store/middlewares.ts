@@ -1,5 +1,14 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { AppDispatch, RootState } from 'store'
+import {
+  AppDispatch,
+  RootState,
+  fetchBooks,
+  fetchBookById,
+  fetchBooksByProperty,
+  fetchBooksBySearch,
+  fetchBooksByAuthor,
+  fetchAuthorById,
+} from 'store'
 import {
   cartAdd,
   cartRemove,
@@ -7,7 +16,38 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
 } from './cartSlice'
-import { ICart, ILocalCart } from 'interfaces'
+import { IBook, ICart, ILocalCart } from 'interfaces'
+
+export const authorFetchMiddleware = createListenerMiddleware()
+
+const authorFetchMiddlewareTyped =
+  authorFetchMiddleware.startListening.withTypes<RootState, AppDispatch>()
+
+authorFetchMiddlewareTyped({
+  matcher: isAnyOf(
+    fetchBooks.fulfilled,
+    fetchBookById.fulfilled,
+    fetchBooksByProperty.fulfilled,
+    fetchBooksBySearch.fulfilled,
+    fetchBooksByAuthor.fulfilled,
+  ),
+  effect: (action, listenerApi) => {
+    if (action.type === fetchBooks.fulfilled.type) {
+      const booksFetchPayload = action.payload as { books: IBook[] }
+      booksFetchPayload.books.forEach((book) => {
+        listenerApi.dispatch(fetchAuthorById(book.author))
+      })
+    } else if (action.type === fetchBookById.fulfilled.type) {
+      const bookFetchByIdPayload = action.payload as IBook
+      listenerApi.dispatch(fetchAuthorById(bookFetchByIdPayload.author))
+    } else {
+      const booksFetchByPropsPayload = action.payload as IBook[]
+      booksFetchByPropsPayload.forEach((book) => {
+        listenerApi.dispatch(fetchAuthorById(book.author))
+      })
+    }
+  },
+})
 
 export const localStorageMiddleware = createListenerMiddleware()
 

@@ -504,17 +504,17 @@
     },
     {
       "id": 19,
-      "title": "Great Expectations",
-      "author": 1,
-      "genre": "Novel",
-      "imgUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Greatexpectations_vol1.jpg/300px-Greatexpectations_vol1.jpg",
-      "description": "The story of Pip, an orphan who rises from humble beginnings to gentleman status, and his love for the cold-hearted Estella.",
-      "yearOfPublishing": "1861",
-      "price": "23",
+      "title": "The War of the Worlds",
+      "author": 30,
+      "genre": "Science fiction",
+      "imgUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_War_of_the_Worlds_first_edition.jpg/330px-The_War_of_the_Worlds_first_edition.jpg",
+      "description": "The science fiction novel about an alien invasion of Earth.",
+      "yearOfPublishing": "1898",
+      "price": "20",
       "rating": 4.6,
-      "discount": 0,
+      "discount": 5,
       "new": false,
-      "discountPrice": 23
+      "discountPrice": 19
     },
     {
       "id": 20,
@@ -644,20 +644,6 @@
       "topSellers": true,
       "new": false,
       "discountPrice": 20.9
-    },
-    {
-      "id": 29,
-      "title": "The War of the Worlds",
-      "author": 30,
-      "genre": "Science fiction",
-      "imgUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_War_of_the_Worlds_first_edition.jpg/330px-The_War_of_the_Worlds_first_edition.jpg",
-      "description": "The science fiction novel about an alien invasion of Earth.",
-      "yearOfPublishing": "1898",
-      "price": "20",
-      "rating": 4.6,
-      "discount": 5,
-      "new": false,
-      "discountPrice": 19
     }
   ],
   "news": [

@@ -6,18 +6,23 @@ import {
 } from '@reduxjs/toolkit'
 import {
   getBooks,
+  getBookById,
+  getBooksByAuthor,
   getBooksByProperty,
+  getBooksBySearch,
   getBookSearchOptions,
-  getFilteredBooks,
 } from 'api/fetchData'
-import { getRandomBooks } from 'helpers'
-import { IBookStore, IFilter } from 'interfaces'
+import { generateUniqueRndNums } from 'helpers'
+import { RootState } from './store'
+import { IBook, IBookStore, IFilter } from 'interfaces'
 
 const initialState: IBookStore = {
-  booksData: [],
+  booksInShop: [],
   booksViewed: [],
+  booksTotal: 0,
+  booksCurrentPage: 1,
+  booksPerPage: 8,
   booksAreLoading: false,
-  bookIsLoading: false,
   booksError: null,
   booksFilters: {
     initial: {
@@ -35,7 +40,7 @@ const initialState: IBookStore = {
       rating: 0.5,
     },
   },
-  booksRandomized: [],
+  booksRecommended: [],
   booksTopSellers: [],
   booksReleases: [],
 }
@@ -44,8 +49,14 @@ const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {
-    getBooksRandomized: (state) => {
-      state.booksRandomized = getRandomBooks(state.booksData, 4)
+    incrementBooksCurrentPage: (state) => {
+      state.booksCurrentPage += 1
+    },
+    decrementBooksCurrentPage: (state) => {
+      state.booksCurrentPage -= 1
+    },
+    setBooksCurrentPage: (state, action) => {
+      state.booksCurrentPage = action.payload
     },
     setBooksFilterGenre: (state, action) => {
       if (typeof action.payload === 'string') {
@@ -86,20 +97,33 @@ const booksSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    const handleViewedBooks = (
+      state: { booksViewed: IBook[] },
+      action: { payload: IBook[] },
+    ) => {
+      action.payload.forEach((newBook) => {
+        if (
+          !state.booksViewed.some(
+            (existingBook) => existingBook.id === newBook.id,
+          )
+        ) {
+          state.booksViewed.push(newBook)
+        }
+      })
+    }
+
     builder
       .addCase(fetchBooks.pending, (state) => {
         state.booksAreLoading = true
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
-        state.booksData = action.payload
+        state.booksInShop = action.payload.books
+        state.booksTotal = Number(action.payload.total)
         state.booksAreLoading = false
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.booksError = action.payload as SerializedError
         state.booksAreLoading = false
-      })
-      .addCase(fetchBookById.pending, (state) => {
-        state.bookIsLoading = true
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
         const bookExists = state.booksViewed.some(
@@ -108,15 +132,12 @@ const booksSlice = createSlice({
         if (!bookExists) {
           state.booksViewed.push(action.payload)
         }
-        state.bookIsLoading = false
       })
       .addCase(fetchBookById.rejected, (state, action) => {
         state.booksError = action.payload as SerializedError
-        state.bookIsLoading = false
       })
-      .addCase(fetchFilteredBooks.fulfilled, (state, action) => {
-        state.booksData = action.payload
-      })
+      .addCase(fetchBooksBySearch.fulfilled, handleViewedBooks)
+      .addCase(fetchBooksByAuthor.fulfilled, handleViewedBooks)
       .addCase(fetchBookSearchOptions.fulfilled, (state, action) => {
         state.booksFilters.initial = {
           ...state.booksFilters.initial,
@@ -132,17 +153,67 @@ const booksSlice = createSlice({
           state.booksReleases = action.payload
         }
       })
+      .addCase(fetchRecommendedBooks.fulfilled, (state, action) => {
+        state.booksRecommended = action.payload
+      })
   },
 })
 
 export const fetchBooks = createAsyncThunk(
   'fetchBooks',
-  (_, { rejectWithValue }) => getBooks(_, rejectWithValue),
+  (optionalFilters: IFilter | undefined, { getState, rejectWithValue }) => {
+    const state = getState() as RootState
+    const _page: number = state.books.booksCurrentPage
+    const _limit: number = state.books.booksPerPage
+    const activeFilters = state.books.booksFilters.active
+    const initialFilters = state.books.booksFilters.initial
+
+    const filtersApplied: { [key in keyof IFilter]: boolean } = {
+      genre: activeFilters.genre.length > 0,
+      price: activeFilters.price !== initialFilters.price,
+      discount: activeFilters.discount !== initialFilters.discount,
+      publishYear: activeFilters.publishYear !== initialFilters.publishYear,
+      rating: activeFilters.rating !== initialFilters.rating,
+    }
+
+    const criteria: IFilter | undefined = optionalFilters
+      ? {
+          genre: filtersApplied.genre ? optionalFilters.genre : [],
+          price: filtersApplied.price ? optionalFilters.price : [],
+          discount: filtersApplied.discount
+            ? optionalFilters.discount
+            : 'allBooks',
+          publishYear: filtersApplied.publishYear
+            ? optionalFilters.publishYear
+            : [],
+          rating: filtersApplied.rating ? optionalFilters.rating : 0.5,
+        }
+      : undefined
+
+    return getBooks({ _page, _limit, criteria }, rejectWithValue)
+  },
 )
 
 export const fetchBookById = createAsyncThunk(
   'fetchBookById',
-  (id: string, { rejectWithValue }) => getBooks(id, rejectWithValue),
+  (id: number, { rejectWithValue }) => getBookById(id, rejectWithValue),
+)
+
+export const fetchBooksBySearch = createAsyncThunk(
+  'fetchBooksBySearch',
+  (searchString: string, { rejectWithValue }) =>
+    getBooksBySearch(searchString, rejectWithValue),
+)
+
+export const fetchBooksByAuthor = createAsyncThunk(
+  'fetchBooksByAuthor',
+  (authorId: number, { rejectWithValue }) =>
+    getBooksByAuthor(authorId, rejectWithValue),
+)
+
+export const fetchBookSearchOptions = createAsyncThunk(
+  'fetchBookSearchOptions',
+  (_, { rejectWithValue }) => getBookSearchOptions(rejectWithValue),
 )
 
 export const fetchBooksByProperty = createAsyncThunk(
@@ -151,20 +222,31 @@ export const fetchBooksByProperty = createAsyncThunk(
     getBooksByProperty(property, rejectWithValue),
 )
 
-export const fetchFilteredBooks = createAsyncThunk(
-  'fetchFilteredBooks',
-  (criteria: IFilter, { rejectWithValue }) =>
-    getFilteredBooks(criteria, rejectWithValue),
-)
+export const fetchRecommendedBooks = createAsyncThunk(
+  'fetchRecommendedBooks',
+  async (count: number, { getState, rejectWithValue }) => {
+    const state = getState() as RootState
+    const totalBooks: number = state.books.booksTotal
+    const randomBooks: IBook[] = []
 
-export const fetchBookSearchOptions = createAsyncThunk(
-  'fetchBookSearchOptions',
-  (_, { rejectWithValue }) => getBookSearchOptions(rejectWithValue),
+    if (totalBooks) {
+      const randomIdxs = generateUniqueRndNums(count, totalBooks)
+
+      for (const idx of randomIdxs) {
+        const book = await getBookById(idx, rejectWithValue)
+        randomBooks.push(book)
+      }
+    }
+
+    return randomBooks
+  },
 )
 
 export const booksReducer = booksSlice.reducer
 export const {
-  getBooksRandomized,
+  incrementBooksCurrentPage,
+  decrementBooksCurrentPage,
+  setBooksCurrentPage,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,

@@ -8,32 +8,84 @@ import {
   Dropdown,
   DropdownList,
   MenuItem,
-  ErrorItem,
+  TextBold,
+  NoResults,
   ClearButton,
 } from './Search.styles'
-import { getBooksBySearch } from 'api/fetchData'
 import { searchSchema } from 'helpers'
-import { useDebounce, useClickOutside } from 'hooks'
+import {
+  useDebounce,
+  useClickOutside,
+  useAppDispatch,
+  useAppSelector,
+} from 'hooks'
+import {
+  authorsSelector,
+  fetchAuthorsBySearch,
+  fetchBooksByAuthor,
+  fetchBooksBySearch,
+} from 'store'
 import { PATH } from 'lib'
-import { IBook } from 'interfaces'
+import { IAuthor, IBook } from 'interfaces'
 import LinkIcon from 'assets/svg/link.svg?react'
+import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
-  const [searchResults, setSearchResults] = useState([] as IBook[])
+  const [searchResults, setSearchResults] = useState<IBook[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dispatch = useAppDispatch()
+  const { authorArray } = useAppSelector(authorsSelector)
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
   useClickOutside(searchRef, searchOpen, setSearchOpen)
 
   async function getSearchResults(searchString: string) {
-    if (searchString.length) {
-      const responseBooks = getBooksBySearch(searchString)
-      const books = await responseBooks
+    if (searchString.length > 1) {
+      let booksSearched: IBook[] = []
+      let authorsSearched: IAuthor[] = []
 
-      setSearchResults(books)
+      const booksSearchResponse = await dispatch(
+        fetchBooksBySearch(searchString),
+      )
+
+      const authorsSearchResponse = await dispatch(
+        fetchAuthorsBySearch(searchString),
+      )
+
+      if (booksSearchResponse.payload) {
+        booksSearched = booksSearchResponse.payload as IBook[]
+      }
+
+      if (authorsSearchResponse.payload) {
+        authorsSearched = authorsSearchResponse.payload as IAuthor[]
+      }
+
+      if (authorsSearched.length) {
+        const authorsMatched = await Promise.allSettled(
+          authorsSearched.map((author) =>
+            dispatch(fetchBooksByAuthor(author.id)),
+          ),
+        )
+
+        authorsMatched.forEach((book) => {
+          if (book.status === 'fulfilled') {
+            const newBooks = book.value.payload as IBook[]
+            newBooks.forEach((newBook) => {
+              const exists = booksSearched.some(
+                (existingBook) => existingBook.id === newBook.id,
+              )
+              if (!exists) {
+                booksSearched.push(newBook)
+              }
+            })
+          }
+        })
+      }
+
+      setSearchResults(booksSearched)
       setSearchOpen(true)
     } else {
       setSearchResults([])
@@ -67,6 +119,11 @@ export function Search() {
     }
   }
 
+  const getAuthorName = (authorId: number, authorArray: IAuthor[]) => {
+    const author = authorArray?.find((author) => author.id === authorId)
+    return author ? author.name : 'Unknown Author'
+  }
+
   return (
     <StyledForm ref={searchRef}>
       <Formik
@@ -97,11 +154,23 @@ export function Search() {
                         <MenuItem>
                           <img
                             src={book.imgUrl}
+                            onError={(e) =>
+                              ((e.target as HTMLImageElement).src =
+                                imagePlaceholder)
+                            }
                             alt={book.title}
                             width="24"
                             height="24"
                           />
-                          <span>{book.title}</span>
+                          <div>
+                            <TextBold>{book.title}</TextBold>
+                            <p>
+                              <i>by </i>
+                              <span>
+                                {getAuthorName(book.author, authorArray)}
+                              </span>
+                            </p>
+                          </div>
                           <LinkIcon width="16" height="16" />
                         </MenuItem>
                       </Link>
@@ -110,7 +179,7 @@ export function Search() {
                 </DropdownList>
               ) : (
                 <DropdownList>
-                  <ErrorItem>No search results...</ErrorItem>
+                  <NoResults>No search results...</NoResults>
                 </DropdownList>
               )}
             </Dropdown>

@@ -3,13 +3,13 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { fetchAuthors } from 'api/fetchData'
-import { IAuthorStore } from 'interfaces'
+import { getAuthorById, getAuthorsBySearch } from 'api/fetchData'
+import { IAuthor, IAuthorStore } from 'interfaces'
 
 const initialState: IAuthorStore = {
-  authorsData: [],
-  authorsIsLoading: false,
-  authorsError: null,
+  authorArray: [],
+  authorIsLoading: false,
+  authorError: null,
 }
 
 const authorsSlice = createSlice({
@@ -17,35 +17,66 @@ const authorsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    const handlePending = (state: { authorIsLoading: boolean }) => {
+      state.authorIsLoading = true
+    }
+
+    const handleFulfilledById = (
+      state: { authorArray: IAuthor[]; authorIsLoading: boolean },
+      action: { payload: IAuthor },
+    ) => {
+      const authorExists = state.authorArray.some(
+        (author) => author.id === action.payload.id,
+      )
+      if (!authorExists) {
+        state.authorArray.push(action.payload)
+      }
+      state.authorIsLoading = false
+    }
+
+    const handleFulfilledBySearch = (
+      state: { authorArray: IAuthor[]; authorIsLoading: boolean },
+      action: { payload: IAuthor[] },
+    ) => {
+      action.payload.forEach((newAuthor) => {
+        if (
+          !state.authorArray.some(
+            (existingAuthor) => existingAuthor.id === newAuthor.id,
+          )
+        ) {
+          state.authorArray.push(newAuthor)
+        }
+      })
+      state.authorIsLoading = false
+    }
+
+    const handleRejected = (
+      state: { authorError: SerializedError | null; authorIsLoading: boolean },
+      action: { payload: unknown },
+    ) => {
+      state.authorError = action.payload as SerializedError
+      state.authorIsLoading = false
+    }
+
     builder
-      .addCase(fetchAllAuthors.pending, (state) => {
-        state.authorsIsLoading = true
-      })
-      .addCase(fetchAllAuthors.fulfilled, (state, action) => {
-        state.authorsIsLoading = false
-        state.authorsData = action.payload
-      })
-      .addCase(fetchAllAuthors.rejected, (state, action) => {
-        state.authorsIsLoading = false
-        state.authorsError = action.payload as SerializedError
-      })
-      .addCase(fetchAuthorById.fulfilled, (state, action) => {
-        state.authorsData = [...state.authorsData, action.payload]
-      })
-      .addCase(fetchAuthorById.rejected, (state, action) => {
-        state.authorsError = action.payload as SerializedError
-      })
+      .addCase(fetchAuthorById.pending, handlePending)
+      .addCase(fetchAuthorById.fulfilled, handleFulfilledById)
+      .addCase(fetchAuthorById.rejected, handleRejected)
+      .addCase(fetchAuthorsBySearch.pending, handlePending)
+      .addCase(fetchAuthorsBySearch.fulfilled, handleFulfilledBySearch)
+      .addCase(fetchAuthorsBySearch.rejected, handleRejected)
   },
 })
 
-export const fetchAllAuthors = createAsyncThunk(
-  'fetchAllAuthors',
-  (_, { rejectWithValue }) => fetchAuthors(_, rejectWithValue),
-)
-
 export const fetchAuthorById = createAsyncThunk(
   'fetchAuthorById',
-  (id: string, { rejectWithValue }) => fetchAuthors(id, rejectWithValue),
+  (id: number, { rejectWithValue }) => getAuthorById(id, rejectWithValue),
+)
+
+export const fetchAuthorsBySearch = createAsyncThunk(
+  'fetchAuthorsBySearch',
+  (searchString: string, { rejectWithValue }) =>
+    getAuthorsBySearch(searchString, rejectWithValue),
 )
 
 export const authorsReducer = authorsSlice.reducer

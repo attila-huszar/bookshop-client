@@ -139,6 +139,7 @@ export const updateUser = createAsyncThunk(
         verificationCodeExpiresAt,
         ...userToStore
       } = updatedUser
+
       return userToStore
     } else {
       throw rejectWithValue('User not found')

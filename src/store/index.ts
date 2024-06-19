@@ -3,18 +3,22 @@ export type { RootState, AppDispatch } from './store'
 export {
   fetchBooks,
   fetchBookById,
-  getBooksRandomized,
-  fetchBooksByProperty,
+  fetchBooksBySearch,
+  fetchBooksByAuthor,
   fetchBookSearchOptions,
-  fetchFilteredBooks,
+  fetchBooksByProperty,
+  fetchRecommendedBooks,
+  incrementBooksCurrentPage,
+  decrementBooksCurrentPage,
+  setBooksCurrentPage,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
 } from './booksSlice'
-export { fetchAllAuthors, fetchAuthorById } from './authorsSlice'
-export { fetchAllNews } from './newsSlice'
+export { fetchAuthorById, fetchAuthorsBySearch } from './authorsSlice'
+export { fetchNews } from './newsSlice'
 export { fetchUserByUUID, loginUser, logoutUser, updateUser } from './userSlice'
 export {
   cartAdd,

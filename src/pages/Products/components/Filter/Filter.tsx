@@ -13,12 +13,12 @@ import { useAppDispatch, useAppSelector } from 'hooks'
 import {
   booksSelector,
   fetchBooks,
-  fetchFilteredBooks,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
+  setBooksCurrentPage,
 } from 'store'
 import { Accordion, AccordionItem, IconButton } from 'components'
 import { enforceMinMax, generateFilterArray } from 'helpers'
@@ -34,10 +34,12 @@ export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)
   const dispatch = useAppDispatch()
 
-  const [priceMinInitial, priceMaxInitial] = booksFilters.initial.price
-  const [priceMin, priceMax] = booksFilters.active.price
-  const [yearMinInitial, yearMaxInitial] = booksFilters.initial.publishYear
-  const [yearMin, yearMax] = booksFilters.active.publishYear
+  const [priceMinInitial = 0, priceMaxInitial = 100] =
+    booksFilters.initial.price
+  const [priceMin = 0, priceMax = 100] = booksFilters.active.price
+  const [yearMinInitial = 1000, yearMaxInitial = 2020] =
+    booksFilters.initial.publishYear
+  const [yearMin = 1000, yearMax = 2020] = booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,
@@ -50,8 +52,9 @@ export function Filter() {
   }
 
   const handleFormSubmit = () => {
+    dispatch(setBooksCurrentPage(1))
     dispatch(
-      fetchFilteredBooks({
+      fetchBooks({
         genre: booksFilters.active.genre,
         price: generateFilterArray(
           priceMin,
@@ -72,6 +75,7 @@ export function Filter() {
   }
 
   const handleFormReset = () => {
+    dispatch(setBooksCurrentPage(1))
     dispatch(fetchBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
@@ -138,7 +142,7 @@ export function Filter() {
               </AccordionItem>
 
               <AccordionItem header="Price">
-                {booksFilters.initial.price && (
+                {booksFilters.active.price && (
                   <>
                     <Slider
                       range
@@ -192,26 +196,25 @@ export function Filter() {
               </AccordionItem>
 
               <AccordionItem header="Discount">
-                {booksFilters.initial.discount &&
-                  discountOptions.map((item) => (
-                    <DiscountRadioButtons key={item.value}>
-                      <Field
-                        type="radio"
-                        name="discount"
-                        value={item.value}
-                        id={item.value}
-                        onChange={(e: IDiscountChangeEvent) =>
-                          handleDiscountChange(e.target.value)
-                        }
-                        checked={item.value === booksFilters.active.discount}
-                      />
-                      <label htmlFor={item.value}>{item.label}</label>
-                    </DiscountRadioButtons>
-                  ))}
+                {discountOptions.map((item) => (
+                  <DiscountRadioButtons key={item.value}>
+                    <Field
+                      type="radio"
+                      name="discount"
+                      value={item.value}
+                      id={item.value}
+                      onChange={(e: IDiscountChangeEvent) =>
+                        handleDiscountChange(e.target.value)
+                      }
+                      checked={item.value === booksFilters.active.discount}
+                    />
+                    <label htmlFor={item.value}>{item.label}</label>
+                  </DiscountRadioButtons>
+                ))}
               </AccordionItem>
 
               <AccordionItem header="Publication Year">
-                {booksFilters.initial.publishYear && (
+                {booksFilters.active.publishYear && (
                   <>
                     <Slider
                       range

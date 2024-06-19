@@ -6,8 +6,8 @@ import {
   fetchBooks,
   fetchBooksByProperty,
   fetchBookSearchOptions,
-  getBooksRandomized,
-  fetchAllNews,
+  fetchRecommendedBooks,
+  fetchNews,
   fetchCartItems,
   fetchUserByUUID,
 } from 'store'
@@ -20,12 +20,10 @@ function App() {
   const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
-    dispatch(fetchBooks()).then(() => {
-      dispatch(getBooksRandomized())
-    })
+    dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
     dispatch(fetchBooksByProperty('new'))
     dispatch(fetchBooksByProperty('topSellers'))
-    dispatch(fetchAllNews())
+    dispatch(fetchNews())
     dispatch(fetchBookSearchOptions())
 
     const uuid = getFromLocalStorage<string>('uuid')

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import searchIcon from '../../../../assets/svg/search.svg'
-import clearIcon from '../../../../assets/svg/cancel-circle-stroke-rounded.svg'
+import clearIcon from '../../../../assets/svg/xmark_circle.svg'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
@@ -75,7 +75,7 @@ export const DropdownList = styled.ul`
   max-height: 14rem;
   margin-top: 6px;
   padding: 0;
-  font-size: 0.875rem;
+  font-size: 0.775rem;
   list-style: none;
   background-color: var(--white);
   border-radius: 5px;
@@ -118,9 +118,16 @@ export const MenuItem = styled.div`
   }
 `
 
-export const ErrorItem = styled.div`
+export const TextBold = styled.p`
+  font-weight: 700;
+  text-wrap: balance;
+`
+
+export const NoResults = styled.div`
   display: flex;
   align-items: center;
   height: 3.5rem;
   padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: var(--light-black);
 `

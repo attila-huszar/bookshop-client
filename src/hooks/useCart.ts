@@ -11,7 +11,7 @@ import { IBook, ICart } from 'interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()
-  const { cartData } = useAppSelector(cartSelector)
+  const { cartArray } = useAppSelector(cartSelector)
   const addToCart = (payload: IBook) => dispatch(cartAdd(payload))
   const removeFromCart = (payload: ICart) => dispatch(cartRemove(payload))
   const addQuantity = (payload: ICart) => dispatch(cartQuantityAdd(payload))
@@ -21,7 +21,7 @@ export function useCart() {
     dispatch(cartQuantitySet(payload))
 
   return {
-    cartData,
+    cartArray,
     addToCart,
     removeFromCart,
     addQuantity,
