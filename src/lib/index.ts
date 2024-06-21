@@ -15,5 +15,6 @@ export {
   emailjsService,
   emailjsTemplate,
   stripeKey,
+  googleMapsKey,
 } from './envVariables'
 export { countryList } from './countryList'

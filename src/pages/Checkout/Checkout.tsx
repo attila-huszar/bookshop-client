@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
 import {
-  loadStripe,
-  StripeElementsOptionsClientSecret,
-} from '@stripe/stripe-js'
-import { Elements } from '@stripe/react-stripe-js'
+  Elements,
+  PaymentMethodMessagingElement,
+} from '@stripe/react-stripe-js'
 import { stripeKey } from 'lib'
 import { StyledCheckout } from './Checkout.styles'
-import { CheckoutForm } from './components/CheckoutForm'
+import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
+import { AddressForm } from './components/AddressForm/AddressForm'
 import { useAppSelector } from 'hooks'
 import { cartSelector, userSelector } from 'store'
 import { postStripePayment } from 'api/fetchData'
 import { IStripePayment } from 'interfaces'
 
-const stripePromise = loadStripe(stripeKey)
+const stripe = loadStripe(stripeKey)
 
 export function Checkout() {
   const { cartArray } = useAppSelector(cartSelector)
@@ -21,25 +22,18 @@ export function Checkout() {
 
   useEffect(() => {
     const paymentData: IStripePayment = {
-      items: cartArray.map((item) => item.price * item.quantity * 100),
+      items: cartArray.map(
+        (item) =>
+          (item.price - (item.price * item.discount) / 100) *
+          item.quantity *
+          100,
+      ),
       currency: 'usd',
       receipt_email: userData?.email,
-      description: 'Book Shop order',
-      shipping: {
-        address: {
-          city: userData?.address.city,
-          country: userData?.address.country,
-          line1: userData?.address.street,
-          line2: userData?.address.number,
-          postal_code: userData?.address.postCode,
-          state: userData?.address.state,
-        },
-        name: `${userData?.firstName} ${userData?.lastName}`,
-        phone: userData?.phone,
-      },
+      description: 'Book Shop Order',
     }
 
-    if (paymentData.items.length) {
+    if (cartArray.length && userData) {
       postStripePayment(paymentData).then((response) =>
         setClientSecret(response.clientSecret),
       )
@@ -50,15 +44,17 @@ export function Checkout() {
     theme: 'stripe',
   }
 
-  const options: StripeElementsOptionsClientSecret = {
+  const options = {
     clientSecret,
     appearance,
+    business: 'Book Shop',
   }
 
   return (
     <StyledCheckout>
       {clientSecret && (
-        <Elements options={options} stripe={stripePromise}>
+        <Elements options={options} stripe={stripe}>
+          <AddressForm />
           <CheckoutForm />
         </Elements>
       )}
