@@ -7,6 +7,7 @@ import {
   Login,
   Cart,
   Account,
+  Checkout,
   NotFound,
 } from 'pages'
 import { PATH } from 'lib'
@@ -14,7 +15,7 @@ import { ProtectedRoute, Loading, VerifyEmail } from 'components'
 import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
-  import('../pages').then(({ Layout }) => ({
+  import('../pages/Layout/Layout').then(({ Layout }) => ({
     default: Layout,
   })),
 )
@@ -65,6 +66,10 @@ export const routes = [
             element: <Account />,
           },
         ],
+      },
+      {
+        path: PATH.checkout,
+        element: <Checkout />,
       },
       {
         path: '*',

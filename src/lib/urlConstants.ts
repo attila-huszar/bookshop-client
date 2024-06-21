@@ -10,4 +10,5 @@ export const URL = {
   base: import.meta.env.VITE_BASE_URL,
   verify: `${import.meta.env.VITE_BASE_URL}/${PATH.verify}`,
   cloudinaryUpload: `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
+  stripePaymentIntent: `${import.meta.env.VITE_LAMBDA_URL}/create-payment-intent`,
 }

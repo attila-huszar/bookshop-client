@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
 import { passwordEncrypt, sendVerificationEmail } from 'helpers'
-import { IUser, IFilter, IBook, IAuthor } from 'interfaces'
+import { IUser, IFilter, IBook, IAuthor, IStripePayment } from 'interfaces'
 
 export const getBooks = async (
   {
@@ -362,6 +362,18 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
 
   try {
     const { data } = await axios.post(URL.cloudinaryUpload, formData)
+
+    return data
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+  }
+}
+
+export const postStripePayment = async (
+  paymentData: IStripePayment,
+): Promise<{ clientSecret: string }> => {
+  try {
+    const { data } = await axios.post(URL.stripePaymentIntent, paymentData)
 
     return data
   } catch (error) {

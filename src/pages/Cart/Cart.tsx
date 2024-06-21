@@ -168,7 +168,12 @@ export function Cart() {
             onClick={() => navigate(`/${PATH.books}`)}>
             Continue Shopping
           </Button>
-          <Button $size="lg" $textSize="lg" $withCart $shadowed>
+          <Button
+            $size="lg"
+            $textSize="lg"
+            $withCart
+            $shadowed
+            onClick={() => navigate(`/${PATH.checkout}`)}>
             Checkout
           </Button>
         </ButtonWrapper>

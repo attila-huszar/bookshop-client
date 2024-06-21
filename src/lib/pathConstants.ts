@@ -9,4 +9,5 @@ export const PATH = {
   cart: 'cart',
   searchOptions: 'searchOptions',
   verify: 'verify',
+  checkout: 'checkout',
 }
