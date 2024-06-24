@@ -10,7 +10,6 @@ import {
   Checkout,
   NotFound,
 } from 'pages'
-import { PaymentStatus } from 'pages/Checkout/components/PaymentStatus/PaymentStatus'
 import { PATH } from 'lib'
 import { ProtectedRoute, Loading, VerifyEmail } from 'components'
 import { protectedRouteLoader } from 'helpers'
@@ -57,10 +56,6 @@ export const routes = [
       {
         path: PATH.verify,
         element: <VerifyEmail />,
-      },
-      {
-        path: PATH.payment,
-        element: <PaymentStatus />,
       },
       {
         element: <ProtectedRoute />,

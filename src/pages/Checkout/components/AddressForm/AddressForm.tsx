@@ -6,8 +6,6 @@ import { googleMapsKey } from 'lib'
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
 
-  console.log(googleMapsKey)
-
   return (
     <form>
       <AddressElement
@@ -25,18 +23,13 @@ export function AddressForm() {
               city: userData?.address.city,
               state: userData?.address.state,
               postal_code: userData?.address.postCode,
-              country: userData?.address.country,
+              country: userData?.address.country as string,
             },
           },
           autocomplete: {
             mode: 'google_maps_api',
             apiKey: googleMapsKey,
           },
-        }}
-        onChange={(event) => {
-          if (event.complete) {
-            const address = event.value.address
-          }
         }}
       />
     </form>

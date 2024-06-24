@@ -10,5 +10,4 @@ export const PATH = {
   searchOptions: 'searchOptions',
   verify: 'verify',
   checkout: 'checkout',
-  payment: 'payment',
 }

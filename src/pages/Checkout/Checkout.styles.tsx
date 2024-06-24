@@ -2,22 +2,59 @@ import styled from 'styled-components'
 
 export const StyledCheckout = styled.section`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 2rem;
-  margin: 50px 0;
+  margin: 2rem 0;
+
+  h3 {
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
 
   form {
     height: fit-content;
     width: 30vw;
     min-width: 500px;
-    padding: 40px;
+    padding: 20px 40px;
     border-radius: 10px;
     background-color: var(--white);
     box-shadow:
       0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
       0px 2px 5px 0px rgba(50, 50, 93, 0.1),
       0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
+  }
+
+  #payment-form {
+    position: relative;
+
+    > :first-child {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 5rem;
+      width: 100%;
+      border-radius: 10px 10px 0 0;
+      background: #e8e8e8;
+
+      > p {
+        color: var(--light-black);
+        font-size: 1.125rem;
+      }
+
+      > span {
+        font-size: 1.25rem;
+        font-weight: 700;
+      }
+    }
+
+    > :nth-child(2) {
+      padding-top: 5rem;
+    }
   }
 
   #email {
@@ -33,15 +70,15 @@ export const StyledCheckout = styled.section`
   }
 
   #payment-message {
-    color: rgb(105, 115, 134);
+    color: var(--light-black);
     font-size: 16px;
     line-height: 20px;
-    padding-top: 12px;
+    padding-top: 1.5rem;
     text-align: center;
   }
 
   #payment-element {
-    margin-bottom: 24px;
+    margin: 0.75rem 0;
   }
 
   button {
