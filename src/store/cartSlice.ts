@@ -131,4 +131,5 @@ export const {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
 } = cartSlice.actions

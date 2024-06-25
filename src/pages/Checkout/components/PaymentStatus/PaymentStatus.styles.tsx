@@ -32,6 +32,8 @@ export const Logo = styled.div`
   }
 `
 
+export const Success = styled.div``
+
 export const Status = styled.div`
   height: 5.5rem;
 

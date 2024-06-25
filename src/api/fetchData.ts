@@ -1,7 +1,15 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
 import { passwordEncrypt, sendVerificationEmail } from 'helpers'
-import { IUser, IFilter, IBook, IAuthor, IStripePayment } from 'interfaces'
+import {
+  IUser,
+  IFilter,
+  IBook,
+  IAuthor,
+  IStripePayment,
+  IOrder,
+  IOrderUpdate,
+} from 'interfaces'
 
 export const getBooks = async (
   {
@@ -374,6 +382,35 @@ export const postStripePayment = async (
 ): Promise<{ clientSecret: string }> => {
   try {
     const { data } = await axios.post(URL.stripePaymentIntent, paymentData)
+
+    return data
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+  }
+}
+
+export const postOrder = async (orderData: Partial<IOrder>) => {
+  try {
+    const { data } = await axios.post(URL.orders, orderData)
+
+    return data
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+  }
+}
+
+export const updateOrder = async ({ paymentId, fields }: IOrderUpdate) => {
+  try {
+    const orderResponse = await axios.get(
+      `${URL.orders}?paymentId=${paymentId}`,
+    )
+    const orderData = orderResponse.data
+
+    const { data } = await axios.put(`${URL.orders}/${orderData[0].id}`, {
+      ...orderData[0],
+      ...fields,
+      orderUpdatedAt: new Date(),
+    })
 
     return data
   } catch (error) {

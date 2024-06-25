@@ -8,8 +8,8 @@ import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
 import { useAppSelector } from 'hooks'
 import { cartSelector } from 'store'
-import { postStripePayment } from 'api/fetchData'
-import { ICart, IStripePayment } from 'interfaces'
+import { postOrder, postStripePayment } from 'api/fetchData'
+import { ICart, IOrder, IStripePayment } from 'interfaces'
 
 const stripePromise = loadStripe(stripeKey)
 
@@ -37,25 +37,35 @@ export function Checkout() {
   const [clientSecret, setClientSecret] = useState('')
   const [amount, setAmount] = useState(0)
   const [currency] = useState('usd')
+  const [orderNum, setOrderNum] = useState()
 
   const paymentResponse = useMemo(
     () => new URLSearchParams(window.location.search).get('redirect_status'),
     [],
   )
 
-  const orderNum = useMemo(() => crypto.randomUUID().split('-')[1], [])
-
   useEffect(() => {
     if (cartArray.length) {
       const total = calculateTotalAmount(cartArray)
-
       setAmount(total)
-
       const paymentData = createPaymentData(total, currency)
 
-      postStripePayment(paymentData).then((response) =>
-        setClientSecret(response.clientSecret),
-      )
+      postStripePayment(paymentData).then((paymentResponse) => {
+        setClientSecret(paymentResponse.clientSecret)
+
+        const orderData: Partial<IOrder> = {
+          paymentId: paymentResponse.clientSecret.split('_secret_')[0],
+          orderStatus: 'pending',
+          orderItems: cartArray,
+          orderTotal: Number(total.toFixed(2)),
+          orderCurrency: currency,
+          orderCreatedAt: new Date(),
+        }
+
+        postOrder(orderData).then((orderResponse) =>
+          setOrderNum(orderResponse.id),
+        )
+      })
     }
   }, [cartArray, currency])
 

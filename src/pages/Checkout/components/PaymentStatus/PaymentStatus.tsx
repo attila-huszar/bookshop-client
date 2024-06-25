@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStripe } from '@stripe/react-stripe-js'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.styles'
+import { updateOrder } from 'api/fetchData'
+import { useAppDispatch } from 'hooks'
+import { cartClear } from 'store'
 import logo from 'assets/image/logo.png'
 
 export function PaymentStatus() {
@@ -11,6 +14,7 @@ export function PaymentStatus() {
     intent: '',
     message: 'Retrieving payment status...',
   })
+  const dispatch = useAppDispatch()
 
   useEffect(() => {
     const clientSecret = new URLSearchParams(window.location.search).get(
@@ -23,37 +27,50 @@ export function PaymentStatus() {
 
     stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
       switch (paymentIntent?.status) {
-        case 'succeeded':
+        case 'succeeded': {
+          console.log(paymentIntent)
+
           setStatus({
             intent: paymentIntent.status,
             message: 'Success! Payment received.',
           })
+          updateOrder({
+            paymentId: paymentIntent.id,
+            fields: {
+              orderStatus: 'paid',
+            },
+          })
+          dispatch(cartClear())
           break
+        }
 
-        case 'processing':
+        case 'processing': {
           setStatus({
             intent: paymentIntent.status,
             message:
               "Payment processing. We'll update you when payment is received.",
           })
           break
+        }
 
-        case 'requires_payment_method':
+        case 'requires_payment_method': {
           setStatus({
             intent: paymentIntent.status,
             message: 'Payment failed. Please try another payment method.',
           })
           break
+        }
 
-        default:
+        default: {
           setStatus({
             intent: 'unknown_error',
             message: 'Something went wrong.',
           })
           break
+        }
       }
     })
-  }, [stripe])
+  }, [dispatch, stripe])
 
   return (
     <StyledPaymentStatus>

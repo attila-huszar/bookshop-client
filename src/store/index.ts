@@ -26,6 +26,7 @@ export {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
   fetchCartItems,
 } from './cartSlice'
 export {

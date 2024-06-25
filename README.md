@@ -19,28 +19,12 @@ const stripe = require("stripe")(stripeSecret);
 
 const app = express();
 app.use(express.json());
-app.use((req, res, next) => {
-    res.append('Access-Control-Allow-Origin', ['*']);
-    res.append('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.append('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
-
-const calculateOrderAmount = items => {
-  return items.reduce((a, b) => a + b, 0);
-};
 
 app.post("/create-payment-intent", async (req, res) => {
-    const {
-    items,
-    currency = "usd",
-    receipt_email,
-    description,
-    shipping,
-  } = req.body;
+  const { amount, currency, receipt_email, description, shipping } = req.body;
 
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
+    amount,
     currency,
     receipt_email,
     description,
