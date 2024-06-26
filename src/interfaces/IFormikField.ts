@@ -17,4 +17,6 @@ export interface IFormikField {
   focus?: boolean
   readOnly?: boolean
   children?: React.ReactNode
+  showPassword?: boolean
+  setShowPassword?: React.Dispatch<React.SetStateAction<boolean>>
 }

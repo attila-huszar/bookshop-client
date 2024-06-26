@@ -12,7 +12,8 @@
 
 Deployed as serverless function (AWS Lambda)
 
-```const express = require("express");
+```js
+const express = require("express");
 const serverless = require("serverless-http");
 const stripeSecret = process.env.STRIPE_SECRET;
 const stripe = require("stripe")(stripeSecret);

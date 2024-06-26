@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
@@ -14,6 +14,7 @@ export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -66,7 +67,9 @@ export function Login() {
             <FormikField
               name="password"
               placeholder="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
             />
             <ButtonWrapper>
               <Button
