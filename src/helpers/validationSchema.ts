@@ -100,11 +100,11 @@ export const accountBasicSchema = Yup.object().shape({
 })
 
 export const accountAddressSchema = Yup.object().shape({
-  street: Yup.string().required('Required'),
-  number: Yup.string().required('Required'),
+  line1: Yup.string().required('Required'),
+  line2: Yup.string(),
   city: Yup.string().required('Required'),
-  state: Yup.string(),
-  postCode: Yup.string().required('Required'),
+  state: Yup.string().required('Required'),
+  postal_code: Yup.string().required('Required'),
   country: Yup.string().required('Required'),
 })
 

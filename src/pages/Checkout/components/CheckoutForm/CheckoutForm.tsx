@@ -24,6 +24,7 @@ export function CheckoutForm({
   const { userData } = useAppSelector(userSelector)
   const [message, setMessage] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
+  const [emailInput, setEmailInput] = useState('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -37,6 +38,7 @@ export function CheckoutForm({
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
+        receipt_email: userData ? userData.email : emailInput,
         return_url: `${URL.base}/${PATH.checkout}`,
       },
     })
@@ -55,7 +57,15 @@ export function CheckoutForm({
     defaultValues: {
       billingDetails: {
         name: userData ? `${userData.firstName} ${userData.lastName}` : '',
-        email: userData?.email,
+        email: userData ? userData.email : '',
+        address: {
+          country: userData?.address?.country || '',
+          postal_code: userData?.address?.postal_code || '',
+          state: userData?.address?.state || '',
+          city: userData?.address?.city || '',
+          line1: userData?.address?.line1 || '',
+          line2: userData?.address?.line2 || '',
+        },
       },
     },
     business: {
@@ -78,6 +88,7 @@ export function CheckoutForm({
       </div>
       <LinkAuthenticationElement
         options={{ defaultValues: { email: userData?.email || '' } }}
+        onChange={(e) => setEmailInput(e.value.email)}
       />
       <PaymentElement id="payment-element" options={paymentElementOptions} />
       <button disabled={isLoading || !stripe || !elements} id="submit">

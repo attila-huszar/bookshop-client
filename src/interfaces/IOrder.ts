@@ -1,18 +1,16 @@
-import { IAddress } from './IUser'
+import { Address } from '@stripe/stripe-js'
 
 export interface IOrder {
   id?: number
   paymentId: string
-  userId: number
-  userFirstName: string
-  userLastName: string
-  userEmail: string
-  userAddress: IAddress
-  userPhone: string
   orderStatus: 'pending' | 'paid' | 'cancelled'
-  orderItems: IOrderItem[]
   orderTotal: number
   orderCurrency: string
+  orderItems: IOrderItem[]
+  userName: string | null
+  userEmail: string | null
+  userPhone: string | null
+  userAddress: Address
   orderCreatedAt: Date
   orderUpdatedAt: Date
 }

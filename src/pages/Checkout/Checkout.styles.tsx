@@ -2,8 +2,8 @@ import styled from 'styled-components'
 
 export const StyledCheckout = styled.section`
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 2rem;
   margin: 2rem 0;
 

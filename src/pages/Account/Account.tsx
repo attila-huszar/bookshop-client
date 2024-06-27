@@ -119,7 +119,10 @@ export function Account() {
                   initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values) => handleBasicInfoSubmit(values)}
+                  onSubmit={(values, actions) => {
+                    handleBasicInfoSubmit(values)
+                    actions.setSubmitting(false)
+                  }}
                   onReset={handleBasicInfoReset}>
                   {({ isSubmitting }) => (
                     <Form>
@@ -196,34 +199,37 @@ export function Account() {
             {userData && (
               <Formik
                 initialValues={{
-                  street: address.street,
-                  number: address.number,
+                  line1: address.line1,
+                  line2: address.line2,
                   city: address.city,
                   state: address.state,
-                  postCode: address.postCode,
+                  postal_code: address.postal_code,
                   country: address.country,
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values: IAddress) => handleAddressInfoSubmit(values)}
+                onSubmit={(values: IAddress, actions) => {
+                  handleAddressInfoSubmit(values)
+                  actions.setSubmitting(false)
+                }}
                 onReset={handleAddressInfoReset}>
                 {({ isSubmitting }) => (
                   <Form>
                     <AddressLine>
                       <div>
-                        <p>Street</p>
+                        <p>Address line 1</p>
                         <FormikField
-                          name="street"
-                          placeholder="Street"
+                          name="line1"
+                          placeholder="Address line 1"
                           type="text"
                           readOnly={!editingAddressInfo}
                         />
                       </div>
                       <div>
-                        <p>Number</p>
+                        <p>Address line 2 (optional)</p>
                         <FormikField
-                          name="number"
-                          placeholder="Number"
+                          name="line2"
+                          placeholder="Address line 2"
                           type="text"
                           readOnly={!editingAddressInfo}
                         />
@@ -249,10 +255,10 @@ export function Account() {
                         />
                       </div>
                       <div>
-                        <p>Post Code</p>
+                        <p>Postal Code</p>
                         <FormikField
-                          name="postCode"
-                          placeholder="Post Code"
+                          name="postal_code"
+                          placeholder="Postal Code"
                           type="text"
                           readOnly={!editingAddressInfo}
                         />

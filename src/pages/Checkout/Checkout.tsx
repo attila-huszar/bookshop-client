@@ -32,6 +32,8 @@ const createPaymentData = (
   }
 }
 
+const loader = 'auto'
+
 export function Checkout() {
   const { cartArray } = useAppSelector(cartSelector)
   const [clientSecret, setClientSecret] = useState('')
@@ -56,9 +58,9 @@ export function Checkout() {
         const orderData: Partial<IOrder> = {
           paymentId: paymentResponse.clientSecret.split('_secret_')[0],
           orderStatus: 'pending',
-          orderItems: cartArray,
           orderTotal: Number(total.toFixed(2)),
           orderCurrency: currency,
+          orderItems: cartArray,
           orderCreatedAt: new Date(),
         }
 
@@ -74,6 +76,7 @@ export function Checkout() {
     appearance: {
       theme: 'stripe',
     },
+    loader,
   }
 
   return (

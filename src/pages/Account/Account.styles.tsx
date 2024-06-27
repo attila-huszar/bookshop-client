@@ -64,20 +64,10 @@ export const GeneralLine = styled.div`
 
 export const Address = styled.div`
   > form {
-    display: flex;
-    flex-direction: column;
     width: 100%;
   }
 
-  input[name='number'] {
-    width: 10rem;
-  }
-
-  input[name='state'] {
-    width: 20rem;
-  }
-
-  input[name='postCode'] {
+  input[name='postal_code'] {
     width: 10rem;
   }
 
@@ -113,17 +103,22 @@ export const Address = styled.div`
 export const AddressLine = styled.div`
   display: flex;
   gap: 3rem;
+  margin-bottom: 1rem;
 
-  > div:first-child {
-    width: 100%;
+  &:first-child {
+    > div {
+      width: 50%;
+    }
   }
 
-  > div:not(:last-child) {
-    margin-bottom: 1rem;
+  &:nth-child(2) {
+    > div:nth-child(-n + 2) {
+      width: 100%;
+    }
   }
 
-  > div:last-child {
-    width: auto;
+  &:nth-child(3) {
+    margin-bottom: 0;
   }
 `
 

@@ -38,6 +38,10 @@ export function PaymentStatus() {
             paymentId: paymentIntent.id,
             fields: {
               orderStatus: 'paid',
+              userName: paymentIntent.shipping?.name,
+              userEmail: paymentIntent.receipt_email,
+              userPhone: paymentIntent.shipping?.phone,
+              userAddress: paymentIntent.shipping?.address,
             },
           })
           dispatch(cartClear())
