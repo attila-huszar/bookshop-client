@@ -88,8 +88,20 @@ export const ErrorMessage = styled.div<{
 
 export const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
+  position: relative;
   margin-top: 2rem;
+
+  button[type='reset'] {
+    position: absolute;
+    left: 10%;
+  }
+
+  button[type='button'] {
+    position: absolute;
+    right: 10%;
+  }
 `
 
 export const PasswordEye = styled.button`

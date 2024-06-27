@@ -1,20 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button } from 'components'
+import { AuthorizationMenu, FormikField, Button, IconButton } from 'components'
+import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from 'helpers'
 import { useAppDispatch, useLocalStorage } from 'hooks'
 import { loginUser } from 'store'
 import { loginInitialValues } from 'lib'
 import { IUserToStore } from 'interfaces'
 import toast from 'react-hot-toast'
+import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
+import QuestionIcon from 'assets/svg/question_circle.svg?react'
 
 export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
   const [showPassword, setShowPassword] = useState(false)
+  const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -46,6 +50,10 @@ export function Login() {
     }
   }
 
+  const handleDialogOpen = () => {
+    forgotPasswordDialog.current?.showModal()
+  }
+
   return (
     <AuthorizationMenu>
       <Formik
@@ -72,20 +80,32 @@ export function Login() {
               setShowPassword={setShowPassword}
             />
             <ButtonWrapper>
-              <Button
+              <IconButton
+                icon={<BackIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
                 type="reset"
+                title="Back"
                 disabled={isSubmitting}
                 onClick={() => navigate('/')}
-                $inverted>
-                Cancel
-              </Button>
+              />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
+              <IconButton
+                icon={<QuestionIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
+                type="button"
+                title="Forgot Password?"
+                disabled={isSubmitting}
+                onClick={handleDialogOpen}
+              />
             </ButtonWrapper>
           </Form>
         )}
       </Formik>
+      <ForgotPasswordRef ref={forgotPasswordDialog} />
     </AuthorizationMenu>
   )
 }

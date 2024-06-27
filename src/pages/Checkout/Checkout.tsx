@@ -69,7 +69,7 @@ export function Checkout() {
         )
       })
     }
-  }, [cartArray, currency])
+  }, [])
 
   const options: StripeElementsOptions = {
     clientSecret,

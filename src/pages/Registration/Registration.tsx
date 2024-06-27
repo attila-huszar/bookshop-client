@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button } from 'components'
+import { AuthorizationMenu, FormikField, Button, IconButton } from 'components'
 import { postUserRegister } from 'api/fetchData'
 import { registrationSchema, passwordEncrypt } from 'helpers'
 import { registrationInitialValues } from 'lib'
 import { IUser } from 'interfaces'
 import toast from 'react-hot-toast'
+import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
   const navigate = useNavigate()
@@ -97,13 +98,15 @@ export function Registration() {
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>
-              <Button
+              <IconButton
+                icon={<BackIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
                 type="reset"
+                title="Back"
                 disabled={isSubmitting}
                 onClick={() => navigate('/')}
-                $inverted>
-                Cancel
-              </Button>
+              />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}
               </Button>

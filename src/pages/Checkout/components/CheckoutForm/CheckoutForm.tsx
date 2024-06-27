@@ -38,7 +38,7 @@ export function CheckoutForm({
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        receipt_email: userData ? userData.email : emailInput,
+        receipt_email: emailInput || userData?.email,
         return_url: `${URL.base}/${PATH.checkout}`,
       },
     })
@@ -54,20 +54,6 @@ export function CheckoutForm({
 
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: 'tabs',
-    defaultValues: {
-      billingDetails: {
-        name: userData ? `${userData.firstName} ${userData.lastName}` : '',
-        email: userData ? userData.email : '',
-        address: {
-          country: userData?.address?.country || '',
-          postal_code: userData?.address?.postal_code || '',
-          state: userData?.address?.state || '',
-          city: userData?.address?.city || '',
-          line1: userData?.address?.line1 || '',
-          line2: userData?.address?.line2 || '',
-        },
-      },
-    },
     business: {
       name: 'Book Shop',
     },

@@ -28,8 +28,6 @@ export function PaymentStatus() {
     stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
       switch (paymentIntent?.status) {
         case 'succeeded': {
-          console.log(paymentIntent)
-
           setStatus({
             intent: paymentIntent.status,
             message: 'Success! Payment received.',

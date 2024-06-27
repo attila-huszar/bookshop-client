@@ -2,7 +2,7 @@ import * as Yup from 'yup'
 
 const MAX_FILE_SIZE = 512000
 const validFileExtensions = {
-  image: ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'],
+  image: ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'],
 }
 
 function isValidFileType(
@@ -10,7 +10,10 @@ function isValidFileType(
   fileType: keyof typeof validFileExtensions,
 ) {
   if (file instanceof File) {
-    return validFileExtensions[fileType].includes(file.name.split('.')[1])
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    return fileExtension
+      ? validFileExtensions[fileType].includes(fileExtension)
+      : false
   } else {
     return true
   }
