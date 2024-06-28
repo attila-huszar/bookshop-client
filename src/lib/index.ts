@@ -13,7 +13,8 @@ export {
   unsignedUploadPreset,
   emailjsKey,
   emailjsService,
-  emailjsTemplate,
+  emailjsVerificationTemplate,
+  emailjsResetPasswordTemplate,
   stripeKey,
   googleMapsKey,
 } from './envVariables'

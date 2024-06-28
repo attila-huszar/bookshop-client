@@ -3,6 +3,7 @@ import { Form, Formik } from 'formik'
 import { StyledForgotPassword } from './ForgotPassword.styles'
 import { Button, FormikField, IconButton } from 'components'
 import { ButtonWrapper } from 'styles/Form.styles'
+import { loginSchema } from 'helpers'
 import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 import toast from 'react-hot-toast'
 
@@ -35,13 +36,18 @@ function ForgotPassword(
   return (
     <StyledForgotPassword ref={forgotPassRef}>
       <h2>Forgotten Password</h2>
+      <p>
+        Enter your email address and we'll send you a link to reset your
+        password.
+      </p>
       <Formik
         initialValues={{
           email: '',
         }}
+        validationSchema={loginSchema}
         onSubmit={(values, actions) => handleSubmit(values, actions)}>
         {({ isSubmitting }) => (
-          <Form>
+          <Form noValidate>
             <p>Email</p>
             <FormikField name="email" placeholder="Email" type="email" />
             <ButtonWrapper>

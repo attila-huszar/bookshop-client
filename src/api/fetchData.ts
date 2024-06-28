@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
-import { passwordEncrypt, sendVerificationEmail } from 'helpers'
+import { passwordEncrypt, sendEmail } from 'helpers'
 import {
   IUser,
   IFilter,
@@ -248,11 +248,9 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
         user.avatar = imageResponse.url
       }
 
-      const emailVerifyResponse = await sendVerificationEmail(
-        user.email,
-        user.firstName,
-        user.verificationCode,
-      )
+      const emailVerifyResponse = await sendEmail(user.email, user.firstName, {
+        verification: user.verificationCode,
+      })
 
       const registerResponse = await axios.post(`${URL.users}`, user)
 
@@ -260,6 +258,44 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
         return `${user.email} registered successfully! Please verify your email address!`
       } else if (emailVerifyResponse.status >= 300) {
         throw emailVerifyResponse.text
+      } else if (registerResponse.status >= 300) {
+        throw registerResponse.statusText
+      } else {
+        throw 'Registration Failed'
+      }
+    } else if (userResponse.email === user.email) {
+      throw `${user.email} is already taken!`
+    } else {
+      throw 'Unknown error occurred'
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw error.message
+    } else {
+      throw error
+    }
+  }
+}
+
+export const postUserPasswordReset = async (user: IUser): Promise<string> => {
+  try {
+    const userResponse = await getUserByEmail(user.email)
+
+    if (userResponse) {
+      const passwordResetResponse = await sendEmail(
+        user.email,
+        user.firstName,
+        {
+          passwordReset: user.verificationCode,
+        },
+      )
+
+      const registerResponse = await axios.post(`${URL.users}`, user)
+
+      if (passwordResetResponse.status < 300 && registerResponse.status < 300) {
+        return `${user.email} registered successfully! Please verify your email address!`
+      } else if (passwordResetResponse.status >= 300) {
+        throw passwordResetResponse.text
       } else if (registerResponse.status >= 300) {
         throw registerResponse.statusText
       } else {

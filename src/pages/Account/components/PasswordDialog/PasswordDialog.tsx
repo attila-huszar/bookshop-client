@@ -8,12 +8,13 @@ import {
 import { Formik, Form } from 'formik'
 import { StyledPasswordDialog } from './PasswordDialog.styles'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { Button, FormikField } from 'components'
+import { Button, FormikField, IconButton } from 'components'
 import { passwordChangeInitialValues } from 'lib'
 import { accountPasswordSchema, passwordEncrypt } from 'helpers'
 import { useAppDispatch } from 'hooks'
 import { updateUser } from 'store'
 import { verifyPassword } from 'api/fetchData'
+import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 import toast from 'react-hot-toast'
 
 function PasswordDialog(
@@ -97,9 +98,14 @@ function PasswordDialog(
               setShowPassword={setShowPassword}
             />
             <ButtonWrapper>
-              <Button type="reset" onClick={handleClose} $size="sm" $inverted>
-                Cancel
-              </Button>
+              <IconButton
+                icon={<BackIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
+                type="reset"
+                title="Back"
+                onClick={handleClose}
+              />
               <Button type="submit" $size="sm" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>

@@ -13,11 +13,16 @@ export const StyledForgotPassword = styled.dialog`
     text-align: center;
   }
 
-  > form {
-    width: 20rem;
+  form {
+    width: auto;
+  }
 
-    > div {
-      margin-bottom: 1rem;
-    }
+  > :nth-child(2),
+  input {
+    width: 24rem;
+  }
+
+  > :nth-child(2) {
+    margin-bottom: 1rem;
   }
 `
