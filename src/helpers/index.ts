@@ -6,6 +6,8 @@ export {
   accountBasicSchema,
   accountAddressSchema,
   accountPasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from './validationSchema'
 export { cloudConfig } from './cloudinaryConfig'
 export { getRandomBooks } from './getRandomBooks'

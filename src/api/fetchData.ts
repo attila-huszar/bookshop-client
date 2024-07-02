@@ -277,34 +277,35 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
   }
 }
 
-export const postUserPasswordReset = async (user: IUser): Promise<string> => {
+export const postUserPasswordReset = async (email: string): Promise<string> => {
   try {
-    const userResponse = await getUserByEmail(user.email)
+    const userResponse = await getUserByEmail(email)
 
-    if (userResponse) {
-      const passwordResetResponse = await sendEmail(
-        user.email,
-        user.firstName,
+    if (userResponse && userResponse.verified) {
+      const passwordResetCode = crypto.randomUUID()
+
+      axios.patch(`${URL.users}/${userResponse.id}`, {
+        passwordResetCode,
+        passwordResetCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      })
+
+      const sendEmailResponse = await sendEmail(
+        userResponse.email,
+        userResponse.firstName,
         {
-          passwordReset: user.verificationCode,
+          passwordReset: passwordResetCode,
         },
       )
 
-      const registerResponse = await axios.post(`${URL.users}`, user)
-
-      if (passwordResetResponse.status < 300 && registerResponse.status < 300) {
-        return `${user.email} registered successfully! Please verify your email address!`
-      } else if (passwordResetResponse.status >= 300) {
-        throw passwordResetResponse.text
-      } else if (registerResponse.status >= 300) {
-        throw registerResponse.statusText
+      if (sendEmailResponse.status < 300) {
+        return 'Check your email for the password reset code!'
       } else {
-        throw 'Registration Failed'
+        throw 'Error sending email, please try again later'
       }
-    } else if (userResponse.email === user.email) {
-      throw `${user.email} is already taken!`
+    } else if (!userResponse.verified) {
+      throw 'Please verify your email address first'
     } else {
-      throw 'Unknown error occurred'
+      return 'Check your email for the password reset code!'
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -395,6 +396,46 @@ export const verifyEmail = async (
     }
   } catch (error) {
     throw error
+  }
+}
+
+export const passwordReset = async (
+  passwordResetCode: string,
+): Promise<{ success: boolean; uuid: string | null; message: string }> => {
+  try {
+    const { data }: { data: IUser[] } = await axios.get(
+      `${URL.users}?passwordResetCode=${passwordResetCode}`,
+    )
+
+    if (
+      data.length &&
+      data[0].passwordResetCode === passwordResetCode &&
+      new Date(data[0].passwordResetCodeExpiresAt!).getTime() > Date.now()
+    ) {
+      return {
+        success: true,
+        uuid: data[0].uuid,
+        message: 'Password reset initiated',
+      }
+    } else if (data.length && !data[0].verified) {
+      throw {
+        success: false,
+        uuid: null,
+        message: 'Please verify your email address first',
+      }
+    } else {
+      throw {
+        success: false,
+        uuid: null,
+        message: 'Password reset code expired or invalid',
+      }
+    }
+  } catch (error) {
+    throw {
+      success: false,
+      message:
+        error instanceof AxiosError ? error.message : 'Unknown error occurred',
+    }
   }
 }
 

@@ -23,26 +23,39 @@ export async function sendEmail(
     passwordReset?: string
   },
 ) {
-  const verification_link = `${URL.verify}?code=${code.verification}`
-  const password_reset_link = `${URL.passwordReset}?code=${code.passwordReset}`
+  const emailTemplates = {
+    verification: emailjsVerificationTemplate as string,
+    passwordReset: emailjsResetPasswordTemplate as string,
+  }
+
+  const links = {
+    verification: `${URL.verify}?code=${code.verification}`,
+    passwordReset: `${URL.passwordReset}?code=${code.passwordReset}`,
+  }
+
+  const [key] = Object.keys(code) as (keyof typeof code)[]
+  const templateId = emailTemplates[key]
+  const link = links[key]
+
+  if (!templateId || !link) {
+    throw new Error('Unable to send email')
+  }
+
+  const templateParams = {
+    to_email,
+    to_name,
+    link,
+    base_link: URL.base,
+    from_name: 'Book Store',
+  }
 
   try {
     const emailRes = await emailjs.send(
       emailjsService,
-      (code.verification && emailjsVerificationTemplate) ||
-        (code.passwordReset && emailjsResetPasswordTemplate),
-      {
-        to_email,
-        to_name,
-        link:
-          (code.verification && verification_link) ||
-          (code.passwordReset && password_reset_link),
-        base_link: URL.base,
-        from_name: 'Book Store',
-      },
+      templateId,
+      templateParams,
       optionParams,
     )
-
     return emailRes
   } catch (error) {
     throw error

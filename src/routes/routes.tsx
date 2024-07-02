@@ -11,7 +11,7 @@ import {
   NotFound,
 } from 'pages'
 import { PATH } from 'lib'
-import { ProtectedRoute, Loading, VerifyEmail } from 'components'
+import { ProtectedRoute, Loading, VerifyEmail, PasswordReset } from 'components'
 import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
@@ -56,6 +56,10 @@ export const routes = [
       {
         path: PATH.verify,
         element: <VerifyEmail />,
+      },
+      {
+        path: PATH.passwordReset,
+        element: <PasswordReset />,
       },
       {
         element: <ProtectedRoute />,

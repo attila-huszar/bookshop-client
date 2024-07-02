@@ -3,7 +3,8 @@ import { Form, Formik } from 'formik'
 import { StyledForgotPassword } from './ForgotPassword.styles'
 import { Button, FormikField, IconButton } from 'components'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { loginSchema } from 'helpers'
+import { forgotPasswordSchema } from 'helpers'
+import { postUserPasswordReset } from 'api/fetchData'
 import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 import toast from 'react-hot-toast'
 
@@ -28,9 +29,14 @@ function ForgotPassword(
     },
     actions: { resetForm: () => void },
   ) => {
-    handleClose()
-    actions.resetForm()
-    toast.success(`Email sent to ${values.email}`)
+    try {
+      const response = await postUserPasswordReset(values.email)
+      handleClose()
+      actions.resetForm()
+      toast.success(response)
+    } catch (error) {
+      toast.error(error as string)
+    }
   }
 
   return (
@@ -44,7 +50,7 @@ function ForgotPassword(
         initialValues={{
           email: '',
         }}
-        validationSchema={loginSchema}
+        validationSchema={forgotPasswordSchema}
         onSubmit={(values, actions) => handleSubmit(values, actions)}>
         {({ isSubmitting }) => (
           <Form noValidate>

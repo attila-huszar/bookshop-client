@@ -124,3 +124,17 @@ export const accountPasswordSchema = Yup.object().shape({
     .oneOf([Yup.ref('newPassword')], 'Passwords must match')
     .required('Required'),
 })
+
+export const forgotPasswordSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid Email').required('Required'),
+})
+
+export const resetPasswordSchema = Yup.object().shape({
+  newPassword: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
+    .required('Required'),
+  newPasswordConfirmation: Yup.string()
+    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+    .required('Required'),
+})

@@ -5,6 +5,7 @@ export {
   loginInitialValues,
   registrationInitialValues,
   passwordChangeInitialValues,
+  passwordResetInitialValues,
   filterInitialValues,
   discountOptions,
 } from './defaultValues'

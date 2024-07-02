@@ -20,6 +20,11 @@ export const passwordChangeInitialValues = {
   newPasswordConfirmation: '',
 }
 
+export const passwordResetInitialValues = {
+  newPassword: '',
+  newPasswordConfirmation: '',
+}
+
 export const discountOptions: {
   value: IFilter['discount']
   label: string

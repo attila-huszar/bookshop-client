@@ -7,7 +7,11 @@ export function Subscribe() {
         Subscribe to stay tuned for new product and latest updates. Let's do it!
       </p>
       <SubscribeForm>
-        <input type="text" placeholder="Enter your email address" />
+        <input
+          name="subscribe"
+          type="email"
+          placeholder="Enter your email address"
+        />
         <button type="button">Subscribe</button>
       </SubscribeForm>
     </>

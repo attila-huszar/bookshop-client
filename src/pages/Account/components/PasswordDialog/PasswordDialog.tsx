@@ -72,7 +72,7 @@ function PasswordDialog(
         validationSchema={accountPasswordSchema}
         onSubmit={(values, actions) => handleSubmit(values, actions)}>
         {({ isSubmitting }) => (
-          <Form>
+          <Form noValidate>
             <p>Current Password</p>
             <FormikField
               name="currentPassword"

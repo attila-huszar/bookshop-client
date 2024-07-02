@@ -14,6 +14,8 @@ export interface IUser {
   verified: boolean
   verificationCode: string
   verificationCodeExpiresAt: Date
+  passwordResetCode?: string
+  passwordResetCodeExpiresAt?: Date
   createdAt: Date
   updatedAt: Date
 }

@@ -105,6 +105,7 @@ export function Cart() {
                 <input
                   value={item.quantity}
                   onChange={(e) => handleSetQuantity(item, e)}
+                  title="Set quantity"
                   type="number"
                   inputMode="numeric"
                   min={1}
