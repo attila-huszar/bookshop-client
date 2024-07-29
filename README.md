@@ -10,8 +10,8 @@
 
 ## Stripe payment intent
 
-Deploy as serverless function
-Set <STRIPE_SECRET> environment variable for the cloud function
+Deploy as serverless function  
+Set <STRIPE_SECRET> environment variable for the cloud function  
 Set <VITE_STRIPE_PUBLIC_KEY> and <VITE_STRIPE_CLOUD_FUNCTION_URL> in .env file
 
 ```js
