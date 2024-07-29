@@ -29,6 +29,7 @@ export {
   cartClear,
   fetchCartItems,
 } from './cartSlice'
+export { createOrder, createPaymentIntent } from './orderSlice'
 export {
   booksSelector,
   bookByIdSelector,

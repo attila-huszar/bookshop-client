@@ -41,7 +41,7 @@ export function Checkout() {
   const [currency] = useState('usd')
   const [orderNum, setOrderNum] = useState()
 
-  const paymentResponse = useMemo(
+  const redirectStatus = useMemo(
     () => new URLSearchParams(window.location.search).get('redirect_status'),
     [],
   )
@@ -69,7 +69,7 @@ export function Checkout() {
         )
       })
     }
-  }, [])
+  }, [cartArray, currency])
 
   const options: StripeElementsOptions = {
     clientSecret,
@@ -83,7 +83,7 @@ export function Checkout() {
     <StyledCheckout>
       {clientSecret && (
         <Elements options={options} stripe={stripePromise} key={clientSecret}>
-          {paymentResponse === 'succeeded' ? (
+          {redirectStatus === 'succeeded' ? (
             <PaymentStatus />
           ) : (
             <>

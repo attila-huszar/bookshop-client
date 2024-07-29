@@ -1,7 +1,7 @@
 export type { IBook } from './IBook'
 export type { IAuthor } from './IAuthor'
 export type { INews } from './INews'
-export type { IUser, IUserToStore, IUserUpdate, IAddress } from './IUser'
+export type { IUser, IUserToStore, IUserUpdate } from './IUser'
 export type { ICart, ILocalCart } from './ICart'
 export type {
   IBookStore,
@@ -9,6 +9,7 @@ export type {
   INewsStore,
   IUserStore,
   ICartStore,
+  IOrderStore,
 } from './IState'
 export type { IPriceProps } from './IPriceProps'
 export type { ISwiper } from './ISwiper'

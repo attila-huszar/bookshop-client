@@ -10,7 +10,9 @@
 
 ## Stripe payment intent
 
-Deployed as serverless function (AWS Lambda)
+Deploy as serverless function
+Set <STRIPE_SECRET> environment variable for the cloud function
+Set <VITE_STRIPE_PUBLIC_KEY> and <VITE_STRIPE_CLOUD_FUNCTION_URL> in .env file
 
 ```js
 const express = require("express");

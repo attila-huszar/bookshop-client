@@ -454,6 +454,16 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   }
 }
 
+export const postOrder = async (orderData: Partial<IOrder>) => {
+  try {
+    const { data } = await axios.post(URL.orders, orderData)
+
+    return data
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Error creating order'
+  }
+}
+
 export const postStripePayment = async (
   paymentData: IStripePayment,
 ): Promise<{ clientSecret: string }> => {
@@ -462,17 +472,9 @@ export const postStripePayment = async (
 
     return data
   } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
-  }
-}
-
-export const postOrder = async (orderData: Partial<IOrder>) => {
-  try {
-    const { data } = await axios.post(URL.orders, orderData)
-
-    return data
-  } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+    throw error instanceof AxiosError
+      ? error.message
+      : 'Error creating payment intent'
   }
 }
 
@@ -491,6 +493,6 @@ export const updateOrder = async ({ paymentId, fields }: IOrderUpdate) => {
 
     return data
   } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+    throw error instanceof AxiosError ? error.message : 'Error updating order'
   }
 }

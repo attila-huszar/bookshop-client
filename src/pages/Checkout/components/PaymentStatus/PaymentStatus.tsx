@@ -93,7 +93,9 @@ export function PaymentStatus() {
         )}
       </Status>
       <p>{status.message}</p>
-      <button onClick={() => navigate('/')}>Back to home</button>
+      <button onClick={() => navigate('/')} type="button">
+        Back to home
+      </button>
     </StyledPaymentStatus>
   )
 }
