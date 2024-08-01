@@ -27,3 +27,22 @@ export interface IOrderUpdate {
   paymentId: string
   fields: Partial<IOrder>
 }
+
+export interface IStripePaymentIntent {
+  amount: number
+  currency: string
+  description: string
+}
+
+export interface ICreateOrder {
+  orderToStripe: IStripePaymentIntent
+  orderToServer: Pick<
+    IOrder,
+    | 'paymentId'
+    | 'orderStatus'
+    | 'orderTotal'
+    | 'orderCurrency'
+    | 'orderItems'
+    | 'orderCreatedAt'
+  >
+}

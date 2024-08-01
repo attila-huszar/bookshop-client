@@ -56,4 +56,11 @@ export const StyledButton = styled.button<StyleTypes>`
     background-color: var(--primary-faded);
     outline: 3px solid var(--primary-faded);
   }
+
+  div {
+    display: flex;
+    justify-content: center;
+    width: 15%;
+    max-height: 50%;
+  }
 `

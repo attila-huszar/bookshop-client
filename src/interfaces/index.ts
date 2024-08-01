@@ -18,5 +18,9 @@ export type { IFormikField } from './IFormikField'
 export type { IFilter } from './IFilter'
 export type { IInputEvent, IDiscountChangeEvent } from './IInputEvent'
 export type { IFetchParams } from './IFetchParams'
-export type { IStripePayment } from './IStripePayment'
-export type { IOrder, IOrderUpdate } from './IOrder'
+export type {
+  IOrder,
+  IOrderUpdate,
+  IStripePaymentIntent,
+  ICreateOrder,
+} from './IOrder'

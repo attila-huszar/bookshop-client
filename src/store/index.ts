@@ -29,7 +29,7 @@ export {
   cartClear,
   fetchCartItems,
 } from './cartSlice'
-export { createOrder, createPaymentIntent } from './orderSlice'
+export { createOrder } from './orderSlice'
 export {
   booksSelector,
   bookByIdSelector,
@@ -38,4 +38,5 @@ export {
   newsSelector,
   userSelector,
   cartSelector,
+  orderSelector,
 } from './selectors'

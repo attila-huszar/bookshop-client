@@ -3,15 +3,17 @@ import {
   createAsyncThunk,
   SerializedError,
 } from '@reduxjs/toolkit'
-import { postStripePayment, postOrder, updateOrder } from 'api/fetchData'
-import { IOrder, IOrderStore, IStripePayment } from 'interfaces'
+import { postStripePayment, postOrder } from 'api/fetchData'
+import { ICreateOrder, IOrderStore } from 'interfaces'
 
 const initialState: IOrderStore = {
-  orderData: null,
   orderStatus: {
     intent: null,
-    clientSecret: null,
+    clientSecret: undefined,
+    amount: null,
+    currency: null,
   },
+  orderIsLoading: false,
   orderError: null,
 }
 
@@ -23,37 +25,37 @@ const orderSlice = createSlice({
       state.orderStatus.intent = action.payload
     },
     clearOrder: (state) => {
-      state.orderData = null
       state.orderStatus = {
         intent: null,
-        clientSecret: null,
+        clientSecret: undefined,
+        amount: null,
+        currency: null,
       }
       state.orderError = null
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createOrder.fulfilled, (state, action) => {
-        state.orderData = action.payload
+      .addCase(createOrder.pending, (state) => {
+        state.orderIsLoading = true
         state.orderError = null
       })
-      .addCase(createOrder.rejected, (state, action) => {
-        state.orderError = action.payload as SerializedError
-        state.orderData = null
-      })
-
-      .addCase(createPaymentIntent.fulfilled, (state, action) => {
+      .addCase(createOrder.fulfilled, (state, action) => {
         state.orderStatus = {
           intent: 'processing',
-          clientSecret: action.payload,
+          clientSecret: action.payload.clientSecret,
+          amount: action.payload.amount,
+          currency: action.payload.currency,
         }
-        state.orderError = null
       })
-      .addCase(createPaymentIntent.rejected, (state, action) => {
+      .addCase(createOrder.rejected, (state, action) => {
         state.orderStatus = {
           intent: null,
-          clientSecret: null,
+          clientSecret: undefined,
+          amount: null,
+          currency: null,
         }
+        state.orderIsLoading = false
         state.orderError = action.payload as SerializedError
       })
   },
@@ -61,18 +63,31 @@ const orderSlice = createSlice({
 
 export const createOrder = createAsyncThunk(
   'createOrder',
-  (order: Partial<IOrder>, { rejectWithValue }) =>
-    postOrder(order)
-      .then((response) => response)
-      .catch((error) => rejectWithValue(error)),
-)
+  async (
+    order: ICreateOrder,
+    { rejectWithValue },
+  ): Promise<{
+    clientSecret: string
+    amount: number
+    currency: string
+  }> => {
+    try {
+      const stripeResponse = await postStripePayment(order.orderToStripe)
+      const clientSecret = stripeResponse.clientSecret
 
-export const createPaymentIntent = createAsyncThunk(
-  'createPaymentIntent',
-  (paymentData: IStripePayment, { rejectWithValue }) =>
-    postStripePayment(paymentData)
-      .then((response) => response.clientSecret)
-      .catch((error) => rejectWithValue(error)),
+      order.orderToServer.paymentId = clientSecret.split('_secret_')[0]
+
+      await postOrder(order.orderToServer)
+
+      return {
+        clientSecret,
+        amount: order.orderToStripe.amount,
+        currency: order.orderToStripe.currency,
+      }
+    } catch (error) {
+      throw rejectWithValue(error)
+    }
+  },
 )
 
 export const orderReducer = orderSlice.reducer

@@ -1,14 +1,6 @@
 import { SerializedError } from '@reduxjs/toolkit'
 import { PaymentIntent } from '@stripe/stripe-js'
-import {
-  IBook,
-  IAuthor,
-  INews,
-  IUserToStore,
-  ICart,
-  IFilter,
-  IOrder,
-} from 'interfaces'
+import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
 export interface IBookStore {
   booksInShop: IBook[]
@@ -54,10 +46,12 @@ export interface ICartStore {
 }
 
 export interface IOrderStore {
-  orderData: IOrder | null
   orderStatus: {
     intent: PaymentIntent.Status | null
-    clientSecret: string | null
+    clientSecret: string | undefined
+    amount: number | null
+    currency: string | null
   }
+  orderIsLoading: boolean
   orderError: SerializedError | null
 }

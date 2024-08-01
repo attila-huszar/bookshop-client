@@ -42,7 +42,7 @@ export function PaymentStatus() {
               userAddress: paymentIntent.shipping?.address,
             },
           })
-          dispatch(cartClear())
+          localStorage.removeItem('cart')
           break
         }
 
@@ -72,7 +72,7 @@ export function PaymentStatus() {
         }
       }
     })
-  }, [dispatch, stripe])
+  }, [stripe])
 
   return (
     <StyledPaymentStatus>
@@ -93,7 +93,12 @@ export function PaymentStatus() {
         )}
       </Status>
       <p>{status.message}</p>
-      <button onClick={() => navigate('/')} type="button">
+      <button
+        onClick={() => {
+          dispatch(cartClear())
+          navigate('/')
+        }}
+        type="button">
         Back to home
       </button>
     </StyledPaymentStatus>

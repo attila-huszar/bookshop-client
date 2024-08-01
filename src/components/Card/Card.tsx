@@ -29,7 +29,7 @@ export function Card({ book }: { book: IBook }) {
               e.preventDefault()
               isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
             }}
-            $withCart={!isBookInCart}>
+            $withCartAdd={!isBookInCart}>
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}
           </Button>
         </Details>

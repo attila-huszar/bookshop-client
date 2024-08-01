@@ -26,7 +26,7 @@ export function NotFound() {
         <h4>The page you're looking for doesn't exist or has been moved.</h4>
       </NotFoundSection>
       <BackButton type="button" onClick={handleGoBack}>
-        Go Home
+        Go Back
       </BackButton>
     </StyledNotFound>
   )

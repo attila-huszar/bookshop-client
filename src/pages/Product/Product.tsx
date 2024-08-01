@@ -93,7 +93,7 @@ export function Product() {
               onClick={() => {
                 isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
               }}
-              $withCart={!isBookInCart}
+              $withCartAdd={!isBookInCart}
               $textSize="lg"
               $size="lg">
               {isBookInCart ? 'View in Basket' : 'Add to Basket'}

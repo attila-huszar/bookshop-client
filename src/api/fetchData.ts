@@ -6,9 +6,9 @@ import {
   IFilter,
   IBook,
   IAuthor,
-  IStripePayment,
   IOrder,
   IOrderUpdate,
+  ICreateOrder,
 } from 'interfaces'
 
 export const getBooks = async (
@@ -454,7 +454,9 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   }
 }
 
-export const postOrder = async (orderData: Partial<IOrder>) => {
+export const postOrder = async (
+  orderData: ICreateOrder['orderToServer'],
+): Promise<IOrder> => {
   try {
     const { data } = await axios.post(URL.orders, orderData)
 
@@ -465,7 +467,7 @@ export const postOrder = async (orderData: Partial<IOrder>) => {
 }
 
 export const postStripePayment = async (
-  paymentData: IStripePayment,
+  paymentData: ICreateOrder['orderToStripe'],
 ): Promise<{ clientSecret: string }> => {
   try {
     const { data } = await axios.post(URL.stripePaymentIntent, paymentData)
@@ -478,7 +480,10 @@ export const postStripePayment = async (
   }
 }
 
-export const updateOrder = async ({ paymentId, fields }: IOrderUpdate) => {
+export const updateOrder = async ({
+  paymentId,
+  fields,
+}: IOrderUpdate): Promise<IOrder> => {
   try {
     const orderResponse = await axios.get(
       `${URL.orders}?paymentId=${paymentId}`,

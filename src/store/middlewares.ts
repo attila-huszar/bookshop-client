@@ -16,6 +16,7 @@ import {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
 } from './cartSlice'
 import { IBook, ICart, ILocalCart } from 'interfaces'
 
@@ -63,6 +64,7 @@ localStorageMiddlewareTyped({
     cartQuantityAdd,
     cartQuantityRemove,
     cartQuantitySet,
+    cartClear,
   ),
   effect: (action) => {
     const cartFromLocalStorage: ILocalCart[] = JSON.parse(
@@ -106,6 +108,9 @@ localStorageMiddlewareTyped({
         cartToLocalStorage = cartFromLocalStorage.map((item) =>
           item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
         )
+        break
+      case cartClear.type:
+        localStorage.removeItem('cart')
         break
       default:
         break
