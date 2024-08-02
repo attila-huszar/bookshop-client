@@ -14,7 +14,7 @@ export default createGlobalStyle`
 
   #root {
     --primary-color: #ffce1a;
-    --primary-faded: #ffde67;
+    --primary-faded: #f0d153;
     --secondary-color: #ecb346;
     --white: #fdfdfd;
     --whitesmoke: #f7f7f7;

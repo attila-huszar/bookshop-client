@@ -24,7 +24,8 @@ export function Checkout() {
   const options: StripeElementsOptions = {
     clientSecret: orderStatus?.clientSecret,
     appearance: {
-      theme: 'stripe',
+      theme: 'flat',
+      variables: {},
     },
     loader,
   }

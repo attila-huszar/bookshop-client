@@ -216,10 +216,11 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
+            onClick={() => navigate(`/${PATH.books}`)}
+            disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
-            $inverted
-            onClick={() => navigate(`/${PATH.books}`)}>
+            $inverted>
             Continue Shopping
           </Button>
           <Button

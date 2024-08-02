@@ -6,7 +6,6 @@ import {
   IFilter,
   IBook,
   IAuthor,
-  IOrder,
   IOrderUpdate,
   ICreateOrder,
 } from 'interfaces'
@@ -456,11 +455,9 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
 
 export const postOrder = async (
   orderData: ICreateOrder['orderToServer'],
-): Promise<IOrder> => {
+): Promise<void> => {
   try {
-    const { data } = await axios.post(URL.orders, orderData)
-
-    return data
+    await axios.post(URL.orders, orderData)
   } catch (error) {
     throw error instanceof AxiosError ? error.message : 'Error creating order'
   }
@@ -483,20 +480,18 @@ export const postStripePayment = async (
 export const updateOrder = async ({
   paymentId,
   fields,
-}: IOrderUpdate): Promise<IOrder> => {
+}: IOrderUpdate): Promise<void> => {
   try {
     const orderResponse = await axios.get(
       `${URL.orders}?paymentId=${paymentId}`,
     )
     const orderData = orderResponse.data
 
-    const { data } = await axios.put(`${URL.orders}/${orderData[0].id}`, {
+    await axios.put(`${URL.orders}/${orderData[0].id}`, {
       ...orderData[0],
       ...fields,
       orderUpdatedAt: new Date(),
     })
-
-    return data
   } catch (error) {
     throw error instanceof AxiosError ? error.message : 'Error updating order'
   }
