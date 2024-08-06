@@ -1,8 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { getAuthorById, getAuthorsBySearch } from 'api/fetchData'
 import { IAuthor, IAuthorStore } from 'interfaces'
 

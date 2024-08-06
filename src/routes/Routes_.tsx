@@ -1,4 +1,6 @@
 import { Suspense, lazy } from 'react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import type { RouteObject } from 'react-router-dom'
 import {
   Home,
   Products,
@@ -20,7 +22,7 @@ const Layout = lazy(() =>
   })),
 )
 
-export const routes = [
+const routes: RouteObject[] = [
   {
     path: '/',
     element: (
@@ -82,3 +84,9 @@ export const routes = [
     element: <Checkout />,
   },
 ]
+
+const router = createBrowserRouter(routes)
+
+export const Routes: React.FC = () => {
+  return <RouterProvider router={router} />
+}

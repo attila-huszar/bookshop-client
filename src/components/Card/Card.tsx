@@ -11,6 +11,14 @@ export function Card({ book }: { book: IBook }) {
   const { cartArray, addToCart } = useCart()
   const isBookInCart = cartArray.some((item) => item.id === book.id)
 
+  const handleCartAction = () => {
+    if (isBookInCart) {
+      navigate(`/${PATH.cart}`)
+    } else {
+      addToCart(book as IBook)
+    }
+  }
+
   return (
     <StyledCard>
       <Link to={`/${PATH.books}/${book.id}`}>
@@ -27,7 +35,7 @@ export function Card({ book }: { book: IBook }) {
           <Button
             onClick={(e) => {
               e.preventDefault()
-              isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
+              handleCartAction()
             }}
             $withCartAdd={!isBookInCart}>
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}

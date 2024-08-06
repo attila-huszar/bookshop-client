@@ -1,4 +1,4 @@
-import { SerializedError } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { PaymentIntent } from '@stripe/stripe-js'
 import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
@@ -34,6 +34,7 @@ export interface INewsStore {
 export interface IUserStore {
   userData: IUserToStore | null
   userIsLoading: boolean
+  userIsUpdating: boolean
   userError: SerializedError | null
   loginError: SerializedError | null
   registerError: SerializedError | null

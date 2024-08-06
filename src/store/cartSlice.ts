@@ -1,8 +1,5 @@
-import {
-  SerializedError,
-  createAsyncThunk,
-  createSlice,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { getBookById } from 'api/fetchData'
 import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
 

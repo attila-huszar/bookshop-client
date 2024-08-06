@@ -1,8 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { postStripePayment, postOrder } from 'api/fetchData'
 import { ICreateOrder, IOrderStore } from 'interfaces'
 

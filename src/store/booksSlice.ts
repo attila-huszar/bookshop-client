@@ -1,9 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-  PayloadAction,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { PayloadAction, SerializedError } from '@reduxjs/toolkit'
 import {
   getBooks,
   getBookById,

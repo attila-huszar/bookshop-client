@@ -18,12 +18,12 @@ import { uploadImage } from 'api/fetchData'
 import { Form, Formik } from 'formik'
 import { countryList } from 'lib'
 import { accountBasicSchema, accountAddressSchema } from 'helpers'
-import { IUserToStore, IAddress } from 'interfaces'
+import { IUserToStore } from 'interfaces'
 import EditIcon from 'assets/svg/edit.svg?react'
 import toast from 'react-hot-toast'
 
 export function Account() {
-  const { userData } = useAppSelector(userSelector)
+  const { userData, userIsUpdating } = useAppSelector(userSelector)
   const { uuid, firstName, lastName, email, phone, avatar, address } = {
     ...userData,
   } as IUserToStore
@@ -42,7 +42,7 @@ export function Account() {
     )
   }
 
-  const handleAddressInfoSubmit = (values: IAddress) => {
+  const handleAddressInfoSubmit = (values: IUserToStore['address']) => {
     dispatch(
       updateUser({
         uuid: uuid as string,
@@ -67,7 +67,7 @@ export function Account() {
           fields: { avatar: imageResponse.url },
         }),
       )
-    } catch (error) {
+    } catch {
       toast.error('Image upload failed')
     }
   }
@@ -119,69 +119,64 @@ export function Account() {
                   initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values, actions) => {
-                    handleBasicInfoSubmit(values)
-                    actions.setSubmitting(false)
-                  }}
+                  onSubmit={(values) => handleBasicInfoSubmit(values)}
                   onReset={handleBasicInfoReset}>
-                  {({ isSubmitting }) => (
-                    <Form>
-                      <GeneralLine>
-                        <div>
-                          <p>First name</p>
-                          <FormikField
-                            name="firstName"
-                            placeholder="First name"
-                            type="text"
-                            readOnly={!editingBasicInfo}
-                          />
-                        </div>
-                        <div>
-                          <p>Last name</p>
-                          <FormikField
-                            name="lastName"
-                            placeholder="Last name"
-                            type="text"
-                            readOnly={!editingBasicInfo}
-                          />
-                        </div>
-                      </GeneralLine>
-                      <GeneralLine>
-                        <div>
-                          <p>Email</p>
-                          <FormikField
-                            name="email"
-                            placeholder="Email"
-                            type="email"
-                            readOnly
-                          />
-                        </div>
-                        <div>
-                          <p>Phone</p>
-                          <FormikField
-                            name="phone"
-                            placeholder="Phone"
-                            type="tel"
-                            inputMode="numeric"
-                            readOnly={!editingBasicInfo}
-                          />
-                        </div>
-                      </GeneralLine>
-                      {editingBasicInfo && (
-                        <ButtonWrapper>
-                          <Button type="reset" $size="sm" $inverted>
-                            Cancel
-                          </Button>
-                          <Button
-                            $size="sm"
-                            type="submit"
-                            disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : 'Save'}
-                          </Button>
-                        </ButtonWrapper>
-                      )}
-                    </Form>
-                  )}
+                  <Form>
+                    <GeneralLine>
+                      <div>
+                        <p>First name</p>
+                        <FormikField
+                          name="firstName"
+                          placeholder="First name"
+                          type="text"
+                          readOnly={!editingBasicInfo}
+                        />
+                      </div>
+                      <div>
+                        <p>Last name</p>
+                        <FormikField
+                          name="lastName"
+                          placeholder="Last name"
+                          type="text"
+                          readOnly={!editingBasicInfo}
+                        />
+                      </div>
+                    </GeneralLine>
+                    <GeneralLine>
+                      <div>
+                        <p>Email</p>
+                        <FormikField
+                          name="email"
+                          placeholder="Email"
+                          type="email"
+                          readOnly
+                        />
+                      </div>
+                      <div>
+                        <p>Phone</p>
+                        <FormikField
+                          name="phone"
+                          placeholder="Phone"
+                          type="tel"
+                          inputMode="numeric"
+                          readOnly={!editingBasicInfo}
+                        />
+                      </div>
+                    </GeneralLine>
+                    {editingBasicInfo && (
+                      <ButtonWrapper>
+                        <Button type="reset" $size="sm" $inverted>
+                          Cancel
+                        </Button>
+                        <Button
+                          $size="sm"
+                          type="submit"
+                          disabled={userIsUpdating}>
+                          {userIsUpdating ? 'Saving...' : 'Save'}
+                        </Button>
+                      </ButtonWrapper>
+                    )}
+                  </Form>
                 </Formik>
               )}
             </General>
@@ -208,95 +203,92 @@ export function Account() {
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values: IAddress, actions) => {
+                onSubmit={(values: IUserToStore['address']) =>
                   handleAddressInfoSubmit(values)
-                  actions.setSubmitting(false)
-                }}
+                }
                 onReset={handleAddressInfoReset}>
-                {({ isSubmitting }) => (
-                  <Form>
-                    <AddressLine>
-                      <div>
-                        <p>Address line 1</p>
-                        <FormikField
-                          name="line1"
-                          placeholder="Address line 1"
-                          type="text"
-                          readOnly={!editingAddressInfo}
-                        />
-                      </div>
-                      <div>
-                        <p>Address line 2 (optional)</p>
-                        <FormikField
-                          name="line2"
-                          placeholder="Address line 2"
-                          type="text"
-                          readOnly={!editingAddressInfo}
-                        />
-                      </div>
-                    </AddressLine>
-                    <AddressLine>
-                      <div>
-                        <p>City</p>
-                        <FormikField
-                          name="city"
-                          placeholder="City"
-                          type="text"
-                          readOnly={!editingAddressInfo}
-                        />
-                      </div>
-                      <div>
-                        <p>State</p>
-                        <FormikField
-                          name="state"
-                          placeholder="State"
-                          type="text"
-                          readOnly={!editingAddressInfo}
-                        />
-                      </div>
-                      <div>
-                        <p>Postal Code</p>
-                        <FormikField
-                          name="postal_code"
-                          placeholder="Postal Code"
-                          type="text"
-                          readOnly={!editingAddressInfo}
-                        />
-                      </div>
-                    </AddressLine>
-                    <AddressLine>
-                      <div>
-                        <p>Country</p>
-                        <FormikField
-                          name="country"
-                          type="select"
-                          readOnly={!editingAddressInfo}>
-                          <option value="" hidden>
-                            Please select a country...
+                <Form>
+                  <AddressLine>
+                    <div>
+                      <p>Address line 1</p>
+                      <FormikField
+                        name="line1"
+                        placeholder="Address line 1"
+                        type="text"
+                        readOnly={!editingAddressInfo}
+                      />
+                    </div>
+                    <div>
+                      <p>Address line 2 (optional)</p>
+                      <FormikField
+                        name="line2"
+                        placeholder="Address line 2"
+                        type="text"
+                        readOnly={!editingAddressInfo}
+                      />
+                    </div>
+                  </AddressLine>
+                  <AddressLine>
+                    <div>
+                      <p>City</p>
+                      <FormikField
+                        name="city"
+                        placeholder="City"
+                        type="text"
+                        readOnly={!editingAddressInfo}
+                      />
+                    </div>
+                    <div>
+                      <p>State</p>
+                      <FormikField
+                        name="state"
+                        placeholder="State"
+                        type="text"
+                        readOnly={!editingAddressInfo}
+                      />
+                    </div>
+                    <div>
+                      <p>Postal Code</p>
+                      <FormikField
+                        name="postal_code"
+                        placeholder="Postal Code"
+                        type="text"
+                        readOnly={!editingAddressInfo}
+                      />
+                    </div>
+                  </AddressLine>
+                  <AddressLine>
+                    <div>
+                      <p>Country</p>
+                      <FormikField
+                        name="country"
+                        type="select"
+                        readOnly={!editingAddressInfo}>
+                        <option value="" hidden>
+                          Please select a country...
+                        </option>
+                        {countryList.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {`${country.flag} ${country.name}`}
                           </option>
-                          {countryList.map((country) => (
-                            <option key={country.code} value={country.code}>
-                              {`${country.flag} ${country.name}`}
-                            </option>
-                          ))}
-                        </FormikField>
-                      </div>
-                    </AddressLine>
-                    {editingAddressInfo && (
-                      <ButtonWrapper>
-                        <Button $size="sm" type="reset" $inverted>
-                          Cancel
-                        </Button>
-                        <Button
-                          $size="sm"
-                          type="submit"
-                          disabled={isSubmitting}>
-                          {isSubmitting ? 'Saving...' : 'Save'}
-                        </Button>
-                      </ButtonWrapper>
-                    )}
-                  </Form>
-                )}
+                        ))}
+                      </FormikField>
+                    </div>
+                  </AddressLine>
+                  {editingAddressInfo && (
+                    <ButtonWrapper>
+                      <Button $size="sm" type="reset" $inverted>
+                        Cancel
+                      </Button>
+                      <Button
+                        $size="sm"
+                        type="submit"
+                        disabled={userIsUpdating}>
+                        {userIsUpdating ? 'Saving...' : 'Save'}
+                      </Button>
+                    </ButtonWrapper>
+                  )}
+                </Form>
               </Formik>
             )}
           </Address>

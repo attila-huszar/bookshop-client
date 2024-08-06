@@ -2,7 +2,7 @@ type Func<T extends unknown[], R> = (...args: T) => R
 
 export const useDebounce = <T extends unknown[], R>(
   func: Func<T, R>,
-  delay: number = 300,
+  delay = 300,
 ): ((...args: T) => void) => {
   let timeout: NodeJS.Timeout | null = null
 

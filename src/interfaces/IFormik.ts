@@ -1,4 +1,4 @@
-import { FieldInputProps, FieldMetaProps, FormikState } from 'formik'
+import type { FieldInputProps, FieldMetaProps, FormikState } from 'formik'
 
 export interface IFormik {
   field: FieldInputProps<string>

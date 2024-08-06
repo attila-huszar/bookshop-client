@@ -28,8 +28,9 @@ export function PasswordReset() {
     if (code) {
       passwordReset(code)
         .then((resetResponse) => {
-          resetResponse.success &&
+          if (resetResponse.success) {
             setResetting({ state: true, uuid: resetResponse.uuid })
+          }
         })
         .catch((error) => {
           toast.error(error.message, {

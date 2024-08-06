@@ -1,8 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { getUserByEmail, getUserByUUID, putUser } from 'api/fetchData'
 import { passwordEncrypt } from 'helpers'
 import { IUserUpdate, IUserStore, IUserToStore } from 'interfaces'
@@ -10,6 +7,7 @@ import { IUserUpdate, IUserStore, IUserToStore } from 'interfaces'
 const initialState: IUserStore = {
   userData: null,
   userIsLoading: false,
+  userIsUpdating: false,
   userError: null,
   loginError: null,
   registerError: null,
@@ -41,16 +39,16 @@ const userSlice = createSlice({
       })
 
       .addCase(updateUser.pending, (state) => {
-        state.userIsLoading = true
+        state.userIsUpdating = true
         state.userError = null
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.userIsLoading = false
+        state.userIsUpdating = false
         state.userData = action.payload
         state.userError = null
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.userIsLoading = false
+        state.userIsUpdating = false
         state.userError = action.payload as SerializedError
         state.userData = null
       })

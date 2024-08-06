@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { routes } from 'routes/routes'
+import { Routes } from 'routes/Routes_'
 import { useAppDispatch, useLocalStorage } from 'hooks'
 import {
   fetchBooks,
@@ -15,7 +14,6 @@ import { ILocalCart } from 'interfaces'
 import GlobalStyle from 'styles/Global.styles'
 
 function App() {
-  const router = createBrowserRouter(routes)
   const dispatch = useAppDispatch()
   const { getFromLocalStorage } = useLocalStorage()
 
@@ -39,7 +37,7 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={router} />
+      <Routes />
       <GlobalStyle />
     </>
   )

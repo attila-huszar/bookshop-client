@@ -43,8 +43,9 @@ function ForgotPassword(
     <StyledForgotPassword ref={forgotPassRef}>
       <h2>Forgotten Password</h2>
       <p>
-        Enter your email address and we'll send you a link to reset your
-        password.
+        {
+          "Enter your email address and we'll send you a link to reset your password."
+        }
       </p>
       <Formik
         initialValues={{

@@ -15,7 +15,7 @@ const optionParams = {
   },
 }
 
-export async function sendEmail(
+export function sendEmail(
   to_email: string,
   to_name: string,
   code: {
@@ -49,15 +49,5 @@ export async function sendEmail(
     from_name: 'Book Store',
   }
 
-  try {
-    const emailRes = await emailjs.send(
-      emailjsService,
-      templateId,
-      templateParams,
-      optionParams,
-    )
-    return emailRes
-  } catch (error) {
-    throw error
-  }
+  return emailjs.send(emailjsService, templateId, templateParams, optionParams)
 }

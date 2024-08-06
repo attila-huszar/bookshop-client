@@ -368,33 +368,29 @@ export const verifyPassword = async (
 export const verifyEmail = async (
   verificationCode: string,
 ): Promise<string> => {
-  try {
-    const { data }: { data: IUser[] } = await axios.get(
-      `${URL.users}?verificationCode=${verificationCode}`,
-    )
+  const { data }: { data: IUser[] } = await axios.get(
+    `${URL.users}?verificationCode=${verificationCode}`,
+  )
 
-    if (data.length && data[0].verified) {
-      return 'Email already verified! Log in with your email and password'
-    } else if (
-      data.length &&
-      data[0].verificationCode === verificationCode &&
-      new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
-    ) {
-      const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
-        ...data[0],
-        verified: true,
-      })
+  if (data.length && data[0].verified) {
+    return 'Email already verified! Log in with your email and password'
+  } else if (
+    data.length &&
+    data[0].verificationCode === verificationCode &&
+    new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
+  ) {
+    const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
+      ...data[0],
+      verified: true,
+    })
 
-      if (verifyResponse.status < 300) {
-        return 'Verification successful! You can now log in'
-      } else {
-        throw verifyResponse.statusText
-      }
+    if (verifyResponse.status < 300) {
+      return 'Verification successful! You can now log in'
     } else {
-      throw 'Verification code expired or invalid'
+      throw verifyResponse.statusText
     }
-  } catch (error) {
-    throw error
+  } else {
+    throw 'Verification code expired or invalid'
   }
 }
 
