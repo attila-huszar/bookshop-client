@@ -1,7 +1,14 @@
 import axios, { AxiosError } from 'axios'
 import { URL, unsignedUploadPreset } from 'lib'
-import { passwordEncrypt, sendVerificationEmail } from 'helpers'
-import { IUser, IFilter, IBook, IAuthor } from 'interfaces'
+import { passwordEncrypt, sendEmail } from 'helpers'
+import {
+  IUser,
+  IFilter,
+  IBook,
+  IAuthor,
+  IOrderUpdate,
+  ICreateOrder,
+} from 'interfaces'
 
 export const getBooks = async (
   {
@@ -240,11 +247,9 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
         user.avatar = imageResponse.url
       }
 
-      const emailVerifyResponse = await sendVerificationEmail(
-        user.email,
-        user.firstName,
-        user.verificationCode,
-      )
+      const emailVerifyResponse = await sendEmail(user.email, user.firstName, {
+        verification: user.verificationCode,
+      })
 
       const registerResponse = await axios.post(`${URL.users}`, user)
 
@@ -261,6 +266,45 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
       throw `${user.email} is already taken!`
     } else {
       throw 'Unknown error occurred'
+    }
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw error.message
+    } else {
+      throw error
+    }
+  }
+}
+
+export const postUserPasswordReset = async (email: string): Promise<string> => {
+  try {
+    const userResponse = await getUserByEmail(email)
+
+    if (userResponse && userResponse.verified) {
+      const passwordResetCode = crypto.randomUUID()
+
+      axios.patch(`${URL.users}/${userResponse.id}`, {
+        passwordResetCode,
+        passwordResetCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      })
+
+      const sendEmailResponse = await sendEmail(
+        userResponse.email,
+        userResponse.firstName,
+        {
+          passwordReset: passwordResetCode,
+        },
+      )
+
+      if (sendEmailResponse.status < 300) {
+        return 'Check your email for the password reset code!'
+      } else {
+        throw 'Error sending email, please try again later'
+      }
+    } else if (!userResponse.verified) {
+      throw 'Please verify your email address first'
+    } else {
+      return 'Check your email for the password reset code!'
     }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -324,33 +368,69 @@ export const verifyPassword = async (
 export const verifyEmail = async (
   verificationCode: string,
 ): Promise<string> => {
+  const { data }: { data: IUser[] } = await axios.get(
+    `${URL.users}?verificationCode=${verificationCode}`,
+  )
+
+  if (data.length && data[0].verified) {
+    return 'Email already verified! Log in with your email and password'
+  } else if (
+    data.length &&
+    data[0].verificationCode === verificationCode &&
+    new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
+  ) {
+    const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
+      ...data[0],
+      verified: true,
+    })
+
+    if (verifyResponse.status < 300) {
+      return 'Verification successful! You can now log in'
+    } else {
+      throw verifyResponse.statusText
+    }
+  } else {
+    throw 'Verification code expired or invalid'
+  }
+}
+
+export const passwordReset = async (
+  passwordResetCode: string,
+): Promise<{ success: boolean; uuid: string | null; message: string }> => {
   try {
     const { data }: { data: IUser[] } = await axios.get(
-      `${URL.users}?verificationCode=${verificationCode}`,
+      `${URL.users}?passwordResetCode=${passwordResetCode}`,
     )
 
-    if (data.length && data[0].verified) {
-      return 'Email already verified! Log in with your email and password'
-    } else if (
+    if (
       data.length &&
-      data[0].verificationCode === verificationCode &&
-      new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
+      data[0].passwordResetCode === passwordResetCode &&
+      new Date(data[0].passwordResetCodeExpiresAt!).getTime() > Date.now()
     ) {
-      const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
-        ...data[0],
-        verified: true,
-      })
-
-      if (verifyResponse.status < 300) {
-        return 'Verification successful! You can now log in'
-      } else {
-        throw verifyResponse.statusText
+      return {
+        success: true,
+        uuid: data[0].uuid,
+        message: 'Password reset initiated',
+      }
+    } else if (data.length && !data[0].verified) {
+      throw {
+        success: false,
+        uuid: null,
+        message: 'Please verify your email address first',
       }
     } else {
-      throw 'Verification code expired or invalid'
+      throw {
+        success: false,
+        uuid: null,
+        message: 'Password reset code expired or invalid',
+      }
     }
   } catch (error) {
-    throw error
+    throw {
+      success: false,
+      message:
+        error instanceof AxiosError ? error.message : 'Unknown error occurred',
+    }
   }
 }
 
@@ -366,5 +446,49 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
     return data
   } catch (error) {
     throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+  }
+}
+
+export const postOrder = async (
+  orderData: ICreateOrder['orderToServer'],
+): Promise<void> => {
+  try {
+    await axios.post(URL.orders, orderData)
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Error creating order'
+  }
+}
+
+export const postStripePayment = async (
+  paymentData: ICreateOrder['orderToStripe'],
+): Promise<{ clientSecret: string }> => {
+  try {
+    const { data } = await axios.post(URL.stripePaymentIntent, paymentData)
+
+    return data
+  } catch (error) {
+    throw error instanceof AxiosError
+      ? error.message
+      : 'Error creating payment intent'
+  }
+}
+
+export const updateOrder = async ({
+  paymentId,
+  fields,
+}: IOrderUpdate): Promise<void> => {
+  try {
+    const orderResponse = await axios.get(
+      `${URL.orders}?paymentId=${paymentId}`,
+    )
+    const orderData = orderResponse.data
+
+    await axios.put(`${URL.orders}/${orderData[0].id}`, {
+      ...orderData[0],
+      ...fields,
+      orderUpdatedAt: new Date(),
+    })
+  } catch (error) {
+    throw error instanceof AxiosError ? error.message : 'Error updating order'
   }
 }

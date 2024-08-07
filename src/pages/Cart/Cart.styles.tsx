@@ -148,9 +148,15 @@ export const ButtonWrapper = styled.div`
 `
 
 export const EmptyCart = styled.div`
-  text-align: center;
-  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--grey);
+
+  > svg {
+    height: 10rem;
+  }
 `

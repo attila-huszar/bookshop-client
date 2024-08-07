@@ -1,7 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { Field, useFormikContext } from 'formik'
-import { InputWrapper, Input, Select, ErrorMessage } from 'styles/Form.styles'
+import {
+  InputWrapper,
+  Input,
+  Select,
+  ErrorMessage,
+  PasswordEye,
+} from 'styles/Form.styles'
 import { IFormik, IFormikField } from 'interfaces'
+import PasswordEyeIcon from 'assets/svg/eye.svg?react'
+import PasswordEyeSlashIcon from 'assets/svg/eye_slash.svg?react'
 
 export function FormikField({
   name,
@@ -13,6 +21,8 @@ export function FormikField({
   focus,
   readOnly,
   children,
+  showPassword,
+  setShowPassword,
 }: IFormikField) {
   const formikRef = useRef<HTMLInputElement>(null)
   const formikContext = useFormikContext()
@@ -97,8 +107,17 @@ export function FormikField({
               readOnly={readOnly}
               {...field}
             />
+            {/password/i.test(name) && (
+              <PasswordEye
+                type="button"
+                onClick={() => setShowPassword?.((prev) => !prev)}>
+                {showPassword ? <PasswordEyeSlashIcon /> : <PasswordEyeIcon />}
+              </PasswordEye>
+            )}
             {shouldShowError && meta.error && (
-              <ErrorMessage>{meta.error}</ErrorMessage>
+              <ErrorMessage $passwordError={/password/i.test(name)}>
+                {meta.error}
+              </ErrorMessage>
             )}
           </InputWrapper>
         )

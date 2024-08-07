@@ -14,11 +14,12 @@ export default createGlobalStyle`
 
   #root {
     --primary-color: #ffce1a;
-    --primary-faded: #ffde67;
+    --primary-faded: #f0d153;
     --secondary-color: #ecb346;
     --white: #fdfdfd;
     --whitesmoke: #f7f7f7;
     --light-grey: #eaeaea;
+    --mid-grey: #a7a7a7;
     --grey: #888888;
     --light-black: #555555;
     --black: #0F0F0F;

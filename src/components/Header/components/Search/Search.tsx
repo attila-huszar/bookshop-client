@@ -183,13 +183,18 @@ export function Search() {
                 </DropdownList>
               )}
             </Dropdown>
-            <SearchButton type="submit" disabled={isSubmitting} />
+            <SearchButton
+              type="submit"
+              disabled={isSubmitting}
+              title="Search"
+            />
             <ClearButton
               type="button"
               onClick={() => {
                 handleReset(values)
                 inputRef.current?.focus()
               }}
+              title="Clear"
             />
           </Form>
         )}

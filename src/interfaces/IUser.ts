@@ -1,3 +1,5 @@
+import { Address } from '@stripe/stripe-js'
+
 export interface IUser {
   id?: number
   uuid: string
@@ -6,23 +8,16 @@ export interface IUser {
   email: string
   password: string
   phone: string
-  address: IAddress
+  address: Address
   avatar: string | File | null
   role: 'user' | 'admin'
   verified: boolean
   verificationCode: string
   verificationCodeExpiresAt: Date
+  passwordResetCode?: string
+  passwordResetCodeExpiresAt?: Date
   createdAt: Date
   updatedAt: Date
-}
-
-export interface IAddress {
-  street: string
-  number: string
-  city: string
-  state: string
-  postCode: string
-  country: string
 }
 
 export type IUserToStore = Omit<

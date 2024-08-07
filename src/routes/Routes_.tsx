@@ -1,4 +1,6 @@
 import { Suspense, lazy } from 'react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import type { RouteObject } from 'react-router-dom'
 import {
   Home,
   Products,
@@ -7,19 +9,20 @@ import {
   Login,
   Cart,
   Account,
+  Checkout,
   NotFound,
 } from 'pages'
 import { PATH } from 'lib'
-import { ProtectedRoute, Loading, VerifyEmail } from 'components'
+import { ProtectedRoute, Loading, VerifyEmail, PasswordReset } from 'components'
 import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
-  import('../pages').then(({ Layout }) => ({
+  import('../pages/Layout/Layout').then(({ Layout }) => ({
     default: Layout,
   })),
 )
 
-export const routes = [
+const routes: RouteObject[] = [
   {
     path: '/',
     element: (
@@ -57,6 +60,10 @@ export const routes = [
         element: <VerifyEmail />,
       },
       {
+        path: PATH.passwordReset,
+        element: <PasswordReset />,
+      },
+      {
         element: <ProtectedRoute />,
         loader: protectedRouteLoader,
         children: [
@@ -72,4 +79,14 @@ export const routes = [
       },
     ],
   },
+  {
+    path: PATH.checkout,
+    element: <Checkout />,
+  },
 ]
+
+const router = createBrowserRouter(routes)
+
+export const Routes: React.FC = () => {
+  return <RouterProvider router={router} />
+}

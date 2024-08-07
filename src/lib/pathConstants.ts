@@ -9,4 +9,7 @@ export const PATH = {
   cart: 'cart',
   searchOptions: 'searchOptions',
   verify: 'verify',
+  passwordReset: 'password-reset',
+  checkout: 'checkout',
+  orders: 'orders',
 }

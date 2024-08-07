@@ -2,7 +2,7 @@ import * as Yup from 'yup'
 
 const MAX_FILE_SIZE = 512000
 const validFileExtensions = {
-  image: ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'],
+  image: ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'],
 }
 
 function isValidFileType(
@@ -10,7 +10,10 @@ function isValidFileType(
   fileType: keyof typeof validFileExtensions,
 ) {
   if (file instanceof File) {
-    return validFileExtensions[fileType].includes(file.name.split('.')[1])
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    return fileExtension
+      ? validFileExtensions[fileType].includes(fileExtension)
+      : false
   } else {
     return true
   }
@@ -100,11 +103,11 @@ export const accountBasicSchema = Yup.object().shape({
 })
 
 export const accountAddressSchema = Yup.object().shape({
-  street: Yup.string().required('Required'),
-  number: Yup.string().required('Required'),
+  line1: Yup.string().required('Required'),
+  line2: Yup.string(),
   city: Yup.string().required('Required'),
-  state: Yup.string(),
-  postCode: Yup.string().required('Required'),
+  state: Yup.string().required('Required'),
+  postal_code: Yup.string().required('Required'),
   country: Yup.string().required('Required'),
 })
 
@@ -113,6 +116,20 @@ export const accountPasswordSchema = Yup.object().shape({
     .min(6, 'Min 6 characters')
     .max(30, 'Max 30 characters')
     .required('Required'),
+  newPassword: Yup.string()
+    .min(6, 'Min 6 characters')
+    .max(30, 'Max 30 characters')
+    .required('Required'),
+  newPasswordConfirmation: Yup.string()
+    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+    .required('Required'),
+})
+
+export const forgotPasswordSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid Email').required('Required'),
+})
+
+export const resetPasswordSchema = Yup.object().shape({
   newPassword: Yup.string()
     .min(6, 'Min 6 characters')
     .max(30, 'Max 30 characters')

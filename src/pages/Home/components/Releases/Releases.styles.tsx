@@ -30,25 +30,35 @@ export const ImageWrapper = styled.div`
 export const ImageItem = styled.div<ReleasesTypes>`
   position: relative;
   grid-row: 1;
+  user-select: none;
+  transition: 0.2s ease-out;
+
+  &:hover {
+    transform: scale(1.25);
+  }
 
   ${({ $idx }) =>
-    ($idx === 0 && 'height: 20rem; z-index: 2;') ||
-    ($idx === 1 && 'height: 18rem; margin-left: -50%; z-index: 1;') ||
-    ($idx === 2 && 'height: 16rem; margin-left: -100%;') ||
+    ($idx === 0 && 'height: 18rem; &:hover { z-index: 2; }') ||
+    ($idx === 1 && 'height: 20rem; left: -40%; z-index: 1;') ||
+    ($idx === 2 && 'height: 18rem; left: -80%; &:hover { z-index: 2; }') ||
     ($idx > 2 && 'display: none;')}
 
   img {
     height: 100%;
     border-radius: 3px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   }
 `
 
 export const MirrorImg = styled.div`
+  pointer-events: none;
+
   img {
     position: absolute;
-    margin-top: -5px;
-    transform: scale(1.025, -1);
-    filter: blur(4px);
-    mask-image: linear-gradient(to bottom, transparent 95%, black 100%);
+    margin-top: -8px;
+    transform: translateY(-100%) perspective(500px) rotateX(60deg) scaleY(-1);
+    filter: blur(3px);
+    transform-origin: bottom;
+    mask-image: linear-gradient(to bottom, transparent 90%, black 100%);
   }
 `

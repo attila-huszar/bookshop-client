@@ -4,7 +4,7 @@ import Caret from 'assets/svg/caret_down.svg?react'
 export function AccordionItem({
   panelKey = 0,
   isOpen = true,
-  setIsOpen = () => {},
+  setIsOpen = () => undefined,
   header,
   children,
 }: {

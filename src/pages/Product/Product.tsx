@@ -50,6 +50,14 @@ export function Product() {
     window.scrollTo(0, 0)
   }, [])
 
+  const handleCartAction = () => {
+    if (isBookInCart) {
+      navigate(`/${PATH.cart}`)
+    } else {
+      addToCart(book as IBook)
+    }
+  }
+
   const handleGoBack = () => {
     if (window.history?.length && window.history.length > 2) {
       navigate(-1)
@@ -90,10 +98,8 @@ export function Product() {
           </Description>
           <ButtonWrapper>
             <Button
-              onClick={() => {
-                isBookInCart ? navigate(`/${PATH.cart}`) : addToCart(book)
-              }}
-              $withCart={!isBookInCart}
+              onClick={handleCartAction}
+              $withCartAdd={!isBookInCart}
               $textSize="lg"
               $size="lg">
               {isBookInCart ? 'View in Basket' : 'Add to Basket'}

@@ -26,8 +26,10 @@ export {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
   fetchCartItems,
 } from './cartSlice'
+export { createOrder } from './orderSlice'
 export {
   booksSelector,
   bookByIdSelector,
@@ -36,4 +38,5 @@ export {
   newsSelector,
   userSelector,
   cartSelector,
+  orderSelector,
 } from './selectors'

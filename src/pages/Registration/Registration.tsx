@@ -1,16 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button } from 'components'
+import { AuthorizationMenu, FormikField, Button, IconButton } from 'components'
 import { postUserRegister } from 'api/fetchData'
 import { registrationSchema, passwordEncrypt } from 'helpers'
 import { registrationInitialValues } from 'lib'
 import { IUser } from 'interfaces'
 import toast from 'react-hot-toast'
+import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
   const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -30,11 +32,11 @@ export function Registration() {
       email: values.email,
       password: passwordEncrypt(values.password),
       address: {
-        street: '',
-        number: '',
+        line1: '',
+        line2: '',
         city: '',
         state: '',
-        postCode: '',
+        postal_code: '',
         country: '',
       },
       phone: '',
@@ -81,24 +83,30 @@ export function Registration() {
             <FormikField
               name="password"
               placeholder="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
             />
             <p>Password Confirm</p>
             <FormikField
               name="passwordConfirmation"
               placeholder="Confirm Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
             />
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>
-              <Button
+              <IconButton
+                icon={<BackIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
                 type="reset"
+                title="Back"
                 disabled={isSubmitting}
                 onClick={() => navigate('/')}
-                $inverted>
-                Cancel
-              </Button>
+              />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}
               </Button>

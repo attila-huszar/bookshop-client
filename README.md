@@ -1,30 +1,44 @@
-# React + TypeScript + Vite
+# Book Shop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-grey?logo=react)](https://reactjs.org/)
+[![Redux](https://img.shields.io/badge/Redux-764ABC?logo=redux)](https://redux.js.org/)  
+[![Stripe](https://img.shields.io/badge/Stripe-008CDD?logo=stripe&logoColor=fff)](https://stripe.com/)
+[![Formik](https://img.shields.io/badge/Formik-2563EB?logo=formik&logoColor=fff)](https://formik.org/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?logo=cloudinary&logoColor=fff)](https://cloudinary.com/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff)](https://vitejs.dev/)
 
-Currently, two official plugins are available:
+## Stripe payment intent
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
+Deploy as serverless function  
+Set <STRIPE_SECRET> environment variable for the cloud function  
+Set <VITE_STRIPE_PUBLIC_KEY> and <VITE_STRIPE_CLOUD_FUNCTION_URL> in .env file
 
 ```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+const express = require("express");
+const serverless = require("serverless-http");
+const stripeSecret = process.env.STRIPE_SECRET;
+const stripe = require("stripe")(stripeSecret);
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+const app = express();
+app.use(express.json());
+
+app.post("/create-payment-intent", async (req, res) => {
+  const { amount, currency, receipt_email, description, shipping } = req.body;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount,
+    currency,
+    receipt_email,
+    description,
+    shipping,
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+module.exports.handler = serverless(app);
+
+```

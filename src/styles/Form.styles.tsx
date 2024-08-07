@@ -71,11 +71,13 @@ export const Select = styled.select<FormTypes>`
   }
 `
 
-export const ErrorMessage = styled.div`
+export const ErrorMessage = styled.div<{
+  $passwordError?: boolean
+}>`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 0.5rem;
+  right: ${({ $passwordError }) => ($passwordError ? '3.5rem' : '0.5rem')};
   padding: 0.5rem 0.75rem;
   color: rgb(120, 27, 0);
   background-color: rgb(255, 245, 245);
@@ -86,8 +88,36 @@ export const ErrorMessage = styled.div`
 
 export const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
+  position: relative;
   margin-top: 2rem;
+
+  button[type='reset'] {
+    position: absolute;
+    left: 10%;
+  }
+
+  button[type='button'] {
+    position: absolute;
+    right: 10%;
+  }
+`
+
+export const PasswordEye = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  display: flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  svg {
+    width: 1.5rem;
+    color: var(--grey);
+  }
 `
 
 type FormTypes = React.DetailedHTMLProps<

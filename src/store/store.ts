@@ -4,6 +4,7 @@ import { authorsReducer } from './authorsSlice'
 import { newsReducer } from './newsSlice'
 import { userReducer } from './userSlice'
 import { cartReducer } from './cartSlice'
+import { orderReducer } from './orderSlice'
 import { localStorageMiddleware, authorFetchMiddleware } from './middlewares'
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     news: newsReducer,
     user: userReducer,
     cart: cartReducer,
+    order: orderReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(

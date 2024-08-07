@@ -79,7 +79,6 @@ export const DropdownList = styled.ul`
   list-style: none;
   background-color: var(--white);
   border-radius: 5px;
-
   z-index: 10;
   overflow-y: auto;
 
@@ -123,7 +122,7 @@ export const TextBold = styled.p`
   text-wrap: balance;
 `
 
-export const NoResults = styled.div`
+export const NoResults = styled.li`
   display: flex;
   align-items: center;
   height: 3.5rem;

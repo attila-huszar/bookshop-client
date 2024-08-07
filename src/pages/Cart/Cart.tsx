@@ -1,7 +1,7 @@
 import { useEffect, Fragment, ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppSelector, useCart } from 'hooks'
-import { cartSelector } from 'store'
+import { useAppDispatch, useAppSelector, useCart } from 'hooks'
+import { cartSelector, createOrder, orderSelector } from 'store'
 import { Button, IconButton, Loading, Price } from 'components'
 import {
   StyledCart,
@@ -20,11 +20,32 @@ import {
 } from './Cart.styles'
 import { PATH } from 'lib'
 import { enforceMinMax, calcSubtotalOrDiscount } from 'helpers'
-import { ICart } from 'interfaces'
+import { ICart, ICreateOrder } from 'interfaces'
 import AddQuantityIcon from 'assets/svg/plus.svg?react'
 import RemoveQuantityIcon from 'assets/svg/minus.svg?react'
 import RemoveFromCartIcon from 'assets/svg/bin.svg?react'
+import CartEmptyIcon from 'assets/svg/cart_empty.svg?react'
 import imagePlaceholder from 'assets/svg/image_placeholder.svg'
+import toast from 'react-hot-toast'
+
+const calculateTotalAmount = (cartArray: ICart[]): number => {
+  return cartArray.reduce(
+    (total, item) =>
+      total + (item.price - (item.price * item.discount) / 100) * item.quantity,
+    0,
+  )
+}
+
+const createPaymentData = (
+  amount: number,
+  currency: string,
+): ICreateOrder['orderToStripe'] => {
+  return {
+    amount: Math.round(amount * 100),
+    currency,
+    description: 'Book Shop Order',
+  }
+}
 
 export function Cart() {
   const navigate = useNavigate()
@@ -36,6 +57,19 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
+  const { orderStatus, orderIsLoading, orderError } =
+    useAppSelector(orderSelector)
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    if (orderStatus.clientSecret) {
+      navigate(`/${PATH.checkout}`)
+    } else if (orderError) {
+      toast.error(orderError as string, {
+        id: 'order-error',
+      })
+    }
+  }, [navigate, orderError, orderStatus.clientSecret])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -64,8 +98,27 @@ export function Cart() {
     setQuantity({ cartItem, newQuantity })
   }
 
+  const handleCheckout = () => {
+    if (cartArray.length) {
+      const total = calculateTotalAmount(cartArray)
+      const currency = 'usd'
+      const orderToStripe = createPaymentData(total, currency)
+
+      const orderToServer: ICreateOrder['orderToServer'] = {
+        paymentId: '',
+        orderStatus: 'pending',
+        orderTotal: Number(total.toFixed(2)),
+        orderCurrency: currency,
+        orderItems: cartArray,
+        orderCreatedAt: new Date(),
+      }
+
+      dispatch(createOrder({ orderToStripe, orderToServer }))
+    }
+  }
+
   if (cartIsLoading) {
-    return <Loading />
+    return <Loading text="Loading cart..." />
   }
 
   if (cartArray.length) {
@@ -100,11 +153,12 @@ export function Cart() {
                   title="Remove quantity"
                   $iconSize="sm"
                   $color="var(--grey)"
-                  disabled={item.quantity === 1}
+                  disabled={item.quantity <= 1}
                 />
                 <input
                   value={item.quantity}
                   onChange={(e) => handleSetQuantity(item, e)}
+                  title="Set quantity"
                   type="number"
                   inputMode="numeric"
                   min={1}
@@ -162,13 +216,21 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
+            onClick={() => navigate(`/${PATH.books}`)}
+            disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
-            $inverted
-            onClick={() => navigate(`/${PATH.books}`)}>
+            $inverted>
             Continue Shopping
           </Button>
-          <Button $size="lg" $textSize="lg" $withCart $shadowed>
+          <Button
+            onClick={handleCheckout}
+            disabled={orderIsLoading}
+            $spinner={orderIsLoading}
+            $withCart={!orderIsLoading}
+            $size="lg"
+            $textSize="lg"
+            $shadowed>
             Checkout
           </Button>
         </ButtonWrapper>
@@ -179,7 +241,16 @@ export function Cart() {
   return (
     <StyledCart>
       <h2>Cart</h2>
-      <EmptyCart>Your cart is empty</EmptyCart>
+      <EmptyCart>
+        <CartEmptyIcon />
+        <p>Your cart is empty</p>
+        <Button
+          type="button"
+          onClick={() => navigate(`/${PATH.books}`)}
+          $withCart>
+          Go Shopping
+        </Button>
+      </EmptyCart>
     </StyledCart>
   )
 }

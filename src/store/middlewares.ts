@@ -8,6 +8,7 @@ import {
   fetchBooksBySearch,
   fetchBooksByAuthor,
   fetchAuthorById,
+  fetchRecommendedBooks,
 } from 'store'
 import {
   cartAdd,
@@ -15,6 +16,7 @@ import {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
 } from './cartSlice'
 import { IBook, ICart, ILocalCart } from 'interfaces'
 
@@ -30,6 +32,7 @@ authorFetchMiddlewareTyped({
     fetchBooksByProperty.fulfilled,
     fetchBooksBySearch.fulfilled,
     fetchBooksByAuthor.fulfilled,
+    fetchRecommendedBooks.fulfilled,
   ),
   effect: (action, listenerApi) => {
     if (action.type === fetchBooks.fulfilled.type) {
@@ -61,6 +64,7 @@ localStorageMiddlewareTyped({
     cartQuantityAdd,
     cartQuantityRemove,
     cartQuantitySet,
+    cartClear,
   ),
   effect: (action) => {
     const cartFromLocalStorage: ILocalCart[] = JSON.parse(
@@ -104,6 +108,9 @@ localStorageMiddlewareTyped({
         cartToLocalStorage = cartFromLocalStorage.map((item) =>
           item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
         )
+        break
+      case cartClear.type:
+        localStorage.removeItem('cart')
         break
       default:
         break

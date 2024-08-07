@@ -10,7 +10,6 @@ import {
 } from 'store'
 import ChevronLeftIcon from 'assets/svg/chevron_left.svg?react'
 import ChevronLeftEndIcon from 'assets/svg/chevron_left_end.svg?react'
-import EllipsisIcon from 'assets/svg/ellipsis.svg?react'
 
 export function Pagination() {
   const dispatch = useAppDispatch()

@@ -1,8 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  SerializedError,
-} from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import type { SerializedError } from '@reduxjs/toolkit'
 import { getNews } from 'api/fetchData'
 import { INewsStore } from 'interfaces'
 

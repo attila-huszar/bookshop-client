@@ -5,6 +5,7 @@ export {
   loginInitialValues,
   registrationInitialValues,
   passwordChangeInitialValues,
+  passwordResetInitialValues,
   filterInitialValues,
   discountOptions,
 } from './defaultValues'
@@ -13,6 +14,9 @@ export {
   unsignedUploadPreset,
   emailjsKey,
   emailjsService,
-  emailjsTemplate,
+  emailjsVerificationTemplate,
+  emailjsResetPasswordTemplate,
+  stripeKey,
+  googleMapsKey,
 } from './envVariables'
 export { countryList } from './countryList'

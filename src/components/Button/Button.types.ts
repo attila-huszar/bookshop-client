@@ -3,6 +3,8 @@ export type StyleTypes = {
   $textSize?: 'sm' | 'md' | 'lg' | 'xl'
   $shadowed?: boolean
   $withCart?: boolean
+  $withCartAdd?: boolean
+  $spinner?: boolean
   $inverted?: boolean
 }
 
