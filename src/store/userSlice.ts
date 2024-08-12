@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { SerializedError } from '@reduxjs/toolkit'
-import { getUserByEmail, getUserByUUID, putUser } from 'api/fetchData'
+import { getUserByEmail, getUserByUUID, putUser } from 'api'
 import { passwordEncrypt } from 'helpers'
 import { IUserUpdate, IUserStore, IUserToStore } from 'interfaces'
 

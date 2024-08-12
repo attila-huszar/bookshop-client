@@ -20,6 +20,9 @@
       "components/*": [
         "components/*"
       ],
+      "constants/*": [
+        "constants/*"
+      ],
       "helpers/*": [
         "helpers/*"
       ],
@@ -29,14 +32,14 @@
       "interfaces/*": [
         "interfaces/*"
       ],
-      "lib/*": [
-        "lib/*"
-      ],
       "pages/*": [
         "pages/*"
       ],
       "routes/*": [
         "routes/*"
+      ],
+      "services/*": [
+        "services/*"
       ],
       "store/*": [
         "store/*"

@@ -1,6 +1,6 @@
 import { NavList } from '../../Footer.styles'
 import { SocialLinks } from './Links.styles'
-import { legalLinks, socialLinks } from 'lib'
+import { legalLinks, socialLinks } from 'constants/index'
 
 export function Links() {
   return (

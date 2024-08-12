@@ -523,7 +523,7 @@
       "genre": "Epic poetry",
       "imgUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Odyssey-crop.jpg/330px-Odyssey-crop.jpg",
       "description": "The epic poem following the Greek hero Odysseus on his journey home from the Trojan War.",
-      "yearOfPublishing": "8th century BCE",
+      "yearOfPublishing": "1614",
       "price": "15",
       "rating": 4.5,
       "discount": 10,
@@ -688,7 +688,7 @@
       "Satire",
       "Science fiction"
     ],
-    "price": [15, 30],
+    "price": [13, 30],
     "publishYear": [1320, 1967]
   }
 }

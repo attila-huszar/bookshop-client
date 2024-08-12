@@ -4,8 +4,8 @@ import {
   emailjsService,
   emailjsVerificationTemplate,
   emailjsResetPasswordTemplate,
-  URL,
-} from 'lib'
+} from './configKeys'
+import { URL } from 'constants/index'
 
 const optionParams = {
   publicKey: emailjsKey,
@@ -46,7 +46,7 @@ export function sendEmail(
     to_name,
     link,
     base_link: URL.base,
-    from_name: 'Book Store',
+    from_name: 'Book Shop',
   }
 
   return emailjs.send(emailjsService, templateId, templateParams, optionParams)

@@ -22,7 +22,7 @@ import {
 } from 'store'
 import { Accordion, AccordionItem, IconButton } from 'components'
 import { enforceMinMax, generateFilterArray } from 'helpers'
-import { filterInitialValues, discountOptions } from 'lib'
+import { filterInitialValues, discountOptions } from 'constants/index'
 import Slider from 'rc-slider'
 import { sliderStyles } from 'styles/Global.styles'
 import 'rc-slider/assets/index.css'

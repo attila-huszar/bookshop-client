@@ -1,200 +1,8 @@
 import axios, { AxiosError } from 'axios'
-import { URL, unsignedUploadPreset } from 'lib'
-import { passwordEncrypt, sendEmail } from 'helpers'
-import {
-  IUser,
-  IFilter,
-  IBook,
-  IAuthor,
-  IOrderUpdate,
-  ICreateOrder,
-} from 'interfaces'
-
-export const getBooks = async (
-  {
-    _page,
-    _limit,
-    criteria,
-  }: {
-    _page: number
-    _limit: number
-    criteria?: IFilter
-  },
-  rejectWithValue: (value: unknown) => void,
-): Promise<{
-  books: IBook[]
-  total: number
-}> => {
-  try {
-    const params = new URLSearchParams()
-
-    params.append('_page', `${_page}`)
-    params.append('_limit', `${_limit}`)
-
-    if (criteria?.genre?.length) {
-      criteria.genre.forEach((genre) => params.append('genre', genre))
-    }
-
-    if (criteria?.price[0]) {
-      params.append('discountPrice_gte', `${criteria.price[0]}`)
-    }
-
-    if (criteria?.price[1]) {
-      params.append('discountPrice_lte', `${criteria.price[1]}`)
-    }
-
-    if (criteria?.discount === 'discountOnly') {
-      params.append('discount_gte', '1')
-    } else if (criteria?.discount === 'fullPriceOnly') {
-      params.append('discount', '0')
-    }
-
-    if (criteria?.publishYear[0]) {
-      params.append('yearOfPublishing_gte', `${criteria.publishYear[0]}`)
-    }
-
-    if (criteria?.publishYear[1]) {
-      params.append('yearOfPublishing_lte', `${criteria.publishYear[1]}`)
-    }
-
-    if (criteria?.rating && criteria.rating > 1) {
-      params.append('rating_gte', `${criteria.rating}`)
-    }
-
-    const booksResponse = await axios.get(URL.books, {
-      params,
-    })
-
-    return {
-      books: booksResponse.data,
-      total: booksResponse.headers['x-total-count'],
-    }
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBookById = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook> => {
-  try {
-    const response = await axios.get(`${URL.books}/${id}`)
-    return response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBooksByProperty = async (
-  property: string,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook[]> => {
-  try {
-    const { data } = await axios.get(`${URL.books}?${property}=true`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBooksBySearch = async (
-  searchString: string,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook[]> => {
-  try {
-    const { data } = await axios.get(`${URL.books}?title_like=${searchString}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBooksByAuthor = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook[]> => {
-  try {
-    const { data } = await axios.get(`${URL.books}?author=${id}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getAuthorById = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IAuthor> => {
-  try {
-    const { data } = await axios.get(`${URL.authors}/${id}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getAuthorsBySearch = async (
-  searchString: string,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IAuthor[]> => {
-  try {
-    const { data } = await axios.get(`${URL.authors}?name_like=${searchString}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getNews = async (
-  id: string | void,
-  rejectWithValue: (value: unknown) => void,
-) => {
-  try {
-    const response = await axios.get(id ? `${URL.news}/${id}` : URL.news)
-
-    return response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
+import { URL } from 'constants/index'
+import { sendEmail, cloudinaryUploadPreset } from 'services'
+import { passwordEncrypt } from 'helpers'
+import { IUser } from 'interfaces'
 
 export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {
@@ -332,22 +140,6 @@ export const putUser = async (
   }
 }
 
-export const getBookSearchOptions = async (
-  rejectWithValue: (value: unknown) => void,
-): Promise<Pick<IFilter, 'genre' | 'price' | 'publishYear'>> => {
-  try {
-    const response = await axios.get(URL.searchOptions)
-
-    return response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
 export const verifyPassword = async (
   uuid: string,
   currentPassword: string,
@@ -436,8 +228,8 @@ export const passwordReset = async (
 
 export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   const formData = new FormData()
-  formData.append('upload_preset', unsignedUploadPreset)
-  formData.append('folder', `/${unsignedUploadPreset}/${folder}`)
+  formData.append('upload_preset', cloudinaryUploadPreset)
+  formData.append('folder', `/${cloudinaryUploadPreset}/${folder}`)
   formData.append('file', img)
 
   try {
@@ -446,49 +238,5 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
     return data
   } catch (error) {
     throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
-  }
-}
-
-export const postOrder = async (
-  orderData: ICreateOrder['orderToServer'],
-): Promise<void> => {
-  try {
-    await axios.post(URL.orders, orderData)
-  } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Error creating order'
-  }
-}
-
-export const postStripePayment = async (
-  paymentData: ICreateOrder['orderToStripe'],
-): Promise<{ clientSecret: string }> => {
-  try {
-    const { data } = await axios.post(URL.stripePaymentIntent, paymentData)
-
-    return data
-  } catch (error) {
-    throw error instanceof AxiosError
-      ? error.message
-      : 'Error creating payment intent'
-  }
-}
-
-export const updateOrder = async ({
-  paymentId,
-  fields,
-}: IOrderUpdate): Promise<void> => {
-  try {
-    const orderResponse = await axios.get(
-      `${URL.orders}?paymentId=${paymentId}`,
-    )
-    const orderData = orderResponse.data
-
-    await axios.put(`${URL.orders}/${orderData[0].id}`, {
-      ...orderData[0],
-      ...fields,
-      orderUpdatedAt: new Date(),
-    })
-  } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Error updating order'
   }
 }

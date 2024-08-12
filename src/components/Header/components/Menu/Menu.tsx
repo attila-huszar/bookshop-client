@@ -3,15 +3,8 @@ import { Link } from 'react-router-dom'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
 import { IconButton } from 'components'
 import { useClickOutside } from 'hooks'
-import { PATH } from 'lib'
+import { menuLinks } from 'constants/index'
 import MenuIcon from 'assets/svg/menu.svg?react'
-import homeIcon from 'assets/svg/home.svg'
-import bookIcon from 'assets/svg/book.svg'
-
-const menuLinks = [
-  { path: '/', name: 'Home', key: 'home', icon: homeIcon },
-  { path: `/${PATH.books}`, name: 'Shop', key: 'shop', icon: bookIcon },
-]
 
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)

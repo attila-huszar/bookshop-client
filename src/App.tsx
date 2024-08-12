@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes } from 'routes/Routes_'
+import { Routes } from 'routes'
 import { useAppDispatch, useLocalStorage } from 'hooks'
 import {
   fetchBooks,

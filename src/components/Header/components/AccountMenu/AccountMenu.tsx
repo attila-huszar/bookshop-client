@@ -14,7 +14,7 @@ import {
   useClickOutside,
 } from 'hooks'
 import { userSelector, logoutUser } from 'store'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 import LoginIcon from 'assets/svg/account.svg?react'
 import accountIcon from 'assets/svg/user_account.svg'
 import logoutIcon from 'assets/svg/logout.svg'

@@ -25,7 +25,7 @@ import {
   fetchBooksByAuthor,
   fetchBooksBySearch,
 } from 'store'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 import { IAuthor, IBook } from 'interfaces'
 import LinkIcon from 'assets/svg/link.svg?react'
 import imagePlaceholder from 'assets/svg/image_placeholder.svg'

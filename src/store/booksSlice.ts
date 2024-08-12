@@ -7,7 +7,7 @@ import {
   getBooksByProperty,
   getBooksBySearch,
   getBookSearchOptions,
-} from 'api/fetchData'
+} from 'api'
 import { generateUniqueRndNums } from 'helpers'
 import { RootState } from './store'
 import { IBook, IBookStore, IFilter } from 'interfaces'

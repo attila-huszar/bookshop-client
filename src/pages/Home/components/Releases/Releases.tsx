@@ -8,7 +8,7 @@ import {
 import { useAppSelector } from 'hooks'
 import { booksSelector } from 'store'
 import { Button } from 'components'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)

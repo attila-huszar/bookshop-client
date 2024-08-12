@@ -8,7 +8,7 @@ import {
 import { StripePaymentElementOptions } from '@stripe/stripe-js'
 import { useAppSelector } from 'hooks'
 import { userSelector } from 'store'
-import { PATH, URL } from 'lib'
+import { PATH, URL } from 'constants/index'
 
 export function CheckoutForm({
   amount,

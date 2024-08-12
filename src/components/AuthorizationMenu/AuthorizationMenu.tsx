@@ -3,7 +3,7 @@ import {
   StyledAuthorizationMenu,
   FormChangeLinks,
 } from './AuthorizationMenu.styles'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 
 export function AuthorizationMenu({ children }: React.PropsWithChildren) {
   return (

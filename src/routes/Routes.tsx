@@ -12,7 +12,7 @@ import {
   Checkout,
   NotFound,
 } from 'pages'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 import { ProtectedRoute, Loading, VerifyEmail, PasswordReset } from 'components'
 import { protectedRouteLoader } from 'helpers'
 

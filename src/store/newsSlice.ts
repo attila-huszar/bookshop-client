@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { SerializedError } from '@reduxjs/toolkit'
-import { getNews } from 'api/fetchData'
+import { getNews } from 'api'
 import { INewsStore } from 'interfaces'
 
 const initialState: INewsStore = {

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { NavList } from '../../Footer.styles'
 import { StyledLogo } from './Navigation.styles'
-import { navLinks } from 'lib'
+import { navLinks } from 'constants/index'
 import logo from 'assets/image/logo.png'
 
 export function Navigation() {

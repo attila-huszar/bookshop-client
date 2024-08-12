@@ -1,7 +1,7 @@
 import { StyledAvatar } from './Avatar.styles'
 import { AvatarTypes } from './Avatar.types'
 import { CloudinaryImage } from '@cloudinary/url-gen'
-import { cloudConfig } from 'helpers'
+import { cloudinaryConfig, cloudinaryUploadPreset } from 'services'
 import { thumbnail } from '@cloudinary/url-gen/actions/resize'
 import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
 import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
@@ -17,8 +17,8 @@ export function Avatar({
 }: AvatarTypes) {
   const avatar = imgUrl
     ? new CloudinaryImage(
-        `bookstore/avatars/${imgUrl.split('/').pop()}`,
-        cloudConfig,
+        `${cloudinaryUploadPreset}/avatars/${imgUrl.split('/').pop()}`,
+        cloudinaryConfig,
       ).resize(thumbnail().width($size).height($size).gravity(focusOn(face())))
     : null
 

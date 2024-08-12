@@ -19,7 +19,7 @@ import {
   authorByIdSelector,
 } from 'store'
 import { Button, Error, Price, Recommended } from 'components'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 import { IAuthor, IBook } from 'interfaces'
 import imagePlaceholder from 'assets/svg/image_placeholder.svg'
 

@@ -1,7 +1,7 @@
 import { AddressElement } from '@stripe/react-stripe-js'
 import { useAppSelector } from 'hooks'
 import { userSelector } from 'store'
-import { googleMapsKey } from 'lib'
+import { googleMapsKey } from 'services'
 
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)

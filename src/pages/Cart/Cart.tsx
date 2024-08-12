@@ -18,7 +18,7 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.styles'
-import { PATH } from 'lib'
+import { PATH } from 'constants/index'
 import { enforceMinMax, calcSubtotalOrDiscount } from 'helpers'
 import { ICart, ICreateOrder } from 'interfaces'
 import AddQuantityIcon from 'assets/svg/plus.svg?react'

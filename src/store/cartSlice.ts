@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { SerializedError } from '@reduxjs/toolkit'
-import { getBookById } from 'api/fetchData'
+import { getBookById } from 'api'
 import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
 
 const initialState: ICartStore = {
