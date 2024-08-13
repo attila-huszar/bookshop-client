@@ -25,7 +25,6 @@ const userSlice = createSlice({
     builder
       .addCase(loginUser.pending, (state) => {
         state.userIsLoading = true
-        state.loginError = null
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.userIsLoading = false
@@ -40,7 +39,6 @@ const userSlice = createSlice({
 
       .addCase(updateUser.pending, (state) => {
         state.userIsUpdating = true
-        state.userError = null
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.userIsUpdating = false
@@ -55,7 +53,6 @@ const userSlice = createSlice({
 
       .addCase(fetchUserByUUID.pending, (state) => {
         state.userIsLoading = true
-        state.userError = null
       })
       .addCase(fetchUserByUUID.fulfilled, (state, action) => {
         state.userIsLoading = false

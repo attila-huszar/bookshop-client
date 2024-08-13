@@ -1,4 +1,4 @@
-import { useEffect, Fragment, ChangeEvent } from 'react'
+import { useEffect, Fragment, ChangeEvent, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector, useCart } from 'hooks'
 import { cartSelector, createOrder, orderSelector } from 'store'
@@ -71,7 +71,7 @@ export function Cart() {
     }
   }, [navigate, orderError, orderStatus.clientSecret])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 

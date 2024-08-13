@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { URL } from 'constants/index'
-import { IBook, IFilter } from 'interfaces'
+import { IBook, IFilter, IFilterApplied } from 'interfaces'
 
 export const getBooks = async (
   {
@@ -10,7 +10,7 @@ export const getBooks = async (
   }: {
     _page: number
     _limit: number
-    criteria?: IFilter
+    criteria?: IFilterApplied
   },
   rejectWithValue: (value: unknown) => void,
 ): Promise<{
@@ -27,12 +27,12 @@ export const getBooks = async (
       criteria.genre.forEach((genre) => params.append('genre', genre))
     }
 
-    if (criteria?.price[0]) {
-      params.append('discountPrice_gte', `${criteria.price[0]}`)
+    if (criteria?.priceMin) {
+      params.append('discountPrice_gte', `${criteria.priceMin}`)
     }
 
-    if (criteria?.price[1]) {
-      params.append('discountPrice_lte', `${criteria.price[1]}`)
+    if (criteria?.priceMax) {
+      params.append('discountPrice_lte', `${criteria.priceMax}`)
     }
 
     if (criteria?.discount === 'discountOnly') {
@@ -41,12 +41,12 @@ export const getBooks = async (
       params.append('discount', '0')
     }
 
-    if (criteria?.publishYear[0]) {
-      params.append('yearOfPublishing_gte', `${criteria.publishYear[0]}`)
+    if (criteria?.publishYearMin) {
+      params.append('yearOfPublishing_gte', `${criteria.publishYearMin}`)
     }
 
-    if (criteria?.publishYear[1]) {
-      params.append('yearOfPublishing_lte', `${criteria.publishYear[1]}`)
+    if (criteria?.publishYearMax) {
+      params.append('yearOfPublishing_lte', `${criteria.publishYearMax}`)
     }
 
     if (criteria?.rating && criteria.rating > 1) {

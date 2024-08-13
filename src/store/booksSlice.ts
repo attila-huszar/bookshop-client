@@ -10,7 +10,7 @@ import {
 } from 'api'
 import { generateUniqueRndNums } from 'helpers'
 import { RootState } from './store'
-import { IBook, IBookStore, IFilter } from 'interfaces'
+import { IBook, IBookStore, IFilter, IFilterApplied } from 'interfaces'
 
 const initialState: IBookStore = {
   booksInShop: [],
@@ -164,24 +164,32 @@ export const fetchBooks = createAsyncThunk(
     const activeFilters = state.books.booksFilters.active
     const initialFilters = state.books.booksFilters.initial
 
-    const filtersApplied: { [key in keyof IFilter]: boolean } = {
+    const filtersApplied: { [key in keyof IFilterApplied]: boolean } = {
       genre: activeFilters.genre.length > 0,
-      price: activeFilters.price !== initialFilters.price,
+      priceMin: activeFilters.price[0] !== initialFilters.price[0],
+      priceMax: activeFilters.price[1] !== initialFilters.price[1],
       discount: activeFilters.discount !== initialFilters.discount,
-      publishYear: activeFilters.publishYear !== initialFilters.publishYear,
+      publishYearMin:
+        activeFilters.publishYear[0] !== initialFilters.publishYear[0],
+      publishYearMax:
+        activeFilters.publishYear[1] !== initialFilters.publishYear[1],
       rating: activeFilters.rating !== initialFilters.rating,
     }
 
-    const criteria: IFilter | undefined = optionalFilters
+    const criteria: IFilterApplied | undefined = optionalFilters
       ? {
           genre: filtersApplied.genre ? optionalFilters.genre : [],
-          price: filtersApplied.price ? optionalFilters.price : [],
+          priceMin: filtersApplied.priceMin ? optionalFilters.price[0] : null,
+          priceMax: filtersApplied.priceMax ? optionalFilters.price[1] : null,
           discount: filtersApplied.discount
             ? optionalFilters.discount
             : 'allBooks',
-          publishYear: filtersApplied.publishYear
-            ? optionalFilters.publishYear
-            : [],
+          publishYearMin: filtersApplied.publishYearMin
+            ? optionalFilters.publishYear[0]
+            : null,
+          publishYearMax: filtersApplied.publishYearMax
+            ? optionalFilters.publishYear[1]
+            : null,
           rating: filtersApplied.rating ? optionalFilters.rating : 0.5,
         }
       : undefined

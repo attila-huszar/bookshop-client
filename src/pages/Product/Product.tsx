@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   StyledProduct,
@@ -46,7 +46,7 @@ export function Product() {
     }
   }, [book, dispatch, id])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
