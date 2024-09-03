@@ -5,7 +5,7 @@ import {
   useElements,
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
-import { StripePaymentElementOptions } from '@stripe/stripe-js'
+import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { useAppSelector } from 'hooks'
 import { userSelector } from 'store'
 import { PATH, URL } from 'constants/index'

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { StripeElementsOptions, loadStripe } from '@stripe/stripe-js'
+import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { stripeKey } from 'services'
 import { useAppSelector } from 'hooks'

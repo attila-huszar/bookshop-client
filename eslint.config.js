@@ -60,4 +60,7 @@ export default tseslint.config(
     files: ['eslint.config.js'],
     ...tseslint.configs.disableTypeChecked,
   },
+  {
+    ignores: ['dist'],
+  },
 )

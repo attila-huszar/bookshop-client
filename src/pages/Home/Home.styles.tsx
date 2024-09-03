@@ -17,4 +17,8 @@ export const ErrorDialog = styled.dialog`
   &::backdrop {
     background: rgba(0, 0, 0, 0.35);
   }
+
+  > button {
+    margin: 0 auto 1.5rem;
+  }
 `

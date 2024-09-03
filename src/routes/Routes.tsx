@@ -1,6 +1,10 @@
 import { Suspense, lazy } from 'react'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import type { RouteObject } from 'react-router-dom'
+import {
+  RouterProvider,
+  createBrowserRouter,
+  type RouteObject,
+} from 'react-router-dom'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   Home,
   Products,
@@ -13,7 +17,13 @@ import {
   NotFound,
 } from 'pages'
 import { PATH } from 'constants/index'
-import { ProtectedRoute, Loading, VerifyEmail, PasswordReset } from 'components'
+import {
+  ProtectedRoute,
+  Loading,
+  VerifyEmail,
+  PasswordReset,
+  Error,
+} from 'components'
 import { protectedRouteLoader } from 'helpers'
 
 const Layout = lazy(() =>
@@ -26,9 +36,14 @@ const routes: RouteObject[] = [
   {
     path: '/',
     element: (
-      <Suspense fallback={<Loading />}>
-        <Layout />
-      </Suspense>
+      <ErrorBoundary
+        fallback={
+          <Error text="Couldn't load the page. Please try again later." />
+        }>
+        <Suspense fallback={<Loading />}>
+          <Layout />
+        </Suspense>
+      </ErrorBoundary>
     ),
     children: [
       {

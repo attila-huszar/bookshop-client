@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { ErrorDialog, StyledHome } from './Home.styles'
-import { Recommended, Error } from 'components'
+import { Recommended, Button, Error } from 'components'
 import { Releases } from './components/Releases/Releases'
 import { TopSellers } from './components/TopSellers/TopSellers'
 import { News } from './components/News/News'
@@ -25,9 +25,10 @@ export function Home() {
       <News />
       <ErrorDialog ref={dialogRef}>
         <Error
-          text="Shop failed to load. Please try again later."
+          text="Couldn't load the shop. Please try again later."
           error={booksError}
         />
+        <Button onClick={() => window.location.reload()}>Reload Page</Button>
       </ErrorDialog>
     </StyledHome>
   )

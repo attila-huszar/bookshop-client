@@ -9,7 +9,9 @@ export const StyledError = styled.div`
   color: var(--black);
 
   p {
+    margin-bottom: 0.5rem;
     text-align: center;
+    text-wrap: balance;
   }
 
   p:first-child {

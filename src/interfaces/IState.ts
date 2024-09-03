@@ -1,4 +1,4 @@
-import { PaymentIntent } from '@stripe/stripe-js'
+import { type PaymentIntent } from '@stripe/stripe-js'
 import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
 export interface IBookStore {
