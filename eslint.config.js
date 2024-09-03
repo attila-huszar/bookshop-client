@@ -1,25 +1,35 @@
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
-import importXPlugin from 'eslint-plugin-import-x'
-import reactPlugin from 'eslint-plugin-react'
-import reactRefreshPlugin from 'eslint-plugin-react-refresh'
-import prettierPlugin from 'eslint-plugin-prettier'
+import importX from 'eslint-plugin-import-x'
+import react from 'eslint-plugin-react'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...tseslint.configs.stylistic,
-  importXPlugin.configs.typescript,
-  reactPlugin.configs.flat.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  importX.configs.typescript,
+  react.configs.flat.recommended,
   prettierConfig,
   {
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: ['*.js', '*.cjs'],
+          defaultProject: './tsconfig.json',
+        },
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-      'import-x': importXPlugin,
-      react: reactPlugin,
-      'react-refresh': reactRefreshPlugin,
-      prettier: prettierPlugin,
+      'import-x': importX,
+      react: react,
+      'react-refresh': reactRefresh,
+      prettier: prettier,
     },
     rules: {
       'no-undef': 'off',
@@ -45,5 +55,9 @@ export default tseslint.config(
         version: 'detect',
       },
     },
+  },
+  {
+    files: ['eslint.config.js'],
+    ...tseslint.configs.disableTypeChecked,
   },
 )

@@ -15,7 +15,7 @@ export function EmptyFilterResults() {
   const dispatch = useAppDispatch()
 
   const handleFormReset = () => {
-    dispatch(fetchBooks())
+    void dispatch(fetchBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))

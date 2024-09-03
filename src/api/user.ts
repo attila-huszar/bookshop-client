@@ -1,45 +1,44 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { URL } from 'constants/index'
-import { sendEmail, cloudinaryUploadPreset } from 'services'
-import { passwordEncrypt } from 'helpers'
+import { sendEmail, uploadImage } from 'services'
+import { handleAxiosError, passwordEncrypt } from 'helpers'
 import { IUser } from 'interfaces'
 
 export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {
-    const { data } = await axios.get(`${URL.users}?email=${email}`)
+    const response: { data: IUser[] } = await axios.get(
+      `${URL.users}?email=${email}`,
+    )
 
-    return data.length && data[0]
+    return response.data[0]
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw error.message
-    } else {
-      throw 'User not found'
-    }
+    throw handleAxiosError(error, 'Error fetching user by email')
   }
 }
 
-export const getUserByUUID = async (
-  uuid: string,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IUser> => {
+export const getUserByUUID = async (uuid: string): Promise<IUser> => {
   try {
-    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    const response: { data: IUser[] } = await axios.get(
+      `${URL.users}?uuid=${uuid}`,
+    )
 
-    return data.length && data[0]
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
+    if (!response.data || response.data.length === 0) {
+      throw new Error('User not found')
     }
+
+    return response.data[0]
+  } catch (error) {
+    throw handleAxiosError(error, 'Error fetching user by UUID')
   }
 }
 
 export const checkUserLoggedIn = async (uuid: string): Promise<boolean> => {
   try {
-    const { data } = await axios.get(`${URL.users}?uuid=${uuid}`)
+    const response: { data: IUser[] } = await axios.get(
+      `${URL.users}?uuid=${uuid}`,
+    )
 
-    return data.length && data[0].uuid === uuid
+    return response.data[0].uuid === uuid
   } catch {
     return false
   }
@@ -49,37 +48,32 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
   try {
     const userResponse = await getUserByEmail(user.email)
 
-    if (!userResponse) {
+    if (userResponse?.email) {
+      throw new Error(`${user.email} is already taken`)
+    } else {
       if (user.avatar instanceof File) {
         const imageResponse = await uploadImage(user.avatar, 'avatars')
-        user.avatar = imageResponse.url
+        user.avatar = imageResponse?.url
       }
 
-      const emailVerifyResponse = await sendEmail(user.email, user.firstName, {
+      await sendEmail(user.email, user.firstName, {
         verification: user.verificationCode,
       })
 
-      const registerResponse = await axios.post(`${URL.users}`, user)
+      await axios.post(`${URL.users}`, user)
 
-      if (emailVerifyResponse.status < 300 && registerResponse.status < 300) {
-        return `${user.email} registered successfully! Please verify your email address!`
-      } else if (emailVerifyResponse.status >= 300) {
-        throw emailVerifyResponse.text
-      } else if (registerResponse.status >= 300) {
-        throw registerResponse.statusText
-      } else {
-        throw 'Registration Failed'
-      }
-    } else if (userResponse.email === user.email) {
-      throw `${user.email} is already taken!`
-    } else {
-      throw 'Unknown error occurred'
+      return `${user.email} registered successfully, please verify your email address`
     }
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw error.message
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'text' in error &&
+      typeof error.text === 'string'
+    ) {
+      throw new Error(error.text)
     } else {
-      throw error
+      throw new Error('Registration failed, please try again later')
     }
   }
 }
@@ -88,10 +82,10 @@ export const postUserPasswordReset = async (email: string): Promise<string> => {
   try {
     const userResponse = await getUserByEmail(email)
 
-    if (userResponse && userResponse.verified) {
+    if (userResponse?.verified) {
       const passwordResetCode = crypto.randomUUID()
 
-      axios.patch(`${URL.users}/${userResponse.id}`, {
+      void axios.patch(`${URL.users}/${userResponse.id}`, {
         passwordResetCode,
         passwordResetCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       })
@@ -105,38 +99,28 @@ export const postUserPasswordReset = async (email: string): Promise<string> => {
       )
 
       if (sendEmailResponse.status < 300) {
-        return 'Check your email for the password reset code!'
+        return 'Please check your inbox for the password reset email'
       } else {
-        throw 'Error sending email, please try again later'
+        throw new Error('Error sending email, please try again later')
       }
-    } else if (!userResponse.verified) {
-      throw 'Please verify your email address first'
     } else {
-      return 'Check your email for the password reset code!'
+      return 'Please check your inbox for the password reset email'
     }
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw error.message
-    } else {
-      throw error
-    }
+    throw handleAxiosError(error, 'Error initiating password reset')
   }
 }
 
-export const putUser = async (
-  user: IUser,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IUser> => {
+export const putUser = async (user: IUser): Promise<IUser> => {
   try {
-    const response = await axios.put(`${URL.users}/${user.id}`, user)
+    const response: { data: IUser } = await axios.put(
+      `${URL.users}/${user.id}`,
+      user,
+    )
 
     return response.data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Error updating user')
   }
 }
 
@@ -165,7 +149,7 @@ export const verifyEmail = async (
   )
 
   if (data.length && data[0].verified) {
-    return 'Email already verified! Log in with your email and password'
+    return 'Email already verified, please log in with your email and password'
   } else if (
     data.length &&
     data[0].verificationCode === verificationCode &&
@@ -176,67 +160,38 @@ export const verifyEmail = async (
       verified: true,
     })
 
-    if (verifyResponse.status < 300) {
-      return 'Verification successful! You can now log in'
+    if (verifyResponse.status === 200) {
+      return 'Verification successful, you can now log in'
     } else {
-      throw verifyResponse.statusText
+      throw new Error(verifyResponse.statusText)
     }
   } else {
-    throw 'Verification code expired or invalid'
+    throw new Error('Verification code expired or invalid')
   }
 }
 
 export const passwordReset = async (
-  passwordResetCode: string,
-): Promise<{ success: boolean; uuid: string | null; message: string }> => {
+  resetCode: string,
+): Promise<{ uuid: string | null }> => {
   try {
     const { data }: { data: IUser[] } = await axios.get(
-      `${URL.users}?passwordResetCode=${passwordResetCode}`,
+      `${URL.users}?passwordResetCode=${resetCode}`,
     )
 
     if (
       data.length &&
-      data[0].passwordResetCode === passwordResetCode &&
+      data[0].passwordResetCode === resetCode &&
       new Date(data[0].passwordResetCodeExpiresAt!).getTime() > Date.now()
     ) {
       return {
-        success: true,
         uuid: data[0].uuid,
-        message: 'Password reset initiated',
       }
     } else if (data.length && !data[0].verified) {
-      throw {
-        success: false,
-        uuid: null,
-        message: 'Please verify your email address first',
-      }
+      throw new Error('Please verify your email address first')
     } else {
-      throw {
-        success: false,
-        uuid: null,
-        message: 'Password reset code expired or invalid',
-      }
+      throw new Error('Password reset code expired or invalid')
     }
   } catch (error) {
-    throw {
-      success: false,
-      message:
-        error instanceof AxiosError ? error.message : 'Unknown error occurred',
-    }
-  }
-}
-
-export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
-  const formData = new FormData()
-  formData.append('upload_preset', cloudinaryUploadPreset)
-  formData.append('folder', `/${cloudinaryUploadPreset}/${folder}`)
-  formData.append('file', img)
-
-  try {
-    const { data } = await axios.post(URL.cloudinaryUpload, formData)
-
-    return data
-  } catch (error) {
-    throw error instanceof AxiosError ? error.message : 'Unknown error occurred'
+    throw handleAxiosError(error, 'Error resetting password')
   }
 }

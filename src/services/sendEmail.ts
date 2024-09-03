@@ -24,8 +24,8 @@ export function sendEmail(
   },
 ) {
   const emailTemplates = {
-    verification: emailjsVerificationTemplate as string,
-    passwordReset: emailjsResetPasswordTemplate as string,
+    verification: emailjsVerificationTemplate,
+    passwordReset: emailjsResetPasswordTemplate,
   }
 
   const links = {

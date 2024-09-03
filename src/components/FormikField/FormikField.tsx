@@ -34,13 +34,13 @@ export function FormikField({
   }, [focus, formikRef])
 
   const handleImgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    formikContext.setFieldValue(
+    void formikContext.setFieldValue(
       'avatar',
       event.target.files instanceof FileList ? event.target.files[0] : null,
     )
 
-    formikContext.setFieldTouched('avatar', true)
-    formikContext.validateField('avatar')
+    void formikContext.setFieldTouched('avatar', true)
+    void formikContext.validateField('avatar')
   }
 
   if (type === 'file') {

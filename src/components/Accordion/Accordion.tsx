@@ -1,15 +1,13 @@
 import { useState, ReactElement, isValidElement } from 'react'
 import { AccordionItem } from './AccordionItem'
+import { AccordionProps } from './Accordion.types'
+import { AccordionItemProps } from './AccordionItem.types'
 
 export function Accordion({
   defaultOpenPanels = [0],
   numberOfAllowedOpenPanels = 3,
   children,
-}: {
-  defaultOpenPanels?: number[]
-  numberOfAllowedOpenPanels?: number | 'all'
-  children: ReactElement<typeof AccordionItem>[]
-}) {
+}: AccordionProps) {
   const [openPanels, setOpenPanels] = useState(defaultOpenPanels)
 
   const togglePanel = (panelKey: number) => {
@@ -32,11 +30,14 @@ export function Accordion({
     })
   }
 
-  function renderItem(child: React.ReactNode, panelKey: number) {
+  function renderItem(
+    child: ReactElement<AccordionItemProps>,
+    panelKey: number,
+  ) {
     if (isValidElement(child) && child.type === AccordionItem) {
       return (
         <AccordionItem
-          key={panelKey}
+          key={`accordion-item-${panelKey}`}
           panelKey={panelKey}
           isOpen={openPanels.includes(panelKey)}
           setIsOpen={togglePanel}
@@ -48,5 +49,5 @@ export function Accordion({
     return child
   }
 
-  return children.map((child, panelKey) => renderItem(child, panelKey))
+  return children.map((child, index) => renderItem(child, index))
 }

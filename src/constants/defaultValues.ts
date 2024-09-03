@@ -11,7 +11,7 @@ export const registrationInitialValues = {
   email: '',
   password: '',
   passwordConfirmation: '',
-  avatar: null,
+  avatar: undefined,
 }
 
 export const passwordChangeInitialValues = {

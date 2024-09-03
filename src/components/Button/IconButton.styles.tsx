@@ -17,7 +17,7 @@ export const StyledIconButton = styled.button<StyleTypes>`
   display: flex;
   align-items: center;
   padding: 3px;
-  color: ${({ $color }) => $color || 'var(--light-black)'};
+  color: ${({ $color }) => $color ?? 'var(--light-black)'};
   background: none;
   border: none;
   outline: none;

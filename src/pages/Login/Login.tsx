@@ -30,8 +30,8 @@ export function Login() {
           id: 'login-success',
         })
       })
-      .catch((error) => {
-        toast.error(error, {
+      .catch((error: Error) => {
+        toast.error(error.message, {
           id: 'login-error',
         })
       })
@@ -51,7 +51,7 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={(user) => handleLogin(user)}>
+        onSubmit={handleLogin}>
         <Form noValidate>
           <p>Email</p>
           <FormikField

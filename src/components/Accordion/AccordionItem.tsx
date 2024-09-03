@@ -1,4 +1,5 @@
 import { Header, Item, Content } from './AccordionItem.styles'
+import { AccordionItemProps } from './AccordionItem.types'
 import Caret from 'assets/svg/caret_down.svg?react'
 
 export function AccordionItem({
@@ -7,13 +8,7 @@ export function AccordionItem({
   setIsOpen = () => undefined,
   header,
   children,
-}: {
-  header: string
-  panelKey?: number
-  isOpen?: boolean
-  setIsOpen?: (panelKey: number) => void
-  children: React.ReactNode
-}) {
+}: AccordionItemProps) {
   return (
     <>
       <Header $isOpen={isOpen} onClick={() => setIsOpen(panelKey)}>

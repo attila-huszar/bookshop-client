@@ -53,7 +53,7 @@ export function Filter() {
 
   const handleFormSubmit = () => {
     dispatch(setBooksCurrentPage(1))
-    dispatch(
+    void dispatch(
       fetchBooks({
         genre: booksFilters.active.genre,
         price: generateFilterArray(
@@ -75,8 +75,8 @@ export function Filter() {
   }
 
   const handleFormReset = () => {
+    void dispatch(fetchBooks())
     dispatch(setBooksCurrentPage(1))
-    dispatch(fetchBooks())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))
@@ -121,20 +121,19 @@ export function Filter() {
               defaultOpenPanels={[0, 1]}>
               <AccordionItem header="Genre">
                 <GenreCheckBoxes>
-                  {booksFilters.initial.genre &&
-                    booksFilters.initial.genre.map((filter) => (
-                      <div key={filter}>
-                        <Field
-                          name="genre"
-                          type="checkbox"
-                          value={filter}
-                          id={filter}
-                          onChange={(e: IInputEvent) => handleGenreChange(e)}
-                          checked={booksFilters.active.genre.includes(filter)}
-                        />
-                        <label htmlFor={filter}>{filter}</label>
-                      </div>
-                    ))}
+                  {booksFilters.initial.genre?.map((filter) => (
+                    <div key={filter}>
+                      <Field
+                        name="genre"
+                        type="checkbox"
+                        value={filter}
+                        id={filter}
+                        onChange={(e: IInputEvent) => handleGenreChange(e)}
+                        checked={booksFilters.active.genre.includes(filter)}
+                      />
+                      <label htmlFor={filter}>{filter}</label>
+                    </div>
+                  ))}
                 </GenreCheckBoxes>
                 <button type="button" onClick={handleGenreClear}>
                   Clear selection

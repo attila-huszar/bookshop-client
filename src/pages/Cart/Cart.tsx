@@ -65,7 +65,7 @@ export function Cart() {
     if (orderStatus.clientSecret) {
       navigate(`/${PATH.checkout}`)
     } else if (orderError) {
-      toast.error(orderError as string, {
+      toast.error(orderError, {
         id: 'order-error',
       })
     }
@@ -113,7 +113,7 @@ export function Cart() {
         orderCreatedAt: new Date(),
       }
 
-      dispatch(createOrder({ orderToStripe, orderToServer }))
+      void dispatch(createOrder({ orderToStripe, orderToServer }))
     }
   }
 

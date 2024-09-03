@@ -5,10 +5,22 @@ export const StyledError = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 2rem;
-  padding: 5rem 0;
-  color: var(--white);
-  font-size: 1.25rem;
-  font-weight: 700;
+  padding: 2rem 4rem;
+  color: var(--black);
+
+  p {
+    text-align: center;
+  }
+
+  p:first-child {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  p:empty::before {
+    content: '';
+    display: inline-block;
+  }
 
   > svg {
     height: 5rem;

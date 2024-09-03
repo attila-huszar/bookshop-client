@@ -9,7 +9,7 @@ export interface IUser {
   password: string
   phone: string
   address: Address
-  avatar: string | File | null
+  avatar: File | string | undefined
   role: 'user' | 'admin'
   verified: boolean
   verificationCode: string

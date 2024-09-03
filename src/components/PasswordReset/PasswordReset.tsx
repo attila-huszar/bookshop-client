@@ -16,59 +16,55 @@ export function PasswordReset() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
-  const code = queryParams.get('code')
-  const [resetting, setResetting] = useState<{
-    state: boolean
-    uuid: string | null
-  }>({ state: false, uuid: null })
+  const resetCode = queryParams.get('code')
+  const [uuid, setUUID] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    if (code) {
-      passwordReset(code)
+    if (resetCode) {
+      passwordReset(resetCode)
         .then((resetResponse) => {
-          if (resetResponse.success) {
-            setResetting({ state: true, uuid: resetResponse.uuid })
+          if (resetResponse.uuid) {
+            setUUID(resetResponse.uuid)
           }
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           toast.error(error.message, {
             id: 'reset-error',
           })
           navigate('/')
         })
     }
-  }, [code, navigate])
+  }, [resetCode, navigate])
 
   const handleSubmit = async (values: {
     newPassword: string
     newPasswordConfirmation: string
   }) => {
-    if (
-      resetting.uuid &&
-      values.newPassword === values.newPasswordConfirmation
-    ) {
-      dispatch(
-        updateUser({
-          uuid: resetting.uuid,
-          fields: { password: passwordEncrypt(values.newPassword) },
-        }),
-      )
+    if (uuid && values.newPassword === values.newPasswordConfirmation) {
+      try {
+        await dispatch(
+          updateUser({
+            uuid,
+            fields: { password: passwordEncrypt(values.newPassword) },
+          }),
+        )
 
-      navigate(`/${PATH.login}`)
-      toast.success('Password Changed Successfully', {
-        id: 'reset-success',
-      })
-    } else {
-      toast.error('Error changing password, please try again later', {
-        id: 'password-change-error',
-      })
+        navigate(`/${PATH.login}`)
+        toast.success('Password Changed Successfully', {
+          id: 'reset-success',
+        })
+      } catch {
+        toast.error('Error changing password, please try again later', {
+          id: 'password-change-error',
+        })
+      }
     }
   }
 
   return (
-    resetting.state && (
+    uuid && (
       <StyledPasswordReset>
         <h2>Password Reset</h2>
         <p>Please enter your new password below.</p>
@@ -76,7 +72,7 @@ export function PasswordReset() {
           initialValues={passwordResetInitialValues}
           validationSchema={resetPasswordSchema}
           validateOnBlur={false}
-          onSubmit={(values) => handleSubmit(values)}>
+          onSubmit={handleSubmit}>
           {({ isSubmitting }) => (
             <Form noValidate>
               <p>New Password</p>

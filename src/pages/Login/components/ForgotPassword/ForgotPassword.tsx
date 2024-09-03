@@ -35,7 +35,9 @@ function ForgotPassword(
       actions.resetForm()
       toast.success(response)
     } catch (error) {
-      toast.error(error as string)
+      toast.error(
+        error instanceof Error ? error.message : 'Something went wrong',
+      )
     }
   }
 
@@ -52,7 +54,7 @@ function ForgotPassword(
           email: '',
         }}
         validationSchema={forgotPasswordSchema}
-        onSubmit={(values, actions) => handleSubmit(values, actions)}>
+        onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
             <p>Email</p>

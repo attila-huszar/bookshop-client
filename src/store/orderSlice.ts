@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { SerializedError } from '@reduxjs/toolkit'
 import { postStripePayment, postOrder } from 'api'
 import { ICreateOrder, IOrderStore } from 'interfaces'
 
@@ -11,16 +10,13 @@ const initialState: IOrderStore = {
     currency: null,
   },
   orderIsLoading: false,
-  orderError: null,
+  orderError: undefined,
 }
 
 const orderSlice = createSlice({
   name: 'order',
   initialState,
   reducers: {
-    updateOrderStatus: (state, action) => {
-      state.orderStatus.intent = action.payload
-    },
     clearOrder: (state) => {
       state.orderStatus = {
         intent: null,
@@ -28,14 +24,14 @@ const orderSlice = createSlice({
         amount: null,
         currency: null,
       }
-      state.orderError = null
+      state.orderError = undefined
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(createOrder.pending, (state) => {
         state.orderIsLoading = true
-        state.orderError = null
+        state.orderError = undefined
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.orderStatus = {
@@ -53,7 +49,7 @@ const orderSlice = createSlice({
           currency: null,
         }
         state.orderIsLoading = false
-        state.orderError = action.payload as SerializedError
+        state.orderError = action.error.message
       })
   },
 })
@@ -62,27 +58,22 @@ export const createOrder = createAsyncThunk(
   'createOrder',
   async (
     order: ICreateOrder,
-    { rejectWithValue },
   ): Promise<{
     clientSecret: string
     amount: number
     currency: string
   }> => {
-    try {
-      const stripeResponse = await postStripePayment(order.orderToStripe)
-      const clientSecret = stripeResponse.clientSecret
+    const stripeResponse = await postStripePayment(order.orderToStripe)
+    const clientSecret = stripeResponse.clientSecret
 
-      order.orderToServer.paymentId = clientSecret.split('_secret_')[0]
+    order.orderToServer.paymentId = clientSecret.split('_secret_')[0]
 
-      await postOrder(order.orderToServer)
+    await postOrder(order.orderToServer)
 
-      return {
-        clientSecret,
-        amount: order.orderToStripe.amount,
-        currency: order.orderToStripe.currency,
-      }
-    } catch (error) {
-      throw rejectWithValue(error)
+    return {
+      clientSecret,
+      amount: order.orderToStripe.amount,
+      currency: order.orderToStripe.currency,
     }
   },
 )

@@ -15,7 +15,7 @@ export function Card({ book }: { book: IBook }) {
     if (isBookInCart) {
       navigate(`/${PATH.cart}`)
     } else {
-      addToCart(book as IBook)
+      addToCart(book)
     }
   }
 

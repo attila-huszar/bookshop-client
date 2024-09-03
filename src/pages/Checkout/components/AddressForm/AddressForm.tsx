@@ -23,7 +23,7 @@ export function AddressForm() {
               city: userData?.address.city,
               state: userData?.address.state,
               postal_code: userData?.address.postal_code,
-              country: userData?.address.country as string,
+              country: userData?.address.country ?? 'US',
             },
           },
           autocomplete: {

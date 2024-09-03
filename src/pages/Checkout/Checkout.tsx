@@ -52,7 +52,7 @@ export function Checkout() {
         </>
       )
     } else {
-      return <Error error={orderError || 'No checkout in progress'} />
+      return <Error text="No checkout in progress" error={orderError} />
     }
   }
 

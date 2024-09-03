@@ -1,19 +1,16 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { URL } from 'constants/index'
+import { handleAxiosError } from 'helpers'
+import { INews } from 'interfaces'
 
-export const getNews = async (
-  id: string | void,
-  rejectWithValue: (value: unknown) => void,
-) => {
+export const getNews = async (id: string | void): Promise<INews[]> => {
   try {
-    const response = await axios.get(id ? `${URL.news}/${id}` : URL.news)
+    const { data }: { data: INews[] } = await axios.get(
+      id ? `${URL.news}/${id}` : URL.news,
+    )
 
-    return response.data
+    return data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get news')
   }
 }

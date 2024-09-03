@@ -1,37 +1,28 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { URL } from 'constants/index'
+import { handleAxiosError } from 'helpers'
 import { IAuthor } from 'interfaces'
 
-export const getAuthorById = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IAuthor> => {
+export const getAuthorById = async (id: number): Promise<IAuthor> => {
   try {
-    const { data } = await axios.get(`${URL.authors}/${id}`)
+    const { data }: { data: IAuthor } = await axios.get(`${URL.authors}/${id}`)
 
     return data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get author')
   }
 }
 
 export const getAuthorsBySearch = async (
   searchString: string,
-  rejectWithValue: (value: unknown) => void,
 ): Promise<IAuthor[]> => {
   try {
-    const { data } = await axios.get(`${URL.authors}?name_like=${searchString}`)
+    const { data }: { data: IAuthor[] } = await axios.get(
+      `${URL.authors}?name_like=${searchString}`,
+    )
 
     return data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Author not found')
   }
 }

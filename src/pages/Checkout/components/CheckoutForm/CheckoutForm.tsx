@@ -26,8 +26,8 @@ export function CheckoutForm({
   const [isLoading, setIsLoading] = useState(false)
   const [emailInput, setEmailInput] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
 
     if (!stripe || !elements) {
       return
@@ -65,7 +65,7 @@ export function CheckoutForm({
   }
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit}>
+    <form id="payment-form" onSubmit={(event) => void handleSubmit(event)}>
       <div>
         <p>Order #{orderNum}</p>
         <span>
@@ -73,7 +73,7 @@ export function CheckoutForm({
         </span>
       </div>
       <LinkAuthenticationElement
-        options={{ defaultValues: { email: userData?.email || '' } }}
+        options={{ defaultValues: { email: userData?.email ?? '' } }}
         onChange={(e) => setEmailInput(e.value.email)}
       />
       <PaymentElement id="payment-element" options={paymentElementOptions} />
