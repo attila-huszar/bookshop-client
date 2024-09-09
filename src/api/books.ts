@@ -1,19 +1,17 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { URL } from 'constants/index'
-import { IBook, IFilter } from 'interfaces'
+import { handleAxiosError } from 'helpers'
+import { IBook, IFilter, IFilterApplied } from 'interfaces'
 
-export const getBooks = async (
-  {
-    _page,
-    _limit,
-    criteria,
-  }: {
-    _page: number
-    _limit: number
-    criteria?: IFilter
-  },
-  rejectWithValue: (value: unknown) => void,
-): Promise<{
+export const getBooks = async ({
+  _page,
+  _limit,
+  criteria,
+}: {
+  _page: number
+  _limit: number
+  criteria?: IFilterApplied
+}): Promise<{
   books: IBook[]
   total: number
 }> => {
@@ -27,12 +25,12 @@ export const getBooks = async (
       criteria.genre.forEach((genre) => params.append('genre', genre))
     }
 
-    if (criteria?.price[0]) {
-      params.append('discountPrice_gte', `${criteria.price[0]}`)
+    if (criteria?.priceMin) {
+      params.append('discountPrice_gte', `${criteria.priceMin}`)
     }
 
-    if (criteria?.price[1]) {
-      params.append('discountPrice_lte', `${criteria.price[1]}`)
+    if (criteria?.priceMax) {
+      params.append('discountPrice_lte', `${criteria.priceMax}`)
     }
 
     if (criteria?.discount === 'discountOnly') {
@@ -41,19 +39,24 @@ export const getBooks = async (
       params.append('discount', '0')
     }
 
-    if (criteria?.publishYear[0]) {
-      params.append('yearOfPublishing_gte', `${criteria.publishYear[0]}`)
+    if (criteria?.publishYearMin) {
+      params.append('yearOfPublishing_gte', `${criteria.publishYearMin}`)
     }
 
-    if (criteria?.publishYear[1]) {
-      params.append('yearOfPublishing_lte', `${criteria.publishYear[1]}`)
+    if (criteria?.publishYearMax) {
+      params.append('yearOfPublishing_lte', `${criteria.publishYearMax}`)
     }
 
     if (criteria?.rating && criteria.rating > 1) {
       params.append('rating_gte', `${criteria.rating}`)
     }
 
-    const booksResponse = await axios.get(URL.books, {
+    const booksResponse: {
+      data: IBook[]
+      headers: {
+        'x-total-count': number
+      }
+    } = await axios.get(URL.books, {
       params,
     })
 
@@ -62,93 +65,67 @@ export const getBooks = async (
       total: booksResponse.headers['x-total-count'],
     }
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get books')
   }
 }
 
-export const getBookById = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook> => {
+export const getBookById = async (id: number): Promise<IBook> => {
   try {
-    const response = await axios.get(`${URL.books}/${id}`)
+    const response: { data: IBook } = await axios.get(`${URL.books}/${id}`)
     return response.data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get book by ID')
   }
 }
 
 export const getBooksByProperty = async (
   property: string,
-  rejectWithValue: (value: unknown) => void,
 ): Promise<IBook[]> => {
   try {
-    const { data } = await axios.get(`${URL.books}?${property}=true`)
+    const response: { data: IBook[] } = await axios.get(
+      `${URL.books}?${property}=true`,
+    )
 
-    return data
+    return response.data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get books by property')
   }
 }
 
 export const getBooksBySearch = async (
   searchString: string,
-  rejectWithValue: (value: unknown) => void,
 ): Promise<IBook[]> => {
   try {
-    const { data } = await axios.get(`${URL.books}?title_like=${searchString}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBooksByAuthor = async (
-  id: number,
-  rejectWithValue: (value: unknown) => void,
-): Promise<IBook[]> => {
-  try {
-    const { data } = await axios.get(`${URL.books}?author=${id}`)
-
-    return data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
-  }
-}
-
-export const getBookSearchOptions = async (
-  rejectWithValue: (value: unknown) => void,
-): Promise<Pick<IFilter, 'genre' | 'price' | 'publishYear'>> => {
-  try {
-    const response = await axios.get(URL.searchOptions)
+    const response: { data: IBook[] } = await axios.get(
+      `${URL.books}?title_like=${searchString}`,
+    )
 
     return response.data
   } catch (error) {
-    if (error instanceof AxiosError) {
-      throw rejectWithValue(error.message)
-    } else {
-      throw rejectWithValue('Unknown error occurred')
-    }
+    throw handleAxiosError(error, 'Unable to get books by search')
+  }
+}
+
+export const getBooksByAuthor = async (id: number): Promise<IBook[]> => {
+  try {
+    const response: { data: IBook[] } = await axios.get(
+      `${URL.books}?author=${id}`,
+    )
+
+    return response.data
+  } catch (error) {
+    throw handleAxiosError(error, 'Unable to get books by author')
+  }
+}
+
+export const getBookSearchOptions = async (): Promise<
+  Pick<IFilter, 'genre' | 'price' | 'publishYear'>
+> => {
+  try {
+    const response: { data: IFilter } = await axios.get(URL.searchOptions)
+
+    return response.data
+  } catch (error) {
+    throw handleAxiosError(error, 'Unable to get book search options')
   }
 }

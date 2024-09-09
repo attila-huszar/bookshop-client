@@ -1,5 +1,6 @@
-export { cloudinaryConfig } from './cloudinaryConfig'
 export { sendEmail } from './sendEmail'
+export { uploadImage } from './uploadImage'
+export { cloudinaryConfig } from './cloudinaryConfig'
 export {
   cloudinaryName,
   cloudinaryUploadPreset,

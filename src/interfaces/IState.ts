@@ -1,5 +1,4 @@
-import type { SerializedError } from '@reduxjs/toolkit'
-import { PaymentIntent } from '@stripe/stripe-js'
+import { type PaymentIntent } from '@stripe/stripe-js'
 import { IBook, IAuthor, INews, IUserToStore, ICart, IFilter } from 'interfaces'
 
 export interface IBookStore {
@@ -8,8 +7,9 @@ export interface IBookStore {
   booksTotal: number
   booksCurrentPage: number
   booksPerPage: number
+  bookIsLoading: boolean
   booksAreLoading: boolean
-  booksError: SerializedError | null
+  booksError: string | undefined
   booksRecommended: IBook[]
   booksTopSellers: IBook[]
   booksReleases: IBook[]
@@ -22,28 +22,28 @@ export interface IBookStore {
 export interface IAuthorStore {
   authorArray: IAuthor[]
   authorIsLoading: boolean
-  authorError: SerializedError | null
+  authorError: string | undefined
 }
 
 export interface INewsStore {
   newsArray: INews[]
   newsIsLoading: boolean
-  newsError: SerializedError | null
+  newsError: string | undefined
 }
 
 export interface IUserStore {
   userData: IUserToStore | null
   userIsLoading: boolean
   userIsUpdating: boolean
-  userError: SerializedError | null
-  loginError: SerializedError | null
-  registerError: SerializedError | null
+  userError: string | undefined
+  loginError: string | undefined
+  registerError: string | undefined
 }
 
 export interface ICartStore {
   cartArray: ICart[]
   cartIsLoading: boolean
-  cartError: SerializedError | null
+  cartError: string | undefined
 }
 
 export interface IOrderStore {
@@ -54,5 +54,5 @@ export interface IOrderStore {
     currency: string | null
   }
   orderIsLoading: boolean
-  orderError: SerializedError | null
+  orderError: string | undefined
 }

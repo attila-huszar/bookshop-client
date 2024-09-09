@@ -8,17 +8,17 @@ export const bookByIdSelector = (id: string) => (state: RootState) => {
   const findBook = (books: IBook[]) => books.find((book) => book.id === bookId)
 
   return (
-    findBook(state.books.booksInShop) ||
-    findBook(state.books.booksViewed) ||
-    findBook(state.books.booksRecommended) ||
-    findBook(state.books.booksTopSellers) ||
+    findBook(state.books.booksInShop) ??
+    findBook(state.books.booksViewed) ??
+    findBook(state.books.booksRecommended) ??
+    findBook(state.books.booksTopSellers) ??
     findBook(state.books.booksReleases)
   )
 }
 
 export const authorsSelector = (state: RootState) => state.authors
 
-export const authorByIdSelector = (id: number) => (state: RootState) =>
+export const authorByIdSelector = (id: number | null) => (state: RootState) =>
   state.authors.authorArray.find((author) => author.id === id)
 
 export const newsSelector = (state: RootState) => state.news

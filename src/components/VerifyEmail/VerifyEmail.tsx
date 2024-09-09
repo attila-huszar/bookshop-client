@@ -20,8 +20,8 @@ export function VerifyEmail() {
           })
           navigate(`/${PATH.login}`, { replace: true })
         })
-        .catch((error) => {
-          toast.error(error as string, {
+        .catch((error: Error) => {
+          toast.error(error.message, {
             id: 'verify-error',
           })
           navigate('/', { replace: true })

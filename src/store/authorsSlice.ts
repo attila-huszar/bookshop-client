@@ -1,12 +1,15 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { SerializedError } from '@reduxjs/toolkit'
+import {
+  createSlice,
+  createAsyncThunk,
+  type SerializedError,
+} from '@reduxjs/toolkit'
 import { getAuthorById, getAuthorsBySearch } from 'api'
 import { IAuthor, IAuthorStore } from 'interfaces'
 
 const initialState: IAuthorStore = {
   authorArray: [],
   authorIsLoading: false,
-  authorError: null,
+  authorError: undefined,
 }
 
 const authorsSlice = createSlice({
@@ -23,9 +26,9 @@ const authorsSlice = createSlice({
       action: { payload: IAuthor },
     ) => {
       const authorExists = state.authorArray.some(
-        (author) => author.id === action.payload.id,
+        (author) => author.id === action.payload?.id,
       )
-      if (!authorExists) {
+      if (!authorExists && action.payload) {
         state.authorArray.push(action.payload)
       }
       state.authorIsLoading = false
@@ -48,10 +51,10 @@ const authorsSlice = createSlice({
     }
 
     const handleRejected = (
-      state: { authorError: SerializedError | null; authorIsLoading: boolean },
-      action: { payload: unknown },
+      state: { authorError: string | undefined; authorIsLoading: boolean },
+      action: { error: SerializedError },
     ) => {
-      state.authorError = action.payload as SerializedError
+      state.authorError = action.error.message
       state.authorIsLoading = false
     }
 
@@ -67,13 +70,12 @@ const authorsSlice = createSlice({
 
 export const fetchAuthorById = createAsyncThunk(
   'fetchAuthorById',
-  (id: number, { rejectWithValue }) => getAuthorById(id, rejectWithValue),
+  getAuthorById,
 )
 
 export const fetchAuthorsBySearch = createAsyncThunk(
   'fetchAuthorsBySearch',
-  (searchString: string, { rejectWithValue }) =>
-    getAuthorsBySearch(searchString, rejectWithValue),
+  getAuthorsBySearch,
 )
 
 export const authorsReducer = authorsSlice.reducer

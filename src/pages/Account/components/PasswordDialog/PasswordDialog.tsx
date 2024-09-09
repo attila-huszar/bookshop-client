@@ -46,20 +46,22 @@ function PasswordDialog(
       const isPasswordValid = await verifyPassword(uuid, values.currentPassword)
 
       if (isPasswordValid) {
-        dispatch(
-          updateUser({
-            uuid,
-            fields: { password: passwordEncrypt(values.newPassword) },
-          }),
-        )
+        try {
+          await dispatch(
+            updateUser({
+              uuid,
+              fields: { password: passwordEncrypt(values.newPassword) },
+            }),
+          )
 
-        handleClose()
-        actions.resetForm()
-        toast.success('Password Changed Successfully')
-      } else {
-        toast.error('Current Password Invalid', {
-          id: 'password-error',
-        })
+          handleClose()
+          actions.resetForm()
+          toast.success('Password Changed Successfully')
+        } catch {
+          toast.error('Current Password Invalid', {
+            id: 'password-error',
+          })
+        }
       }
     }
   }
@@ -70,7 +72,7 @@ function PasswordDialog(
       <Formik
         initialValues={passwordChangeInitialValues}
         validationSchema={accountPasswordSchema}
-        onSubmit={(values, actions) => handleSubmit(values, actions)}>
+        onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
             <p>Current Password</p>

@@ -1,20 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { SerializedError } from '@reduxjs/toolkit'
 import { getBookById } from 'api'
 import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
 
 const initialState: ICartStore = {
   cartArray: [],
   cartIsLoading: false,
-  cartError: null,
+  cartError: undefined,
 }
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    cartAdd: (state, action) => {
-      const { id, title, price, discount, imgUrl }: IBook = action.payload
+    cartAdd: (state, action: { payload: IBook }) => {
+      const { id, title, price, discount, imgUrl } = action.payload
       const cartItem: ICart = {
         id,
         quantity: 1,
@@ -35,12 +34,12 @@ const cartSlice = createSlice({
     cartClear: (state) => {
       state.cartArray = []
     },
-    cartRemove: (state, action) => {
+    cartRemove: (state, action: { payload: ICart }) => {
       state.cartArray = state.cartArray.filter(
         (item) => item.id !== action.payload.id,
       )
     },
-    cartQuantityAdd: (state, action) => {
+    cartQuantityAdd: (state, action: { payload: ICart }) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -49,7 +48,7 @@ const cartSlice = createSlice({
         state.cartArray[itemIdx].quantity++
       }
     },
-    cartQuantityRemove: (state, action) => {
+    cartQuantityRemove: (state, action: { payload: ICart }) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -85,7 +84,7 @@ const cartSlice = createSlice({
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
-        state.cartError = action.payload as SerializedError
+        state.cartError = action.error.message
         state.cartIsLoading = false
       })
   },
@@ -93,9 +92,10 @@ const cartSlice = createSlice({
 
 export const fetchCartItems = createAsyncThunk(
   'fetchCartItems',
-  async (cartArray: ILocalCart[], { rejectWithValue }) => {
+  async (cartArray: ILocalCart[]) => {
     const promises = cartArray.map(async (item) => {
-      const book: IBook = await getBookById(item.id, rejectWithValue)
+      const book: IBook = await getBookById(item.id)
+
       const {
         author,
         genre,
@@ -116,8 +116,13 @@ export const fetchCartItems = createAsyncThunk(
       }
     })
 
-    const resolvedItems = await Promise.all(promises)
-    return resolvedItems
+    const settledItems = await Promise.allSettled(promises)
+
+    const itemsToCart = settledItems
+      .filter((item) => item.status === 'fulfilled')
+      .map((item) => item.value)
+
+    return itemsToCart
   },
 )
 

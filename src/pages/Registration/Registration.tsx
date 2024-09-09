@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
@@ -14,7 +14,7 @@ export function Registration() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -23,7 +23,7 @@ export function Registration() {
     lastName: string
     email: string
     password: string
-    avatar: null | File
+    avatar: File | undefined
   }) => {
     const user: IUser = {
       uuid: crypto.randomUUID(),
@@ -55,7 +55,9 @@ export function Registration() {
       navigate('/', { replace: true })
       toast.success(registerResponse)
     } catch (error) {
-      toast.error(error as string)
+      toast.error(
+        error instanceof Error ? error.message : 'Something went wrong',
+      )
     }
   }
 
@@ -65,7 +67,7 @@ export function Registration() {
         initialValues={registrationInitialValues}
         validationSchema={registrationSchema}
         validateOnBlur={false}
-        onSubmit={(values) => handleSubmit(values)}>
+        onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
             <p>First Name</p>

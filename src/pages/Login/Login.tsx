@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { ButtonWrapper } from 'styles/Form.styles'
@@ -13,28 +13,31 @@ import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from 'assets/svg/question_circle.svg?react'
 
 export function Login() {
-  const { userData, userIsLoading, loginError } = useAppSelector(userSelector)
+  const { userIsLoading } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { setToLocalStorage } = useLocalStorage()
   const [showPassword, setShowPassword] = useState(false)
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
-  useEffect(() => {
-    if (userData) {
-      setToLocalStorage('uuid', userData.uuid)
-      navigate('/', { replace: true })
-      toast.success(`Welcome back, ${userData.firstName}!`, {
-        id: 'login-success',
+  const handleLogin = (user: { email: string; password: string }) => {
+    dispatch(loginUser(user))
+      .unwrap()
+      .then((response) => {
+        setToLocalStorage('uuid', response.uuid)
+        navigate('/', { replace: true })
+        toast.success(`Welcome back, ${response.firstName}!`, {
+          id: 'login-success',
+        })
       })
-    } else if (loginError) {
-      toast.error(`${loginError}`, {
-        id: 'login-error',
+      .catch((error: Error) => {
+        toast.error(error.message, {
+          id: 'login-error',
+        })
       })
-    }
-  }, [loginError, navigate, setToLocalStorage, userData])
+  }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -48,7 +51,7 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={(user) => dispatch(loginUser(user))}>
+        onSubmit={handleLogin}>
         <Form noValidate>
           <p>Email</p>
           <FormikField

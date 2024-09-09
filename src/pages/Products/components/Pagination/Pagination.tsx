@@ -22,7 +22,7 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage > 1) {
             dispatch(setBooksCurrentPage(1))
-            dispatch(fetchBooks(booksFilters.active))
+            void dispatch(fetchBooks(booksFilters.active))
           }
         }}
         icon={<ChevronLeftEndIcon />}
@@ -32,7 +32,7 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage > 1) {
             dispatch(decrementBooksCurrentPage())
-            dispatch(fetchBooks(booksFilters.active))
+            void dispatch(fetchBooks(booksFilters.active))
           }
         }}
         icon={<ChevronLeftIcon />}
@@ -47,7 +47,7 @@ export function Pagination() {
               data-active={booksCurrentPage === idx + 1}
               onClick={() => {
                 dispatch(setBooksCurrentPage(idx + 1))
-                dispatch(fetchBooks(booksFilters.active))
+                void dispatch(fetchBooks(booksFilters.active))
               }}>
               {idx + 1}
             </PageSelectButton>
@@ -58,7 +58,7 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(incrementBooksCurrentPage())
-            dispatch(fetchBooks(booksFilters.active))
+            void dispatch(fetchBooks(booksFilters.active))
           }
         }}
         icon={<ChevronLeftIcon />}
@@ -69,7 +69,7 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(setBooksCurrentPage(Math.ceil(booksTotal / booksPerPage)))
-            dispatch(fetchBooks(booksFilters.active))
+            void dispatch(fetchBooks(booksFilters.active))
           }
         }}
         icon={<ChevronLeftEndIcon />}

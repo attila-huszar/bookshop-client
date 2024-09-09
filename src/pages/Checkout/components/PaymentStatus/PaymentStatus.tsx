@@ -25,53 +25,63 @@ export function PaymentStatus() {
       return
     }
 
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-      switch (paymentIntent?.status) {
-        case 'succeeded': {
-          setStatus({
-            intent: paymentIntent.status,
-            message: 'Success! Payment received.',
-          })
-          updateOrder({
-            paymentId: paymentIntent.id,
-            fields: {
-              orderStatus: 'paid',
-              userName: paymentIntent.shipping?.name,
-              userEmail: paymentIntent.receipt_email,
-              userPhone: paymentIntent.shipping?.phone,
-              userAddress: paymentIntent.shipping?.address,
-            },
-          })
-          localStorage.removeItem('cart')
-          break
-        }
+    stripe
+      .retrievePaymentIntent(clientSecret)
+      .then(({ paymentIntent }) => {
+        switch (paymentIntent?.status) {
+          case 'succeeded': {
+            setStatus({
+              intent: paymentIntent.status,
+              message: 'Success! Payment received.',
+            })
 
-        case 'processing': {
-          setStatus({
-            intent: paymentIntent.status,
-            message:
-              "Payment processing. We'll update you when payment is received.",
-          })
-          break
-        }
+            void updateOrder({
+              paymentId: paymentIntent.id,
+              fields: {
+                orderStatus: 'paid',
+                userName: paymentIntent.shipping?.name,
+                userEmail: paymentIntent.receipt_email,
+                userPhone: paymentIntent.shipping?.phone,
+                userAddress: paymentIntent.shipping?.address,
+              },
+            })
 
-        case 'requires_payment_method': {
-          setStatus({
-            intent: paymentIntent.status,
-            message: 'Payment failed. Please try another payment method.',
-          })
-          break
-        }
+            localStorage.removeItem('cart')
+            break
+          }
 
-        default: {
-          setStatus({
-            intent: 'unknown_error',
-            message: 'Something went wrong.',
-          })
-          break
+          case 'processing': {
+            setStatus({
+              intent: paymentIntent.status,
+              message:
+                "Payment processing. We'll update you when payment is received.",
+            })
+            break
+          }
+
+          case 'requires_payment_method': {
+            setStatus({
+              intent: paymentIntent.status,
+              message: 'Payment failed. Please try another payment method.',
+            })
+            break
+          }
+
+          default: {
+            setStatus({
+              intent: 'unknown_error',
+              message: 'Something went wrong.',
+            })
+            break
+          }
         }
-      }
-    })
+      })
+      .catch(() =>
+        setStatus({
+          intent: 'retrieve_error',
+          message: 'Error retrieving payment status.',
+        }),
+      )
   }, [stripe])
 
   return (

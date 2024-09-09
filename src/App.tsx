@@ -18,20 +18,20 @@ function App() {
   const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
-    dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
-    dispatch(fetchBooksByProperty('new'))
-    dispatch(fetchBooksByProperty('topSellers'))
-    dispatch(fetchNews())
-    dispatch(fetchBookSearchOptions())
+    void dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
+    void dispatch(fetchBooksByProperty('new'))
+    void dispatch(fetchBooksByProperty('topSellers'))
+    void dispatch(fetchNews())
+    void dispatch(fetchBookSearchOptions())
 
     const uuid = getFromLocalStorage<string>('uuid')
     if (uuid) {
-      dispatch(fetchUserByUUID(uuid))
+      void dispatch(fetchUserByUUID(uuid))
     }
 
     const cart = getFromLocalStorage<ILocalCart[]>('cart')
     if (cart) {
-      dispatch(fetchCartItems(cart))
+      void dispatch(fetchCartItems(cart))
     }
   }, [dispatch, getFromLocalStorage])
 

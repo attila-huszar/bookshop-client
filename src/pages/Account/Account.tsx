@@ -14,38 +14,40 @@ import { Avatar, Button, FormikField, IconButton } from 'components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from 'hooks'
 import { userSelector, updateUser } from 'store'
-import { uploadImage } from 'api'
+import { uploadImage } from 'services'
 import { Form, Formik } from 'formik'
 import { countryList } from 'constants/index'
 import { accountBasicSchema, accountAddressSchema } from 'helpers'
 import { IUserToStore } from 'interfaces'
 import EditIcon from 'assets/svg/edit.svg?react'
-import toast from 'react-hot-toast'
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)
-  const { uuid, firstName, lastName, email, phone, avatar, address } = {
-    ...userData,
-  } as IUserToStore
   const [editingBasicInfo, setEditingBasicInfo] = useState(false)
   const [editingAddressInfo, setEditingAddressInfo] = useState(false)
   const inputFile = useRef<HTMLInputElement>(null)
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<IUserToStore>) => {
-    dispatch(
+  const handleBasicInfoSubmit = (
+    values: Partial<IUserToStore>,
+    uuid: string,
+  ) => {
+    void dispatch(
       updateUser({
-        uuid: uuid as string,
+        uuid,
         fields: { ...values },
       }),
     )
   }
 
-  const handleAddressInfoSubmit = (values: IUserToStore['address']) => {
-    dispatch(
+  const handleAddressInfoSubmit = (
+    values: IUserToStore['address'],
+    uuid: string,
+  ) => {
+    void dispatch(
       updateUser({
-        uuid: uuid as string,
+        uuid,
         fields: { address: values },
       }),
     )
@@ -57,69 +59,69 @@ export function Account() {
     inputFile.current?.click()
   }
 
-  const handleImgChange = async (img: File) => {
-    try {
-      const imageResponse = await uploadImage(img, 'avatars')
+  const handleImgChange = async (img: File, uuid: string) => {
+    const imageResponse = await uploadImage(img, 'avatars')
 
-      dispatch(
-        updateUser({
-          uuid: uuid as string,
-          fields: { avatar: imageResponse.url },
-        }),
-      )
-    } catch {
-      toast.error('Image upload failed')
-    }
+    void dispatch(
+      updateUser({
+        uuid,
+        fields: { avatar: imageResponse?.url },
+      }),
+    )
   }
 
   const handlePasswordDialogOpen = () => {
     passwordDialog.current?.showModal()
   }
 
-  return (
-    <StyledAccount>
-      <h2>
-        Hello, <span>{firstName}</span>!
-      </h2>
-      <UserDataFields>
-        <Details>
-          <h5>General Information</h5>
-          <div>
-            <AvatarPanel>
-              <Avatar
-                imgUrl={avatar as string}
-                onClick={handleAvatarClick}
-                title="Change Profile Picture"
-                $size={160}
-                $clip
-                $camera
-              />
-              <input
-                type="file"
-                name="avatarChangeInput"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  if (!e.target.files) return
-                  handleImgChange(e.target.files[0])
-                }}
-                accept="image/*"
-                ref={inputFile}
-                style={{ display: 'none' }}
-              />
-              <Button
-                onClick={handlePasswordDialogOpen}
-                $size="sm"
-                $textSize="sm">
-                Change Password
-              </Button>
-              <PasswordDialogRef ref={passwordDialog} uuid={uuid as string} />
-            </AvatarPanel>
-            <General>
-              {userData && (
+  if (userData) {
+    const { uuid, firstName, lastName, email, phone, avatar, address } =
+      userData
+
+    return (
+      <StyledAccount>
+        <h2>
+          Hello, <span>{firstName}</span>!
+        </h2>
+        <UserDataFields>
+          <Details>
+            <h5>General Information</h5>
+            <div>
+              <AvatarPanel>
+                <Avatar
+                  imgUrl={avatar as string}
+                  onClick={handleAvatarClick}
+                  title="Change Profile Picture"
+                  $size={160}
+                  $clip
+                  $camera
+                />
+                <input
+                  type="file"
+                  name="avatarChangeInput"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    if (e.target.files) {
+                      void handleImgChange(e.target.files[0], uuid)
+                    }
+                  }}
+                  accept="image/*"
+                  ref={inputFile}
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  onClick={handlePasswordDialogOpen}
+                  $size="sm"
+                  $textSize="sm">
+                  Change Password
+                </Button>
+                <PasswordDialogRef ref={passwordDialog} uuid={uuid} />
+              </AvatarPanel>
+              <General>
                 <Formik
                   initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values) => handleBasicInfoSubmit(values)}
+                  onSubmit={(values) => handleBasicInfoSubmit(values, uuid)}
                   onReset={handleBasicInfoReset}>
                   <Form>
                     <GeneralLine>
@@ -178,20 +180,17 @@ export function Account() {
                     )}
                   </Form>
                 </Formik>
-              )}
-            </General>
-          </div>
-          {!editingBasicInfo && (
+              </General>
+            </div>
             <IconButton
-              onClick={() => setEditingBasicInfo((prev) => !prev)}
+              onClick={() => setEditingBasicInfo(true)}
               icon={<EditIcon />}
+              disabled={editingBasicInfo}
             />
-          )}
-        </Details>
-        <Details>
-          <h5>Address</h5>
-          <Address>
-            {userData && (
+          </Details>
+          <Details>
+            <h5>Address</h5>
+            <Address>
               <Formik
                 initialValues={{
                   line1: address.line1,
@@ -203,9 +202,7 @@ export function Account() {
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values: IUserToStore['address']) =>
-                  handleAddressInfoSubmit(values)
-                }
+                onSubmit={(values) => handleAddressInfoSubmit(values, uuid)}
                 onReset={handleAddressInfoReset}>
                 <Form>
                   <AddressLine>
@@ -290,16 +287,15 @@ export function Account() {
                   )}
                 </Form>
               </Formik>
-            )}
-          </Address>
-          {!editingAddressInfo && (
+            </Address>
             <IconButton
-              onClick={() => setEditingAddressInfo((prev) => !prev)}
+              onClick={() => setEditingAddressInfo(true)}
               icon={<EditIcon />}
+              disabled={editingAddressInfo}
             />
-          )}
-        </Details>
-      </UserDataFields>
-    </StyledAccount>
-  )
+          </Details>
+        </UserDataFields>
+      </StyledAccount>
+    )
+  }
 }

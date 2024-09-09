@@ -2,18 +2,10 @@ import { StyledNews } from './News.styles'
 import { NewsCard } from './NewsCard'
 import { useAppSelector } from 'hooks'
 import { newsSelector } from 'store'
-import { Loading, Error, SwiperComponent } from 'components'
+import { SwiperComponent } from 'components'
 
 export function News() {
-  const { newsArray, newsIsLoading, newsError } = useAppSelector(newsSelector)
-
-  if (newsIsLoading) {
-    return <Loading />
-  }
-
-  if (newsError) {
-    return <Error error={newsError} />
-  }
+  const { newsArray } = useAppSelector(newsSelector)
 
   return (
     <StyledNews>

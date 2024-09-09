@@ -1,4 +1,4 @@
-import { useEffect, Fragment, ChangeEvent } from 'react'
+import { useEffect, Fragment, ChangeEvent, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector, useCart } from 'hooks'
 import { cartSelector, createOrder, orderSelector } from 'store'
@@ -65,13 +65,13 @@ export function Cart() {
     if (orderStatus.clientSecret) {
       navigate(`/${PATH.checkout}`)
     } else if (orderError) {
-      toast.error(orderError as string, {
+      toast.error(orderError, {
         id: 'order-error',
       })
     }
   }, [navigate, orderError, orderStatus.clientSecret])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -113,7 +113,7 @@ export function Cart() {
         orderCreatedAt: new Date(),
       }
 
-      dispatch(createOrder({ orderToStripe, orderToServer }))
+      void dispatch(createOrder({ orderToStripe, orderToServer }))
     }
   }
 

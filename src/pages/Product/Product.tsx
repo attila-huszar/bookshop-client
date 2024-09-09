@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   StyledProduct,
@@ -31,8 +31,9 @@ export function Product() {
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
   const author: IAuthor | undefined = useAppSelector(
-    authorByIdSelector(book?.author as number),
+    authorByIdSelector(book?.author ?? null),
   )
+
   const { booksError } = useAppSelector(booksSelector)
   const { authorError } = useAppSelector(authorsSelector)
   const RecommendedMemoized = memo(Recommended)
@@ -42,19 +43,19 @@ export function Product() {
 
   useEffect(() => {
     if (!book && id) {
-      dispatch(fetchBookById(Number(id)))
+      void dispatch(fetchBookById(Number(id)))
     }
   }, [book, dispatch, id])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleCartAction = () => {
+  const handleCartAction = (book: IBook) => {
     if (isBookInCart) {
       navigate(`/${PATH.cart}`)
     } else {
-      addToCart(book as IBook)
+      addToCart(book)
     }
   }
 
@@ -66,7 +67,7 @@ export function Product() {
     }
   }
 
-  return book ? (
+  return (
     <>
       <StyledProduct>
         <Breadcrumb>
@@ -74,42 +75,44 @@ export function Product() {
             Book Details
           </button>
         </Breadcrumb>
-        <DetailsSection>
-          <ImageWrapper>
-            <img
-              src={book.imgUrl}
-              alt={book.title}
-              onError={(e) =>
-                ((e.target as HTMLImageElement).src = imagePlaceholder)
-              }
-              width="100%"
+        {book ? (
+          <DetailsSection>
+            <ImageWrapper>
+              <img
+                src={book.imgUrl}
+                alt={book.title}
+                onError={(e) =>
+                  ((e.target as HTMLImageElement).src = imagePlaceholder)
+                }
+                width="100%"
+              />
+            </ImageWrapper>
+            <Title>{book.title}</Title>
+            <Author>{author ? author.name : authorError}</Author>
+            <Price
+              component="product"
+              price={book.price}
+              discount={book.discount}
             />
-          </ImageWrapper>
-          <Title>{book.title}</Title>
-          <Author>{author ? author.name : (authorError as string)}</Author>
-          <Price
-            component="product"
-            price={book.price}
-            discount={book.discount}
-          />
-          <Description>
-            <h2>Summary</h2>
-            <p>{book.description}</p>
-          </Description>
-          <ButtonWrapper>
-            <Button
-              onClick={handleCartAction}
-              $withCartAdd={!isBookInCart}
-              $textSize="lg"
-              $size="lg">
-              {isBookInCart ? 'View in Basket' : 'Add to Basket'}
-            </Button>
-          </ButtonWrapper>
-        </DetailsSection>
+            <Description>
+              <h2>Summary</h2>
+              <p>{book.description}</p>
+            </Description>
+            <ButtonWrapper>
+              <Button
+                onClick={() => handleCartAction(book)}
+                $withCartAdd={!isBookInCart}
+                $textSize="lg"
+                $size="lg">
+                {isBookInCart ? 'View in Basket' : 'Add to Basket'}
+              </Button>
+            </ButtonWrapper>
+          </DetailsSection>
+        ) : (
+          booksError && <Error text="Book not found" error={booksError} />
+        )}
       </StyledProduct>
       <RecommendedMemoized />
     </>
-  ) : (
-    <Error error={booksError} />
   )
 }

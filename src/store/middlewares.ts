@@ -37,15 +37,15 @@ authorFetchMiddlewareTyped({
     if (action.type === fetchBooks.fulfilled.type) {
       const booksFetchPayload = action.payload as { books: IBook[] }
       booksFetchPayload.books.forEach((book) => {
-        listenerApi.dispatch(fetchAuthorById(book.author))
+        void listenerApi.dispatch(fetchAuthorById(book.author))
       })
     } else if (action.type === fetchBookById.fulfilled.type) {
       const bookFetchByIdPayload = action.payload as IBook
-      listenerApi.dispatch(fetchAuthorById(bookFetchByIdPayload.author))
+      void listenerApi.dispatch(fetchAuthorById(bookFetchByIdPayload.author))
     } else {
       const booksFetchByPropsPayload = action.payload as IBook[]
       booksFetchByPropsPayload.forEach((book) => {
-        listenerApi.dispatch(fetchAuthorById(book.author))
+        void listenerApi.dispatch(fetchAuthorById(book.author))
       })
     }
   },
@@ -66,8 +66,8 @@ localStorageMiddlewareTyped({
   ),
   effect: (action) => {
     const cartFromLocalStorage: ILocalCart[] = JSON.parse(
-      localStorage.getItem('cart') || '[]',
-    )
+      localStorage.getItem('cart') ?? '[]',
+    ) as ILocalCart[]
 
     let cartToLocalStorage: ILocalCart[] = []
     const actionPayload = action.payload as ICart

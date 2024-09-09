@@ -19,5 +19,4 @@ export {
   verifyPassword,
   verifyEmail,
   passwordReset,
-  uploadImage,
 } from './user'

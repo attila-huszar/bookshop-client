@@ -1,12 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import type { SerializedError } from '@reduxjs/toolkit'
 import { getNews } from 'api'
 import { INewsStore } from 'interfaces'
 
 const initialState: INewsStore = {
   newsArray: [],
   newsIsLoading: false,
-  newsError: null,
+  newsError: undefined,
 }
 
 const newsSlice = createSlice({
@@ -24,14 +23,11 @@ const newsSlice = createSlice({
       })
       .addCase(fetchNews.rejected, (state, action) => {
         state.newsIsLoading = false
-        state.newsError = action.payload as SerializedError
+        state.newsError = action.error.message
       })
   },
 })
 
-export const fetchNews = createAsyncThunk(
-  'fetchNews',
-  (_, { rejectWithValue }) => getNews(_, rejectWithValue),
-)
+export const fetchNews = createAsyncThunk('fetchNews', getNews)
 
 export const newsReducer = newsSlice.reducer
