@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { URL } from 'constants/index'
-import { sendEmail, uploadImage } from 'services'
-import { handleAxiosError, passwordEncrypt } from 'helpers'
-import { IUser } from 'interfaces'
+import { URL } from '@/constants'
+import { sendEmail, uploadImage } from '@/services'
+import { handleAxiosError, passwordEncrypt } from '@/helpers'
+import { IUser } from '@/interfaces'
 
 export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {

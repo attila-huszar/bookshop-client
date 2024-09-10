@@ -10,10 +10,10 @@ import {
   getBooksByProperty,
   getBooksBySearch,
   getBookSearchOptions,
-} from 'api'
-import { generateUniqueRndNums } from 'helpers'
+} from '@/api/rest'
+import { generateUniqueRndNums } from '@/helpers'
 import { RootState } from './store'
-import { IBook, IBookStore, IFilter, IFilterApplied } from 'interfaces'
+import { IBook, IBookStore, IFilter, IFilterApplied } from '@/interfaces'
 
 const initialState: IBookStore = {
   booksInShop: [],

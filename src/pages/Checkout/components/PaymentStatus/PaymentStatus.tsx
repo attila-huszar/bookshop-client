@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStripe } from '@stripe/react-stripe-js'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.styles'
-import { updateOrder } from 'api'
-import { useAppDispatch } from 'hooks'
-import { cartClear } from 'store'
-import logo from 'assets/image/logo.png'
+import { updateOrder } from '@/api/rest'
+import { useAppDispatch } from '@/hooks'
+import { cartClear } from '@/store'
+import logo from '@/assets/image/logo.png'
 
 export function PaymentStatus() {
   const stripe = useStripe()

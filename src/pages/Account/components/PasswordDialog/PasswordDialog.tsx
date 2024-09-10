@@ -6,16 +6,16 @@ import {
   useState,
 } from 'react'
 import { Formik, Form } from 'formik'
-import { StyledPasswordDialog } from './PasswordDialog.styles'
-import { ButtonWrapper } from 'styles/Form.styles'
-import { Button, FormikField, IconButton } from 'components'
-import { passwordChangeInitialValues } from 'constants/index'
-import { accountPasswordSchema, passwordEncrypt } from 'helpers'
-import { useAppDispatch } from 'hooks'
-import { updateUser } from 'store'
-import { verifyPassword } from 'api'
-import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
 import toast from 'react-hot-toast'
+import { StyledPasswordDialog } from './PasswordDialog.styles'
+import { ButtonWrapper } from '@/styles/Form.styles'
+import { Button, FormikField, IconButton } from '@/components'
+import { passwordChangeInitialValues } from '@/constants'
+import { accountPasswordSchema, passwordEncrypt } from '@/helpers'
+import { useAppDispatch } from '@/hooks'
+import { updateUser } from '@/store'
+import { verifyPassword } from '@/api/rest'
+import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 function PasswordDialog(
   { uuid }: { uuid: string },

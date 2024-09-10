@@ -5,7 +5,7 @@ import {
   NotFoundSection,
   StyledNotFound,
 } from './NotFound.styles'
-import books from 'assets/image/books.png'
+import books from '@/assets/image/books.png'
 
 export function NotFound() {
   const navigate = useNavigate()

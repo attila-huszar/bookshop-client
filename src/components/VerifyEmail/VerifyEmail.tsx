@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Loading } from 'components'
-import { verifyEmail } from 'api'
-import { PATH } from 'constants/index'
 import toast from 'react-hot-toast'
+import { Loading } from '@/components'
+import { verifyEmail } from '@/api/rest'
+import { PATH } from '@/constants'
 
 export function VerifyEmail() {
   const navigate = useNavigate()

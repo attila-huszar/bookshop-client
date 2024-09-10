@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { postStripePayment, postOrder } from 'api'
-import { ICreateOrder, IOrderStore } from 'interfaces'
+import { postStripePayment, postOrder } from '@/api/rest'
+import { ICreateOrder, IOrderStore } from '@/interfaces'
 
 const initialState: IOrderStore = {
   orderStatus: {

@@ -1,15 +1,15 @@
 import { StyledPagination, PageSelectButton } from './Pagination.styles'
-import { IconButton } from 'components'
-import { useAppDispatch, useAppSelector } from 'hooks'
+import { IconButton } from '@/components'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
   booksSelector,
   incrementBooksCurrentPage,
   decrementBooksCurrentPage,
   fetchBooks,
   setBooksCurrentPage,
-} from 'store'
-import ChevronLeftIcon from 'assets/svg/chevron_left.svg?react'
-import ChevronLeftEndIcon from 'assets/svg/chevron_left_end.svg?react'
+} from '@/store'
+import ChevronLeftIcon from '@/assets/svg/chevron_left.svg?react'
+import ChevronLeftEndIcon from '@/assets/svg/chevron_left_end.svg?react'
 
 export function Pagination() {
   const dispatch = useAppDispatch()

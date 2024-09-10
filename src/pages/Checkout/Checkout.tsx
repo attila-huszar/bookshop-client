@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { stripeKey } from 'services'
-import { useAppSelector } from 'hooks'
-import { orderSelector } from 'store'
+import { stripeKey } from '@/services'
+import { useAppSelector } from '@/hooks'
+import { orderSelector } from '@/store'
 import { StyledCheckout } from './Checkout.styles'
 import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
-import { Error } from 'components'
+import { Error } from '@/components'
 
 const stripePromise = loadStripe(stripeKey)
 const loader = 'auto'

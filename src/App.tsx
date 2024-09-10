@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { Routes } from 'routes'
-import { useAppDispatch, useLocalStorage } from 'hooks'
+import { Routes } from '@/routes'
+import { useAppDispatch, useLocalStorage } from '@/hooks'
 import {
   fetchBooks,
   fetchBooksByProperty,
@@ -9,9 +9,9 @@ import {
   fetchNews,
   fetchCartItems,
   fetchUserByUUID,
-} from 'store'
-import { ILocalCart } from 'interfaces'
-import GlobalStyle from 'styles/Global.styles'
+} from '@/store'
+import { ILocalCart } from '@/interfaces'
+import GlobalStyle from '@/styles/Global.styles'
 
 function App() {
   const dispatch = useAppDispatch()

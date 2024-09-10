@@ -1,5 +1,5 @@
 import { StyledEmptyFilterResults } from './EmptyFilterResults.styles'
-import { useAppDispatch } from 'hooks'
+import { useAppDispatch } from '@/hooks'
 import {
   fetchBooks,
   setBooksFilterGenre,
@@ -7,9 +7,9 @@ import {
   setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from 'store'
-import { Button } from 'components'
-import NoResultsIcon from 'assets/svg/empty_filter_result.svg?react'
+} from '@/store'
+import { Button } from '@/components'
+import NoResultsIcon from '@/assets/svg/empty_filter_result.svg?react'
 
 export function EmptyFilterResults() {
   const dispatch = useAppDispatch()

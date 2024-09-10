@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { ErrorDialog, StyledHome } from './Home.styles'
-import { Recommended, Button, Error } from 'components'
+import { Recommended, Button, Error } from '@/components'
 import { Releases } from './components/Releases/Releases'
 import { TopSellers } from './components/TopSellers/TopSellers'
 import { News } from './components/News/News'
-import { useAppSelector } from 'hooks'
-import { booksSelector } from 'store'
+import { useAppSelector } from '@/hooks'
+import { booksSelector } from '@/store'
 
 export function Home() {
   const { booksError } = useAppSelector(booksSelector)

@@ -1,5 +1,5 @@
-import { RootState } from 'store'
-import { IBook } from 'interfaces'
+import { RootState } from './store'
+import { IBook } from '@/interfaces'
 
 export const booksSelector = (state: RootState) => state.books
 

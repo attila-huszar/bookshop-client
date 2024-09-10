@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { StyledBasketButton, CartItemCount } from './BasketButton.styles'
-import { Button } from 'components'
-import { useCart } from 'hooks'
-import { PATH } from 'constants/index'
+import { Button } from '@/components'
+import { useCart } from '@/hooks'
+import { PATH } from '@/constants'
 
 export function BasketButton() {
   const { cartArray } = useCart()

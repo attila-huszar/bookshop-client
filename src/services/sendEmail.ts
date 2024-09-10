@@ -5,7 +5,7 @@ import {
   emailjsVerificationTemplate,
   emailjsResetPasswordTemplate,
 } from './configKeys'
-import { URL } from 'constants/index'
+import { URL } from '@/constants'
 
 const optionParams = {
   publicKey: emailjsKey,

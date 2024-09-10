@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getNews } from 'api'
-import { INewsStore } from 'interfaces'
+import { getNews } from '@/api/rest'
+import { INewsStore } from '@/interfaces'
 
 const initialState: INewsStore = {
   newsArray: [],

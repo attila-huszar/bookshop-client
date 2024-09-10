@@ -6,18 +6,18 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.styles'
-import { IconButton, Avatar } from 'components'
+import { IconButton, Avatar } from '@/components'
 import {
   useAppDispatch,
   useAppSelector,
   useLocalStorage,
   useClickOutside,
-} from 'hooks'
-import { userSelector, logoutUser } from 'store'
-import { PATH } from 'constants/index'
-import LoginIcon from 'assets/svg/account.svg?react'
-import accountIcon from 'assets/svg/user_account.svg'
-import logoutIcon from 'assets/svg/logout.svg'
+} from '@/hooks'
+import { userSelector, logoutUser } from '@/store'
+import { PATH } from '@/constants'
+import LoginIcon from '@/assets/svg/account.svg?react'
+import accountIcon from '@/assets/svg/user_account.svg'
+import logoutIcon from '@/assets/svg/logout.svg'
 import toast from 'react-hot-toast'
 
 export function AccountMenu() {

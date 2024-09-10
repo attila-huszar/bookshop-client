@@ -5,10 +5,10 @@ import {
   ImageItem,
   MirrorImg,
 } from './Releases.styles'
-import { useAppSelector } from 'hooks'
-import { booksSelector } from 'store'
-import { Button } from 'components'
-import { PATH } from 'constants/index'
+import { useAppSelector } from '@/hooks'
+import { booksSelector } from '@/store'
+import { Button } from '@/components'
+import { PATH } from '@/constants'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)
