@@ -15,16 +15,16 @@ import {
   Account,
   Checkout,
   NotFound,
-} from 'pages'
-import { PATH } from 'constants/index'
+} from '@/pages'
+import { PATH } from '@/constants'
 import {
   ProtectedRoute,
   Loading,
   VerifyEmail,
   PasswordReset,
   Error,
-} from 'components'
-import { protectedRouteLoader } from 'helpers'
+} from '@/components'
+import { protectedRouteLoader } from '@/helpers'
 
 const Layout = lazy(() =>
   import('../pages/Layout/Layout').then(({ Layout }) => ({

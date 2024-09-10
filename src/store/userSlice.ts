@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getUserByEmail, getUserByUUID, putUser } from 'api'
-import { passwordEncrypt } from 'helpers'
-import { IUserUpdate, IUserStore, IUserToStore } from 'interfaces'
+import { getUserByEmail, getUserByUUID, putUser } from '@/api/rest'
+import { passwordEncrypt } from '@/helpers'
+import { IUserUpdate, IUserStore, IUserToStore } from '@/interfaces'
 
 const initialState: IUserStore = {
   userData: null,

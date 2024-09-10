@@ -1,4 +1,5 @@
 import { useState, useRef, ChangeEvent } from 'react'
+import { Form, Formik } from 'formik'
 import {
   StyledAccount,
   UserDataFields,
@@ -10,16 +11,15 @@ import {
   AddressLine,
   ButtonWrapper,
 } from './Account.styles'
-import { Avatar, Button, FormikField, IconButton } from 'components'
+import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
-import { useAppDispatch, useAppSelector } from 'hooks'
-import { userSelector, updateUser } from 'store'
-import { uploadImage } from 'services'
-import { Form, Formik } from 'formik'
-import { countryList } from 'constants/index'
-import { accountBasicSchema, accountAddressSchema } from 'helpers'
-import { IUserToStore } from 'interfaces'
-import EditIcon from 'assets/svg/edit.svg?react'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { userSelector, updateUser } from '@/store'
+import { uploadImage } from '@/services'
+import { countryList } from '@/constants'
+import { accountBasicSchema, accountAddressSchema } from '@/helpers'
+import { IUserToStore } from '@/interfaces'
+import EditIcon from '@/assets/svg/edit.svg?react'
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)

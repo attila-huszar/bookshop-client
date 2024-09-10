@@ -10,18 +10,18 @@ import {
   Author,
   ButtonWrapper,
 } from './Product.styles'
-import { useAppSelector, useAppDispatch, useCart } from 'hooks'
+import { useAppSelector, useAppDispatch, useCart } from '@/hooks'
 import {
   fetchBookById,
   booksSelector,
   bookByIdSelector,
   authorsSelector,
   authorByIdSelector,
-} from 'store'
-import { Button, Error, Price, Recommended } from 'components'
-import { PATH } from 'constants/index'
-import { IAuthor, IBook } from 'interfaces'
-import imagePlaceholder from 'assets/svg/image_placeholder.svg'
+} from '@/store'
+import { Button, Error, Price, Recommended } from '@/components'
+import { PATH } from '@/constants'
+import { IAuthor, IBook } from '@/interfaces'
+import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Product() {
   const { id } = useParams()
@@ -109,7 +109,7 @@ export function Product() {
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          booksError && <Error text="Book not found" error={booksError} />
+          booksError && <Error text="Not found" error={booksError} />
         )}
       </StyledProduct>
       <RecommendedMemoized />

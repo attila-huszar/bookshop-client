@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { URL } from 'constants/index'
-import { handleAxiosError } from 'helpers'
-import { INews } from 'interfaces'
+import { URL } from '@/constants'
+import { handleAxiosError } from '@/helpers'
+import { INews } from '@/interfaces'
 
 export const getNews = async (id: string | void): Promise<INews[]> => {
   try {

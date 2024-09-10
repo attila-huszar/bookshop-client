@@ -12,23 +12,23 @@ import {
   NoResults,
   ClearButton,
 } from './Search.styles'
-import { searchSchema } from 'helpers'
+import { searchSchema } from '@/helpers'
 import {
   useDebounce,
   useClickOutside,
   useAppDispatch,
   useAppSelector,
-} from 'hooks'
+} from '@/hooks'
 import {
   authorsSelector,
   fetchAuthorsBySearch,
   fetchBooksByAuthor,
   fetchBooksBySearch,
-} from 'store'
-import { PATH } from 'constants/index'
-import { IAuthor, IBook } from 'interfaces'
-import LinkIcon from 'assets/svg/link.svg?react'
-import imagePlaceholder from 'assets/svg/image_placeholder.svg'
+} from '@/store'
+import { PATH } from '@/constants'
+import { IAuthor, IBook } from '@/interfaces'
+import LinkIcon from '@/assets/svg/link.svg?react'
+import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)

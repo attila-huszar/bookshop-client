@@ -11,42 +11,9 @@
     "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
-      "api/*": [
-        "api/*"
-      ],
-      "assets/*": [
-        "assets/*"
-      ],
-      "components/*": [
-        "components/*"
-      ],
-      "constants/*": [
-        "constants/*"
-      ],
-      "helpers/*": [
-        "helpers/*"
-      ],
-      "hooks/*": [
-        "hooks/*"
-      ],
-      "interfaces/*": [
-        "interfaces/*"
-      ],
-      "pages/*": [
-        "pages/*"
-      ],
-      "routes/*": [
-        "routes/*"
-      ],
-      "services/*": [
-        "services/*"
-      ],
-      "store/*": [
-        "store/*"
-      ],
-      "styles/*": [
-        "styles/*"
-      ],
+      "@/*": [
+        "./*"
+      ]
     },
     /* Bundler mode */
     "moduleResolution": "bundler",

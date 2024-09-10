@@ -1,11 +1,11 @@
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react'
 import { Form, Formik } from 'formik'
 import { StyledForgotPassword } from './ForgotPassword.styles'
-import { Button, FormikField, IconButton } from 'components'
-import { ButtonWrapper } from 'styles/Form.styles'
-import { forgotPasswordSchema } from 'helpers'
-import { postUserPasswordReset } from 'api'
-import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
+import { Button, FormikField, IconButton } from '@/components'
+import { ButtonWrapper } from '@/styles/Form.styles'
+import { forgotPasswordSchema } from '@/helpers'
+import { postUserPasswordReset } from '@/api/rest'
+import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import toast from 'react-hot-toast'
 
 function ForgotPassword(

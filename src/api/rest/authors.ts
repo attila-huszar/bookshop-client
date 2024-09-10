@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { URL } from 'constants/index'
-import { handleAxiosError } from 'helpers'
-import { IAuthor } from 'interfaces'
+import { URL } from '@/constants'
+import { handleAxiosError } from '@/helpers'
+import { IAuthor } from '@/interfaces'
 
 export const getAuthorById = async (id: number): Promise<IAuthor> => {
   try {

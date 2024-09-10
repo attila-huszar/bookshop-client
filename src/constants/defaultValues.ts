@@ -1,4 +1,4 @@
-import { IFilter } from 'interfaces'
+import { IFilter } from '@/interfaces'
 
 export const loginInitialValues = {
   email: '',

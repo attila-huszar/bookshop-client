@@ -6,8 +6,8 @@ import {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
-} from 'store'
-import { IBook, ICart } from 'interfaces'
+} from '@/store'
+import { IBook, ICart } from '@/interfaces'
 
 export function useCart() {
   const dispatch = useAppDispatch()

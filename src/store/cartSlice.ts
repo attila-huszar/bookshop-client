@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getBookById } from 'api'
-import { IBook, ICart, ICartStore, ILocalCart } from 'interfaces'
+import { getBookById } from '@/api/rest'
+import { IBook, ICart, ICartStore, ILocalCart } from '@/interfaces'
 
 const initialState: ICartStore = {
   cartArray: [],

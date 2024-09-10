@@ -1,16 +1,21 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { ButtonWrapper } from 'styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button, IconButton } from 'components'
-import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
-import { loginSchema } from 'helpers'
-import { useAppDispatch, useAppSelector, useLocalStorage } from 'hooks'
-import { loginUser, userSelector } from 'store'
-import { loginInitialValues } from 'constants/index'
 import toast from 'react-hot-toast'
-import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
-import QuestionIcon from 'assets/svg/question_circle.svg?react'
+import { ButtonWrapper } from '@/styles/Form.styles'
+import {
+  AuthorizationMenu,
+  FormikField,
+  Button,
+  IconButton,
+} from '@/components'
+import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
+import { loginSchema } from '@/helpers'
+import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
+import { loginUser, userSelector } from '@/store'
+import { loginInitialValues } from '@/constants'
+import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import QuestionIcon from '@/assets/svg/question_circle.svg?react'
 
 export function Login() {
   const { userIsLoading } = useAppSelector(userSelector)

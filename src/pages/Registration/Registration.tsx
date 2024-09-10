@@ -1,14 +1,19 @@
 import { useLayoutEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import { ButtonWrapper } from 'styles/Form.styles'
-import { AuthorizationMenu, FormikField, Button, IconButton } from 'components'
-import { postUserRegister } from 'api'
-import { registrationSchema, passwordEncrypt } from 'helpers'
-import { registrationInitialValues } from 'constants/index'
-import { IUser } from 'interfaces'
 import toast from 'react-hot-toast'
-import BackIcon from 'assets/svg/chevron_left_circle.svg?react'
+import { ButtonWrapper } from '@/styles/Form.styles'
+import {
+  AuthorizationMenu,
+  FormikField,
+  Button,
+  IconButton,
+} from '@/components'
+import { postUserRegister } from '@/api/rest'
+import { registrationSchema, passwordEncrypt } from '@/helpers'
+import { registrationInitialValues } from '@/constants'
+import { IUser } from '@/interfaces'
+import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
   const navigate = useNavigate()

@@ -1,7 +1,7 @@
 import { StyledRecommended } from './Recommended.styles'
-import { useAppSelector } from 'hooks'
-import { booksSelector } from 'store'
-import { Card, SwiperComponent } from 'components'
+import { useAppSelector } from '@/hooks'
+import { booksSelector } from '@/store'
+import { Card, SwiperComponent } from '@/components'
 
 export function Recommended() {
   const { booksRecommended } = useAppSelector(booksSelector)

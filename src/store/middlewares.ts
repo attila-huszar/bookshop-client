@@ -1,15 +1,14 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import { AppDispatch, RootState } from './store'
 import {
-  AppDispatch,
-  RootState,
   fetchBooks,
   fetchBookById,
   fetchBooksByProperty,
   fetchBooksBySearch,
   fetchBooksByAuthor,
-  fetchAuthorById,
   fetchRecommendedBooks,
-} from 'store'
+} from './booksSlice'
+import { fetchAuthorById } from './authorsSlice'
 import {
   cartAdd,
   cartRemove,
@@ -17,7 +16,7 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
 } from './cartSlice'
-import { IBook, ICart, ILocalCart } from 'interfaces'
+import { IBook, ICart, ILocalCart } from '@/interfaces'
 
 export const authorFetchMiddleware = createListenerMiddleware()
 

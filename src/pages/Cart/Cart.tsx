@@ -1,8 +1,8 @@
 import { useEffect, Fragment, ChangeEvent, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector, useCart } from 'hooks'
-import { cartSelector, createOrder, orderSelector } from 'store'
-import { Button, IconButton, Loading, Price } from 'components'
+import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { cartSelector, createOrder, orderSelector } from '@/store'
+import { Button, IconButton, Loading, Price } from '@/components'
 import {
   StyledCart,
   CartGrid,
@@ -18,14 +18,14 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.styles'
-import { PATH } from 'constants/index'
-import { enforceMinMax, calcSubtotalOrDiscount } from 'helpers'
-import { ICart, ICreateOrder } from 'interfaces'
-import AddQuantityIcon from 'assets/svg/plus.svg?react'
-import RemoveQuantityIcon from 'assets/svg/minus.svg?react'
-import RemoveFromCartIcon from 'assets/svg/bin.svg?react'
-import CartEmptyIcon from 'assets/svg/cart_empty.svg?react'
-import imagePlaceholder from 'assets/svg/image_placeholder.svg'
+import { PATH } from '@/constants'
+import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
+import { ICart, ICreateOrder } from '@/interfaces'
+import AddQuantityIcon from '@/assets/svg/plus.svg?react'
+import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
+import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
+import CartEmptyIcon from '@/assets/svg/cart_empty.svg?react'
+import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 import toast from 'react-hot-toast'
 
 const calculateTotalAmount = (cartArray: ICart[]): number => {

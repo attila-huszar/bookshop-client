@@ -1,6 +1,6 @@
 import { Header, Item, Content } from './AccordionItem.styles'
 import { AccordionItemProps } from './AccordionItem.types'
-import Caret from 'assets/svg/caret_down.svg?react'
+import Caret from '@/assets/svg/caret_down.svg?react'
 
 export function AccordionItem({
   panelKey = 0,

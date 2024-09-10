@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { URL } from 'constants/index'
-import { handleAxiosError } from 'helpers'
-import { IOrderUpdate, ICreateOrder, IOrder } from 'interfaces'
+import { URL } from '@/constants'
+import { handleAxiosError } from '@/helpers'
+import { IOrderUpdate, ICreateOrder, IOrder } from '@/interfaces'
 
 export const postStripePayment = async (
   paymentData: ICreateOrder['orderToStripe'],

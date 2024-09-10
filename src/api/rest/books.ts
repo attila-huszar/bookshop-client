@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { URL } from 'constants/index'
-import { handleAxiosError } from 'helpers'
-import { IBook, IFilter, IFilterApplied } from 'interfaces'
+import { URL } from '@/constants'
+import { handleAxiosError } from '@/helpers'
+import { IBook, IFilter, IFilterApplied } from '@/interfaces'
 
 export const getBooks = async ({
   _page,
