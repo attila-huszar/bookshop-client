@@ -5,12 +5,11 @@ export function calcSubtotalOrDiscount(
   type: 'subtotal' | 'discount',
 ) {
   return data.reduce((acc, item) => {
-    const discountAmount = (Number(item.price) * item.discount) / 100
+    const discountAmount = (item.price * item.discount) / 100
     const totalDiscount = item.quantity * discountAmount
 
     return (
-      acc +
-      (type === 'subtotal' ? Number(item.price) * item.quantity : totalDiscount)
+      acc + (type === 'subtotal' ? item.price * item.quantity : totalDiscount)
     )
   }, 0)
 }

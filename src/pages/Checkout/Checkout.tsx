@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { stripeKey } from '@/services'
+import { stripeKey } from '@/constants'
 import { useAppSelector } from '@/hooks'
 import { orderSelector } from '@/store'
 import { StyledCheckout } from './Checkout.styles'

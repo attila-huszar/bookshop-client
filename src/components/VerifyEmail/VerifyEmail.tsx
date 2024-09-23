@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { Loading } from '@/components'
-import { verifyEmail } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { PATH } from '@/constants'
 
 export function VerifyEmail() {
@@ -13,7 +13,8 @@ export function VerifyEmail() {
 
   useEffect(() => {
     if (code) {
-      verifyEmail(code)
+      apiHandler
+        .verifyEmail(code)
         .then((verifyResult) => {
           toast.success(verifyResult, {
             id: 'verify-success',

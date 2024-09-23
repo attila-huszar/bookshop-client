@@ -1,15 +1,17 @@
 import axios from 'axios'
-import { URL } from '@/constants'
-import { handleAxiosError } from '@/helpers'
+import { jsonServerPath, PATH } from '@/constants'
+import { handleErrors } from '@/errors'
 import { IAuthor } from '@/interfaces'
 
 export const getAuthorById = async (id: number): Promise<IAuthor> => {
   try {
-    const { data }: { data: IAuthor } = await axios.get(`${URL.authors}/${id}`)
+    const { data }: { data: IAuthor } = await axios.get(
+      `${jsonServerPath}/${PATH.authors}/${id}`,
+    )
 
     return data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get author')
+    throw handleErrors(error, 'Author not found')
   }
 }
 
@@ -18,11 +20,11 @@ export const getAuthorsBySearch = async (
 ): Promise<IAuthor[]> => {
   try {
     const { data }: { data: IAuthor[] } = await axios.get(
-      `${URL.authors}?name_like=${searchString}`,
+      `${jsonServerPath}/${PATH.authors}?name_like=${searchString}`,
     )
 
     return data
   } catch (error) {
-    throw handleAxiosError(error, 'Author not found')
+    throw handleErrors(error, 'Author not found')
   }
 }

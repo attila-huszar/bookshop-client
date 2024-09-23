@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { MenuTypes } from './Menu.types'
 
 export const StyledMenu = styled.div`

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStripe } from '@stripe/react-stripe-js'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.styles'
-import { updateOrder } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { useAppDispatch } from '@/hooks'
 import { cartClear } from '@/store'
 import logo from '@/assets/image/logo.png'
@@ -35,7 +35,7 @@ export function PaymentStatus() {
               message: 'Success! Payment received.',
             })
 
-            void updateOrder({
+            void apiHandler.updateOrder({
               paymentId: paymentIntent.id,
               fields: {
                 orderStatus: 'paid',

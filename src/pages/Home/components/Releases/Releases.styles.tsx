@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`

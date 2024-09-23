@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 
 export const StyledAccount = styled.main`
   padding: 0 6.25rem 4rem;

@@ -21,11 +21,10 @@ export function Price({
 
   const Component = componentMap[component]
 
-  const originalPrice = Number(price)
-  const discountedPrice = originalPrice - (originalPrice * discount!) / 100
-  const formattedPrice = Number.isInteger(discountedPrice)
-    ? discountedPrice
-    : discountedPrice.toFixed(2)
+  const discountPrice = price - (price * discount) / 100
+  const formattedPrice = Number.isInteger(discountPrice)
+    ? discountPrice
+    : discountPrice.toFixed(2)
 
   return (
     <Component>

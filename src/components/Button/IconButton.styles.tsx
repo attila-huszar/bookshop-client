@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { StyleTypes } from './IconButton.types'
 
 const iconHeight = {

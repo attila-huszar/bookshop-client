@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { postStripePayment, postOrder } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { ICreateOrder, IOrderStore } from '@/interfaces'
 
 const initialState: IOrderStore = {
@@ -63,12 +63,14 @@ export const createOrder = createAsyncThunk(
     amount: number
     currency: string
   }> => {
-    const stripeResponse = await postStripePayment(order.orderToStripe)
+    const stripeResponse = await apiHandler.postStripePayment(
+      order.orderToStripe,
+    )
     const clientSecret = stripeResponse.clientSecret
 
     order.orderToServer.paymentId = clientSecret.split('_secret_')[0]
 
-    await postOrder(order.orderToServer)
+    await apiHandler.postOrder(order.orderToServer)
 
     return {
       clientSecret,

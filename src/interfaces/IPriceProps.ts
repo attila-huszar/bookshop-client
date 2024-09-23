@@ -1,6 +1,6 @@
 export interface IPriceProps {
   component: 'card' | 'product' | 'cart'
-  price: number | string
-  discount?: number
+  price: number
+  discount: number
   currency?: string
 }

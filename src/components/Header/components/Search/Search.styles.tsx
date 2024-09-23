@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import searchIcon from '../../../../assets/svg/search.svg'
 import clearIcon from '../../../../assets/svg/xmark_circle.svg'
 import { SearchTypes } from './Search.types'
@@ -29,7 +29,7 @@ export const Dropdown = styled.div<SearchTypes>`
   left: 0;
   display: none;
   width: 20rem;
-  padding: 0.5rem;
+  padding: 0.125rem 0.5rem 0.5rem;
   border-radius: 0 0 10px 10px;
   background-color: var(--light-grey);
 

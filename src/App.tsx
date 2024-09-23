@@ -19,7 +19,7 @@ function App() {
 
   useEffect(() => {
     void dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
-    void dispatch(fetchBooksByProperty('new'))
+    void dispatch(fetchBooksByProperty('newRelease'))
     void dispatch(fetchBooksByProperty('topSellers'))
     void dispatch(fetchNews())
     void dispatch(fetchBookSearchOptions())

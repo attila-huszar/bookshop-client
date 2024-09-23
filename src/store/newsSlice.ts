@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getNews } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { INewsStore } from '@/interfaces'
 
 const initialState: INewsStore = {
@@ -28,6 +28,6 @@ const newsSlice = createSlice({
   },
 })
 
-export const fetchNews = createAsyncThunk('fetchNews', getNews)
+export const fetchNews = createAsyncThunk('fetchNews', apiHandler.getNews)
 
 export const newsReducer = newsSlice.reducer

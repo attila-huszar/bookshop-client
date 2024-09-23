@@ -8,7 +8,7 @@ import {
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { useAppSelector } from '@/hooks'
 import { userSelector } from '@/store'
-import { PATH, URL } from '@/constants'
+import { baseURL, PATH } from '@/constants'
 
 export function CheckoutForm({
   amount,
@@ -39,7 +39,7 @@ export function CheckoutForm({
       elements,
       confirmParams: {
         receipt_email: emailInput || userData?.email,
-        return_url: `${URL.base}/${PATH.checkout}`,
+        return_url: `${baseURL}/${PATH.checkout}`,
       },
     })
 

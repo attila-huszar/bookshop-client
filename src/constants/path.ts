@@ -7,7 +7,7 @@ export const PATH = {
   login: 'login',
   account: 'account',
   cart: 'cart',
-  searchOptions: 'searchOptions',
+  searchOptions: 'search_opts',
   verify: 'verify',
   passwordReset: 'password-reset',
   checkout: 'checkout',

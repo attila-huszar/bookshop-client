@@ -1,5 +1,6 @@
 import { useEffect, Fragment, ChangeEvent, useLayoutEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { cartSelector, createOrder, orderSelector } from '@/store'
 import { Button, IconButton, Loading, Price } from '@/components'
@@ -26,7 +27,6 @@ import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
 import CartEmptyIcon from '@/assets/svg/cart_empty.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
-import toast from 'react-hot-toast'
 
 const calculateTotalAmount = (cartArray: ICart[]): number => {
   return cartArray.reduce(
@@ -183,7 +183,7 @@ export function Cart() {
               <PriceTotal>
                 <Price
                   component="cart"
-                  price={item.quantity * Number(item.price)}
+                  price={item.quantity * item.price}
                   discount={item.discount}
                 />
               </PriceTotal>
@@ -211,7 +211,7 @@ export function Cart() {
           )}
           <div>
             <p>Total:</p>
-            <p>$ {(Number(subtotal) - Number(discount)).toFixed(2)}</p>
+            <p>$ {(subtotal - discount).toFixed(2)}</p>
           </div>
         </TotalPrice>
         <ButtonWrapper>

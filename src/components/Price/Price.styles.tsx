@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 
 export const StyledPriceCard = styled.div`
   font-size: 1.125rem;

@@ -4,13 +4,12 @@ export interface IBook {
   author: number
   genre: string
   imgUrl: string
-  favorite: boolean
   description: string
-  yearOfPublishing: string
-  price: string
+  publishYear: number
   rating: number
+  price: number
   discount: number
-  new: boolean
-  topSellers?: boolean
   discountPrice: number
+  topSellers?: boolean
+  newRelease?: boolean
 }
