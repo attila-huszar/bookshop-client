@@ -5,7 +5,8 @@ import { thumbnail } from '@cloudinary/url-gen/actions/resize'
 import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
 import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
 import { AdvancedImage } from '@cloudinary/react'
-import { cloudinaryConfig, cloudinaryUploadPreset } from '@/services'
+import { cloudinaryConfig } from '@/services'
+import { cloudinaryUploadPreset } from '@/constants'
 import AccountDefaultIcon from '@/assets/svg/account_default.svg?react'
 
 export function Avatar({

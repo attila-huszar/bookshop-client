@@ -1,16 +1,16 @@
 import axios from 'axios'
-import { URL } from '@/constants'
-import { handleAxiosError } from '@/helpers'
-import { IBook, IFilter, IFilterApplied } from '@/interfaces'
+import { jsonServerPath, PATH } from '@/constants'
+import { handleErrors } from '@/errors'
+import { IBook, IFilter, IFilterActive } from '@/interfaces'
 
 export const getBooks = async ({
-  _page,
-  _limit,
+  currentPage,
+  itemsPerPage,
   criteria,
 }: {
-  _page: number
-  _limit: number
-  criteria?: IFilterApplied
+  currentPage: number
+  itemsPerPage: number
+  criteria?: IFilterActive
 }): Promise<{
   books: IBook[]
   total: number
@@ -18,8 +18,8 @@ export const getBooks = async ({
   try {
     const params = new URLSearchParams()
 
-    params.append('_page', `${_page}`)
-    params.append('_limit', `${_limit}`)
+    params.append('_page', `${currentPage}`)
+    params.append('_limit', `${itemsPerPage}`)
 
     if (criteria?.genre?.length) {
       criteria.genre.forEach((genre) => params.append('genre', genre))
@@ -40,11 +40,11 @@ export const getBooks = async ({
     }
 
     if (criteria?.publishYearMin) {
-      params.append('yearOfPublishing_gte', `${criteria.publishYearMin}`)
+      params.append('publishYear_gte', `${criteria.publishYearMin}`)
     }
 
     if (criteria?.publishYearMax) {
-      params.append('yearOfPublishing_lte', `${criteria.publishYearMax}`)
+      params.append('publishYear_lte', `${criteria.publishYearMax}`)
     }
 
     if (criteria?.rating && criteria.rating > 1) {
@@ -56,7 +56,7 @@ export const getBooks = async ({
       headers: {
         'x-total-count': number
       }
-    } = await axios.get(URL.books, {
+    } = await axios.get(`/json-server/${PATH.books}`, {
       params,
     })
 
@@ -65,16 +65,18 @@ export const getBooks = async ({
       total: booksResponse.headers['x-total-count'],
     }
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get books')
+    throw handleErrors(error, 'Unable to get books')
   }
 }
 
 export const getBookById = async (id: number): Promise<IBook> => {
   try {
-    const response: { data: IBook } = await axios.get(`${URL.books}/${id}`)
+    const response: { data: IBook } = await axios.get(
+      `${jsonServerPath}/${PATH.books}/${id}`,
+    )
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get book by ID')
+    throw handleErrors(error, 'Unable to get book by ID')
   }
 }
 
@@ -83,12 +85,12 @@ export const getBooksByProperty = async (
 ): Promise<IBook[]> => {
   try {
     const response: { data: IBook[] } = await axios.get(
-      `${URL.books}?${property}=true`,
+      `/json-server/${PATH.books}?${property}=true`,
     )
 
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get books by property')
+    throw handleErrors(error, 'Unable to get books by property')
   }
 }
 
@@ -97,24 +99,24 @@ export const getBooksBySearch = async (
 ): Promise<IBook[]> => {
   try {
     const response: { data: IBook[] } = await axios.get(
-      `${URL.books}?title_like=${searchString}`,
+      `${jsonServerPath}/${PATH.books}?title_like=${searchString}`,
     )
 
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get books by search')
+    throw handleErrors(error, 'Unable to get books by search')
   }
 }
 
 export const getBooksByAuthor = async (id: number): Promise<IBook[]> => {
   try {
     const response: { data: IBook[] } = await axios.get(
-      `${URL.books}?author=${id}`,
+      `${jsonServerPath}/${PATH.books}?author=${id}`,
     )
 
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get books by author')
+    throw handleErrors(error, 'Unable to get books by author')
   }
 }
 
@@ -122,10 +124,12 @@ export const getBookSearchOptions = async (): Promise<
   Pick<IFilter, 'genre' | 'price' | 'publishYear'>
 > => {
   try {
-    const response: { data: IFilter } = await axios.get(URL.searchOptions)
+    const response: { data: IFilter } = await axios.get(
+      `${jsonServerPath}/${PATH.searchOptions}`,
+    )
 
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Unable to get book search options')
+    throw handleErrors(error, 'Unable to get book search options')
   }
 }

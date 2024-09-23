@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { AccordionItemTypes } from './AccordionItem.types'
 
 export const Header = styled.div<AccordionItemTypes>`

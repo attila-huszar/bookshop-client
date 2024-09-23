@@ -3,7 +3,7 @@ import {
   createAsyncThunk,
   type SerializedError,
 } from '@reduxjs/toolkit'
-import { getAuthorById, getAuthorsBySearch } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { IAuthor, IAuthorStore } from '@/interfaces'
 
 const initialState: IAuthorStore = {
@@ -70,12 +70,12 @@ const authorsSlice = createSlice({
 
 export const fetchAuthorById = createAsyncThunk(
   'fetchAuthorById',
-  getAuthorById,
+  apiHandler.getAuthorById,
 )
 
 export const fetchAuthorsBySearch = createAsyncThunk(
   'fetchAuthorsBySearch',
-  getAuthorsBySearch,
+  apiHandler.getAuthorsBySearch,
 )
 
 export const authorsReducer = authorsSlice.reducer

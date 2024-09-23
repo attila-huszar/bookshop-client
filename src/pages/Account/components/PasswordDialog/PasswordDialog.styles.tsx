@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 
 export const StyledPasswordDialog = styled.dialog`
   margin: 10rem auto 0;

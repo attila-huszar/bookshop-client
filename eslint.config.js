@@ -1,21 +1,24 @@
 import eslint from '@eslint/js'
-import tseslint from 'typescript-eslint'
+import { config, configs, parser, plugin } from 'typescript-eslint'
 import importX from 'eslint-plugin-import-x'
 import react from 'eslint-plugin-react'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
 
-export default tseslint.config(
+export default config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
-  importX.configs.typescript,
+  ...configs.recommendedTypeChecked,
+  ...configs.stylisticTypeChecked,
+  importX.flatConfigs.recommended,
+  importX.flatConfigs.typescript,
   react.configs.flat.recommended,
   prettierConfig,
   {
     languageOptions: {
-      parser: tseslint.parser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: parser,
       parserOptions: {
         projectService: {
           allowDefaultProject: ['*.js', '*.cjs'],
@@ -25,11 +28,9 @@ export default tseslint.config(
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      'import-x': importX,
-      react: react,
+      '@typescript-eslint': plugin,
       'react-refresh': reactRefresh,
-      prettier: prettier,
+      prettier,
     },
     rules: {
       'no-undef': 'off',
@@ -39,12 +40,7 @@ export default tseslint.config(
         { ignoreRestSiblings: true },
       ],
       '@typescript-eslint/consistent-type-definitions': 'off',
-      'import-x/named': 'error',
       'react/react-in-jsx-scope': 'off',
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
       'prettier/prettier': 'warn',
     },
     linterOptions: {
@@ -58,7 +54,7 @@ export default tseslint.config(
   },
   {
     files: ['eslint.config.js'],
-    ...tseslint.configs.disableTypeChecked,
+    ...configs.disableTypeChecked,
   },
   {
     ignores: ['dist'],

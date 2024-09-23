@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import {
   StyledMenu,
   Dropdown,
@@ -18,7 +19,6 @@ import { PATH } from '@/constants'
 import LoginIcon from '@/assets/svg/account.svg?react'
 import accountIcon from '@/assets/svg/user_account.svg'
 import logoutIcon from '@/assets/svg/logout.svg'
-import toast from 'react-hot-toast'
 
 export function AccountMenu() {
   const navigate = useNavigate()

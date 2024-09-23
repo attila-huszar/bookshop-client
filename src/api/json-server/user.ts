@@ -1,25 +1,26 @@
 import axios from 'axios'
-import { URL } from '@/constants'
+import { jsonServerPath, PATH } from '@/constants'
 import { sendEmail, uploadImage } from '@/services'
-import { handleAxiosError, passwordEncrypt } from '@/helpers'
+import { passwordEncrypt } from '@/helpers'
+import { handleErrors } from '@/errors'
 import { IUser } from '@/interfaces'
 
 export const getUserByEmail = async (email: string): Promise<IUser> => {
   try {
     const response: { data: IUser[] } = await axios.get(
-      `${URL.users}?email=${email}`,
+      `${jsonServerPath}/${PATH.users}?email=${email}`,
     )
 
     return response.data[0]
   } catch (error) {
-    throw handleAxiosError(error, 'Error fetching user by email')
+    throw handleErrors(error, 'Error fetching user by email')
   }
 }
 
 export const getUserByUUID = async (uuid: string): Promise<IUser> => {
   try {
     const response: { data: IUser[] } = await axios.get(
-      `${URL.users}?uuid=${uuid}`,
+      `${jsonServerPath}/${PATH.users}?uuid=${uuid}`,
     )
 
     if (!response.data || response.data.length === 0) {
@@ -28,14 +29,14 @@ export const getUserByUUID = async (uuid: string): Promise<IUser> => {
 
     return response.data[0]
   } catch (error) {
-    throw handleAxiosError(error, 'Error fetching user by UUID')
+    throw handleErrors(error, 'Error fetching user by UUID')
   }
 }
 
 export const checkUserLoggedIn = async (uuid: string): Promise<boolean> => {
   try {
     const response: { data: IUser[] } = await axios.get(
-      `${URL.users}?uuid=${uuid}`,
+      `${jsonServerPath}/${PATH.users}?uuid=${uuid}`,
     )
 
     return response.data[0].uuid === uuid
@@ -60,21 +61,12 @@ export const postUserRegister = async (user: IUser): Promise<string> => {
         verification: user.verificationCode,
       })
 
-      await axios.post(`${URL.users}`, user)
+      await axios.post(`${jsonServerPath}/${PATH.users}`, user)
 
       return `${user.email} registered successfully, please verify your email address`
     }
   } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'text' in error &&
-      typeof error.text === 'string'
-    ) {
-      throw new Error(error.text)
-    } else {
-      throw new Error('Registration failed, please try again later')
-    }
+    throw handleErrors(error, 'Registration failed, please try again later')
   }
 }
 
@@ -85,7 +77,7 @@ export const postUserPasswordReset = async (email: string): Promise<string> => {
     if (userResponse?.verified) {
       const passwordResetCode = crypto.randomUUID()
 
-      void axios.patch(`${URL.users}/${userResponse.id}`, {
+      await axios.patch(`${jsonServerPath}/${PATH.users}/${userResponse.id}`, {
         passwordResetCode,
         passwordResetCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       })
@@ -107,20 +99,20 @@ export const postUserPasswordReset = async (email: string): Promise<string> => {
       return 'Please check your inbox for the password reset email'
     }
   } catch (error) {
-    throw handleAxiosError(error, 'Error initiating password reset')
+    throw handleErrors(error, 'Error initiating password reset')
   }
 }
 
 export const putUser = async (user: IUser): Promise<IUser> => {
   try {
     const response: { data: IUser } = await axios.put(
-      `${URL.users}/${user.id}`,
+      `${jsonServerPath}/${PATH.users}/${user.id}`,
       user,
     )
 
     return response.data
   } catch (error) {
-    throw handleAxiosError(error, 'Error updating user')
+    throw handleErrors(error, 'Error updating user')
   }
 }
 
@@ -130,7 +122,7 @@ export const verifyPassword = async (
 ): Promise<boolean> => {
   try {
     const { data }: { data: IUser[] } = await axios.get(
-      `${URL.users}?uuid=${uuid}`,
+      `${jsonServerPath}/${PATH.users}?uuid=${uuid}`,
     )
 
     return data.length
@@ -145,7 +137,7 @@ export const verifyEmail = async (
   verificationCode: string,
 ): Promise<string> => {
   const { data }: { data: IUser[] } = await axios.get(
-    `${URL.users}?verificationCode=${verificationCode}`,
+    `${jsonServerPath}/${PATH.users}?verificationCode=${verificationCode}`,
   )
 
   if (data.length && data[0].verified) {
@@ -155,10 +147,13 @@ export const verifyEmail = async (
     data[0].verificationCode === verificationCode &&
     new Date(data[0].verificationCodeExpiresAt).getTime() > Date.now()
   ) {
-    const verifyResponse = await axios.put(`${URL.users}/${data[0].id}`, {
-      ...data[0],
-      verified: true,
-    })
+    const verifyResponse = await axios.put(
+      `${jsonServerPath}/${PATH.users}/${data[0].id}`,
+      {
+        ...data[0],
+        verified: true,
+      },
+    )
 
     if (verifyResponse.status === 200) {
       return 'Verification successful, you can now log in'
@@ -170,12 +165,10 @@ export const verifyEmail = async (
   }
 }
 
-export const passwordReset = async (
-  resetCode: string,
-): Promise<{ uuid: string | null }> => {
+export const passwordReset = async (resetCode: string): Promise<string> => {
   try {
     const { data }: { data: IUser[] } = await axios.get(
-      `${URL.users}?passwordResetCode=${resetCode}`,
+      `${jsonServerPath}/${PATH.users}?passwordResetCode=${resetCode}`,
     )
 
     if (
@@ -183,15 +176,13 @@ export const passwordReset = async (
       data[0].passwordResetCode === resetCode &&
       new Date(data[0].passwordResetCodeExpiresAt!).getTime() > Date.now()
     ) {
-      return {
-        uuid: data[0].uuid,
-      }
+      return data[0].uuid
     } else if (data.length && !data[0].verified) {
       throw new Error('Please verify your email address first')
     } else {
       throw new Error('Password reset code expired or invalid')
     }
   } catch (error) {
-    throw handleAxiosError(error, 'Error resetting password')
+    throw handleErrors(error, 'Error resetting password')
   }
 }

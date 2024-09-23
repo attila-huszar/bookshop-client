@@ -1,7 +1,6 @@
 import axios from 'axios'
-import toast from 'react-hot-toast'
-import { cloudinaryUploadPreset } from './configKeys'
-import { URL } from '@/constants'
+import { toast } from 'react-hot-toast'
+import { cloudinaryUpload, cloudinaryUploadPreset } from '@/constants'
 
 export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   const formData = new FormData()
@@ -11,7 +10,7 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
 
   try {
     const { data }: { data: { url: string } } = await axios.post(
-      URL.cloudinaryUpload,
+      cloudinaryUpload,
       formData,
     )
 

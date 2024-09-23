@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import caret_left from '../../assets/svg/caret_left.svg'
 
 export const StyledProduct = styled.main`

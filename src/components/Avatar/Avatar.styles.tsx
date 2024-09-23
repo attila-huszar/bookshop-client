@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { StyleTypes } from './Avatar.types'
 import cameraIcon from '../../assets/svg/camera.svg'
 

@@ -3,17 +3,10 @@ import {
   createAsyncThunk,
   type PayloadAction,
 } from '@reduxjs/toolkit'
-import {
-  getBooks,
-  getBookById,
-  getBooksByAuthor,
-  getBooksByProperty,
-  getBooksBySearch,
-  getBookSearchOptions,
-} from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { generateUniqueRndNums } from '@/helpers'
 import { RootState } from './store'
-import { IBook, IBookStore, IFilter, IFilterApplied } from '@/interfaces'
+import { IBook, IBookStore, IFilter, IFilterActive } from '@/interfaces'
 
 const initialState: IBookStore = {
   booksInShop: [],
@@ -122,7 +115,7 @@ const booksSlice = createSlice({
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
         state.booksInShop = action.payload.books
-        state.booksTotal = Number(action.payload.total)
+        state.booksTotal = action.payload.total
         state.booksError = undefined
         state.booksAreLoading = false
       })
@@ -151,7 +144,7 @@ const booksSlice = createSlice({
       .addCase(fetchBooksByProperty.fulfilled, (state, action) => {
         if (action.meta.arg === 'topSellers') {
           state.booksTopSellers = action.payload
-        } else if (action.meta.arg === 'new') {
+        } else if (action.meta.arg === 'newRelease') {
           state.booksReleases = action.payload
         }
       })
@@ -174,61 +167,67 @@ const booksSlice = createSlice({
 export const fetchBooks = createAsyncThunk(
   'fetchBooks',
   (optionalFilters: IFilter | undefined, { getState }) => {
-    const state = getState() as RootState
-    const _page: number = state.books.booksCurrentPage
-    const _limit: number = state.books.booksPerPage
-    const activeFilters = state.books.booksFilters.active
-    const initialFilters = state.books.booksFilters.initial
+    const {
+      books: {
+        booksCurrentPage: currentPage,
+        booksPerPage: itemsPerPage,
+        booksFilters: { active, initial },
+      },
+    } = getState() as RootState
 
-    const filtersApplied: { [key in keyof IFilterApplied]: boolean } = {
-      genre: activeFilters.genre.length > 0,
-      priceMin: activeFilters.price[0] !== initialFilters.price[0],
-      priceMax: activeFilters.price[1] !== initialFilters.price[1],
-      discount: activeFilters.discount !== initialFilters.discount,
-      publishYearMin:
-        activeFilters.publishYear[0] !== initialFilters.publishYear[0],
-      publishYearMax:
-        activeFilters.publishYear[1] !== initialFilters.publishYear[1],
-      rating: activeFilters.rating !== initialFilters.rating,
+    const isFilterActive: { [key in keyof IFilterActive]: boolean } = {
+      genre: active.genre.length > 0,
+      priceMin: active.price[0] !== initial.price[0],
+      priceMax: active.price[1] !== initial.price[1],
+      discount: active.discount !== initial.discount,
+      publishYearMin: active.publishYear[0] !== initial.publishYear[0],
+      publishYearMax: active.publishYear[1] !== initial.publishYear[1],
+      rating: active.rating !== initial.rating,
     }
 
-    const criteria: IFilterApplied | undefined = optionalFilters
-      ? {
-          genre: filtersApplied.genre ? optionalFilters.genre : [],
-          priceMin: filtersApplied.priceMin ? optionalFilters.price[0] : null,
-          priceMax: filtersApplied.priceMax ? optionalFilters.price[1] : null,
-          discount: filtersApplied.discount
-            ? optionalFilters.discount
-            : 'allBooks',
-          publishYearMin: filtersApplied.publishYearMin
-            ? optionalFilters.publishYear[0]
-            : null,
-          publishYearMax: filtersApplied.publishYearMax
-            ? optionalFilters.publishYear[1]
-            : null,
-          rating: filtersApplied.rating ? optionalFilters.rating : 0.5,
-        }
-      : undefined
+    const hasAnyFilter = Object.values(isFilterActive).some(Boolean)
 
-    return getBooks({ _page, _limit, criteria })
+    const criteria: IFilterActive | undefined =
+      optionalFilters && hasAnyFilter
+        ? {
+            genre: isFilterActive.genre ? optionalFilters.genre : [],
+            priceMin: isFilterActive.priceMin ? optionalFilters.price[0] : null,
+            priceMax: isFilterActive.priceMax ? optionalFilters.price[1] : null,
+            discount: isFilterActive.discount
+              ? optionalFilters.discount
+              : 'allBooks',
+            publishYearMin: isFilterActive.publishYearMin
+              ? optionalFilters.publishYear[0]
+              : null,
+            publishYearMax: isFilterActive.publishYearMax
+              ? optionalFilters.publishYear[1]
+              : null,
+            rating: isFilterActive.rating ? optionalFilters.rating : 0.5,
+          }
+        : undefined
+
+    return apiHandler.getBooks({ currentPage, itemsPerPage, criteria })
   },
 )
 
-export const fetchBookById = createAsyncThunk('fetchBookById', getBookById)
+export const fetchBookById = createAsyncThunk(
+  'fetchBookById',
+  apiHandler.getBookById,
+)
 
 export const fetchBooksBySearch = createAsyncThunk(
   'fetchBooksBySearch',
-  getBooksBySearch,
+  apiHandler.getBooksBySearch,
 )
 
 export const fetchBooksByAuthor = createAsyncThunk(
   'fetchBooksByAuthor',
-  getBooksByAuthor,
+  apiHandler.getBooksByAuthor,
 )
 
 export const fetchBooksByProperty = createAsyncThunk(
   'fetchBooksByProperty',
-  getBooksByProperty,
+  apiHandler.getBooksByProperty,
 )
 
 export const fetchRecommendedBooks = createAsyncThunk(
@@ -240,7 +239,7 @@ export const fetchRecommendedBooks = createAsyncThunk(
     const randomIdxs = generateUniqueRndNums(count, totalBooks)
 
     for (const idx of randomIdxs) {
-      const book = await getBookById(idx)
+      const book = await apiHandler.getBookById(idx)
       if (book) {
         randomBooks.push(book)
       }
@@ -251,7 +250,7 @@ export const fetchRecommendedBooks = createAsyncThunk(
 
 export const fetchBookSearchOptions = createAsyncThunk(
   'fetchBookSearchOptions',
-  getBookSearchOptions,
+  apiHandler.getBookSearchOptions,
 )
 
 export const booksReducer = booksSlice.reducer

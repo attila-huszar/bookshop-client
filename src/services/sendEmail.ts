@@ -1,11 +1,12 @@
-import emailjs from '@emailjs/browser'
+import { send } from '@emailjs/browser'
 import {
+  baseURL,
   emailjsKey,
   emailjsService,
   emailjsVerificationTemplate,
   emailjsResetPasswordTemplate,
-} from './configKeys'
-import { URL } from '@/constants'
+  PATH,
+} from '@/constants'
 
 const optionParams = {
   publicKey: emailjsKey,
@@ -29,8 +30,8 @@ export function sendEmail(
   }
 
   const links = {
-    verification: `${URL.verify}?code=${code.verification}`,
-    passwordReset: `${URL.passwordReset}?code=${code.passwordReset}`,
+    verification: `${baseURL}/${PATH.verify}?code=${code.verification}`,
+    passwordReset: `${baseURL}/${PATH.passwordReset}?code=${code.passwordReset}`,
   }
 
   const [key] = Object.keys(code) as (keyof typeof code)[]
@@ -45,9 +46,9 @@ export function sendEmail(
     to_email,
     to_name,
     link,
-    base_link: URL.base,
+    base_link: baseURL,
     from_name: 'Book Shop',
   }
 
-  return emailjs.send(emailjsService, templateId, templateParams, optionParams)
+  return send(emailjsService, templateId, templateParams, optionParams)
 }

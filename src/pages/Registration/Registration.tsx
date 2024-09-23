@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { ButtonWrapper } from '@/styles/Form.styles'
 import {
   AuthorizationMenu,
@@ -9,7 +9,7 @@ import {
   Button,
   IconButton,
 } from '@/components'
-import { postUserRegister } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { registrationSchema, passwordEncrypt } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
 import { IUser } from '@/interfaces'
@@ -55,7 +55,7 @@ export function Registration() {
     }
 
     try {
-      const registerResponse = await postUserRegister(user)
+      const registerResponse = await apiHandler.postUserRegister(user)
 
       navigate('/', { replace: true })
       toast.success(registerResponse)

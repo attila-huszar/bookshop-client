@@ -15,7 +15,7 @@ export type { IPriceProps } from './IPriceProps'
 export type { ISwiper } from './ISwiper'
 export type { IFormik } from './IFormik'
 export type { IFormikField } from './IFormikField'
-export type { IFilter, IFilterApplied } from './IFilter'
+export type { IFilter, IFilterActive } from './IFilter'
 export type { IInputEvent, IDiscountChangeEvent } from './IInputEvent'
 export type { IFetchParams } from './IFetchParams'
 export type {

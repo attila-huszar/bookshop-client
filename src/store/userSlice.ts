@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getUserByEmail, getUserByUUID, putUser } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { passwordEncrypt } from '@/helpers'
 import { IUserUpdate, IUserStore, IUserToStore } from '@/interfaces'
 
@@ -69,7 +69,7 @@ const userSlice = createSlice({
 export const loginUser = createAsyncThunk(
   'loginUser',
   async (user: { email: string; password: string }): Promise<IUserToStore> => {
-    const userResponse = await getUserByEmail(user.email)
+    const userResponse = await apiHandler.getUserByEmail(user.email)
 
     if (
       userResponse?.verified &&
@@ -94,7 +94,7 @@ export const loginUser = createAsyncThunk(
 export const fetchUserByUUID = createAsyncThunk(
   'fetchUserByUUID',
   async (uuid: string): Promise<IUserToStore> => {
-    const userResponse = await getUserByUUID(uuid)
+    const userResponse = await apiHandler.getUserByUUID(uuid)
 
     const {
       password,
@@ -110,8 +110,8 @@ export const fetchUserByUUID = createAsyncThunk(
 export const updateUser = createAsyncThunk(
   'updateUser',
   async ({ uuid, fields }: IUserUpdate): Promise<IUserToStore> => {
-    const userResponse = await getUserByUUID(uuid)
-    const updatedUser = await putUser({
+    const userResponse = await apiHandler.getUserByUUID(uuid)
+    const updatedUser = await apiHandler.putUser({
       ...userResponse,
       ...fields,
       updatedAt: new Date(),

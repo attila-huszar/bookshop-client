@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.styles'
 import { FormikField, Button } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.styles'
-import { passwordReset } from '@/api/rest'
+import { apiHandler } from '@/api/apiHandler'
 import { PATH, passwordResetInitialValues } from '@/constants'
 import { passwordEncrypt, resetPasswordSchema } from '@/helpers'
 import { useAppDispatch } from '@/hooks'
@@ -22,12 +22,9 @@ export function PasswordReset() {
 
   useEffect(() => {
     if (resetCode) {
-      passwordReset(resetCode)
-        .then((resetResponse) => {
-          if (resetResponse.uuid) {
-            setUUID(resetResponse.uuid)
-          }
-        })
+      apiHandler
+        .passwordReset(resetCode)
+        .then((resetResponse) => setUUID(resetResponse))
         .catch((error: Error) => {
           toast.error(error.message, {
             id: 'reset-error',

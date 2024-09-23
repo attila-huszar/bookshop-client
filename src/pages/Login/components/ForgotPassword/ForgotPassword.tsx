@@ -1,12 +1,12 @@
 import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react'
 import { Form, Formik } from 'formik'
+import { toast } from 'react-hot-toast'
 import { StyledForgotPassword } from './ForgotPassword.styles'
 import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.styles'
+import { apiHandler } from '@/api/apiHandler'
 import { forgotPasswordSchema } from '@/helpers'
-import { postUserPasswordReset } from '@/api/rest'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
-import toast from 'react-hot-toast'
 
 function ForgotPassword(
   _props: unknown,
@@ -30,7 +30,7 @@ function ForgotPassword(
     actions: { resetForm: () => void },
   ) => {
     try {
-      const response = await postUserPasswordReset(values.email)
+      const response = await apiHandler.postUserPasswordReset(values.email)
       handleClose()
       actions.resetForm()
       toast.success(response)

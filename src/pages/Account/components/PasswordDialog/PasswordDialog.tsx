@@ -6,15 +6,15 @@ import {
   useState,
 } from 'react'
 import { Formik, Form } from 'formik'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.styles'
 import { ButtonWrapper } from '@/styles/Form.styles'
 import { Button, FormikField, IconButton } from '@/components'
+import { apiHandler } from '@/api/apiHandler'
 import { passwordChangeInitialValues } from '@/constants'
 import { accountPasswordSchema, passwordEncrypt } from '@/helpers'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
-import { verifyPassword } from '@/api/rest'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 function PasswordDialog(
@@ -42,10 +42,13 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    if (values.newPassword === values.newPasswordConfirmation) {
-      const isPasswordValid = await verifyPassword(uuid, values.currentPassword)
+    const isPasswordValid = await apiHandler.verifyPassword(
+      uuid,
+      values.currentPassword,
+    )
 
-      if (isPasswordValid) {
+    if (isPasswordValid) {
+      if (values.currentPassword !== values.newPassword) {
         try {
           await dispatch(
             updateUser({
@@ -56,13 +59,21 @@ function PasswordDialog(
 
           handleClose()
           actions.resetForm()
-          toast.success('Password Changed Successfully')
+          toast.success('Password changed successfully')
         } catch {
-          toast.error('Current Password Invalid', {
-            id: 'password-error',
+          toast.error('Failed to change password, please try again later', {
+            id: 'password-change-error',
           })
         }
+      } else {
+        toast.error('Password must be different from current password', {
+          id: 'password-same-error',
+        })
       }
+    } else {
+      toast.error('Current password invalid', {
+        id: 'password-invalid-error',
+      })
     }
   }
 

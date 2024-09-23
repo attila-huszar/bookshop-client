@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 
 export const StyledAuthorizationMenu = styled.main`
   display: flex;
