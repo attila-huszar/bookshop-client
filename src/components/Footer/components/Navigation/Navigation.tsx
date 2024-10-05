@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { NavList } from '../../Footer.styles'
-import { StyledLogo } from './Navigation.styles'
+import { NavList } from '../../Footer.style'
+import { StyledLogo } from './Navigation.style'
 import { navLinks } from '@/constants'
 import logo from '@/assets/image/logo.png'
 

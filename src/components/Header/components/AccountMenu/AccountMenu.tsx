@@ -6,7 +6,7 @@ import {
   Dropdown,
   DropdownList,
   MenuItem,
-} from '../Menu/Menu.styles'
+} from '../Menu/Menu.style'
 import { IconButton, Avatar } from '@/components'
 import {
   useAppDispatch,

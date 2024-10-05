@@ -4,7 +4,7 @@ import {
   ImageWrapper,
   NotFoundSection,
   StyledNotFound,
-} from './NotFound.styles'
+} from './NotFound.style'
 import books from '@/assets/image/books.png'
 
 export function NotFound() {

@@ -19,4 +19,4 @@ export {
   verifyEmail,
   passwordReset,
 } from './user'
-export { postStripePayment, postOrder, updateOrder } from './order'
+export { postOrder, updateOrder } from './order'

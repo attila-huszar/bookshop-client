@@ -1,5 +1,6 @@
 import * as elastic from './elastic'
 import * as jsonServer from './json-server'
+import * as stripe from './stripe'
 import { apiChoice } from '@/constants'
 
 const apiHandlers = {
@@ -13,4 +14,4 @@ if (!selectedApi) {
   throw new Error(`Unknown API choice: ${apiChoice}`)
 }
 
-export const apiHandler = { ...selectedApi }
+export const apiHandler = { ...selectedApi, ...stripe }

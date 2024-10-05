@@ -6,25 +6,22 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useAppSelector } from '@/hooks'
-import { userSelector } from '@/store'
+import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { orderClear, orderSelector, userSelector } from '@/store'
+import { apiHandler } from '@/api/apiHandler'
 import { baseURL, PATH } from '@/constants'
 
-export function CheckoutForm({
-  amount,
-  currency,
-  orderNum,
-}: {
-  amount: number
-  currency: string
-  orderNum: string
-}) {
+export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
+  const { orderStatus } = useAppSelector(orderSelector)
   const [message, setMessage] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [emailInput, setEmailInput] = useState('')
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -52,6 +49,15 @@ export function CheckoutForm({
     setIsLoading(false)
   }
 
+  const handleCancel = () => {
+    if (orderStatus) {
+      void apiHandler.getStripePaymentCancel(orderStatus.paymentId)
+    }
+
+    dispatch(orderClear())
+    navigate(`/${PATH.cart}`, { replace: true })
+  }
+
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: 'tabs',
     business: {
@@ -64,27 +70,47 @@ export function CheckoutForm({
     },
   }
 
+  const order = orderStatus && {
+    num: orderStatus.paymentId.slice(-6).toUpperCase(),
+    amount: (orderStatus.amount / 100).toFixed(2),
+    currency: orderStatus.currency.toUpperCase(),
+  }
+
   return (
     <form id="payment-form" onSubmit={(event) => void handleSubmit(event)}>
-      <div>
-        <p>Order #{orderNum}</p>
-        <span>
-          {amount.toFixed(2)} {currency.toUpperCase()}
-        </span>
-      </div>
-      <LinkAuthenticationElement
-        options={{ defaultValues: { email: userData?.email ?? '' } }}
-        onChange={(e) => setEmailInput(e.value.email)}
-      />
-      <PaymentElement id="payment-element" options={paymentElementOptions} />
-      <button disabled={isLoading || !stripe || !elements} id="submit">
-        <span id="button-text">
-          {isLoading ? (
-            <div className="spinner" id="spinner"></div>
-          ) : (
-            `Pay ${amount.toFixed(2)} ${currency.toUpperCase()}`
-          )}
-        </span>
+      {order && (
+        <>
+          <div>
+            <p>Order #{order.num}</p>
+            <span>
+              {order.amount} {order.currency}
+            </span>
+          </div>
+          <LinkAuthenticationElement
+            options={{ defaultValues: { email: userData?.email ?? '' } }}
+            onChange={(e) => setEmailInput(e.value.email)}
+          />
+          <PaymentElement
+            id="payment-element"
+            options={paymentElementOptions}
+          />
+          <button disabled={isLoading || !stripe || !elements} id="submit">
+            <span id="button-text">
+              {isLoading ? (
+                <div className="spinner" id="spinner"></div>
+              ) : (
+                `Pay ${order.amount} ${order.currency}`
+              )}
+            </span>
+          </button>
+          <div style={{ marginBottom: '1rem' }}></div>
+        </>
+      )}
+      <button
+        type="button"
+        onClick={handleCancel}
+        style={{ backgroundColor: 'var(--grey)' }}>
+        <span id="button-text">Cancel Checkout</span>
       </button>
       {message && <div id="payment-message">{message}</div>}
     </form>

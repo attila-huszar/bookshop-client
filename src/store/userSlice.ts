@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { apiHandler } from '@/api/apiHandler'
 import { passwordEncrypt } from '@/helpers'
-import { IUserUpdate, IUserStore, IUserToStore } from '@/interfaces'
+import { IUserUpdate, IStateUser, IUserStore } from '@/interfaces'
 
-const initialState: IUserStore = {
+const initialState: IStateUser = {
   userData: null,
   userIsLoading: false,
   userIsUpdating: false,
@@ -68,7 +68,7 @@ const userSlice = createSlice({
 
 export const loginUser = createAsyncThunk(
   'loginUser',
-  async (user: { email: string; password: string }): Promise<IUserToStore> => {
+  async (user: { email: string; password: string }): Promise<IUserStore> => {
     const userResponse = await apiHandler.getUserByEmail(user.email)
 
     if (
@@ -93,7 +93,7 @@ export const loginUser = createAsyncThunk(
 
 export const fetchUserByUUID = createAsyncThunk(
   'fetchUserByUUID',
-  async (uuid: string): Promise<IUserToStore> => {
+  async (uuid: string): Promise<IUserStore> => {
     const userResponse = await apiHandler.getUserByUUID(uuid)
 
     const {
@@ -109,7 +109,7 @@ export const fetchUserByUUID = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, fields }: IUserUpdate): Promise<IUserToStore> => {
+  async ({ uuid, fields }: IUserUpdate): Promise<IUserStore> => {
     const userResponse = await apiHandler.getUserByUUID(uuid)
     const updatedUser = await apiHandler.putUser({
       ...userResponse,

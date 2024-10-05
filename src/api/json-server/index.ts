@@ -8,7 +8,7 @@ export {
   getBookSearchOptions,
 } from './books'
 export { getNews } from './news'
-export { postOrder, postStripePayment, updateOrder } from './order'
+export { postOrder, updateOrder } from './order'
 export {
   getUserByEmail,
   getUserByUUID,

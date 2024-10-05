@@ -30,5 +30,5 @@ export function VerifyEmail() {
     }
   }, [code, navigate])
 
-  return <Loading text="Verifying..." />
+  return <Loading text="Verifying" />
 }

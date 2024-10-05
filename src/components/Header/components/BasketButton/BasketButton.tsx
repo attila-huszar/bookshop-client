@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { StyledBasketButton, CartItemCount } from './BasketButton.styles'
+import { StyledBasketButton, CartItemCount } from './BasketButton.style'
 import { Button } from '@/components'
-import { useCart } from '@/hooks'
+import { useAppSelector, useCart } from '@/hooks'
+import { orderSelector } from '@/store'
 import { PATH } from '@/constants'
 
 export function BasketButton() {
+  const { orderStatus } = useAppSelector(orderSelector)
   const { cartArray } = useCart()
   const navigate = useNavigate()
 
@@ -14,8 +16,8 @@ export function BasketButton() {
         onClick={() => navigate(`/${PATH.cart}`)}
         $size="sm"
         $withCart
-        title="Basket">
-        Basket
+        title={orderStatus ? 'Checkout' : 'Basket'}>
+        {orderStatus ? 'Checkout' : 'Basket'}
       </Button>
       {cartArray?.length ? (
         <CartItemCount>

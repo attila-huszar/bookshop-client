@@ -1,4 +1,4 @@
-import { type Address } from '@stripe/stripe-js'
+import { PaymentIntent, type Address } from '@stripe/stripe-js'
 
 export interface IOrder {
   id?: number
@@ -34,6 +34,14 @@ export interface IStripePaymentIntent {
   description: string
 }
 
+export interface IStripeOrder {
+  intent: PaymentIntent.Status
+  paymentId: string
+  clientSecret?: string
+  amount: number
+  currency: string
+}
+
 export interface ICreateOrder {
   orderToStripe: IStripePaymentIntent
   orderToServer: Pick<
@@ -45,4 +53,10 @@ export interface ICreateOrder {
     | 'orderItems'
     | 'orderCreatedAt'
   >
+}
+
+export interface IRetrieveOrder {
+  client_secret: string
+  amount: number
+  currency: string
 }

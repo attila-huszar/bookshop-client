@@ -1,10 +1,12 @@
-import eslint from '@eslint/js'
 import { config, configs, parser, plugin } from 'typescript-eslint'
+import eslint from '@eslint/js'
 import importX from 'eslint-plugin-import-x'
 import react from 'eslint-plugin-react'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
+import jest from 'eslint-plugin-jest'
+import jestDom from 'eslint-plugin-jest-dom'
 
 export default config(
   eslint.configs.recommended,
@@ -13,12 +15,13 @@ export default config(
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   react.configs.flat.recommended,
+  react.configs.flat['jsx-runtime'],
   prettierConfig,
   {
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      parser: parser,
+      parser,
       parserOptions: {
         projectService: {
           allowDefaultProject: ['*.js', '*.cjs'],
@@ -40,7 +43,6 @@ export default config(
         { ignoreRestSiblings: true },
       ],
       '@typescript-eslint/consistent-type-definitions': 'off',
-      'react/react-in-jsx-scope': 'off',
       'prettier/prettier': 'warn',
     },
     linterOptions: {
@@ -50,13 +52,32 @@ export default config(
       react: {
         version: 'detect',
       },
+      jest: {
+        version: 'detect',
+      },
     },
   },
   {
-    files: ['eslint.config.js'],
-    ...configs.disableTypeChecked,
+    files: ['src/**/*.test.{ts,tsx}'],
+    ...jest.configs['flat/recommended'],
   },
   {
-    ignores: ['dist'],
+    files: ['src/**/*.test.{ts,tsx}'],
+    ...jestDom.configs['flat/recommended'],
+  },
+  {
+    files: ['eslint.config.js'],
+    languageOptions: {
+      parser,
+    },
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      'import-x/default': 'off',
+      'import-x/no-named-as-default-member': 'off',
+    },
+  },
+  {
+    ignores: ['dist', 'coverage'],
   },
 )

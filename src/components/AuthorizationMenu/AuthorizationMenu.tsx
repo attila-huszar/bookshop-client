@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   StyledAuthorizationMenu,
   FormChangeLinks,
-} from './AuthorizationMenu.styles'
+} from './AuthorizationMenu.style'
 import { PATH } from '@/constants'
 
 export function AuthorizationMenu({ children }: React.PropsWithChildren) {

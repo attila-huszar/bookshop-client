@@ -1,5 +1,5 @@
-import { NavList } from '../../Footer.styles'
-import { SocialLinks } from './Links.styles'
+import { NavList } from '../../Footer.style'
+import { SocialLinks } from './Links.style'
 import { legalLinks, socialLinks } from '@/constants'
 
 export function Links() {

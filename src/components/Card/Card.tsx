@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { StyledCard, Details, Image, Title, Description } from './Card.styles'
+import { StyledCard, Details, Image, Title, Description } from './Card.style'
 import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'
 import { PATH } from '@/constants'

@@ -1,9 +1,21 @@
-import { useEffect, Fragment, ChangeEvent, useLayoutEffect } from 'react'
+import {
+  Fragment,
+  ChangeEvent,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+} from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { cartSelector, createOrder, orderSelector } from '@/store'
-import { Button, IconButton, Loading, Price } from '@/components'
+import {
+  cartClear,
+  cartSelector,
+  orderClear,
+  orderCreate,
+  orderSelector,
+} from '@/store'
+import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import {
   StyledCart,
   CartGrid,
@@ -18,7 +30,7 @@ import {
   LabelQuantity,
   LabelPrice,
   EmptyCart,
-} from './Cart.styles'
+} from './Cart.style'
 import { PATH } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
 import { ICart, ICreateOrder } from '@/interfaces'
@@ -57,19 +69,32 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
-  const { orderStatus, orderIsLoading, orderError } =
+  const { orderStatus, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
   const dispatch = useAppDispatch()
+  const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (orderStatus.clientSecret) {
-      navigate(`/${PATH.checkout}`)
-    } else if (orderError) {
-      toast.error(orderError, {
+    if (orderStatus?.clientSecret) {
+      navigate(`/${PATH.checkout}`, { replace: true })
+    }
+  }, [orderStatus?.clientSecret, navigate])
+
+  useEffect(() => {
+    if (orderIsLoading) {
+      ref.current?.showModal()
+    } else {
+      ref.current?.close()
+    }
+  }, [orderIsLoading])
+
+  useEffect(() => {
+    if (orderCreateError) {
+      toast.error(orderCreateError, {
         id: 'order-error',
       })
     }
-  }, [navigate, orderError, orderStatus.clientSecret])
+  }, [orderCreateError])
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
@@ -113,12 +138,17 @@ export function Cart() {
         orderCreatedAt: new Date(),
       }
 
-      void dispatch(createOrder({ orderToStripe, orderToServer }))
+      void dispatch(orderCreate({ orderToStripe, orderToServer }))
     }
   }
 
+  const handleCartClear = () => {
+    dispatch(cartClear())
+    dispatch(orderClear())
+  }
+
   if (cartIsLoading) {
-    return <Loading text="Loading cart..." />
+    return <Loading text="Loading Cart" />
   }
 
   if (cartArray.length) {
@@ -223,6 +253,14 @@ export function Cart() {
             $inverted>
             Continue Shopping
           </Button>
+          <IconButton
+            icon={<RemoveFromCartIcon />}
+            onClick={handleCartClear}
+            disabled={orderIsLoading}
+            title="Reset Cart"
+            $color="var(--primary-color)"
+            $bordered
+          />
           <Button
             onClick={handleCheckout}
             disabled={orderIsLoading}
@@ -234,6 +272,7 @@ export function Cart() {
             Checkout
           </Button>
         </ButtonWrapper>
+        <InfoDialog dialogRef={ref} text="Checking out" />
       </StyledCart>
     )
   }

@@ -29,7 +29,7 @@ export {
   cartClear,
   fetchCartItems,
 } from './cartSlice'
-export { createOrder } from './orderSlice'
+export { orderCreate, orderRetrieve, orderClear } from './orderSlice'
 export {
   booksSelector,
   bookByIdSelector,

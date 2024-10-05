@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { apiHandler } from '@/api/apiHandler'
-import { IBook, ICart, ICartStore, ILocalCart } from '@/interfaces'
+import { IBook, ICart, IStateCart, ILocalCart } from '@/interfaces'
 
-const initialState: ICartStore = {
+const initialState: IStateCart = {
   cartArray: [],
   cartIsLoading: false,
   cartError: undefined,
@@ -33,6 +33,8 @@ const cartSlice = createSlice({
     },
     cartClear: (state) => {
       state.cartArray = []
+      state.cartIsLoading = false
+      state.cartError = undefined
     },
     cartRemove: (state, action: { payload: ICart }) => {
       state.cartArray = state.cartArray.filter(

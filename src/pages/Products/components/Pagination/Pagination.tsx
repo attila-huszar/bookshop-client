@@ -1,4 +1,4 @@
-import { StyledPagination, PageSelectButton } from './Pagination.styles'
+import { StyledPagination, PageSelectButton } from './Pagination.style'
 import { IconButton } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
@@ -26,6 +26,7 @@ export function Pagination() {
           }
         }}
         icon={<ChevronLeftEndIcon />}
+        title="First Page"
         disabled={booksCurrentPage === 1}
       />
       <IconButton
@@ -36,6 +37,7 @@ export function Pagination() {
           }
         }}
         icon={<ChevronLeftIcon />}
+        title="Previous Page"
         disabled={booksCurrentPage === 1}
       />
       {Array.from(
@@ -44,11 +46,12 @@ export function Pagination() {
           return (
             <PageSelectButton
               key={`pageSelectBtn-${idx}`}
-              data-active={booksCurrentPage === idx + 1}
               onClick={() => {
                 dispatch(setBooksCurrentPage(idx + 1))
                 void dispatch(fetchBooks(booksFilters.active))
-              }}>
+              }}
+              disabled={booksCurrentPage === idx + 1}
+              aria-label={`Page ${idx + 1}`}>
               {idx + 1}
             </PageSelectButton>
           )
@@ -62,6 +65,7 @@ export function Pagination() {
           }
         }}
         icon={<ChevronLeftIcon />}
+        title="Next Page"
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
         $flipHorizontal
       />
@@ -73,6 +77,7 @@ export function Pagination() {
           }
         }}
         icon={<ChevronLeftEndIcon />}
+        title="Last Page"
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
         $flipHorizontal
       />

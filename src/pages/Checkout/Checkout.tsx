@@ -1,20 +1,28 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { stripeKey } from '@/constants'
 import { useAppSelector } from '@/hooks'
 import { orderSelector } from '@/store'
-import { StyledCheckout } from './Checkout.styles'
+import { StyledCheckout } from './Checkout.style'
 import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
-import { Error } from '@/components'
+import { InfoDialog } from '@/components'
 
 const stripePromise = loadStripe(stripeKey)
 const loader = 'auto'
 
 export function Checkout() {
-  const { orderStatus, orderError } = useAppSelector(orderSelector)
+  const { orderStatus, orderIsLoading, orderRetrieveError } =
+    useAppSelector(orderSelector)
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    if (orderIsLoading || orderRetrieveError) {
+      ref.current?.showModal()
+    }
+  }, [orderIsLoading, orderRetrieveError])
 
   const redirectStatus = useMemo(
     () => new URLSearchParams(window.location.search).get('redirect_status'),
@@ -23,37 +31,36 @@ export function Checkout() {
 
   const options: StripeElementsOptions = {
     clientSecret: orderStatus?.clientSecret,
-    appearance: {
-      theme: 'flat',
-      variables: {},
-    },
+    appearance: { theme: 'flat', variables: {} },
     loader,
   }
 
-  function renderContent() {
+  function renderCheckout() {
+    if (orderIsLoading) {
+      return <InfoDialog dialogRef={ref} text="Loading your checkout" />
+    }
+
     if (redirectStatus === 'succeeded') {
       return <PaymentStatus />
-    } else if (
-      orderStatus.clientSecret &&
-      orderStatus.amount &&
-      orderStatus.currency
-    ) {
+    }
+
+    if (orderStatus) {
       return (
         <>
           <AddressForm />
-          <CheckoutForm
-            amount={orderStatus.amount / 100}
-            currency={orderStatus.currency}
-            orderNum={orderStatus.clientSecret
-              .split('_secret_')[0]
-              .slice(-6)
-              .toUpperCase()}
-          />
+          <CheckoutForm />
         </>
       )
-    } else {
-      return <Error text="No checkout in progress" error={orderError} />
     }
+
+    return (
+      <InfoDialog
+        dialogRef={ref}
+        text="No checkout in progress"
+        error={orderRetrieveError}
+        backButton
+      />
+    )
   }
 
   return (
@@ -61,8 +68,8 @@ export function Checkout() {
       <Elements
         options={options}
         stripe={stripePromise}
-        key={orderStatus?.clientSecret}>
-        {renderContent()}
+        key={orderStatus?.paymentId}>
+        {renderCheckout()}
       </Elements>
     </StyledCheckout>
   )

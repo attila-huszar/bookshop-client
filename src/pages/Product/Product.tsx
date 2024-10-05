@@ -9,7 +9,7 @@ import {
   Title,
   Author,
   ButtonWrapper,
-} from './Product.styles'
+} from './Product.style'
 import { useAppSelector, useAppDispatch, useCart } from '@/hooks'
 import {
   fetchBookById,

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { StyledPasswordReset } from './PasswordReset.styles'
+import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
-import { ButtonWrapper } from '@/styles/Form.styles'
+import { ButtonWrapper } from '@/styles/Form.style'
 import { apiHandler } from '@/api/apiHandler'
 import { PATH, passwordResetInitialValues } from '@/constants'
 import { passwordEncrypt, resetPasswordSchema } from '@/helpers'
@@ -29,7 +29,7 @@ export function PasswordReset() {
           toast.error(error.message, {
             id: 'reset-error',
           })
-          navigate('/')
+          navigate('/', { replace: true })
         })
     }
   }, [resetCode, navigate])
@@ -47,7 +47,7 @@ export function PasswordReset() {
           }),
         )
 
-        navigate(`/${PATH.login}`)
+        navigate(`/${PATH.login}`, { replace: true })
         toast.success('Password Changed Successfully', {
           id: 'reset-success',
         })
