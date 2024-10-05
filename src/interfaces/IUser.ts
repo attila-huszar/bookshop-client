@@ -20,7 +20,7 @@ export interface IUser {
   updatedAt: Date
 }
 
-export type IUserToStore = Omit<
+export type IUserStore = Omit<
   IUser,
   'password' | 'verificationCode' | 'verificationCodeExpiresAt'
 >

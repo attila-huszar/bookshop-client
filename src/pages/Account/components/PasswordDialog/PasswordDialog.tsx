@@ -7,8 +7,8 @@ import {
 } from 'react'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { StyledPasswordDialog } from './PasswordDialog.styles'
-import { ButtonWrapper } from '@/styles/Form.styles'
+import { StyledPasswordDialog } from './PasswordDialog.style'
+import { ButtonWrapper } from '@/styles/Form.style'
 import { Button, FormikField, IconButton } from '@/components'
 import { apiHandler } from '@/api/apiHandler'
 import { passwordChangeInitialValues } from '@/constants'
@@ -78,7 +78,11 @@ function PasswordDialog(
   }
 
   return (
-    <StyledPasswordDialog ref={dialogRef}>
+    <StyledPasswordDialog
+      ref={dialogRef}
+      role="dialog"
+      aria-modal
+      aria-label="Change Password">
       <h2>Change Password</h2>
       <Formik
         initialValues={passwordChangeInitialValues}

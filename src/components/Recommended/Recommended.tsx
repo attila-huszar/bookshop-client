@@ -1,10 +1,15 @@
-import { StyledRecommended } from './Recommended.styles'
+import { useLayoutEffect } from 'react'
+import { StyledRecommended } from './Recommended.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Card, SwiperComponent } from '@/components'
 
 export function Recommended() {
   const { booksRecommended } = useAppSelector(booksSelector)
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <StyledRecommended>

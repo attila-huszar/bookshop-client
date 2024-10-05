@@ -16,27 +16,27 @@ const iconWidth = {
 export const StyledIconButton = styled.button<StyleTypes>`
   display: flex;
   align-items: center;
-  padding: 3px;
+  padding: 3px 10px;
   color: ${({ $color }) => $color ?? 'var(--light-black)'};
   background: none;
   border: none;
-  outline: none;
+  border-radius: ${({ $round }) => ($round ? '50%' : '10px')};
+  outline: ${({ $bordered }) =>
+    $bordered ? '3px solid var(--primary-color)' : 'none'};
+  outline-offset: -3px;
   cursor: pointer;
   transition: all 0.2s ease-out;
-  border: ${({ $bordered }) =>
-    $bordered ? '2px solid var(--secondary-color)' : undefined};
-  border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
+
+  ${({ $bordered }) => $bordered && 'aspect-ratio: 1/1; height: 100%;'}
 
   &:hover {
     color: var(--secondary-color);
   }
 
   svg {
-    height: ${({ $iconSize = 'md', $bordered }) =>
-      $bordered ? '38px' : iconHeight[$iconSize]};
-    width: ${({ $iconSize = 'md', $bordered }) =>
-      $bordered ? '38px' : iconWidth[$iconSize]};
-    border-radius: ${({ $bordered }) => ($bordered ? '50%' : undefined)};
+    height: ${({ $iconSize = 'md' }) => iconHeight[$iconSize]};
+    width: ${({ $iconSize = 'md' }) => iconWidth[$iconSize]};
+    border-radius: ${({ $round }) => ($round ? '50%' : undefined)};
 
     ${({ $flipHorizontal }) => $flipHorizontal && 'transform: scaleX(-1);'}
     ${({ $flipVertical }) => $flipVertical && 'transform: scaleY(-1);'}

@@ -1,4 +1,4 @@
-import { StyledNews } from './News.styles'
+import { StyledNews } from './News.style'
 import { NewsCard } from './NewsCard'
 import { useAppSelector } from '@/hooks'
 import { newsSelector } from '@/store'

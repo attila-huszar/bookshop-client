@@ -9,9 +9,10 @@ import {
   fetchNews,
   fetchCartItems,
   fetchUserByUUID,
+  orderRetrieve,
 } from '@/store'
 import { ILocalCart } from '@/interfaces'
-import GlobalStyle from '@/styles/Global.styles'
+import GlobalStyle from '@/styles/Global.style'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -32,6 +33,11 @@ function App() {
     const cart = getFromLocalStorage<ILocalCart[]>('cart')
     if (cart) {
       void dispatch(fetchCartItems(cart))
+    }
+
+    const paymentId = getFromLocalStorage<string>('paymentId')
+    if (paymentId) {
+      void dispatch(orderRetrieve(paymentId))
     }
   }, [dispatch, getFromLocalStorage])
 

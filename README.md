@@ -4,6 +4,7 @@
 [![React](https://img.shields.io/badge/React-grey?logo=react)](https://reactjs.org/)
 [![Redux](https://img.shields.io/badge/Redux-764ABC?logo=redux)](https://redux.js.org/)  
 [![Stripe](https://img.shields.io/badge/Stripe-008CDD?logo=stripe&logoColor=fff)](https://stripe.com/)
+[![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?logo=elasticsearch&logoColor=fff)](https://www.elastic.co/elasticsearch)
 [![Formik](https://img.shields.io/badge/Formik-2563EB?logo=formik&logoColor=fff)](https://formik.org/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?logo=cloudinary&logoColor=fff)](https://cloudinary.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff)](https://vitejs.dev/)
@@ -15,16 +16,16 @@ Set <STRIPE_SECRET> environment variable for the cloud function
 Set <VITE_STRIPE_PUBLIC_KEY> and <VITE_STRIPE_CLOUD_FUNCTION_URL> in .env file
 
 ```js
-const express = require("express");
-const serverless = require("serverless-http");
-const stripeSecret = process.env.STRIPE_SECRET;
-const stripe = require("stripe")(stripeSecret);
+const express = require('express')
+const serverless = require('serverless-http')
+const stripeSecret = process.env.STRIPE_SECRET
+const stripe = require('stripe')(stripeSecret)
 
-const app = express();
-app.use(express.json());
+const app = express()
+app.use(express.json())
 
-app.post("/create-payment-intent", async (req, res) => {
-  const { amount, currency, receipt_email, description, shipping } = req.body;
+app.post('/create-payment-intent', async (req, res) => {
+  const { amount, currency, receipt_email, description, shipping } = req.body
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount,
@@ -32,13 +33,26 @@ app.post("/create-payment-intent", async (req, res) => {
     receipt_email,
     description,
     shipping,
-  });
+  })
 
   res.send({
     clientSecret: paymentIntent.client_secret,
-  });
-});
+  })
+})
 
-module.exports.handler = serverless(app);
+app.get('/retrieve-payment-intent/:paymentId', async (req, res) => {
+  const paymentIntent = await stripe.paymentIntents.retrieve(
+    req.params.paymentId,
+  )
 
+  res.send(paymentIntent)
+})
+
+app.get('/cancel-payment-intent/:paymentId', async (req, res) => {
+  const paymentIntent = await stripe.paymentIntents.cancel(req.params.paymentId)
+
+  res.send(paymentIntent)
+})
+
+module.exports.handler = serverless(app)
 ```

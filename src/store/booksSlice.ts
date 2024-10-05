@@ -6,9 +6,9 @@ import {
 import { apiHandler } from '@/api/apiHandler'
 import { generateUniqueRndNums } from '@/helpers'
 import { RootState } from './store'
-import { IBook, IBookStore, IFilter, IFilterActive } from '@/interfaces'
+import { IBook, IStateBook, IFilter, IFilterActive } from '@/interfaces'
 
-const initialState: IBookStore = {
+const initialState: IStateBook = {
   booksInShop: [],
   booksViewed: [],
   booksTotal: 0,

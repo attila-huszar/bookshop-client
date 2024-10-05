@@ -4,7 +4,7 @@ import {
   ImageWrapper,
   ImageItem,
   MirrorImg,
-} from './Releases.styles'
+} from './Releases.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Button } from '@/components'

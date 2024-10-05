@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { StyledLayout } from './Layout.styles'
+import { StyledLayout } from './Layout.style'
 import { Header, Footer } from '@/components'
 
 export function Layout() {

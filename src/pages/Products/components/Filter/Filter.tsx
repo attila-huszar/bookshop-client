@@ -9,7 +9,7 @@ import {
   Rating,
   ButtonWrapper,
   CustomButton,
-} from './Filter.styles'
+} from './Filter.style'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
   booksSelector,
@@ -24,7 +24,7 @@ import {
 import { Accordion, AccordionItem, IconButton } from '@/components'
 import { enforceMinMax, generateFilterArray } from '@/helpers'
 import { filterInitialValues, discountOptions } from '@/constants'
-import { sliderStyles } from '@/styles/Global.styles'
+import { sliderStyles } from '@/styles/Global.style'
 import 'rc-slider/assets/index.css'
 import Star from '@/assets/svg/star.svg?react'
 import StarFilled from '@/assets/svg/star_solid.svg?react'
@@ -116,9 +116,7 @@ export function Filter() {
           onSubmit={handleFormSubmit}
           onReset={handleFormReset}>
           <Form>
-            <Accordion
-              numberOfAllowedOpenPanels="all"
-              defaultOpenPanels={[0, 1]}>
+            <Accordion defaultOpenPanels={[0, 1]}>
               <AccordionItem header="Genre">
                 <GenreCheckBoxes>
                   {booksFilters.initial.genre?.map((filter) => (
@@ -288,6 +286,7 @@ export function Filter() {
                         onClick={() => {
                           handleRatingChange(rating)
                         }}
+                        aria-label="rating"
                       />
                     )
                   })}

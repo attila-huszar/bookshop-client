@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.styles'
+import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.style'
 import { IconButton } from '@/components'
 import { useClickOutside } from '@/hooks'
 import { menuLinks } from '@/constants'

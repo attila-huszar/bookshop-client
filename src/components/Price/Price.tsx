@@ -4,7 +4,7 @@ import {
   StyledPriceCart,
   Currency,
   Strikethrough,
-} from './Price.styles'
+} from './Price.style'
 import { IPriceProps } from '@/interfaces'
 
 export function Price({

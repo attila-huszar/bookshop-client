@@ -1,4 +1,4 @@
-import { StyledIconButton } from './IconButton.styles'
+import { StyledIconButton } from './IconButton.style'
 import type { IconButtonTypes } from './IconButton.types'
 
 export function IconButton({

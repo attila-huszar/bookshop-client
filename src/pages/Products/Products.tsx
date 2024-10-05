@@ -1,4 +1,4 @@
-import { StyledProducts } from './Products.styles'
+import { StyledProducts } from './Products.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Card } from '@/components'

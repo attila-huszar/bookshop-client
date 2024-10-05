@@ -15,15 +15,19 @@ import {
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
+  cartClear,
 } from './cartSlice'
+import { orderClear, orderCreate } from './orderSlice'
 import { IBook, ICart, ILocalCart } from '@/interfaces'
 
-export const authorFetchMiddleware = createListenerMiddleware()
+export const authorFetch = createListenerMiddleware()
 
-const authorFetchMiddlewareTyped =
-  authorFetchMiddleware.startListening.withTypes<RootState, AppDispatch>()
+const authorFetchTyped = authorFetch.startListening.withTypes<
+  RootState,
+  AppDispatch
+>()
 
-authorFetchMiddlewareTyped({
+authorFetchTyped({
   matcher: isAnyOf(
     fetchBooks.fulfilled,
     fetchBookById.fulfilled,
@@ -50,66 +54,96 @@ authorFetchMiddlewareTyped({
   },
 })
 
-export const localStorageMiddleware = createListenerMiddleware()
+export const cartToLocalStorage = createListenerMiddleware()
 
-const localStorageMiddlewareTyped =
-  localStorageMiddleware.startListening.withTypes<RootState, AppDispatch>()
+const cartToLocalStorageTyped = cartToLocalStorage.startListening.withTypes<
+  RootState,
+  AppDispatch
+>()
 
-localStorageMiddlewareTyped({
+cartToLocalStorageTyped({
   matcher: isAnyOf(
     cartAdd,
     cartRemove,
     cartQuantityAdd,
     cartQuantityRemove,
     cartQuantitySet,
+    cartClear,
   ),
   effect: (action) => {
-    const cartFromLocalStorage: ILocalCart[] = JSON.parse(
-      localStorage.getItem('cart') ?? '[]',
-    ) as ILocalCart[]
+    if (action.payload) {
+      const cartFromLocalStorage: ILocalCart[] = JSON.parse(
+        localStorage.getItem('cart') ?? '[]',
+      ) as ILocalCart[]
 
-    let cartToLocalStorage: ILocalCart[] = []
-    const actionPayload = action.payload as ICart
-    const { cartItem, newQuantity } = actionPayload as unknown as {
-      cartItem: ICart
-      newQuantity: number
+      let cartToLocalStorage: ILocalCart[] = []
+
+      const payload = action.payload as ICart
+      const { cartItem, newQuantity } = payload as unknown as {
+        cartItem: ICart
+        newQuantity: number
+      }
+
+      switch (action.type) {
+        case cartAdd.type:
+          cartToLocalStorage = [
+            ...cartFromLocalStorage,
+            { id: payload.id, quantity: 1 },
+          ]
+          break
+        case cartRemove.type:
+          cartToLocalStorage = cartFromLocalStorage.filter(
+            (item) => item.id !== payload.id,
+          )
+          break
+        case cartQuantityAdd.type:
+          cartToLocalStorage = cartFromLocalStorage.map((item) =>
+            item.id === payload.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          )
+          break
+        case cartQuantityRemove.type:
+          cartToLocalStorage = cartFromLocalStorage.map((item) =>
+            item.id === payload.id
+              ? { ...item, quantity: item.quantity - 1 }
+              : item,
+          )
+          break
+        case cartQuantitySet.type:
+          cartToLocalStorage = cartFromLocalStorage.map((item) =>
+            item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
+          )
+          break
+        default:
+          break
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cartToLocalStorage))
+    } else {
+      localStorage.removeItem('cart')
     }
+  },
+})
 
-    switch (action.type) {
-      case cartAdd.type:
-        cartToLocalStorage = [
-          ...cartFromLocalStorage,
-          { id: actionPayload.id, quantity: 1 },
-        ]
-        break
-      case cartRemove.type:
-        cartToLocalStorage = cartFromLocalStorage.filter(
-          (item) => item.id !== actionPayload.id,
-        )
-        break
-      case cartQuantityAdd.type:
-        cartToLocalStorage = cartFromLocalStorage.map((item) =>
-          item.id === actionPayload.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        )
-        break
-      case cartQuantityRemove.type:
-        cartToLocalStorage = cartFromLocalStorage.map((item) =>
-          item.id === actionPayload.id
-            ? { ...item, quantity: item.quantity - 1 }
-            : item,
-        )
-        break
-      case cartQuantitySet.type:
-        cartToLocalStorage = cartFromLocalStorage.map((item) =>
-          item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
-        )
-        break
-      default:
-        break
-    }
+export const paymentIdToLocalStorage = createListenerMiddleware()
 
-    localStorage.setItem('cart', JSON.stringify(cartToLocalStorage))
+const paymentIdToLocalStorageTyped =
+  paymentIdToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
+
+paymentIdToLocalStorageTyped({
+  actionCreator: orderCreate.fulfilled,
+  effect: (action) => {
+    localStorage.setItem(
+      'paymentId',
+      action.payload.clientSecret.split('_secret_')[0],
+    )
+  },
+})
+
+paymentIdToLocalStorageTyped({
+  actionCreator: orderClear,
+  effect: () => {
+    localStorage.removeItem('paymentId')
   },
 })

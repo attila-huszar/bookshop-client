@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStripe } from '@stripe/react-stripe-js'
-import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.styles'
+import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
 import { apiHandler } from '@/api/apiHandler'
 import { useAppDispatch } from '@/hooks'
-import { cartClear } from '@/store'
+import { cartClear, orderClear } from '@/store'
 import logo from '@/assets/image/logo.png'
 
 export function PaymentStatus() {
@@ -46,7 +46,8 @@ export function PaymentStatus() {
               },
             })
 
-            localStorage.removeItem('cart')
+            dispatch(cartClear())
+            dispatch(orderClear())
             break
           }
 
@@ -103,12 +104,7 @@ export function PaymentStatus() {
         )}
       </Status>
       <p>{status.message}</p>
-      <button
-        onClick={() => {
-          dispatch(cartClear())
-          navigate('/')
-        }}
-        type="button">
+      <button onClick={() => navigate('/')} type="button">
         Back to home
       </button>
     </StyledPaymentStatus>

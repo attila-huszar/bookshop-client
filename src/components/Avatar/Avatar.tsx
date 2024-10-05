@@ -1,4 +1,4 @@
-import { StyledAvatar } from './Avatar.styles'
+import { StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 import { CloudinaryImage } from '@cloudinary/url-gen'
 import { thumbnail } from '@cloudinary/url-gen/actions/resize'

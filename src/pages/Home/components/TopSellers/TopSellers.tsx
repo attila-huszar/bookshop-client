@@ -1,4 +1,4 @@
-import { StyledTopSellers } from './TopSellers.styles'
+import { StyledTopSellers } from './TopSellers.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Card, SwiperComponent } from '@/components'

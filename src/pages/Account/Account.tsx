@@ -10,7 +10,7 @@ import {
   Address,
   AddressLine,
   ButtonWrapper,
-} from './Account.styles'
+} from './Account.style'
 import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
@@ -18,7 +18,7 @@ import { userSelector, updateUser } from '@/store'
 import { uploadImage } from '@/services'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
-import { IUserToStore } from '@/interfaces'
+import { IUserStore } from '@/interfaces'
 import EditIcon from '@/assets/svg/edit.svg?react'
 
 export function Account() {
@@ -29,10 +29,7 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (
-    values: Partial<IUserToStore>,
-    uuid: string,
-  ) => {
+  const handleBasicInfoSubmit = (values: Partial<IUserStore>, uuid: string) => {
     void dispatch(
       updateUser({
         uuid,
@@ -42,7 +39,7 @@ export function Account() {
   }
 
   const handleAddressInfoSubmit = (
-    values: IUserToStore['address'],
+    values: IUserStore['address'],
     uuid: string,
   ) => {
     void dispatch(
@@ -99,6 +96,7 @@ export function Account() {
                 <input
                   type="file"
                   name="avatarChangeInput"
+                  aria-label="Change Avatar"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     if (e.target.files) {
                       void handleImgChange(e.target.files[0], uuid)
@@ -185,6 +183,7 @@ export function Account() {
             <IconButton
               onClick={() => setEditingBasicInfo(true)}
               icon={<EditIcon />}
+              title="Edit contact info"
               disabled={editingBasicInfo}
             />
           </Details>
@@ -291,6 +290,7 @@ export function Account() {
             <IconButton
               onClick={() => setEditingAddressInfo(true)}
               icon={<EditIcon />}
+              title="Edit address"
               disabled={editingAddressInfo}
             />
           </Details>

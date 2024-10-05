@@ -6,7 +6,7 @@ import {
   Select,
   ErrorMessage,
   PasswordEye,
-} from '@/styles/Form.styles'
+} from '@/styles/Form.style'
 import { IFormik, IFormikField } from '@/interfaces'
 import PasswordEyeIcon from '@/assets/svg/eye.svg?react'
 import PasswordEyeSlashIcon from '@/assets/svg/eye_slash.svg?react'
@@ -51,6 +51,7 @@ export function FormikField({
       <InputWrapper>
         <Input
           name={name}
+          aria-label={name}
           onChange={handleImgChange}
           type="file"
           accept="image/*"

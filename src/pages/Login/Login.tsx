@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { ButtonWrapper } from '@/styles/Form.styles'
+import { ButtonWrapper } from '@/styles/Form.style'
 import {
   AuthorizationMenu,
   FormikField,

@@ -11,7 +11,7 @@ import {
   TextBold,
   NoResults,
   ClearButton,
-} from './Search.styles'
+} from './Search.style'
 import { searchSchema } from '@/helpers'
 import {
   useDebounce,
@@ -136,6 +136,7 @@ export function Search() {
               ref={inputRef}
               type="text"
               name="search"
+              aria-label="search"
               placeholder="What are you looking for?"
               autoComplete="off"
               onChange={(e) => handleSearchChange(e, handleChange)}

@@ -1,14 +1,14 @@
-import { type PaymentIntent } from '@stripe/stripe-js'
 import {
   IBook,
   IAuthor,
   INews,
-  IUserToStore,
+  IUserStore,
   ICart,
   IFilter,
-} from '@/interfaces'
+  IStripeOrder,
+} from './'
 
-export interface IBookStore {
+export interface IStateBook {
   booksInShop: IBook[]
   booksViewed: IBook[]
   booksTotal: number
@@ -26,20 +26,20 @@ export interface IBookStore {
   }
 }
 
-export interface IAuthorStore {
+export interface IStateAuthor {
   authorArray: IAuthor[]
   authorIsLoading: boolean
   authorError: string | undefined
 }
 
-export interface INewsStore {
+export interface IStateNews {
   newsArray: INews[]
   newsIsLoading: boolean
   newsError: string | undefined
 }
 
-export interface IUserStore {
-  userData: IUserToStore | null
+export interface IStateUser {
+  userData: IUserStore | null
   userIsLoading: boolean
   userIsUpdating: boolean
   userError: string | undefined
@@ -47,19 +47,15 @@ export interface IUserStore {
   registerError: string | undefined
 }
 
-export interface ICartStore {
+export interface IStateCart {
   cartArray: ICart[]
   cartIsLoading: boolean
   cartError: string | undefined
 }
 
-export interface IOrderStore {
-  orderStatus: {
-    intent: PaymentIntent.Status | null
-    clientSecret: string | undefined
-    amount: number | null
-    currency: string | null
-  }
+export interface IStateOrder {
+  orderStatus: IStripeOrder | null
   orderIsLoading: boolean
-  orderError: string | undefined
+  orderCreateError: string | undefined
+  orderRetrieveError: string | undefined
 }

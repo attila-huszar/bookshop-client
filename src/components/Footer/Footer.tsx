@@ -3,7 +3,7 @@ import {
   LeftSection,
   RightSection,
   BottomSection,
-} from './Footer.styles'
+} from './Footer.style'
 import { Navigation } from './components/Navigation/Navigation'
 import { Subscribe } from './components/Subscribe/Subscribe'
 import { Links } from './components/Links/Links'

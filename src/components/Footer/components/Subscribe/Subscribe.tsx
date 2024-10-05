@@ -1,4 +1,4 @@
-import { SubscribeForm } from './Subscribe.styles'
+import { SubscribeForm } from './Subscribe.style'
 
 export function Subscribe() {
   return (

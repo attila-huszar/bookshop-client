@@ -1,22 +1,7 @@
 import axios from 'axios'
-import { jsonServerPath, PATH, stripeURL } from '@/constants'
+import { jsonServerPath, PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import { IOrderUpdate, ICreateOrder, IOrder } from '@/interfaces'
-
-export const postStripePayment = async (
-  paymentData: ICreateOrder['orderToStripe'],
-): Promise<{ clientSecret: string }> => {
-  try {
-    const stripeResponse: { data: { clientSecret: string } } = await axios.post(
-      `${stripeURL}/create-payment-intent`,
-      paymentData,
-    )
-
-    return stripeResponse.data
-  } catch (error) {
-    throw handleErrors(error, 'Error creating payment intent')
-  }
-}
 
 export const postOrder = async (
   orderData: ICreateOrder['orderToServer'],

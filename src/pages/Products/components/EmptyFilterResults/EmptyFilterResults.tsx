@@ -1,4 +1,4 @@
-import { StyledEmptyFilterResults } from './EmptyFilterResults.styles'
+import { StyledEmptyFilterResults } from './EmptyFilterResults.style'
 import { useAppDispatch } from '@/hooks'
 import {
   fetchBooks,
@@ -25,7 +25,7 @@ export function EmptyFilterResults() {
 
   return (
     <StyledEmptyFilterResults>
-      <div>
+      <div role="img" aria-label="no results">
         <NoResultsIcon color="var(--grey)" />
       </div>
       <p>Sorry, no results match your filter criteria.</p>

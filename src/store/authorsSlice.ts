@@ -4,9 +4,9 @@ import {
   type SerializedError,
 } from '@reduxjs/toolkit'
 import { apiHandler } from '@/api/apiHandler'
-import { IAuthor, IAuthorStore } from '@/interfaces'
+import { IAuthor, IStateAuthor } from '@/interfaces'
 
-const initialState: IAuthorStore = {
+const initialState: IStateAuthor = {
   authorArray: [],
   authorIsLoading: false,
   authorError: undefined,

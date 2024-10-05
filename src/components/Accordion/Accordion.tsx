@@ -5,7 +5,7 @@ import { AccordionItemProps } from './AccordionItem.types'
 
 export function Accordion({
   defaultOpenPanels = [0],
-  numberOfAllowedOpenPanels = 3,
+  numberOfAllowedOpenPanels = 'all',
   children,
 }: AccordionProps) {
   const [openPanels, setOpenPanels] = useState(defaultOpenPanels)
@@ -19,7 +19,7 @@ export function Accordion({
       } else {
         if (
           typeof numberOfAllowedOpenPanels === 'number' &&
-          newPanelsOpen.length > numberOfAllowedOpenPanels
+          newPanelsOpen.length > numberOfAllowedOpenPanels - 1
         ) {
           newPanelsOpen.shift()
         }
