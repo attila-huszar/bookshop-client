@@ -1,7 +1,7 @@
 export interface IBook {
   id: number
   title: string
-  author: number
+  author: number | string
   genre: string
   imgUrl: string
   description: string

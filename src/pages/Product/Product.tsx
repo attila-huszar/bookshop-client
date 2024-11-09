@@ -31,7 +31,7 @@ export function Product() {
 
   const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
   const author: IAuthor | undefined = useAppSelector(
-    authorByIdSelector(book?.author ?? null),
+    authorByIdSelector(typeof book?.author === 'number' ? book.author : null),
   )
 
   const { booksError } = useAppSelector(booksSelector)
@@ -88,7 +88,13 @@ export function Product() {
               />
             </ImageWrapper>
             <Title>{book.title}</Title>
-            <Author>{author ? author.name : authorError}</Author>
+            <Author>
+              {typeof book.author === 'string'
+                ? book.author
+                : author
+                  ? author.name
+                  : authorError}
+            </Author>
             <Price
               component="product"
               price={book.price}

@@ -83,7 +83,7 @@ export function PaymentStatus() {
           message: 'Error retrieving payment status.',
         }),
       )
-  }, [stripe])
+  }, [dispatch, stripe])
 
   return (
     <StyledPaymentStatus>

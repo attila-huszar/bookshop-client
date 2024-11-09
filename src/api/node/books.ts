@@ -52,7 +52,7 @@ export const getBooks = async ({
       params.append('rating_gte', `${criteria.rating}`)
     }
 
-    const booksResponse = await axios.get<IBook[]>(
+    const booksResponse = await ky<IBook[]>(
       `${import.meta.env.VITE_NODE_API_URL}/${PATH.books}?${params}`,
       {
         headers: {
@@ -62,12 +62,11 @@ export const getBooks = async ({
       },
     )
 
-    console.log(booksResponse.headers)
-    //const total = booksResponse.headers['x-total-count']
-    const books = booksResponse.data
+    const total = booksResponse.headers.get('x-total-count')
+    const books = await booksResponse.json()
 
     return {
-      //total: Number(total),
+      total: Number(total),
       books,
     }
   } catch (error) {
@@ -77,7 +76,7 @@ export const getBooks = async ({
 
 export const getBookById = async (id: number): Promise<IBook> => {
   try {
-    const response: { data: IBook } = await axios.get(
+    return ky<IBook>(
       `${import.meta.env.VITE_NODE_API_URL}/${PATH.books}/${id}`,
       {
         headers: {
@@ -85,8 +84,7 @@ export const getBookById = async (id: number): Promise<IBook> => {
           'Content-Type': 'application/json',
         },
       },
-    )
-    return response.data
+    ).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get book by ID')
   }

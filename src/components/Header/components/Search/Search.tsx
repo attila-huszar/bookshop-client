@@ -119,9 +119,16 @@ export function Search() {
     }
   }
 
-  const getAuthorName = (authorId: number, authorArray: IAuthor[]) => {
-    const author = authorArray?.find((author) => author.id === authorId)
-    return author ? author.name : 'Unknown Author'
+  const getAuthorName = (
+    authorNameOrId: string | number,
+    authorArray: IAuthor[],
+  ) => {
+    if (typeof authorNameOrId === 'number') {
+      const author = authorArray?.find((author) => author.id === authorNameOrId)
+      return author ? author.name : 'Unknown Author'
+    }
+
+    return authorNameOrId
   }
 
   return (

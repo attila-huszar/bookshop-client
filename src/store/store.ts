@@ -20,12 +20,18 @@ export const store = configureStore({
     cart: cartReducer,
     order: orderReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(
-      authorFetch.middleware,
+  middleware: (getDefaultMiddleware) => {
+    const middlewares = [
       cartToLocalStorage.middleware,
       paymentIdToLocalStorage.middleware,
-    ),
+    ]
+
+    if (import.meta.env.VITE_API_CHOICE !== 'NODE') {
+      middlewares.push(authorFetch.middleware)
+    }
+
+    return getDefaultMiddleware().concat(middlewares)
+  },
 })
 
 export type RootState = ReturnType<typeof store.getState>

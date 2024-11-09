@@ -40,15 +40,17 @@ authorFetchTyped({
     if (action.type === fetchBooks.fulfilled.type) {
       const booksFetchPayload = action.payload as { books: IBook[] }
       booksFetchPayload.books.forEach((book) => {
-        void listenerApi.dispatch(fetchAuthorById(book.author))
+        void listenerApi.dispatch(fetchAuthorById(book.author as number))
       })
     } else if (action.type === fetchBookById.fulfilled.type) {
       const bookFetchByIdPayload = action.payload as IBook
-      void listenerApi.dispatch(fetchAuthorById(bookFetchByIdPayload.author))
+      void listenerApi.dispatch(
+        fetchAuthorById(bookFetchByIdPayload.author as number),
+      )
     } else {
       const booksFetchByPropsPayload = action.payload as IBook[]
       booksFetchByPropsPayload.forEach((book) => {
-        void listenerApi.dispatch(fetchAuthorById(book.author))
+        void listenerApi.dispatch(fetchAuthorById(book.author as number))
       })
     }
   },
