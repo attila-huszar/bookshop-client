@@ -34,12 +34,19 @@ export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)
   const dispatch = useAppDispatch()
 
-  const [priceMinInitial = 0, priceMaxInitial = 100] =
+  const [priceMinInitialFloat = 0, priceMaxInitialFloat = 500] =
     booksFilters.initial.price
-  const [priceMin = 0, priceMax = 100] = booksFilters.active.price
-  const [yearMinInitial = 1000, yearMaxInitial = 2020] =
+  const priceMinInitial = Math.floor(priceMinInitialFloat)
+  const priceMaxInitial = Math.ceil(priceMaxInitialFloat)
+
+  const [priceMinFloat = 0, priceMaxFloat = 500] = booksFilters.active.price
+  const priceMin = Math.floor(priceMinFloat)
+  const priceMax = Math.ceil(priceMaxFloat)
+
+  const [yearMinInitial = 1000, yearMaxInitial = new Date().getFullYear()] =
     booksFilters.initial.publishYear
-  const [yearMin = 1000, yearMax = 2020] = booksFilters.active.publishYear
+  const [yearMin = 1000, yearMax = new Date().getFullYear()] =
+    booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,
