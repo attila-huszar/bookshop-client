@@ -1,6 +1,5 @@
-import axios from 'axios'
-import ky from 'ky'
-import { jsonServerPath, PATH } from '@/constants'
+import { api } from './api'
+import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import { IBook, IFilter, IFilterActive } from '@/interfaces'
 
@@ -52,15 +51,7 @@ export const getBooks = async ({
       params.append('rating_gte', `${criteria.rating}`)
     }
 
-    const booksResponse = await ky<IBook[]>(
-      `${import.meta.env.VITE_NODE_API_URL}/${PATH.books}?${params}`,
-      {
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-          'Content-Type': 'application/json',
-        },
-      },
-    )
+    const booksResponse = await api.get<IBook[]>(`${PATH.books}?${params}`)
 
     const total = booksResponse.headers.get('x-total-count')
     const books = await booksResponse.json()
@@ -74,71 +65,45 @@ export const getBooks = async ({
   }
 }
 
-export const getBookById = async (id: number): Promise<IBook> => {
+export const getBookById = (id: number): Promise<IBook> => {
   try {
-    return ky<IBook>(
-      `${import.meta.env.VITE_NODE_API_URL}/${PATH.books}/${id}`,
-      {
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-          'Content-Type': 'application/json',
-        },
-      },
-    ).json()
+    return api.get(`${PATH.books}/${id}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get book by ID')
   }
 }
 
-export const getBooksByProperty = async (
-  property: string,
+export const getBooksByProperty = (
+  property: 'newRelease' | 'topSellers',
 ): Promise<IBook[]> => {
   try {
-    const response: { data: IBook[] } = await axios.get(
-      `/json-server/${PATH.books}?${property}=true`,
-    )
-
-    return response.data
+    return api.get(`${PATH.books}?${property}=true`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by property')
   }
 }
 
-export const getBooksBySearch = async (
-  searchString: string,
-): Promise<IBook[]> => {
+export const getBooksBySearch = (searchString: string): Promise<IBook[]> => {
   try {
-    const response: { data: IBook[] } = await axios.get(
-      `${jsonServerPath}/${PATH.books}?title_like=${searchString}`,
-    )
-
-    return response.data
+    return api.get(`${PATH.books}?title=${searchString}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by search')
   }
 }
 
-export const getBooksByAuthor = async (id: number): Promise<IBook[]> => {
+export const getBooksByAuthor = (id: number): Promise<IBook[]> => {
   try {
-    const response: { data: IBook[] } = await axios.get(
-      `${jsonServerPath}/${PATH.books}?author=${id}`,
-    )
-
-    return response.data
+    return api.get(`${PATH.books}?authorId=${id}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by author')
   }
 }
 
-export const getBookSearchOptions = async (): Promise<
+export const getBookSearchOptions = (): Promise<
   Pick<IFilter, 'genre' | 'price' | 'publishYear'>
 > => {
   try {
-    const response: { data: IFilter } = await axios.get(
-      `${jsonServerPath}/${PATH.searchOptions}`,
-    )
-
-    return response.data
+    return api.get(`${PATH.searchOptions}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get book search options')
   }

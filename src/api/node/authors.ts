@@ -1,30 +1,22 @@
-import axios from 'axios'
-import { jsonServerPath, PATH } from '@/constants'
+import { api } from './api'
+import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import { IAuthor } from '@/interfaces'
 
-export const getAuthorById = async (id: number): Promise<IAuthor> => {
+export const getAuthorById = (id: number): Promise<IAuthor> => {
   try {
-    const { data }: { data: IAuthor } = await axios.get(
-      `${jsonServerPath}/${PATH.authors}/${id}`,
-    )
-
-    return data
+    return api.get(`${PATH.authors}/${id}`).json()
   } catch (error) {
     throw handleErrors(error, 'Author not found')
   }
 }
 
-export const getAuthorsBySearch = async (
+export const getAuthorsBySearch = (
   searchString: string,
 ): Promise<IAuthor[]> => {
   try {
-    const { data }: { data: IAuthor[] } = await axios.get(
-      `${jsonServerPath}/${PATH.authors}?name_like=${searchString}`,
-    )
-
-    return data
+    return api.get(`${PATH.authors}?name=${searchString}`).json()
   } catch (error) {
-    throw handleErrors(error, 'Author not found')
+    throw handleErrors(error, 'Unable to get authors by search')
   }
 }
