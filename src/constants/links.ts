@@ -1,4 +1,4 @@
-import { PATH } from '@/constants'
+import { PATH } from './'
 import homeIcon from '@/assets/svg/home.svg'
 import bookIcon from '@/assets/svg/book.svg'
 import instagramIcon from '@/assets/svg/instagram.svg'

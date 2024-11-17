@@ -11,17 +11,9 @@ export {
 export { countryList } from './countryList'
 export {
   baseURL,
-  apiChoice,
-  elasticPath,
-  jsonServerPath,
   cloudinaryName,
   cloudinaryUpload,
   cloudinaryUploadPreset,
-  emailjsKey,
-  emailjsService,
-  emailjsVerificationTemplate,
-  emailjsResetPasswordTemplate,
   stripeKey,
-  stripeURL,
   googleMapsKey,
-} from './envKeys'
+} from './envConfig'

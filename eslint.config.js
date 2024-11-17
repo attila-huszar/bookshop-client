@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import importPlugin from 'eslint-plugin-import'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
@@ -11,6 +12,7 @@ import jestDom from 'eslint-plugin-jest-dom'
 
 export default tseslint.config(
   js.configs.recommended,
+  importPlugin.flatConfigs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   react.configs.flat.recommended,
@@ -43,8 +45,6 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      'no-undef': 'off',
-      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { ignoreRestSiblings: true },
