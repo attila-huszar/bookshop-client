@@ -73,6 +73,14 @@ export default tseslint.config(
       jest: {
         version: 'detect',
       },
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx'],
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
     },
   },
   {
