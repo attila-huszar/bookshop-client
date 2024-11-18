@@ -33,7 +33,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.14.0",
+    "@eslint/js": "^9.15.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
@@ -49,7 +49,7 @@
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.9.0",
-    "eslint-plugin-jest-dom": "^5.4.0",
+    "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
@@ -59,7 +59,7 @@
     "prettier": "^3.3.3",
     "rollup-plugin-visualizer": "^5.12.0",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.13.0",
+    "typescript-eslint": "^8.14.1-alpha.8",
     "vite": "^5.4.11",
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^2.1.5"
