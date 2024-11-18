@@ -10,15 +10,15 @@ import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.style'
 import { ButtonWrapper } from '@/styles/Form.style'
 import { Button, FormikField, IconButton } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
 import { passwordChangeInitialValues } from '@/constants'
-import { accountPasswordSchema, passwordEncrypt } from '@/helpers'
+import { accountPasswordSchema } from '@/helpers'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { postUserLogin } from '@/api/users'
 
 function PasswordDialog(
-  { uuid }: { uuid: string },
+  { email }: { email: string },
   ref: ForwardedRef<Partial<HTMLDialogElement>>,
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -42,18 +42,18 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const isPasswordValid = await apiHandler.verifyPassword(
-      uuid,
+    const isPasswordValid = await postUserLogin(
+      email,
       values.currentPassword,
     )
 
-    if (isPasswordValid) {
+    if (isPasswordValid.accessToken) {
       if (values.currentPassword !== values.newPassword) {
         try {
           await dispatch(
             updateUser({
-              uuid,
-              fields: { password: passwordEncrypt(values.newPassword) },
+              email,
+              fields: { password: values.newPassword },
             }),
           )
 

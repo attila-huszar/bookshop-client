@@ -12,7 +12,7 @@ import {
 import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/helpers'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { loginUser, userSelector } from '@/store'
+import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from '@/assets/svg/question_circle.svg?react'
@@ -21,15 +21,13 @@ export function Login() {
   const { userIsLoading } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { setToLocalStorage } = useLocalStorage()
   const [showPassword, setShowPassword] = useState(false)
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
   const handleLogin = (user: { email: string; password: string }) => {
-    dispatch(loginUser(user))
+    dispatch(login(user))
       .unwrap()
       .then((response) => {
-        setToLocalStorage('uuid', response.uuid)
         navigate('/', { replace: true })
         toast.success(`Welcome back, ${response.firstName}!`, {
           id: 'login-success',

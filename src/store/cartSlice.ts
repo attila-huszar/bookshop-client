@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiHandler } from '@/api/apiHandler'
+import { getBookById } from '@/api'
 import { IBook, ICart, IStateCart, ILocalCart } from '@/interfaces'
 
 const initialState: IStateCart = {
@@ -96,7 +96,7 @@ export const fetchCartItems = createAsyncThunk(
   'fetchCartItems',
   async (cartArray: ILocalCart[]) => {
     const promises = cartArray.map(async (item) => {
-      const book: IBook = await apiHandler.getBookById(item.id)
+      const book: IBook = await getBookById(item.id)
 
       const {
         author,

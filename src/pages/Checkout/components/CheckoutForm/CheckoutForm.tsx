@@ -9,7 +9,6 @@ import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { orderClear, orderSelector, userSelector } from '@/store'
-import { apiHandler } from '@/api/apiHandler'
 import { baseURL, PATH } from '@/constants'
 
 export function CheckoutForm() {
@@ -51,7 +50,7 @@ export function CheckoutForm() {
 
   const handleCancel = () => {
     if (orderStatus) {
-      void apiHandler.getStripePaymentCancel(orderStatus.paymentId)
+      //void getStripePaymentCancel(orderStatus.paymentId)
     }
 
     dispatch(orderClear())

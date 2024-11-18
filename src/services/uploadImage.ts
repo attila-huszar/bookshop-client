@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { api } from '@/api'
 import { toast } from 'react-hot-toast'
 import { cloudinaryUpload, cloudinaryUploadPreset } from '@/constants'
 
@@ -9,12 +9,11 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   formData.append('file', img)
 
   try {
-    const { data }: { data: { url: string } } = await axios.post(
-      cloudinaryUpload,
-      formData,
-    )
+    const uploadResponse = await api
+      .post(cloudinaryUpload, { body: formData })
+      .json<{ url: string }>()
 
-    return data
+    return uploadResponse
   } catch {
     toast.error("Couldn't upload image, please try again later")
   }

@@ -8,15 +8,6 @@ export {
   getBookSearchOptions,
 } from './books'
 export { getNews } from './news'
-export { postOrder, updateOrder } from './order'
-export {
-  getUserByEmail,
-  getUserByUUID,
-  checkUserLoggedIn,
-  postUserRegister,
-  postUserPasswordReset,
-  putUser,
-  verifyPassword,
-  verifyEmail,
-  passwordReset,
-} from './user'
+export { postOrder, updateOrder } from './orders'
+export { postUserLogin, postUserRegister } from './users'
+export { api, authApi } from './api'

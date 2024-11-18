@@ -3,7 +3,14 @@ import {
   createAsyncThunk,
   type PayloadAction,
 } from '@reduxjs/toolkit'
-import { apiHandler } from '@/api/apiHandler'
+import {
+  getBookById,
+  getBooks,
+  getBooksByAuthor,
+  getBooksByProperty,
+  getBooksBySearch,
+  getBookSearchOptions,
+} from '@/api'
 import { generateUniqueRndNums } from '@/helpers'
 import { RootState } from './store'
 import { IBook, IStateBook, IFilter, IFilterActive } from '@/interfaces'
@@ -206,28 +213,25 @@ export const fetchBooks = createAsyncThunk(
           }
         : undefined
 
-    return apiHandler.getBooks({ currentPage, itemsPerPage, criteria })
+    return getBooks({ currentPage, itemsPerPage, criteria })
   },
 )
 
-export const fetchBookById = createAsyncThunk(
-  'fetchBookById',
-  apiHandler.getBookById,
-)
+export const fetchBookById = createAsyncThunk('fetchBookById', getBookById)
 
 export const fetchBooksBySearch = createAsyncThunk(
   'fetchBooksBySearch',
-  apiHandler.getBooksBySearch,
+  getBooksBySearch,
 )
 
 export const fetchBooksByAuthor = createAsyncThunk(
   'fetchBooksByAuthor',
-  apiHandler.getBooksByAuthor,
+  getBooksByAuthor,
 )
 
 export const fetchBooksByProperty = createAsyncThunk(
   'fetchBooksByProperty',
-  apiHandler.getBooksByProperty,
+  getBooksByProperty,
 )
 
 export const fetchRecommendedBooks = createAsyncThunk(
@@ -239,7 +243,7 @@ export const fetchRecommendedBooks = createAsyncThunk(
     const randomIdxs = generateUniqueRndNums(count, totalBooks)
 
     for (const idx of randomIdxs) {
-      const book = await apiHandler.getBookById(idx)
+      const book = await getBookById(idx)
       if (book) {
         randomBooks.push(book)
       }
@@ -250,7 +254,7 @@ export const fetchRecommendedBooks = createAsyncThunk(
 
 export const fetchBookSearchOptions = createAsyncThunk(
   'fetchBookSearchOptions',
-  apiHandler.getBookSearchOptions,
+  getBookSearchOptions,
 )
 
 export const booksReducer = booksSlice.reducer

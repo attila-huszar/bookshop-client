@@ -18,7 +18,7 @@ import { userSelector, updateUser } from '@/store'
 import { uploadImage } from '@/services'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
-import { IUserStore } from '@/interfaces'
+import { IUser } from '@/interfaces'
 import EditIcon from '@/assets/svg/edit.svg?react'
 
 export function Account() {
@@ -29,22 +29,19 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<IUserStore>, uuid: string) => {
+  const handleBasicInfoSubmit = (values: Partial<IUser>, email: string) => {
     void dispatch(
       updateUser({
-        uuid,
+        email,
         fields: { ...values },
       }),
     )
   }
 
-  const handleAddressInfoSubmit = (
-    values: IUserStore['address'],
-    uuid: string,
-  ) => {
+  const handleAddressInfoSubmit = (values: IUser['address'], email: string) => {
     void dispatch(
       updateUser({
-        uuid,
+        email,
         fields: { address: values },
       }),
     )
@@ -56,12 +53,12 @@ export function Account() {
     inputFile.current?.click()
   }
 
-  const handleImgChange = async (img: File, uuid: string) => {
+  const handleImgChange = async (img: File, email: string) => {
     const imageResponse = await uploadImage(img, 'avatars')
 
     void dispatch(
       updateUser({
-        uuid,
+        email,
         fields: { avatar: imageResponse?.url },
       }),
     )
@@ -72,8 +69,15 @@ export function Account() {
   }
 
   if (userData) {
-    const { uuid, firstName, lastName, email, phone, avatar, address } =
-      userData
+    const { email, firstName, lastName, phone, avatar, address } = userData
+    const {
+      city = '',
+      country = '',
+      line1 = '',
+      line2 = '',
+      postal_code = '',
+      state = '',
+    } = { ...address }
 
     return (
       <StyledAccount>
@@ -99,7 +103,7 @@ export function Account() {
                   aria-label="Change Avatar"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     if (e.target.files) {
-                      void handleImgChange(e.target.files[0], uuid)
+                      void handleImgChange(e.target.files[0], email)
                     }
                   }}
                   accept="image/*"
@@ -112,14 +116,14 @@ export function Account() {
                   $textSize="sm">
                   Change Password
                 </Button>
-                <PasswordDialogRef ref={passwordDialog} uuid={uuid} />
+                <PasswordDialogRef ref={passwordDialog} email={email} />
               </AvatarPanel>
               <General>
                 <Formik
                   initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values) => handleBasicInfoSubmit(values, uuid)}
+                  onSubmit={(values) => handleBasicInfoSubmit(values, email)}
                   onReset={handleBasicInfoReset}>
                   <Form>
                     <GeneralLine>
@@ -192,16 +196,16 @@ export function Account() {
             <Address>
               <Formik
                 initialValues={{
-                  line1: address.line1,
-                  line2: address.line2,
-                  city: address.city,
-                  state: address.state,
-                  postal_code: address.postal_code,
-                  country: address.country,
+                  line1,
+                  line2,
+                  city,
+                  state,
+                  postal_code,
+                  country,
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values) => handleAddressInfoSubmit(values, uuid)}
+                onSubmit={(values) => handleAddressInfoSubmit(values, email)}
                 onReset={handleAddressInfoReset}>
                 <Form>
                   <AddressLine>

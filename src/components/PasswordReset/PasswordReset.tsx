@@ -5,9 +5,8 @@ import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
-import { apiHandler } from '@/api/apiHandler'
 import { PATH, passwordResetInitialValues } from '@/constants'
-import { passwordEncrypt, resetPasswordSchema } from '@/helpers'
+import { resetPasswordSchema } from '@/helpers'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
 
@@ -16,21 +15,20 @@ export function PasswordReset() {
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const resetCode = queryParams.get('code')
-  const [uuid, setUUID] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
     if (resetCode) {
-      apiHandler
-        .passwordReset(resetCode)
-        .then((resetResponse) => setUUID(resetResponse))
-        .catch((error: Error) => {
-          toast.error(error.message, {
-            id: 'reset-error',
-          })
-          navigate('/', { replace: true })
-        })
+      // passwordReset(resetCode)
+      //   .then((resetResponse) => setUUID(resetResponse))
+      //   .catch((error: Error) => {
+      //     toast.error(error.message, {
+      //       id: 'reset-error',
+      //     })
+      //     navigate('/', { replace: true })
+      //   })
     }
   }, [resetCode, navigate])
 
@@ -38,12 +36,12 @@ export function PasswordReset() {
     newPassword: string
     newPasswordConfirmation: string
   }) => {
-    if (uuid && values.newPassword === values.newPasswordConfirmation) {
+    if (email && values.newPassword === values.newPasswordConfirmation) {
       try {
         await dispatch(
           updateUser({
-            uuid,
-            fields: { password: passwordEncrypt(values.newPassword) },
+            email,
+            fields: { password: values.newPassword},
           }),
         )
 
@@ -60,7 +58,7 @@ export function PasswordReset() {
   }
 
   return (
-    uuid && (
+    email && (
       <StyledPasswordReset>
         <h2>Password Reset</h2>
         <p>Please enter your new password below.</p>

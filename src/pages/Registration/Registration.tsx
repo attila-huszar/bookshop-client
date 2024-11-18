@@ -9,11 +9,11 @@ import {
   Button,
   IconButton,
 } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
-import { registrationSchema, passwordEncrypt } from '@/helpers'
+import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
 import { IUser } from '@/interfaces'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { postUserRegister } from '@/api'
 
 export function Registration() {
   const navigate = useNavigate()
@@ -30,32 +30,16 @@ export function Registration() {
     password: string
     avatar: File | undefined
   }) => {
-    const user: IUser = {
-      uuid: crypto.randomUUID(),
+    const user: IUser & { password: string } = {
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,
-      password: passwordEncrypt(values.password),
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postal_code: '',
-        country: '',
-      },
-      phone: '',
+      password: values.password,
       avatar: values.avatar,
-      role: 'user',
-      verified: false,
-      verificationCode: crypto.randomUUID(),
-      verificationCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      createdAt: new Date(),
-      updatedAt: new Date(),
     }
 
     try {
-      const registerResponse = await apiHandler.postUserRegister(user)
+      const registerResponse = await postUserRegister(user)
 
       navigate('/', { replace: true })
       toast.success(registerResponse)

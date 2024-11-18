@@ -1,4 +1,3 @@
-export { passwordEncrypt } from './passwordEncrypt'
 export {
   registrationSchema,
   loginSchema,
@@ -15,3 +14,4 @@ export { enforceMinMax } from './enforceMinMax'
 export { generateFilterArray } from './generateFilterArray'
 export { protectedRouteLoader } from './protectedRouteLoader'
 export { generateUniqueRndNums } from './generateUniqueRndNums'
+export { getCookie } from './getCookie'

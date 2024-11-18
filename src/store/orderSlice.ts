@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiHandler } from '@/api/apiHandler'
 import { ICreateOrder, IStateOrder } from '@/interfaces'
 
 const initialState: IStateOrder = {
@@ -49,10 +48,10 @@ const orderSlice = createSlice({
       .addCase(orderRetrieve.fulfilled, (state, action) => {
         state.orderStatus = {
           intent: 'processing',
-          paymentId: action.payload.clientSecret.split('_secret_')[0],
-          clientSecret: action.payload.clientSecret,
-          amount: action.payload.amount,
-          currency: action.payload.currency,
+          // paymentId: action.payload.clientSecret.split('_secret_')[0],
+          // clientSecret: action.payload.clientSecret,
+          // amount: action.payload.amount,
+          // currency: action.payload.currency,
         }
         state.orderIsLoading = false
         state.orderRetrieveError = undefined
@@ -68,17 +67,17 @@ const orderSlice = createSlice({
 export const orderRetrieve = createAsyncThunk(
   'orderRetrieve',
   async (paymentId: string) => {
-    const stripeRetrieveResponse = await apiHandler.getStripePayment(paymentId)
+    // const stripeRetrieveResponse = await apiHandler.getStripePayment(paymentId)
 
-    const clientSecret = stripeRetrieveResponse.client_secret
-    const amount = stripeRetrieveResponse.amount
-    const currency = stripeRetrieveResponse.currency
+    // const clientSecret = stripeRetrieveResponse.client_secret
+    // const amount = stripeRetrieveResponse.amount
+    // const currency = stripeRetrieveResponse.currency
 
-    return {
-      clientSecret,
-      amount,
-      currency,
-    }
+    // return {
+    //   clientSecret,
+    //   amount,
+    //   currency,
+    // }
   },
 )
 
@@ -91,20 +90,20 @@ export const orderCreate = createAsyncThunk(
     amount: number
     currency: string
   }> => {
-    const stripeCreateResponse = await apiHandler.postStripePayment(
-      order.orderToStripe,
-    )
-    const clientSecret = stripeCreateResponse.clientSecret
-    const paymentId = clientSecret.split('_secret_')[0]
+    // const stripeCreateResponse = await apiHandler.postStripePayment(
+    //   order.orderToStripe,
+    // )
+    // const clientSecret = stripeCreateResponse.clientSecret
+    // const paymentId = clientSecret.split('_secret_')[0]
 
-    order.orderToServer.paymentId = paymentId
-    await apiHandler.postOrder(order.orderToServer)
+    // order.orderToServer.paymentId = paymentId
+    // await apiHandler.postOrder(order.orderToServer)
 
-    return {
-      clientSecret,
-      amount: order.orderToStripe.amount,
-      currency: order.orderToStripe.currency,
-    }
+    // return {
+    //   clientSecret,
+    //   amount: order.orderToStripe.amount,
+    //   currency: order.orderToStripe.currency,
+    // }
   },
 )
 

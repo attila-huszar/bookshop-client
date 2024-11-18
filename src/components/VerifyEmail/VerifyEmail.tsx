@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Loading } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
 import { PATH } from '@/constants'
 
 export function VerifyEmail() {
@@ -13,20 +12,19 @@ export function VerifyEmail() {
 
   useEffect(() => {
     if (code) {
-      apiHandler
-        .verifyEmail(code)
-        .then((verifyResult) => {
-          toast.success(verifyResult, {
-            id: 'verify-success',
-          })
-          navigate(`/${PATH.login}`, { replace: true })
-        })
-        .catch((error: Error) => {
-          toast.error(error.message, {
-            id: 'verify-error',
-          })
-          navigate('/', { replace: true })
-        })
+      // verifyEmail(code)
+      //   .then((verifyResult) => {
+      //     toast.success(verifyResult, {
+      //       id: 'verify-success',
+      //     })
+      //     navigate(`/${PATH.login}`, { replace: true })
+      //   })
+      //   .catch((error: Error) => {
+      //     toast.error(error.message, {
+      //       id: 'verify-error',
+      //     })
+      //     navigate('/', { replace: true })
+      //   })
     }
   }, [code, navigate])
 

@@ -1,4 +1,4 @@
-import { api } from './api'
+import { api } from './'
 import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import { INews } from '@/interfaces'

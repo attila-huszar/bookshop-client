@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiHandler } from '@/api/apiHandler'
-import { passwordEncrypt } from '@/helpers'
-import { IUserUpdate, IStateUser, IUserStore } from '@/interfaces'
+import { IUserUpdate, IStateUser } from '@/interfaces'
+import { postUserLogin } from '@/api/users'
 
 const initialState: IStateUser = {
+  accessToken: null,
   userData: null,
   userIsLoading: false,
   userIsUpdating: false,
@@ -16,21 +16,28 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    logoutUser: (state) => {
+    logout: (state) => {
+      state.accessToken = null
       state.userData = null
+    },
+    setAccessToken: (state, action) => {
+      state.accessToken = action.payload
+    },
+    setUserData: (state, action) => {
+      state.userData = action.payload
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
+      .addCase(login.pending, (state) => {
         state.userIsLoading = true
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(login.fulfilled, (state, action) => {
         state.userIsLoading = false
-        state.userData = action.payload
+        state.accessToken = action.payload.accessToken
         state.loginError = undefined
       })
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(login.rejected, (state, action) => {
         state.userIsLoading = false
         state.loginError = action.error.message
         state.userData = null
@@ -49,84 +56,25 @@ const userSlice = createSlice({
         state.userError = action.error.message
         state.userData = null
       })
-
-      .addCase(fetchUserByUUID.pending, (state) => {
-        state.userIsLoading = true
-      })
-      .addCase(fetchUserByUUID.fulfilled, (state, action) => {
-        state.userIsLoading = false
-        state.userData = action.payload
-        state.userError = undefined
-      })
-      .addCase(fetchUserByUUID.rejected, (state, action) => {
-        state.userIsLoading = false
-        state.userError = action.error.message
-        state.userData = null
-      })
   },
 })
 
-export const loginUser = createAsyncThunk(
-  'loginUser',
-  async (user: { email: string; password: string }): Promise<IUserStore> => {
-    const userResponse = await apiHandler.getUserByEmail(user.email)
+export const login = createAsyncThunk(
+  'login',
+  async (user: {
+    email: string
+    password: string
+  }): Promise<{ accessToken: string; firstName: string }> => {
+    const userResponse = await postUserLogin(user.email, user.password)
 
-    if (
-      userResponse?.verified &&
-      userResponse?.password === passwordEncrypt(user.password)
-    ) {
-      const {
-        password,
-        verificationCode,
-        verificationCodeExpiresAt,
-        ...userToStore
-      } = userResponse
-
-      return userToStore
-    } else if (userResponse?.verified === false) {
-      throw new Error('Please verify your email address first')
-    } else {
-      throw new Error('User email or password is incorrect')
-    }
-  },
-)
-
-export const fetchUserByUUID = createAsyncThunk(
-  'fetchUserByUUID',
-  async (uuid: string): Promise<IUserStore> => {
-    const userResponse = await apiHandler.getUserByUUID(uuid)
-
-    const {
-      password,
-      verificationCode,
-      verificationCodeExpiresAt,
-      ...userToStore
-    } = userResponse
-
-    return userToStore
+    return userResponse
   },
 )
 
 export const updateUser = createAsyncThunk(
   'updateUser',
-  async ({ uuid, fields }: IUserUpdate): Promise<IUserStore> => {
-    const userResponse = await apiHandler.getUserByUUID(uuid)
-    const updatedUser = await apiHandler.putUser({
-      ...userResponse,
-      ...fields,
-      updatedAt: new Date(),
-    })
-
-    const {
-      password,
-      verificationCode,
-      verificationCodeExpiresAt,
-      ...userToStore
-    } = updatedUser
-
-    return userToStore
-  },
+  async ({ email, fields }: IUserUpdate) => {},
 )
 
 export const userReducer = userSlice.reducer
-export const { logoutUser } = userSlice.actions
+export const { setAccessToken, setUserData, logout } = userSlice.actions

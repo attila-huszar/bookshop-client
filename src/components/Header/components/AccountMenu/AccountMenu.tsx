@@ -14,7 +14,7 @@ import {
   useLocalStorage,
   useClickOutside,
 } from '@/hooks'
-import { userSelector, logoutUser } from '@/store'
+import { userSelector, logout } from '@/store'
 import { PATH } from '@/constants'
 import LoginIcon from '@/assets/svg/account.svg?react'
 import accountIcon from '@/assets/svg/user_account.svg'
@@ -38,7 +38,7 @@ export function AccountMenu() {
     toggleMenu()
     removeFromLocalStorage('uuid')
     toast.success(`${email} successfully logged out`)
-    dispatch(logoutUser())
+    dispatch(logout())
   }
 
   return (

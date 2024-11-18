@@ -5,11 +5,7 @@ import { newsReducer } from './newsSlice'
 import { userReducer } from './userSlice'
 import { cartReducer } from './cartSlice'
 import { orderReducer } from './orderSlice'
-import {
-  authorFetch,
-  cartToLocalStorage,
-  paymentIdToLocalStorage,
-} from './middlewares'
+import { cartToLocalStorage, paymentIdToLocalStorage } from './middlewares'
 
 export const store = configureStore({
   reducer: {
@@ -25,10 +21,6 @@ export const store = configureStore({
       cartToLocalStorage.middleware,
       paymentIdToLocalStorage.middleware,
     ]
-
-    if (import.meta.env.VITE_API_CHOICE !== 'NODE') {
-      middlewares.push(authorFetch.middleware)
-    }
 
     return getDefaultMiddleware().concat(middlewares)
   },

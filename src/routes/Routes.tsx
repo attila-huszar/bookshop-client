@@ -59,7 +59,7 @@ const routes: RouteObject[] = [
         element: <Product />,
       },
       {
-        path: PATH.registration,
+        path: PATH.register,
         element: <Registration />,
       },
       {
