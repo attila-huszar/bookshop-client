@@ -1,11 +1,15 @@
-import { api, authApi } from './'
+import { api } from './'
 import { PATH } from '@/constants'
 import { uploadImage } from '@/services'
 import { handleErrors } from '@/errors'
 import { IUser } from '@/interfaces'
 
+export const retrieveTokens = async (): Promise<{ accessToken: string }> => {
+  return api.post(`${PATH.users}/refresh`).json()
+}
+
 export const getUserProfile = async (): Promise<IUser> => {
-  return authApi.get(`${PATH.users}/profile`).json()
+  return api.get(`${PATH.users}/profile`).json()
 }
 
 export const postUserLogin = async (

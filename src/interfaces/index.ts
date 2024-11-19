@@ -10,7 +10,6 @@ export type {
   IStateUser,
   IStateCart,
   IStateOrder,
-  IStateAuth,
 } from './IState'
 export type { IPriceProps } from './IPriceProps'
 export type { ISwiper } from './ISwiper'

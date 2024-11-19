@@ -23,8 +23,8 @@ export {
   login,
   logout,
   updateUser,
-  setAccessToken,
-  setUserData,
+  fetchTokens,
+  fetchUserProfile,
 } from './userSlice'
 export {
   cartAdd,

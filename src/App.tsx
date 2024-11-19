@@ -8,12 +8,11 @@ import {
   fetchRecommendedBooks,
   fetchNews,
   fetchCartItems,
-  orderRetrieve,
+  fetchTokens,
+  fetchUserProfile,
 } from '@/store'
-import { getCookie } from './helpers'
 import { ILocalCart } from '@/interfaces'
 import GlobalStyle from '@/styles/Global.style'
-import { userProfile } from './store/userSlice'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -25,10 +24,13 @@ function App() {
     void dispatch(fetchBooksByProperty('topSellers'))
     void dispatch(fetchNews())
     void dispatch(fetchBookSearchOptions())
-
-    if (getCookie('uuid')) {
-      void dispatch(userProfile())
-    }
+    void dispatch(fetchTokens())
+      .unwrap()
+      .then((response) => {
+        if (response) {
+          void dispatch(fetchUserProfile())
+        }
+      })
 
     const cart = getFromLocalStorage<ILocalCart[]>('cart')
     if (cart) {
@@ -37,7 +39,7 @@ function App() {
 
     const paymentId = getFromLocalStorage<string>('paymentId')
     if (paymentId) {
-      void dispatch(orderRetrieve(paymentId))
+      //void dispatch(orderRetrieve(paymentId))
     }
   }, [dispatch, getFromLocalStorage])
 

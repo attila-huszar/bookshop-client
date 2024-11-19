@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getUserProfile, postUserLogin } from '@/api/users'
-import { IUser, IUserUpdate, IStateUser } from '@/interfaces'
+import { retrieveTokens, getUserProfile, postUserLogin } from '@/api/users'
+import { IUserUpdate, IStateUser } from '@/interfaces'
 
 const initialState: IStateUser = {
   accessToken: null,
   userData: null,
   userIsLoading: false,
   userIsUpdating: false,
+  tokenError: undefined,
   userError: undefined,
   loginError: undefined,
   registerError: undefined,
@@ -20,12 +21,6 @@ const userSlice = createSlice({
       state.accessToken = null
       state.userData = null
     },
-    setAccessToken: (state, action: { payload: string }) => {
-      state.accessToken = action.payload
-    },
-    setUserData: (state, action: { payload: IUser }) => {
-      state.userData = action.payload
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -38,15 +33,24 @@ const userSlice = createSlice({
         state.loginError = action.error.message
       })
 
-      .addCase(userProfile.pending, (state) => {
+      .addCase(fetchTokens.fulfilled, (state, action) => {
+        state.accessToken = action.payload
+        state.tokenError = undefined
+      })
+      .addCase(fetchTokens.rejected, (state, action) => {
+        state.tokenError = action.error.message
+        state.accessToken = null
+      })
+
+      .addCase(fetchUserProfile.pending, (state) => {
         state.userIsLoading = true
       })
-      .addCase(userProfile.fulfilled, (state, action) => {
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.userData = action.payload
         state.userIsLoading = false
         state.userError = undefined
       })
-      .addCase(userProfile.rejected, (state, action) => {
+      .addCase(fetchUserProfile.rejected, (state, action) => {
         state.userData = null
         state.userIsLoading = false
         state.userError = action.error.message
@@ -68,11 +72,20 @@ const userSlice = createSlice({
   },
 })
 
-export const userProfile = createAsyncThunk('userProfile', async () => {
-  const userResponse = await getUserProfile()
+export const fetchTokens = createAsyncThunk('fetchTokens', async () => {
+  const { accessToken } = await retrieveTokens()
 
-  return userResponse
+  return accessToken
 })
+
+export const fetchUserProfile = createAsyncThunk(
+  'fetchUserProfile',
+  async () => {
+    const userResponse = await getUserProfile()
+
+    return userResponse
+  },
+)
 
 export const login = createAsyncThunk(
   'login',
@@ -89,4 +102,4 @@ export const updateUser = createAsyncThunk(
 )
 
 export const userReducer = userSlice.reducer
-export const { setAccessToken, setUserData, logout } = userSlice.actions
+export const { logout } = userSlice.actions

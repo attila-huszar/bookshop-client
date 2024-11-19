@@ -35,6 +35,7 @@ export interface IStateUser {
   userData: IUser | null
   userIsLoading: boolean
   userIsUpdating: boolean
+  tokenError: string | undefined
   userError: string | undefined
   loginError: string | undefined
   registerError: string | undefined
@@ -51,8 +52,4 @@ export interface IStateOrder {
   orderIsLoading: boolean
   orderCreateError: string | undefined
   orderRetrieveError: string | undefined
-}
-
-export interface IStateAuth {
-  accessToken: string | null
 }

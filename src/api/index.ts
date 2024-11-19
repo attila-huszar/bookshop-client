@@ -10,4 +10,4 @@ export {
 export { getNews } from './news'
 export { postOrder, updateOrder } from './orders'
 export { getUserProfile, postUserLogin, postUserRegister } from './users'
-export { api, authApi } from './api'
+export { api } from './api'

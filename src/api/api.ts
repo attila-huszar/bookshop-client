@@ -1,6 +1,5 @@
 import ky from 'ky'
-import { store, setAccessToken, logout } from '@/store'
-import { PATH } from '@/constants'
+import { store, fetchTokens } from '@/store'
 
 const httpError = {
   Unauthorized: 401,
@@ -14,9 +13,6 @@ export const api = ky.create({
     credentials: 'include',
     'ngrok-skip-browser-warning': 'true',
   },
-})
-
-export const authApi = api.extend({
   hooks: {
     beforeRequest: [
       (request) => {
@@ -30,19 +26,10 @@ export const authApi = api.extend({
     afterResponse: [
       async (request, _options, response) => {
         if (response.status === httpError.Unauthorized) {
-          try {
-            const refreshResponse = await api
-              .post<{ accessToken: string }>(`${PATH.users}/refresh`)
-              .json()
+          await store.dispatch(fetchTokens())
 
-            const newAccessToken = refreshResponse.accessToken
-            store.dispatch(setAccessToken(newAccessToken))
-
-            return authApi(request)
-          } catch {
-            store.dispatch(logout())
-
-            return response
+          if (store.getState().user.accessToken) {
+            return api(request)
           }
         } else if (response.status === httpError.TooManyRequests) {
           throw new Error('Request aborted due to too many requests')
