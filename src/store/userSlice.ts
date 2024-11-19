@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { IUserUpdate, IStateUser } from '@/interfaces'
-import { postUserLogin } from '@/api/users'
+import { getUserProfile, postUserLogin } from '@/api/users'
+import { IUser, IUserUpdate, IStateUser } from '@/interfaces'
 
 const initialState: IStateUser = {
   accessToken: null,
@@ -20,27 +20,36 @@ const userSlice = createSlice({
       state.accessToken = null
       state.userData = null
     },
-    setAccessToken: (state, action) => {
+    setAccessToken: (state, action: { payload: string }) => {
       state.accessToken = action.payload
     },
-    setUserData: (state, action) => {
+    setUserData: (state, action: { payload: IUser }) => {
       state.userData = action.payload
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => {
-        state.userIsLoading = true
-      })
       .addCase(login.fulfilled, (state, action) => {
-        state.userIsLoading = false
         state.accessToken = action.payload.accessToken
         state.loginError = undefined
       })
       .addCase(login.rejected, (state, action) => {
-        state.userIsLoading = false
+        state.accessToken = null
         state.loginError = action.error.message
+      })
+
+      .addCase(userProfile.pending, (state) => {
+        state.userIsLoading = true
+      })
+      .addCase(userProfile.fulfilled, (state, action) => {
+        state.userData = action.payload
+        state.userIsLoading = false
+        state.userError = undefined
+      })
+      .addCase(userProfile.rejected, (state, action) => {
         state.userData = null
+        state.userIsLoading = false
+        state.userError = action.error.message
       })
 
       .addCase(updateUser.pending, (state) => {
@@ -59,12 +68,15 @@ const userSlice = createSlice({
   },
 })
 
+export const userProfile = createAsyncThunk('userProfile', async () => {
+  const userResponse = await getUserProfile()
+
+  return userResponse
+})
+
 export const login = createAsyncThunk(
   'login',
-  async (user: {
-    email: string
-    password: string
-  }): Promise<{ accessToken: string; firstName: string }> => {
+  async (user: { email: string; password: string }) => {
     const userResponse = await postUserLogin(user.email, user.password)
 
     return userResponse

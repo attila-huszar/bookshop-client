@@ -11,7 +11,7 @@ import {
 } from '@/components'
 import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/helpers'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'

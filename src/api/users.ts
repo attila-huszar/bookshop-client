@@ -1,10 +1,17 @@
-import { api } from './'
+import { api, authApi } from './'
 import { PATH } from '@/constants'
 import { uploadImage } from '@/services'
 import { handleErrors } from '@/errors'
 import { IUser } from '@/interfaces'
 
-export const postUserLogin = async (email: string, password: string) => {
+export const getUserProfile = async (): Promise<IUser> => {
+  return authApi.get(`${PATH.users}/profile`).json()
+}
+
+export const postUserLogin = async (
+  email: string,
+  password: string,
+): Promise<{ accessToken: string; firstName: string }> => {
   return api
     .post<{
       accessToken: string
@@ -17,7 +24,7 @@ export const postUserRegister = async (
   user: Pick<IUser, 'email' | 'firstName' | 'lastName' | 'avatar'> & {
     password: string
   },
-) => {
+): Promise<Toast> => {
   try {
     if (user.avatar instanceof File) {
       const imageResponse = await uploadImage(user.avatar, 'avatars')

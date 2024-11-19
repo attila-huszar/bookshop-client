@@ -5,13 +5,23 @@ import svgr from 'vite-plugin-svgr'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
-  loadEnv(mode, process.cwd())
+  const env = loadEnv(mode, process.cwd())
 
   return {
     plugins: [react(), svgr(), visualizer()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+      },
+    },
+    server: {
+      proxy: {
+        '/api': {
+          target: env.VITE_SERVER_URL,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     test: {

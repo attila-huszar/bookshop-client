@@ -9,13 +9,11 @@ import {
   fetchNews,
   fetchCartItems,
   orderRetrieve,
-  setUserData,
 } from '@/store'
+import { getCookie } from './helpers'
 import { ILocalCart } from '@/interfaces'
 import GlobalStyle from '@/styles/Global.style'
-import { PATH } from './constants'
-import { authApi } from './api/api'
-import { getCookie } from './helpers'
+import { userProfile } from './store/userSlice'
 
 function App() {
   const dispatch = useAppDispatch()
@@ -28,13 +26,8 @@ function App() {
     void dispatch(fetchNews())
     void dispatch(fetchBookSearchOptions())
 
-    async function getUserProfile() {
-      const user = await authApi.get(`${PATH.users}/profile`).json()
-      dispatch(setUserData(user))
-    }
-
     if (getCookie('uuid')) {
-      getUserProfile()
+      void dispatch(userProfile())
     }
 
     const cart = getFromLocalStorage<ILocalCart[]>('cart')

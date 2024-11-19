@@ -2,12 +2,17 @@ import ky from 'ky'
 import { store, setAccessToken, logout } from '@/store'
 import { PATH } from '@/constants'
 
+const httpError = {
+  Unauthorized: 401,
+  TooManyRequests: 429,
+}
+
 export const api = ky.create({
-  prefixUrl: import.meta.env.VITE_NODE_API_URL,
+  prefixUrl: '/api',
   headers: {
+    'Content-Type': 'application/json',
     credentials: 'include',
     'ngrok-skip-browser-warning': 'true',
-    'Content-Type': 'application/json',
   },
 })
 
@@ -24,10 +29,10 @@ export const authApi = api.extend({
     ],
     afterResponse: [
       async (request, _options, response) => {
-        if (response.status === 401) {
+        if (response.status === httpError.Unauthorized) {
           try {
-            const refreshResponse = await authApi
-              .post<{ accessToken: string }>(`/${PATH.users}/refresh`)
+            const refreshResponse = await api
+              .post<{ accessToken: string }>(`${PATH.users}/refresh`)
               .json()
 
             const newAccessToken = refreshResponse.accessToken
@@ -39,6 +44,8 @@ export const authApi = api.extend({
 
             return response
           }
+        } else if (response.status === httpError.TooManyRequests) {
+          throw new Error('Request aborted due to too many requests')
         }
 
         return response

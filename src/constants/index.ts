@@ -11,9 +11,10 @@ export {
 export { countryList } from './countryList'
 export {
   baseURL,
+  serverUrl,
+  stripeKey,
   cloudinaryName,
   cloudinaryUpload,
   cloudinaryUploadPreset,
-  stripeKey,
   googleMapsKey,
 } from './envConfig'
