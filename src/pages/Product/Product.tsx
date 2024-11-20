@@ -53,7 +53,7 @@ export function Product() {
 
   const handleCartAction = (book: IBook) => {
     if (isBookInCart) {
-      navigate(`/${PATH.cart}`)
+      navigate(`/${PATH.CLIENT.cart}`)
     } else {
       addToCart(book)
     }

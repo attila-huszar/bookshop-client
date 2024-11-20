@@ -76,7 +76,7 @@ export function Cart() {
 
   useEffect(() => {
     if (orderStatus?.clientSecret) {
-      navigate(`/${PATH.checkout}`, { replace: true })
+      navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
     }
   }, [orderStatus?.clientSecret, navigate])
 
@@ -163,7 +163,7 @@ export function Cart() {
           {cartArray.map((item: ICart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${PATH.books}/${item.id}`}>
+                <Link to={`/${PATH.CLIENT.books}/${item.id}`}>
                   <ImageWrapper>
                     <img
                       src={item.imgUrl}
@@ -246,7 +246,7 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
-            onClick={() => navigate(`/${PATH.books}`)}
+            onClick={() => navigate(`/${PATH.CLIENT.books}`)}
             disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
@@ -285,7 +285,7 @@ export function Cart() {
         <p>Your cart is empty</p>
         <Button
           type="button"
-          onClick={() => navigate(`/${PATH.books}`)}
+          onClick={() => navigate(`/${PATH.CLIENT.books}`)}
           $withCart>
           Go Shopping
         </Button>

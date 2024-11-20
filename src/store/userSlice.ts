@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { retrieveTokens, getUserProfile, postUserLogin } from '@/api/users'
-import { IUserUpdate, IStateUser } from '@/interfaces'
+import {
+  retrieveAuthTokens,
+  getUserProfile,
+  postUserLogin,
+  postUserLogout,
+  patchUserProfile,
+} from '@/api/users'
+import { IUserUpdate, IStateUser, IUser } from '@/interfaces'
+import { handleErrors } from '@/errors'
 
 const initialState: IStateUser = {
   accessToken: null,
@@ -16,12 +23,7 @@ const initialState: IStateUser = {
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {
-    logout: (state) => {
-      state.accessToken = null
-      state.userData = null
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {
@@ -30,15 +32,23 @@ const userSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.accessToken = null
-        state.loginError = action.error.message
+        state.loginError = action.payload
       })
 
-      .addCase(fetchTokens.fulfilled, (state, action) => {
+      .addCase(logout.fulfilled, (state) => {
+        state.accessToken = null
+        state.userData = null
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.userError = action.payload
+      })
+
+      .addCase(fetchAuthTokens.fulfilled, (state, action) => {
         state.accessToken = action.payload
         state.tokenError = undefined
       })
-      .addCase(fetchTokens.rejected, (state, action) => {
-        state.tokenError = action.error.message
+      .addCase(fetchAuthTokens.rejected, (state, action) => {
+        state.tokenError = action.payload
         state.accessToken = null
       })
 
@@ -53,7 +63,7 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.userData = null
         state.userIsLoading = false
-        state.userError = action.error.message
+        state.userError = action.payload
       })
 
       .addCase(updateUser.pending, (state) => {
@@ -66,40 +76,99 @@ const userSlice = createSlice({
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.userIsUpdating = false
-        state.userError = action.error.message
+        state.userError = action.payload
         state.userData = null
       })
   },
 })
 
-export const fetchTokens = createAsyncThunk('fetchTokens', async () => {
-  const { accessToken } = await retrieveTokens()
+export const fetchAuthTokens = createAsyncThunk<
+  string,
+  void,
+  { rejectValue: string }
+>('fetchAuthTokens', async (_, { rejectWithValue }) => {
+  try {
+    const { accessToken } = await retrieveAuthTokens()
 
-  return accessToken
+    return accessToken
+  } catch (error) {
+    const errorObject = handleErrors(error, 'Unable to get auth tokens')
+
+    return rejectWithValue(errorObject.message)
+  }
 })
 
-export const fetchUserProfile = createAsyncThunk(
-  'fetchUserProfile',
-  async () => {
+export const fetchUserProfile = createAsyncThunk<
+  IUser,
+  void,
+  { rejectValue: string }
+>('fetchUserProfile', async (_, { rejectWithValue }) => {
+  try {
     const userResponse = await getUserProfile()
 
     return userResponse
-  },
-)
+  } catch (error) {
+    const errorObject = handleErrors(error, 'Unable to get user profile')
 
-export const login = createAsyncThunk(
-  'login',
-  async (user: { email: string; password: string }) => {
+    return rejectWithValue(errorObject.message)
+  }
+})
+
+export const login = createAsyncThunk<
+  { accessToken: string; firstName: string },
+  { email: string; password: string },
+  { rejectValue: string }
+>('login', async (user, { rejectWithValue }) => {
+  try {
     const userResponse = await postUserLogin(user.email, user.password)
 
     return userResponse
-  },
-)
+  } catch (error) {
+    const errorObject = handleErrors(
+      error,
+      'Login failed, please try again later',
+    )
 
-export const updateUser = createAsyncThunk(
-  'updateUser',
-  async ({ email, fields }: IUserUpdate) => {},
-)
+    return rejectWithValue(errorObject.message)
+  }
+})
+
+export const logout = createAsyncThunk<
+  { message: string },
+  void,
+  { rejectValue: string }
+>('authLogout', async (_, { rejectWithValue }) => {
+  try {
+    const userResponse = await postUserLogout()
+
+    return userResponse
+  } catch (error) {
+    const errorObject = handleErrors(
+      error,
+      'Logout failed, please try again later',
+    )
+
+    return rejectWithValue(errorObject.message)
+  }
+})
+
+export const updateUser = createAsyncThunk<
+  IUser,
+  IUserUpdate,
+  { rejectValue: string }
+>('updateUser', async (fields: IUserUpdate, { rejectWithValue }) => {
+  try {
+    const userResponse = await patchUserProfile(fields)
+
+    return userResponse
+  } catch (error) {
+    const errorObject = handleErrors(
+      error,
+      'User update failed, please try again later',
+    )
+
+    return rejectWithValue(errorObject.message)
+  }
+})
 
 export const userReducer = userSlice.reducer
-export const { logout } = userSlice.actions

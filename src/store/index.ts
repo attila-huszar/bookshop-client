@@ -23,7 +23,7 @@ export {
   login,
   logout,
   updateUser,
-  fetchTokens,
+  fetchAuthTokens,
   fetchUserProfile,
 } from './userSlice'
 export {

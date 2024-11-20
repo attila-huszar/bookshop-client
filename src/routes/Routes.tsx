@@ -51,31 +51,31 @@ const routes: RouteObject[] = [
         element: <Home />,
       },
       {
-        path: PATH.books,
+        path: PATH.CLIENT.books,
         element: <Products />,
       },
       {
-        path: `${PATH.books}/:id`,
+        path: `${PATH.CLIENT.books}/:id`,
         element: <Product />,
       },
       {
-        path: PATH.register,
+        path: PATH.CLIENT.register,
         element: <Registration />,
       },
       {
-        path: PATH.login,
+        path: PATH.CLIENT.login,
         element: <Login />,
       },
       {
-        path: PATH.cart,
+        path: PATH.CLIENT.cart,
         element: <Cart />,
       },
       {
-        path: PATH.verify,
+        path: PATH.CLIENT.verify,
         element: <VerifyEmail />,
       },
       {
-        path: PATH.passwordReset,
+        path: PATH.CLIENT.passwordReset,
         element: <PasswordReset />,
       },
       {
@@ -83,7 +83,7 @@ const routes: RouteObject[] = [
         loader: protectedRouteLoader,
         children: [
           {
-            path: PATH.account,
+            path: PATH.CLIENT.account,
             element: <Account />,
           },
         ],
@@ -95,7 +95,7 @@ const routes: RouteObject[] = [
     ],
   },
   {
-    path: PATH.checkout,
+    path: PATH.CLIENT.checkout,
     element: <Checkout />,
   },
 ]

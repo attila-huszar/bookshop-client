@@ -13,7 +13,7 @@ export function Card({ book }: { book: IBook }) {
 
   const handleCartAction = () => {
     if (isBookInCart) {
-      navigate(`/${PATH.cart}`)
+      navigate(`/${PATH.CLIENT.cart}`)
     } else {
       addToCart(book)
     }
@@ -21,7 +21,7 @@ export function Card({ book }: { book: IBook }) {
 
   return (
     <StyledCard>
-      <Link to={`/${PATH.books}/${book.id}`}>
+      <Link to={`/${PATH.CLIENT.books}/${book.id}`}>
         <Image
           src={book.imgUrl}
           onError={(e) =>

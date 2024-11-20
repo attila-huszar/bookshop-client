@@ -42,20 +42,12 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const isPasswordValid = await postUserLogin(
-      email,
-      values.currentPassword,
-    )
+    const isPasswordValid = await postUserLogin(email, values.currentPassword)
 
     if (isPasswordValid.accessToken) {
       if (values.currentPassword !== values.newPassword) {
         try {
-          await dispatch(
-            updateUser({
-              email,
-              fields: { password: values.newPassword },
-            }),
-          )
+          await dispatch(updateUser({ password: values.newPassword }))
 
           handleClose()
           actions.resetForm()

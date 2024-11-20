@@ -11,7 +11,4 @@ export interface IUser {
   role?: 'user' | 'admin'
 }
 
-export interface IUserUpdate {
-  email: string
-  fields: Partial<IUser> & { password?: string }
-}
+export type IUserUpdate = Partial<IUser> & { password?: string }

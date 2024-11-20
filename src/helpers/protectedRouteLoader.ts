@@ -1,3 +1,7 @@
+import { retrieveAuthTokens } from '@/api/users'
+
 export const protectedRouteLoader = async () => {
-  return true
+  const { accessToken } = await retrieveAuthTokens()
+
+  return Boolean(accessToken)
 }

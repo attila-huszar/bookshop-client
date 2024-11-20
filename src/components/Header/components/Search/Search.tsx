@@ -115,7 +115,7 @@ export function Search() {
 
   const handleSubmit = () => {
     if (searchResults.length) {
-      navigate(`/${PATH.books}/${searchResults[0].id}`)
+      navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
     }
   }
 
@@ -157,7 +157,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${PATH.books}/${book.id}`}
+                        to={`/${PATH.CLIENT.books}/${book.id}`}
                         onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img

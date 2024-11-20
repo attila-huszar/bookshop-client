@@ -29,22 +29,12 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<IUser>, email: string) => {
-    void dispatch(
-      updateUser({
-        email,
-        fields: { ...values },
-      }),
-    )
+  const handleBasicInfoSubmit = (values: Partial<IUser>) => {
+    void dispatch(updateUser({ ...values }))
   }
 
-  const handleAddressInfoSubmit = (values: IUser['address'], email: string) => {
-    void dispatch(
-      updateUser({
-        email,
-        fields: { address: values },
-      }),
-    )
+  const handleAddressInfoSubmit = (values: IUser['address']) => {
+    void dispatch(updateUser({ address: values }))
   }
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
@@ -53,15 +43,9 @@ export function Account() {
     inputFile.current?.click()
   }
 
-  const handleImgChange = async (img: File, email: string) => {
+  const handleImgChange = async (img: File) => {
     const imageResponse = await uploadImage(img, 'avatars')
-
-    void dispatch(
-      updateUser({
-        email,
-        fields: { avatar: imageResponse?.url },
-      }),
-    )
+    void dispatch(updateUser({ avatar: imageResponse?.url }))
   }
 
   const handlePasswordDialogOpen = () => {
@@ -69,15 +53,7 @@ export function Account() {
   }
 
   if (userData) {
-    const { email, firstName, lastName, phone, avatar, address } = userData
-    const {
-      city = '',
-      country = '',
-      line1 = '',
-      line2 = '',
-      postal_code = '',
-      state = '',
-    } = { ...address }
+    const { email, firstName, lastName, avatar, phone, address } = userData
 
     return (
       <StyledAccount>
@@ -103,7 +79,7 @@ export function Account() {
                   aria-label="Change Avatar"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     if (e.target.files) {
-                      void handleImgChange(e.target.files[0], email)
+                      void handleImgChange(e.target.files[0])
                     }
                   }}
                   accept="image/*"
@@ -120,10 +96,15 @@ export function Account() {
               </AvatarPanel>
               <General>
                 <Formik
-                  initialValues={{ firstName, lastName, email, phone }}
+                  initialValues={{
+                    firstName: firstName ?? '',
+                    lastName: lastName ?? '',
+                    email: email ?? '',
+                    phone: phone ?? '',
+                  }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values) => handleBasicInfoSubmit(values, email)}
+                  onSubmit={handleBasicInfoSubmit}
                   onReset={handleBasicInfoReset}>
                   <Form>
                     <GeneralLine>
@@ -196,16 +177,16 @@ export function Account() {
             <Address>
               <Formik
                 initialValues={{
-                  line1,
-                  line2,
-                  city,
-                  state,
-                  postal_code,
-                  country,
+                  line1: address?.line1 ?? '',
+                  line2: address?.line2 ?? '',
+                  city: address?.city ?? '',
+                  state: address?.state ?? '',
+                  postal_code: address?.postal_code ?? '',
+                  country: address?.country ?? '',
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values) => handleAddressInfoSubmit(values, email)}
+                onSubmit={handleAddressInfoSubmit}
                 onReset={handleAddressInfoReset}>
                 <Form>
                   <AddressLine>

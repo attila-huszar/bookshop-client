@@ -8,12 +8,7 @@ import {
   MenuItem,
 } from '../Menu/Menu.style'
 import { IconButton, Avatar } from '@/components'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useLocalStorage,
-  useClickOutside,
-} from '@/hooks'
+import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { PATH } from '@/constants'
 import LoginIcon from '@/assets/svg/account.svg?react'
@@ -25,7 +20,6 @@ export function AccountMenu() {
   const dispatch = useAppDispatch()
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-  const { removeFromLocalStorage } = useLocalStorage()
   const { userData } = useAppSelector(userSelector)
   const { firstName, email, avatar } = { ...userData }
   useClickOutside(menuRef, menuOpen, setMenuOpen)
@@ -36,9 +30,19 @@ export function AccountMenu() {
 
   const handleLogout = () => {
     toggleMenu()
-    removeFromLocalStorage('uuid')
-    toast.success(`${email} successfully logged out`)
+
     dispatch(logout())
+      .unwrap()
+      .then(() => {
+        toast.success(`${email} successfully logged out`, {
+          id: 'logout-success',
+        })
+      })
+      .catch((error: Error) => {
+        toast.error(error.message, {
+          id: 'logout-error',
+        })
+      })
   }
 
   return (
@@ -51,7 +55,7 @@ export function AccountMenu() {
         />
       ) : (
         <IconButton
-          onClick={() => navigate(PATH.login)}
+          onClick={() => navigate(PATH.CLIENT.login)}
           icon={<LoginIcon />}
           title={'Login/Register'}
         />
@@ -60,7 +64,7 @@ export function AccountMenu() {
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
-              <Link to={`/${PATH.account}`} onClick={toggleMenu}>
+              <Link to={`/${PATH.CLIENT.account}`} onClick={toggleMenu}>
                 <MenuItem>
                   <img src={accountIcon} alt="account" />
                   <span>{firstName}</span>

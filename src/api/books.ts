@@ -1,4 +1,4 @@
-import { api } from './'
+import { baseRequest } from './'
 import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import { IBook, IFilter, IFilterActive } from '@/interfaces'
@@ -51,7 +51,9 @@ export const getBooks = async ({
       params.append('rating_gte', `${criteria.rating}`)
     }
 
-    const booksResponse = await api.get<IBook[]>(`${PATH.books}?${params}`)
+    const booksResponse = await baseRequest.get<IBook[]>(
+      `${PATH.SERVER.books}?${params}`,
+    )
 
     const total = booksResponse.headers.get('x-total-count')
     const books = await booksResponse.json()
@@ -67,7 +69,7 @@ export const getBooks = async ({
 
 export const getBookById = (id: number): Promise<IBook> => {
   try {
-    return api.get(`${PATH.books}/${id}`).json()
+    return baseRequest.get(`${PATH.SERVER.books}/${id}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get book by ID')
   }
@@ -77,7 +79,7 @@ export const getBooksByProperty = (
   property: 'newRelease' | 'topSellers',
 ): Promise<IBook[]> => {
   try {
-    return api.get(`${PATH.books}?${property}=true`).json()
+    return baseRequest.get(`${PATH.SERVER.books}?${property}=true`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by property')
   }
@@ -85,7 +87,7 @@ export const getBooksByProperty = (
 
 export const getBooksBySearch = (searchString: string): Promise<IBook[]> => {
   try {
-    return api.get(`${PATH.books}?title=${searchString}`).json()
+    return baseRequest.get(`${PATH.SERVER.books}?title=${searchString}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by search')
   }
@@ -93,7 +95,7 @@ export const getBooksBySearch = (searchString: string): Promise<IBook[]> => {
 
 export const getBooksByAuthor = (id: number): Promise<IBook[]> => {
   try {
-    return api.get(`${PATH.books}?authorId=${id}`).json()
+    return baseRequest.get(`${PATH.SERVER.books}?authorId=${id}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get books by author')
   }
@@ -103,7 +105,7 @@ export const getBookSearchOptions = (): Promise<
   Pick<IFilter, 'genre' | 'price' | 'publishYear'>
 > => {
   try {
-    return api.get(`${PATH.searchOptions}`).json()
+    return baseRequest.get(`${PATH.SERVER.searchOptions}`).json()
   } catch (error) {
     throw handleErrors(error, 'Unable to get book search options')
   }

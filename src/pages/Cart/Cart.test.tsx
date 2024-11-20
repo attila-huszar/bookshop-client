@@ -75,7 +75,7 @@ describe('Cart component', () => {
     expect(button).toBeInTheDocument()
 
     await userEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.books}`)
+    expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.CLIENT.books}`)
   })
 
   it('should render cart items correctly', () => {
@@ -129,7 +129,7 @@ describe('Cart component', () => {
     render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.checkout}`, {
+      expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.CLIENT.checkout}`, {
         replace: true,
       })
     })

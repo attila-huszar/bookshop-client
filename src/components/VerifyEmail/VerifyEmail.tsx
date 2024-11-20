@@ -17,7 +17,7 @@ export function VerifyEmail() {
       //     toast.success(verifyResult, {
       //       id: 'verify-success',
       //     })
-      //     navigate(`/${PATH.login}`, { replace: true })
+      //     navigate(`/${PATH.CLIENT.login}`, { replace: true })
       //   })
       //   .catch((error: Error) => {
       //     toast.error(error.message, {

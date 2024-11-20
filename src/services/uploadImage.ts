@@ -1,4 +1,4 @@
-import { api } from '@/api'
+import { authRequest } from '@/api'
 import { toast } from 'react-hot-toast'
 import { cloudinaryUpload, cloudinaryUploadPreset } from '@/constants'
 
@@ -9,7 +9,7 @@ export const uploadImage = async (img: File, folder: 'public' | 'avatars') => {
   formData.append('file', img)
 
   try {
-    const uploadResponse = await api
+    const uploadResponse = await authRequest
       .post(cloudinaryUpload, { body: formData })
       .json<{ url: string }>()
 

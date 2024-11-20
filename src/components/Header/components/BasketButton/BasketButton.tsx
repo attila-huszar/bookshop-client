@@ -13,7 +13,7 @@ export function BasketButton() {
   return (
     <StyledBasketButton>
       <Button
-        onClick={() => navigate(`/${PATH.cart}`)}
+        onClick={() => navigate(`/${PATH.CLIENT.cart}`)}
         $size="sm"
         $withCart
         title={orderStatus ? 'Checkout' : 'Basket'}>

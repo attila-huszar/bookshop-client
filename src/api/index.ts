@@ -9,5 +9,11 @@ export {
 } from './books'
 export { getNews } from './news'
 export { postOrder, updateOrder } from './orders'
-export { getUserProfile, postUserLogin, postUserRegister } from './users'
-export { api } from './api'
+export {
+  getUserProfile,
+  postUserLogin,
+  postUserRegister,
+  postUserLogout,
+  patchUserProfile,
+} from './users'
+export { baseRequest, authRequest } from './api'

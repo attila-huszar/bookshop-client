@@ -45,17 +45,17 @@ const orderSlice = createSlice({
         state.orderIsLoading = true
         state.orderRetrieveError = undefined
       })
-      .addCase(orderRetrieve.fulfilled, (state, action) => {
-        state.orderStatus = {
-          intent: 'processing',
-          // paymentId: action.payload.clientSecret.split('_secret_')[0],
-          // clientSecret: action.payload.clientSecret,
-          // amount: action.payload.amount,
-          // currency: action.payload.currency,
-        }
-        state.orderIsLoading = false
-        state.orderRetrieveError = undefined
-      })
+      // .addCase(orderRetrieve.fulfilled, (state, action) => {
+      //   state.orderStatus = {
+      //     intent: 'processing',
+      //     paymentId: action.payload.clientSecret.split('_secret_')[0],
+      //     clientSecret: action.payload.clientSecret,
+      //     amount: action.payload.amount,
+      //     currency: action.payload.currency,
+      //   }
+      //   state.orderIsLoading = false
+      //   state.orderRetrieveError = undefined
+      // })
       .addCase(orderRetrieve.rejected, (state, action) => {
         state.orderStatus = null
         state.orderIsLoading = false
@@ -68,11 +68,9 @@ export const orderRetrieve = createAsyncThunk(
   'orderRetrieve',
   async (paymentId: string) => {
     // const stripeRetrieveResponse = await apiHandler.getStripePayment(paymentId)
-
     // const clientSecret = stripeRetrieveResponse.client_secret
     // const amount = stripeRetrieveResponse.amount
     // const currency = stripeRetrieveResponse.currency
-
     // return {
     //   clientSecret,
     //   amount,
@@ -95,10 +93,8 @@ export const orderCreate = createAsyncThunk(
     // )
     // const clientSecret = stripeCreateResponse.clientSecret
     // const paymentId = clientSecret.split('_secret_')[0]
-
     // order.orderToServer.paymentId = paymentId
     // await apiHandler.postOrder(order.orderToServer)
-
     // return {
     //   clientSecret,
     //   amount: order.orderToStripe.amount,

@@ -1,18 +1,21 @@
 import ky from 'ky'
-import { store, fetchTokens } from '@/store'
+import { store, fetchAuthTokens, logout } from '@/store'
 
 const httpError = {
   Unauthorized: 401,
   TooManyRequests: 429,
 }
 
-export const api = ky.create({
+export const baseRequest = ky.create({
   prefixUrl: '/api',
   headers: {
-    'Content-Type': 'application/json',
     credentials: 'include',
+    'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
+})
+
+export const authRequest = baseRequest.extend({
   hooks: {
     beforeRequest: [
       (request) => {
@@ -26,10 +29,14 @@ export const api = ky.create({
     afterResponse: [
       async (request, _options, response) => {
         if (response.status === httpError.Unauthorized) {
-          await store.dispatch(fetchTokens())
+          await store.dispatch(fetchAuthTokens())
 
-          if (store.getState().user.accessToken) {
-            return api(request)
+          const accessToken = store.getState().user.accessToken
+
+          if (accessToken) {
+            return authRequest(request)
+          } else {
+            void store.dispatch(logout())
           }
         } else if (response.status === httpError.TooManyRequests) {
           throw new Error('Request aborted due to too many requests')

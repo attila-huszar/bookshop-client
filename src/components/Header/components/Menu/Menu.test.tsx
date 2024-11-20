@@ -33,6 +33,6 @@ describe('Menu component', () => {
     const shopLink = screen.getByText('Shop')
     await userEvent.click(shopLink)
 
-    expect(global.window.location.pathname).toContain(PATH.books)
+    expect(global.window.location.pathname).toContain(PATH.CLIENT.books)
   })
 })

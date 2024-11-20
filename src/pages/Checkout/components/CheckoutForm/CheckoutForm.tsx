@@ -35,7 +35,7 @@ export function CheckoutForm() {
       elements,
       confirmParams: {
         receipt_email: emailInput || userData?.email,
-        return_url: `${baseURL}/${PATH.checkout}`,
+        return_url: `${baseURL}/${PATH.CLIENT.checkout}`,
       },
     })
 
@@ -54,7 +54,7 @@ export function CheckoutForm() {
     }
 
     dispatch(orderClear())
-    navigate(`/${PATH.cart}`, { replace: true })
+    navigate(`/${PATH.CLIENT.cart}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {

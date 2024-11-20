@@ -15,7 +15,7 @@ export function PasswordReset() {
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const resetCode = queryParams.get('code')
-  const [email, setEmail] = useState<string | null>(null)
+  const [email] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
 
@@ -38,14 +38,9 @@ export function PasswordReset() {
   }) => {
     if (email && values.newPassword === values.newPasswordConfirmation) {
       try {
-        await dispatch(
-          updateUser({
-            email,
-            fields: { password: values.newPassword},
-          }),
-        )
+        await dispatch(updateUser({ password: values.newPassword }))
 
-        navigate(`/${PATH.login}`, { replace: true })
+        navigate(`/${PATH.CLIENT.login}`, { replace: true })
         toast.success('Password Changed Successfully', {
           id: 'reset-success',
         })

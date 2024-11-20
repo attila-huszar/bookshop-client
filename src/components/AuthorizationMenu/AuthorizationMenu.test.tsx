@@ -18,11 +18,11 @@ describe('AuthorizationMenu', () => {
     renderWithRouter(<AuthorizationMenu />)
     expect(screen.getByRole('link', { name: /login/i })).toHaveAttribute(
       'href',
-      `/${PATH.login}`,
+      `/${PATH.CLIENT.login}`,
     )
     expect(screen.getByRole('link', { name: /register/i })).toHaveAttribute(
       'href',
-      `/${PATH.registration}`,
+      `/${PATH.CLIENT.register}`,
     )
   })
 
