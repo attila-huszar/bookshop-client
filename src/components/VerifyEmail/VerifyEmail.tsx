@@ -19,9 +19,9 @@ export function VerifyEmail() {
 
     if (token) {
       postVerifyEmail(token)
-        .then((verifyResult) => {
+        .then((verifyResponse) => {
           toast.success(
-            `${verifyResult.email} successfully verified, you can now login`,
+            `${verifyResponse.email} successfully verified, you can now login`,
             {
               id: 'verify-success',
             },
@@ -29,16 +29,13 @@ export function VerifyEmail() {
           navigate(`/${PATH.CLIENT.login}`, { replace: true })
         })
         .catch(async (error) => {
-          if (error instanceof HTTPError) {
-            const errorResponse = await error.response.json<{ error: string }>()
-            toast.error(errorResponse.error, {
-              id: 'verify-error',
-            })
-          } else {
-            toast.error('Verification failed, please try again later', {
-              id: 'verify-error',
-            })
-          }
+          const errorMessage =
+            error instanceof HTTPError
+              ? (await error.response.json<{ error: string }>()).error
+              : 'Verification failed, please try again later'
+
+          toast.error(errorMessage, { id: 'verify-error' })
+
           navigate('/', { replace: true })
         })
     }

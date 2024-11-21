@@ -42,25 +42,21 @@ export function Registration() {
     try {
       const registerResponse = await postUserRegister(user)
 
-      navigate('/', { replace: true })
-
       toast.success(
         `${registerResponse.email} registered successfully, please verify your email address`,
         {
           id: 'register-success',
         },
       )
+
+      navigate('/', { replace: true })
     } catch (error) {
-      if (error instanceof HTTPError) {
-        const errorResponse = await error.response.json<{ error: string }>()
-        toast.error(errorResponse.error, {
-          id: 'register-error',
-        })
-      } else {
-        toast.error('Registration failed, please try again later', {
-          id: 'register-error',
-        })
-      }
+      const errorMessage =
+        error instanceof HTTPError
+          ? (await error.response.json<{ error: string }>()).error
+          : 'Registration failed, please try again later'
+
+      toast.error(errorMessage, { id: 'register-error' })
     }
   }
 

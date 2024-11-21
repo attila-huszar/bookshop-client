@@ -1,36 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Formik, Form } from 'formik'
+import { HTTPError } from 'ky'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
-import { PATH, passwordResetInitialValues } from '@/constants'
-import { resetPasswordSchema } from '@/helpers'
-import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
+import { useAppDispatch } from '@/hooks'
+import { postVerifyPasswordReset } from '@/api/users'
+import { resetPasswordSchema } from '@/helpers'
+import { PATH, passwordResetInitialValues } from '@/constants'
 
 export function PasswordReset() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
-  const resetCode = queryParams.get('code')
-  const [email] = useState<string | null>(null)
+  const token = queryParams.get('token')
+  const [email, setEmail] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
+  const isEffectRun = useRef(false)
 
   useEffect(() => {
-    if (resetCode) {
-      // passwordReset(resetCode)
-      //   .then((resetResponse) => setUUID(resetResponse))
-      //   .catch((error: Error) => {
-      //     toast.error(error.message, {
-      //       id: 'reset-error',
-      //     })
-      //     navigate('/', { replace: true })
-      //   })
+    if (isEffectRun.current || !token) return
+    isEffectRun.current = true
+
+    if (token) {
+      postVerifyPasswordReset(token)
+        .then((resetResponse) => setEmail(resetResponse.email))
+        .catch(async (error) => {
+          const errorMessage =
+            error instanceof HTTPError
+              ? (await error.response.json<{ error: string }>()).error
+              : 'Password reset failed, please try again later'
+
+          toast.error(errorMessage, { id: 'reset-error' })
+
+          navigate('/', { replace: true })
+        })
     }
-  }, [resetCode, navigate])
+  }, [token, navigate])
 
   const handleSubmit = async (values: {
     newPassword: string
