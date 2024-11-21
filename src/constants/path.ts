@@ -24,7 +24,7 @@ export const PATH = {
     books: 'books',
     login: 'login',
     register: 'register',
-    verify: 'verify',
+    verification: 'verification',
     passwordReset: 'password-reset',
     account: 'account',
     cart: 'cart',

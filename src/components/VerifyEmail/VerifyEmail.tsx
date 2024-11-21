@@ -1,17 +1,22 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { HTTPError } from 'ky'
+import { postVerifyEmail } from '@/api/users'
 import { Loading } from '@/components'
 import { PATH } from '@/constants'
-import { postVerifyEmail } from '@/api/users'
 
 export function VerifyEmail() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const token = queryParams.get('token')
+  const isEffectRun = useRef(false)
 
   useEffect(() => {
+    if (isEffectRun.current || !token) return
+    isEffectRun.current = true
+
     if (token) {
       postVerifyEmail(token)
         .then((verifyResult) => {
@@ -23,10 +28,17 @@ export function VerifyEmail() {
           )
           navigate(`/${PATH.CLIENT.login}`, { replace: true })
         })
-        .catch((error: Error) => {
-          toast.error(error.message, {
-            id: 'verify-error',
-          })
+        .catch(async (error) => {
+          if (error instanceof HTTPError) {
+            const errorResponse = await error.response.json<{ error: string }>()
+            toast.error(errorResponse.error, {
+              id: 'verify-error',
+            })
+          } else {
+            toast.error('Verification failed, please try again later', {
+              id: 'verify-error',
+            })
+          }
           navigate('/', { replace: true })
         })
     }

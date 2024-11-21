@@ -92,7 +92,7 @@ export const fetchAuthTokens = createAsyncThunk<
 
     return accessToken
   } catch (error) {
-    const errorObject = handleErrors(error, 'Unable to get auth tokens')
+    const errorObject = await handleErrors(error, 'Unable to get auth tokens')
 
     return rejectWithValue(errorObject.message)
   }
@@ -108,7 +108,7 @@ export const fetchUserProfile = createAsyncThunk<
 
     return userResponse
   } catch (error) {
-    const errorObject = handleErrors(error, 'Unable to get user profile')
+    const errorObject = await handleErrors(error, 'Unable to get user profile')
 
     return rejectWithValue(errorObject.message)
   }
@@ -124,7 +124,7 @@ export const login = createAsyncThunk<
 
     return userResponse
   } catch (error) {
-    const errorObject = handleErrors(
+    const errorObject = await handleErrors(
       error,
       'Login failed, please try again later',
     )
@@ -143,7 +143,7 @@ export const logout = createAsyncThunk<
 
     return userResponse
   } catch (error) {
-    const errorObject = handleErrors(
+    const errorObject = await handleErrors(
       error,
       'Logout failed, please try again later',
     )
@@ -162,7 +162,7 @@ export const updateUser = createAsyncThunk<
 
     return userResponse
   } catch (error) {
-    const errorObject = handleErrors(
+    const errorObject = await handleErrors(
       error,
       'User update failed, please try again later',
     )

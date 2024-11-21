@@ -1,7 +1,17 @@
+import { HTTPError } from 'ky'
 import { ParameterError } from './ParameterError'
 
-export function handleErrors(error: unknown, message: string): Error {
-  if (error instanceof ParameterError) {
+export async function handleErrors(
+  error: unknown,
+  message: string,
+): Promise<Error> {
+  if (error instanceof HTTPError) {
+    const errorResponse = (await error.response.json<{ error: string }>()) || {
+      error: 'Unknown error occurred',
+    }
+
+    return new Error(errorResponse.error, { cause: error })
+  } else if (error instanceof ParameterError) {
     return new Error(error.message, { cause: error })
   }
 

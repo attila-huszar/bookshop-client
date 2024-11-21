@@ -33,8 +33,8 @@ export function Login() {
           id: 'login-success',
         })
       })
-      .catch((error: Error) => {
-        toast.error(error.message, {
+      .catch((error: string) => {
+        toast.error(error, {
           id: 'login-error',
         })
       })

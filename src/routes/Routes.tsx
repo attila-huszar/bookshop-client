@@ -71,7 +71,7 @@ const routes: RouteObject[] = [
         element: <Cart />,
       },
       {
-        path: PATH.CLIENT.verify,
+        path: PATH.CLIENT.verification,
         element: <VerifyEmail />,
       },
       {
