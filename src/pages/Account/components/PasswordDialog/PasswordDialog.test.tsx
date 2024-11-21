@@ -4,11 +4,11 @@ import { userEvent } from '@testing-library/user-event'
 import { toast } from 'react-hot-toast'
 import { PasswordDialogRef } from './PasswordDialog'
 import { useAppDispatch } from '@/hooks'
-import { verifyPassword } from '@/api/users'
+import { postUserLogin } from '@/api/users'
 import { updateUser } from '@/store'
 
 vi.mock('@/api/users', () => ({
-  verifyPassword: vi.fn(),
+  postUserLogin: vi.fn(),
 }))
 
 vi.mock('@/store', () => ({
@@ -41,7 +41,10 @@ describe('PasswordDialog', () => {
   })
 
   it('should call verifyPassword and dispatch updateUser on successful password change, then close the dialog', async () => {
-    vi.mocked(verifyPassword).mockResolvedValue(true)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
     mockDispatch.mockResolvedValue(true)
 
     const { container } = render(<PasswordDialogRef email={email} />)
@@ -68,7 +71,7 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(verifyPassword).toHaveBeenCalledWith(email, 'oldPassword')
+      expect(postUserLogin).toHaveBeenCalledWith(email, 'oldPassword')
       expect(mockDispatch).toHaveBeenCalledWith(
         updateUser({ password: expect.any(String) as string }),
       )
@@ -77,7 +80,10 @@ describe('PasswordDialog', () => {
   })
 
   it('should show error if current password is invalid', async () => {
-    vi.mocked(verifyPassword).mockResolvedValue(false)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
 
     render(<PasswordDialogRef email={email} />)
 
@@ -101,7 +107,7 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(verifyPassword).toHaveBeenCalledWith(email, 'invalidPassword')
+      expect(postUserLogin).toHaveBeenCalledWith(email, 'invalidPassword')
     })
 
     expect(toast.error).toHaveBeenCalledWith('Current password invalid', {
@@ -110,7 +116,10 @@ describe('PasswordDialog', () => {
   })
 
   it('should show error if new password matches the current password', async () => {
-    vi.mocked(verifyPassword).mockResolvedValue(true)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
 
     render(<PasswordDialogRef email={email} />)
 

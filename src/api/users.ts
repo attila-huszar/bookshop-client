@@ -45,3 +45,27 @@ export const postUserLogout = async (): Promise<{ message: string }> => {
 export const patchUserProfile = async (fields: IUserUpdate): Promise<IUser> => {
   return authRequest.patch(PATH.SERVER.users.profile, { json: fields }).json()
 }
+
+export const postVerifyEmail = async (
+  token: string,
+): Promise<{ email: string }> => {
+  return baseRequest
+    .post(PATH.SERVER.users.verification, { json: { token } })
+    .json()
+}
+
+export const postPasswordReset = async (
+  email: string,
+): Promise<{ email: string }> => {
+  return baseRequest
+    .post(PATH.SERVER.users.passwordResetRequest, { json: { email } })
+    .json()
+}
+
+export const postVerifyPasswordReset = async (
+  token: string,
+): Promise<{ email: string }> => {
+  return baseRequest
+    .post(PATH.SERVER.users.passwordResetToken, { json: { token } })
+    .json()
+}

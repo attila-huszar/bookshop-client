@@ -6,6 +6,7 @@ import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
 import { forgotPasswordSchema } from '@/helpers'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { postPasswordReset } from '@/api/users'
 
 function ForgotPassword(
   _props: unknown,
@@ -29,13 +30,21 @@ function ForgotPassword(
     actions: { resetForm: () => void },
   ) => {
     try {
-      //const response = await postUserPasswordReset(values.email)
+      const resetResponse = await postPasswordReset(values.email)
       handleClose()
       actions.resetForm()
-      //toast.success(response)
+      toast.success(
+        `Email sent to ${resetResponse.email} with a link to reset your password`,
+        {
+          id: 'reset-req-success',
+        },
+      )
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
+        error instanceof Error ? error.message : 'Error sending reset request',
+        {
+          id: 'reset-req-error',
+        },
       )
     }
   }

@@ -52,9 +52,6 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-definitions': 'off',
       'prettier/prettier': 'warn',
     },
-    linterOptions: {
-      reportUnusedDisableDirectives: 'warn',
-    },
   },
   {
     files: ['src/**/*.test.{ts,tsx}'],
@@ -64,6 +61,10 @@ export default tseslint.config(
   {
     files: ['**/*.js'],
     ...tseslint.configs.disableTypeChecked,
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      'import/no-named-as-default-member': 'off',
+    },
   },
   {
     settings: {
@@ -81,6 +82,11 @@ export default tseslint.config(
           alwaysTryTypes: true,
         },
       },
+    },
+  },
+  {
+    linterOptions: {
+      reportUnusedDisableDirectives: 'warn',
     },
   },
   {

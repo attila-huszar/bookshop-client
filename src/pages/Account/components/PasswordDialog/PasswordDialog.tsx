@@ -9,13 +9,13 @@ import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.style'
 import { ButtonWrapper } from '@/styles/Form.style'
+import { postUserLogin } from '@/api/users'
+import { useAppDispatch } from '@/hooks'
+import { updateUser } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { passwordChangeInitialValues } from '@/constants'
 import { accountPasswordSchema } from '@/helpers'
-import { useAppDispatch } from '@/hooks'
-import { updateUser } from '@/store'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
-import { postUserLogin } from '@/api/users'
 
 function PasswordDialog(
   { email }: { email: string },
@@ -42,9 +42,9 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const isPasswordValid = await postUserLogin(email, values.currentPassword)
+    const user = await postUserLogin(email, values.currentPassword)
 
-    if (isPasswordValid.accessToken) {
+    if (user.accessToken) {
       if (values.currentPassword !== values.newPassword) {
         try {
           await dispatch(updateUser({ password: values.newPassword }))

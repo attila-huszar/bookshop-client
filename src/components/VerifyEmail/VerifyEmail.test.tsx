@@ -3,9 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { VerifyEmail } from './VerifyEmail'
+import { postVerifyEmail } from '@/api/users'
 
 vi.mock('@/api/users', () => ({
-  verifyEmail: vi.fn(),
+  postVerifyEmail: vi.fn(),
 }))
 
 describe('VerifyEmail Component', () => {
@@ -15,19 +16,21 @@ describe('VerifyEmail Component', () => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
   })
 
-  it('should call verifyEmail API and navigate to login on success', async () => {
+  it('should call postVerifyEmail API and navigate to login on success', async () => {
     vi.mocked(useLocation).mockReturnValue({
-      search: '?code=validCode',
+      search: '?token=validCode',
     } as unknown as ReturnType<typeof useLocation>)
 
-    vi.mocked(verifyEmail).mockResolvedValue('Verification successful')
+    vi.mocked(postVerifyEmail).mockResolvedValue({
+      email: expect.any(String) as string,
+    })
 
     render(<VerifyEmail />)
 
     await waitFor(() => {
-      expect(verifyEmail).toHaveBeenCalledWith('validCode')
+      expect(postVerifyEmail).toHaveBeenCalledWith('validCode')
 
-      expect(toast.success).toHaveBeenCalledWith('Verification successful', {
+      expect(toast.success).toHaveBeenCalledWith(/successfully verified/i, {
         id: 'verify-success',
       })
 
@@ -37,15 +40,17 @@ describe('VerifyEmail Component', () => {
 
   it('should show error and navigate to home on failure', async () => {
     vi.mocked(useLocation).mockReturnValue({
-      search: '?code=invalidCode',
+      search: '?token=invalidCode',
     } as unknown as ReturnType<typeof useLocation>)
 
-    vi.mocked(verifyEmail).mockRejectedValue(new Error('Verification failed'))
+    vi.mocked(postVerifyEmail).mockRejectedValue(
+      new Error('Verification failed'),
+    )
 
     render(<VerifyEmail />)
 
     await waitFor(() => {
-      expect(verifyEmail).toHaveBeenCalledWith('invalidCode')
+      expect(postVerifyEmail).toHaveBeenCalledWith('invalidCode')
 
       expect(toast.error).toHaveBeenCalledWith('Verification failed', {
         id: 'verify-error',
@@ -55,14 +60,14 @@ describe('VerifyEmail Component', () => {
     })
   })
 
-  it('should not call verifyEmail API if code is missing', () => {
+  it('should not call postVerifyEmail API if code is missing', () => {
     vi.mocked(useLocation).mockReturnValue({
       search: '',
     } as unknown as ReturnType<typeof useLocation>)
 
     render(<VerifyEmail />)
 
-    expect(verifyEmail).not.toHaveBeenCalled()
+    expect(postVerifyEmail).not.toHaveBeenCalled()
 
     expect(screen.getByText(/verifying/i)).toBeInTheDocument()
   })
