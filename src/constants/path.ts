@@ -1,11 +1,12 @@
 const users = 'users'
+const orders = 'orders'
 
 export const PATH = {
   SERVER: {
     books: 'books',
-    searchOptions: 'search_opts',
     authors: 'authors',
     news: 'news',
+    searchOptions: 'search_opts',
     users: {
       register: `${users}/register`,
       login: `${users}/login`,
@@ -16,9 +17,11 @@ export const PATH = {
       profile: `${users}/profile`,
       refresh: `${users}/refresh`,
     },
-    cart: 'cart',
-    checkout: 'checkout',
-    orders: 'orders',
+    orders: {
+      paymentIntent: `${orders}/payment-intent`,
+      create: `${orders}/create`,
+      update: `${orders}/update`,
+    },
   },
   CLIENT: {
     books: 'books',

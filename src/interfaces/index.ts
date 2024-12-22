@@ -21,8 +21,8 @@ export type { IFetchParams } from './IFetchParams'
 export type {
   IOrder,
   IOrderUpdate,
-  IStripePaymentIntent,
-  IStripeOrder,
-  ICreateOrder,
-  IRetrieveOrder,
+  IPostPaymentIntent,
+  IOrderInStore,
+  IGetPaymentIntent,
 } from './IOrder'
+export { OrderStatus } from './IOrder'

@@ -1,23 +1,49 @@
-import { api } from './'
+import { authRequest } from './'
 import { PATH } from '@/constants'
-import { handleErrors } from '@/errors'
-import { IOrderUpdate, ICreateOrder, IOrder } from '@/interfaces'
+import {
+  IPostPaymentIntent,
+  IOrder,
+  IOrderUpdate,
+  IGetPaymentIntent,
+} from '@/interfaces'
 
-export const postOrder = async (
-  orderData: ICreateOrder['orderToServer'],
-): Promise<void> => {
-  try {
-  } catch (error) {
-    throw handleErrors(error, 'Error creating order')
-  }
+export const postPaymentIntent = async ({
+  amount,
+  currency,
+  description,
+}: IPostPaymentIntent): Promise<{ clientSecret: string }> => {
+  return authRequest
+    .post(PATH.SERVER.orders.paymentIntent, {
+      json: { amount, currency, description },
+    })
+    .json()
+}
+
+export const getPaymentIntent = async (
+  paymentId: string,
+): Promise<IGetPaymentIntent> => {
+  return authRequest
+    .get(`${PATH.SERVER.orders.paymentIntent}/${paymentId}`)
+    .json()
+}
+
+export const postCreateOrder = async (
+  orderData: IOrder,
+): Promise<{ paymentId: string }> => {
+  return authRequest
+    .post(PATH.SERVER.orders.create, {
+      json: orderData,
+    })
+    .json()
 }
 
 export const updateOrder = async ({
   paymentId,
   fields,
-}: IOrderUpdate): Promise<void> => {
-  try {
-  } catch (error) {
-    throw handleErrors(error, 'Error updating order')
-  }
+}: IOrderUpdate): Promise<IOrder> => {
+  return authRequest
+    .post(PATH.SERVER.orders.update, {
+      json: { paymentId, fields },
+    })
+    .json()
 }

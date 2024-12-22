@@ -8,7 +8,7 @@ import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
 import { orderCreate } from '@/store'
 import { PATH } from '@/constants'
 import { Providers } from '@/setupTests'
-import { ICart, ICreateOrder } from '@/interfaces'
+import { ICart, IOrder, IPostPaymentIntent } from '@/interfaces'
 
 vi.mock('@/store', () => ({
   cartSelector: vi.fn(),
@@ -111,8 +111,8 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
-          orderToStripe: expect.any(Object) as ICreateOrder['orderToStripe'],
-          orderToServer: expect.any(Object) as ICreateOrder['orderToServer'],
+          orderToStripe: expect.any(Object) as IPostPaymentIntent,
+          orderToServer: expect.any(Object) as IOrder,
         }),
       )
     })

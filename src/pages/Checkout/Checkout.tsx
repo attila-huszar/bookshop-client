@@ -14,7 +14,7 @@ const stripePromise = loadStripe(stripeKey)
 const loader = 'auto'
 
 export function Checkout() {
-  const { orderStatus, orderIsLoading, orderRetrieveError } =
+  const { order, orderIsLoading, orderRetrieveError } =
     useAppSelector(orderSelector)
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -30,7 +30,7 @@ export function Checkout() {
   )
 
   const options: StripeElementsOptions = {
-    clientSecret: orderStatus?.clientSecret,
+    clientSecret: order?.clientSecret,
     appearance: { theme: 'flat', variables: {} },
     loader,
   }
@@ -44,7 +44,7 @@ export function Checkout() {
       return <PaymentStatus />
     }
 
-    if (orderStatus) {
+    if (order) {
       return (
         <>
           <AddressForm />
@@ -65,10 +65,7 @@ export function Checkout() {
 
   return (
     <StyledCheckout>
-      <Elements
-        options={options}
-        stripe={stripePromise}
-        key={orderStatus?.paymentId}>
+      <Elements options={options} stripe={stripePromise} key={order?.paymentId}>
         {renderCheckout()}
       </Elements>
     </StyledCheckout>

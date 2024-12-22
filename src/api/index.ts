@@ -1,3 +1,4 @@
+export { baseRequest, authRequest } from './api'
 export { getAuthorById, getAuthorsBySearch } from './authors'
 export {
   getBooks,
@@ -8,5 +9,9 @@ export {
   getBookSearchOptions,
 } from './books'
 export { getNews } from './news'
-export { postOrder, updateOrder } from './orders'
-export { baseRequest, authRequest } from './api'
+export {
+  postPaymentIntent,
+  getPaymentIntent,
+  postCreateOrder,
+  updateOrder,
+} from './orders'

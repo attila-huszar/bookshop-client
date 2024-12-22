@@ -6,7 +6,7 @@ import { orderSelector } from '@/store'
 import { PATH } from '@/constants'
 
 export function BasketButton() {
-  const { orderStatus } = useAppSelector(orderSelector)
+  const { order } = useAppSelector(orderSelector)
   const { cartArray } = useCart()
   const navigate = useNavigate()
 
@@ -16,8 +16,8 @@ export function BasketButton() {
         onClick={() => navigate(`/${PATH.CLIENT.cart}`)}
         $size="sm"
         $withCart
-        title={orderStatus ? 'Checkout' : 'Basket'}>
-        {orderStatus ? 'Checkout' : 'Basket'}
+        title={order ? 'Checkout' : 'Basket'}>
+        {order ? 'Checkout' : 'Basket'}
       </Button>
       {cartArray?.length ? (
         <CartItemCount>

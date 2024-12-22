@@ -1,4 +1,4 @@
-import { IBook, IAuthor, INews, ICart, IFilter, IStripeOrder, IUser } from './'
+import { IBook, IAuthor, INews, ICart, IFilter, IUser, IOrderInStore } from './'
 
 export interface IStateBook {
   booksInShop: IBook[]
@@ -48,7 +48,7 @@ export interface IStateCart {
 }
 
 export interface IStateOrder {
-  orderStatus: IStripeOrder | null
+  order: IOrderInStore | null
   orderIsLoading: boolean
   orderCreateError: string | undefined
   orderRetrieveError: string | undefined

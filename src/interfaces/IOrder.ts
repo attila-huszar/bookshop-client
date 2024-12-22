@@ -1,18 +1,24 @@
 import { PaymentIntent, type Address } from '@stripe/stripe-js'
 
+export enum OrderStatus {
+  Pending = 'PENDING',
+  Paid = 'PAID',
+  Cancelled = 'CANCELLED',
+}
+
 export interface IOrder {
-  id?: number
   paymentId: string
-  orderStatus: 'pending' | 'paid' | 'cancelled'
+  paymentIntentStatus: PaymentIntent.Status
+  orderStatus: OrderStatus
   orderTotal: number
   orderCurrency: string
   orderItems: IOrderItem[]
-  userName: string | null
-  userEmail: string | null
-  userPhone: string | null
-  userAddress: Address
-  orderCreatedAt: Date
-  orderUpdatedAt: Date
+  userName?: string | null
+  userFirstName?: string
+  userLastName?: string
+  userEmail?: string | null
+  userPhone?: string | null
+  userAddress?: Address
 }
 
 export interface IOrderItem {
@@ -23,39 +29,27 @@ export interface IOrderItem {
   quantity: number
 }
 
-export interface IOrderUpdate {
-  paymentId: string
-  fields: Partial<IOrder>
-}
-
-export interface IStripePaymentIntent {
-  amount: number
-  currency: string
-  description: string
-}
-
-export interface IStripeOrder {
+export interface IOrderInStore {
   intent: PaymentIntent.Status
+  status: OrderStatus
   paymentId: string
   clientSecret?: string
   amount: number
   currency: string
 }
 
-export interface ICreateOrder {
-  orderToStripe: IStripePaymentIntent
-  orderToServer: Pick<
-    IOrder,
-    | 'paymentId'
-    | 'orderStatus'
-    | 'orderTotal'
-    | 'orderCurrency'
-    | 'orderItems'
-    | 'orderCreatedAt'
-  >
+export interface IOrderUpdate {
+  paymentId: string
+  fields: Partial<IOrder>
 }
 
-export interface IRetrieveOrder {
+export interface IPostPaymentIntent {
+  amount: number
+  currency: string
+  description: string
+}
+
+export interface IGetPaymentIntent {
   client_secret: string
   amount: number
   currency: string

@@ -18,10 +18,7 @@ export const postUserLogin = async (
   password: string,
 ): Promise<{ accessToken: string; firstName: string }> => {
   return baseRequest
-    .post<{
-      accessToken: string
-      firstName: string
-    }>(PATH.SERVER.users.login, { json: { email, password } })
+    .post(PATH.SERVER.users.login, { json: { email, password } })
     .json()
 }
 

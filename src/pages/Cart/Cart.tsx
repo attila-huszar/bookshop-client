@@ -14,6 +14,7 @@ import {
   orderClear,
   orderCreate,
   orderSelector,
+  userSelector,
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import {
@@ -33,7 +34,7 @@ import {
 } from './Cart.style'
 import { PATH } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
-import { ICart, ICreateOrder } from '@/interfaces'
+import { ICart, IPostPaymentIntent, IOrder, OrderStatus } from '@/interfaces'
 import AddQuantityIcon from '@/assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
@@ -51,7 +52,7 @@ const calculateTotalAmount = (cartArray: ICart[]): number => {
 const createPaymentData = (
   amount: number,
   currency: string,
-): ICreateOrder['orderToStripe'] => {
+): IPostPaymentIntent => {
   return {
     amount: Math.round(amount * 100),
     currency,
@@ -69,16 +70,17 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
-  const { orderStatus, orderIsLoading, orderCreateError } =
+  const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
+  const { userData } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (orderStatus?.clientSecret) {
+    if (order?.clientSecret) {
       navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
     }
-  }, [orderStatus?.clientSecret, navigate])
+  }, [order?.clientSecret, navigate])
 
   useEffect(() => {
     if (orderIsLoading) {
@@ -128,14 +130,20 @@ export function Cart() {
       const total = calculateTotalAmount(cartArray)
       const currency = 'usd'
       const orderToStripe = createPaymentData(total, currency)
+      const { firstName, lastName, email, phone, address } = { ...userData }
 
-      const orderToServer: ICreateOrder['orderToServer'] = {
+      const orderToServer: IOrder = {
         paymentId: '',
-        orderStatus: 'pending',
+        paymentIntentStatus: 'processing',
+        orderStatus: OrderStatus.Pending,
+        userFirstName: firstName,
+        userLastName: lastName,
+        userEmail: email,
+        userPhone: phone,
+        userAddress: address,
         orderTotal: Number(total.toFixed(2)),
         orderCurrency: currency,
         orderItems: cartArray,
-        orderCreatedAt: new Date(),
       }
 
       void dispatch(orderCreate({ orderToStripe, orderToServer }))

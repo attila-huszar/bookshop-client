@@ -6,6 +6,7 @@ import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
 import { useAppDispatch } from '@/hooks'
 import { cartClear, orderClear } from '@/store'
 import logo from '@/assets/image/logo.png'
+import { OrderStatus } from '@/interfaces'
 
 export function PaymentStatus() {
   const stripe = useStripe()
@@ -38,7 +39,7 @@ export function PaymentStatus() {
             void updateOrder({
               paymentId: paymentIntent.id,
               fields: {
-                orderStatus: 'paid',
+                orderStatus: OrderStatus.Paid,
                 userName: paymentIntent.shipping?.name,
                 userEmail: paymentIntent.receipt_email,
                 userPhone: paymentIntent.shipping?.phone,

@@ -15,7 +15,7 @@ export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { orderStatus } = useAppSelector(orderSelector)
+  const { order: orderStatus } = useAppSelector(orderSelector)
   const [message, setMessage] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [emailInput, setEmailInput] = useState('')
