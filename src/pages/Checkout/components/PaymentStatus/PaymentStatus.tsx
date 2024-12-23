@@ -5,8 +5,8 @@ import { updateOrder } from '@/api'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
 import { useAppDispatch } from '@/hooks'
 import { cartClear, orderClear } from '@/store'
+import { OrderStatus } from '@/types'
 import logo from '@/assets/image/logo.png'
-import { OrderStatus } from '@/interfaces'
 
 export function PaymentStatus() {
   const stripe = useStripe()

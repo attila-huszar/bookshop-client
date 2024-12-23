@@ -34,14 +34,15 @@ import {
 } from './Cart.style'
 import { PATH } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
-import { ICart, IPostPaymentIntent, IOrder, OrderStatus } from '@/interfaces'
+import { OrderStatus } from '@/types'
+import type { Cart, PostPaymentIntent, Order } from '@/types'
 import AddQuantityIcon from '@/assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
 import CartEmptyIcon from '@/assets/svg/cart_empty.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
-const calculateTotalAmount = (cartArray: ICart[]): number => {
+const calculateTotalAmount = (cartArray: Cart[]): number => {
   return cartArray.reduce(
     (total, item) =>
       total + (item.price - (item.price * item.discount) / 100) * item.quantity,
@@ -52,7 +53,7 @@ const calculateTotalAmount = (cartArray: ICart[]): number => {
 const createPaymentData = (
   amount: number,
   currency: string,
-): IPostPaymentIntent => {
+): PostPaymentIntent => {
   return {
     amount: Math.round(amount * 100),
     currency,
@@ -105,20 +106,20 @@ export function Cart() {
   const subtotal = calcSubtotalOrDiscount(cartArray, 'subtotal')
   const discount = calcSubtotalOrDiscount(cartArray, 'discount')
 
-  const handleRemoveQuantity = (item: ICart) => {
+  const handleRemoveQuantity = (item: Cart) => {
     if (item.quantity > 0) {
       removeQuantity(item)
     }
   }
 
-  const handleAddQuantity = (item: ICart) => {
+  const handleAddQuantity = (item: Cart) => {
     if (item.quantity < 50) {
       addQuantity(item)
     }
   }
 
   const handleSetQuantity = (
-    cartItem: ICart,
+    cartItem: Cart,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const newQuantity = enforceMinMax(event.target)
@@ -132,7 +133,7 @@ export function Cart() {
       const orderToStripe = createPaymentData(total, currency)
       const { firstName, lastName, email, phone, address } = { ...userData }
 
-      const orderToServer: IOrder = {
+      const orderToServer: Order = {
         paymentId: '',
         paymentIntentStatus: 'processing',
         orderStatus: OrderStatus.Pending,
@@ -168,7 +169,7 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          {cartArray.map((item: ICart) => (
+          {cartArray.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
                 <Link to={`/${PATH.CLIENT.books}/${item.id}`}>

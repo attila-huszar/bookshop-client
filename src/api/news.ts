@@ -1,9 +1,9 @@
 import { baseRequest } from './'
 import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
-import { INews } from '@/interfaces'
+import type { News } from '@/types'
 
-export const getNews = async (): Promise<INews[]> => {
+export const getNews = async (): Promise<News[]> => {
   try {
     return baseRequest.get(PATH.SERVER.news).json()
   } catch (error) {

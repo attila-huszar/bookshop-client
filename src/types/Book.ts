@@ -1,4 +1,4 @@
-export interface IBook {
+export type Book = {
   id: number
   title: string
   author: number | string

@@ -9,7 +9,7 @@ import {
   cartClear,
 } from './cartSlice'
 import { orderClear, orderCreate } from './orderSlice'
-import { ICart, ILocalCart } from '@/interfaces'
+import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
 
@@ -29,15 +29,15 @@ cartToLocalStorageTyped({
   ),
   effect: (action) => {
     if (action.payload) {
-      const cartFromLocalStorage: ILocalCart[] = JSON.parse(
+      const cartFromLocalStorage: CartLocalStorage[] = JSON.parse(
         localStorage.getItem('cart') ?? '[]',
-      ) as ILocalCart[]
+      ) as CartLocalStorage[]
 
-      let cartToLocalStorage: ILocalCart[] = []
+      let cartToLocalStorage: CartLocalStorage[] = []
 
-      const payload = action.payload as ICart
+      const payload = action.payload as Cart
       const { cartItem, newQuantity } = payload as unknown as {
-        cartItem: ICart
+        cartItem: Cart
         newQuantity: number
       }
 

@@ -26,13 +26,13 @@ import {
   fetchBooksBySearch,
 } from '@/store'
 import { PATH } from '@/constants'
-import { IAuthor, IBook } from '@/interfaces'
+import type { Author, Book } from '@/types'
 import LinkIcon from '@/assets/svg/link.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
-  const [searchResults, setSearchResults] = useState<IBook[]>([])
+  const [searchResults, setSearchResults] = useState<Book[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useAppDispatch()
@@ -44,8 +44,8 @@ export function Search() {
 
   async function getSearchResults(searchString: string) {
     if (searchString.length > 1) {
-      let booksSearched: IBook[] = []
-      let authorsSearched: IAuthor[] = []
+      let booksSearched: Book[] = []
+      let authorsSearched: Author[] = []
 
       const booksSearchResponse = await dispatch(
         fetchBooksBySearch(searchString),
@@ -56,11 +56,11 @@ export function Search() {
       )
 
       if (booksSearchResponse.payload) {
-        booksSearched = booksSearchResponse.payload as IBook[]
+        booksSearched = booksSearchResponse.payload as Book[]
       }
 
       if (authorsSearchResponse.payload) {
-        authorsSearched = authorsSearchResponse.payload as IAuthor[]
+        authorsSearched = authorsSearchResponse.payload as Author[]
       }
 
       if (authorsSearched.length) {
@@ -72,7 +72,7 @@ export function Search() {
 
         authorsMatched.forEach((book) => {
           if (book.status === 'fulfilled') {
-            const newBooks = book.value.payload as IBook[]
+            const newBooks = book.value.payload as Book[]
             newBooks.forEach((newBook) => {
               const exists = booksSearched.some(
                 (existingBook) => existingBook.id === newBook.id,
@@ -121,7 +121,7 @@ export function Search() {
 
   const getAuthorName = (
     authorNameOrId: string | number,
-    authorArray: IAuthor[],
+    authorArray: Author[],
   ) => {
     if (typeof authorNameOrId === 'number') {
       const author = authorArray?.find((author) => author.id === authorNameOrId)

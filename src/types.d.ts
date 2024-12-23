@@ -1,1 +1,0 @@
-type Toast = string

@@ -1,4 +1,4 @@
-export interface IAuthor {
+export type Author = {
   id: number
   name: string
   fullName: string

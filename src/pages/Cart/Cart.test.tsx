@@ -8,7 +8,7 @@ import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
 import { orderCreate } from '@/store'
 import { PATH } from '@/constants'
 import { Providers } from '@/setupTests'
-import { ICart, IOrder, IPostPaymentIntent } from '@/interfaces'
+import type { Cart as CartType, Order, PostPaymentIntent } from '@/types'
 
 vi.mock('@/store', () => ({
   cartSelector: vi.fn(),
@@ -65,7 +65,7 @@ describe('Cart component', () => {
 
   it('should display empty cart message when cart is empty', async () => {
     vi.mocked(useCart).mockReturnValueOnce({
-      cartArray: [] as ICart[],
+      cartArray: [] as CartType[],
     } as ReturnType<typeof useCart>)
 
     render(<Cart />, { wrapper: Providers })
@@ -111,8 +111,8 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
-          orderToStripe: expect.any(Object) as IPostPaymentIntent,
-          orderToServer: expect.any(Object) as IOrder,
+          orderToStripe: expect.any(Object) as PostPaymentIntent,
+          orderToServer: expect.any(Object) as Order,
         }),
       )
     })

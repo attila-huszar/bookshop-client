@@ -1,9 +1,9 @@
 import { baseRequest } from './'
 import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
-import { IAuthor } from '@/interfaces'
+import type { Author } from '@/types'
 
-export const getAuthorById = (id: number): Promise<IAuthor> => {
+export const getAuthorById = (id: number): Promise<Author> => {
   try {
     return baseRequest.get(`${PATH.SERVER.authors}/${id}`).json()
   } catch (error) {
@@ -11,9 +11,7 @@ export const getAuthorById = (id: number): Promise<IAuthor> => {
   }
 }
 
-export const getAuthorsBySearch = (
-  searchString: string,
-): Promise<IAuthor[]> => {
+export const getAuthorsBySearch = (searchString: string): Promise<Author[]> => {
   try {
     return baseRequest.get(`${PATH.SERVER.authors}?name=${searchString}`).json()
   } catch (error) {

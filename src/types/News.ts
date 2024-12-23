@@ -1,4 +1,4 @@
-export interface INews {
+export type News = {
   id: number
   title: string
   content: string

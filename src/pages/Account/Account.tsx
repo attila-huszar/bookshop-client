@@ -18,7 +18,7 @@ import { userSelector, updateUser } from '@/store'
 import { uploadImage } from '@/services'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
-import { IUser } from '@/interfaces'
+import type { User } from '@/types'
 import EditIcon from '@/assets/svg/edit.svg?react'
 
 export function Account() {
@@ -29,11 +29,11 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<IUser>) => {
+  const handleBasicInfoSubmit = (values: Partial<User>) => {
     void dispatch(updateUser({ ...values }))
   }
 
-  const handleAddressInfoSubmit = (values: IUser['address']) => {
+  const handleAddressInfoSubmit = (values: User['address']) => {
     void dispatch(updateUser({ address: values }))
   }
 

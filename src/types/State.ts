@@ -1,38 +1,46 @@
-import { IBook, IAuthor, INews, ICart, IFilter, IUser, IOrderInStore } from './'
+import type {
+  Book,
+  Author,
+  News,
+  Cart,
+  FilterProps,
+  User,
+  OrderInStore,
+} from './'
 
-export interface IStateBook {
-  booksInShop: IBook[]
-  booksViewed: IBook[]
+export type BookState = {
+  booksInShop: Book[]
+  booksViewed: Book[]
   booksTotal: number
   booksCurrentPage: number
   booksPerPage: number
   bookIsLoading: boolean
   booksAreLoading: boolean
   booksError: string | undefined
-  booksRecommended: IBook[]
-  booksTopSellers: IBook[]
-  booksReleases: IBook[]
+  booksRecommended: Book[]
+  booksTopSellers: Book[]
+  booksReleases: Book[]
   booksFilters: {
-    initial: IFilter
-    active: IFilter
+    initial: FilterProps
+    active: FilterProps
   }
 }
 
-export interface IStateAuthor {
-  authorArray: IAuthor[]
+export type AuthorState = {
+  authorArray: Author[]
   authorIsLoading: boolean
   authorError: string | undefined
 }
 
-export interface IStateNews {
-  newsArray: INews[]
+export type NewsState = {
+  newsArray: News[]
   newsIsLoading: boolean
   newsError: string | undefined
 }
 
-export interface IStateUser {
+export type UserState = {
   accessToken: string | null
-  userData: IUser | null
+  userData: User | null
   userIsLoading: boolean
   userIsUpdating: boolean
   tokenError: string | undefined
@@ -41,14 +49,14 @@ export interface IStateUser {
   registerError: string | undefined
 }
 
-export interface IStateCart {
-  cartArray: ICart[]
+export type CartState = {
+  cartArray: Cart[]
   cartIsLoading: boolean
   cartError: string | undefined
 }
 
-export interface IStateOrder {
-  order: IOrderInStore | null
+export type OrderState = {
+  order: OrderInStore | null
   orderIsLoading: boolean
   orderCreateError: string | undefined
   orderRetrieveError: string | undefined

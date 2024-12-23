@@ -13,7 +13,7 @@ import {
 } from '@/components'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
-import { IUser } from '@/interfaces'
+import type { UserRegister } from '@/types'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
@@ -31,7 +31,7 @@ export function Registration() {
     password: string
     avatar: File | undefined
   }) => {
-    const user: IUser & { password: string } = {
+    const user: UserRegister = {
       firstName: values.firstName,
       lastName: values.lastName,
       email: values.email,

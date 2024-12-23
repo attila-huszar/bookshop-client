@@ -1,7 +1,7 @@
 import { baseRequest } from './'
 import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
-import { IBook, IFilter, IFilterActive } from '@/interfaces'
+import type { Book, FilterProps, FilterActive } from '@/types'
 
 export const getBooks = async ({
   currentPage,
@@ -10,9 +10,9 @@ export const getBooks = async ({
 }: {
   currentPage: number
   itemsPerPage: number
-  criteria?: IFilterActive
+  criteria?: FilterActive
 }): Promise<{
-  books: IBook[]
+  books: Book[]
   total: number
 }> => {
   try {
@@ -51,7 +51,7 @@ export const getBooks = async ({
       params.append('rating_gte', `${criteria.rating}`)
     }
 
-    const booksResponse = await baseRequest.get<IBook[]>(
+    const booksResponse = await baseRequest.get<Book[]>(
       `${PATH.SERVER.books}?${params}`,
     )
 
@@ -67,7 +67,7 @@ export const getBooks = async ({
   }
 }
 
-export const getBookById = (id: number): Promise<IBook> => {
+export const getBookById = (id: number): Promise<Book> => {
   try {
     return baseRequest.get(`${PATH.SERVER.books}/${id}`).json()
   } catch (error) {
@@ -77,7 +77,7 @@ export const getBookById = (id: number): Promise<IBook> => {
 
 export const getBooksByProperty = (
   property: 'newRelease' | 'topSellers',
-): Promise<IBook[]> => {
+): Promise<Book[]> => {
   try {
     return baseRequest.get(`${PATH.SERVER.books}?${property}=true`).json()
   } catch (error) {
@@ -85,7 +85,7 @@ export const getBooksByProperty = (
   }
 }
 
-export const getBooksBySearch = (searchString: string): Promise<IBook[]> => {
+export const getBooksBySearch = (searchString: string): Promise<Book[]> => {
   try {
     return baseRequest.get(`${PATH.SERVER.books}?title=${searchString}`).json()
   } catch (error) {
@@ -93,7 +93,7 @@ export const getBooksBySearch = (searchString: string): Promise<IBook[]> => {
   }
 }
 
-export const getBooksByAuthor = (id: number): Promise<IBook[]> => {
+export const getBooksByAuthor = (id: number): Promise<Book[]> => {
   try {
     return baseRequest.get(`${PATH.SERVER.books}?authorId=${id}`).json()
   } catch (error) {
@@ -102,7 +102,7 @@ export const getBooksByAuthor = (id: number): Promise<IBook[]> => {
 }
 
 export const getBookSearchOptions = (): Promise<
-  Pick<IFilter, 'genre' | 'price' | 'publishYear'>
+  Pick<FilterProps, 'genre' | 'price' | 'publishYear'>
 > => {
   try {
     return baseRequest.get(`${PATH.SERVER.searchOptions}`).json()

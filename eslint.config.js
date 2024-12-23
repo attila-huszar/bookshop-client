@@ -45,11 +45,12 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/consistent-type-definitions': ['warn', 'type'],
       'prettier/prettier': 'warn',
     },
   },

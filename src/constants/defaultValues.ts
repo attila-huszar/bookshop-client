@@ -1,4 +1,4 @@
-import { IFilter } from '@/interfaces'
+import type { FilterProps } from '@/types'
 
 export const loginInitialValues = {
   email: '',
@@ -26,7 +26,7 @@ export const passwordResetInitialValues = {
 }
 
 export const discountOptions: {
-  value: IFilter['discount']
+  value: FilterProps['discount']
   label: string
 }[] = [
   { value: 'allBooks', label: 'All Books' },
@@ -34,7 +34,7 @@ export const discountOptions: {
   { value: 'fullPriceOnly', label: 'Full Price Books' },
 ]
 
-export const filterInitialValues: IFilter = {
+export const filterInitialValues: FilterProps = {
   genre: [],
   price: [],
   discount: discountOptions[0].value,

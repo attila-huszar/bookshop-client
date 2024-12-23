@@ -1,7 +1,7 @@
 import { StyledNewsCard, Details, ImageWrap } from './NewsCard.style'
-import { INews } from '@/interfaces'
+import type { News } from '@/types'
 
-export function NewsCard({ title, content, img }: INews) {
+export function NewsCard({ title, content, img }: News) {
   return (
     <StyledNewsCard>
       <Details>

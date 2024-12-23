@@ -1,4 +1,4 @@
-export interface ICart {
+export type Cart = {
   id: number
   quantity: number
   title: string
@@ -7,7 +7,7 @@ export interface ICart {
   imgUrl: string
 }
 
-export interface ILocalCart {
+export type CartLocalStorage = {
   id: number
   quantity: number
 }

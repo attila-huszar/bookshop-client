@@ -1,4 +1,4 @@
-export interface IFilter {
+export type FilterProps = {
   genre: string[]
   price: number[]
   discount: 'allBooks' | 'discountOnly' | 'fullPriceOnly'
@@ -8,7 +8,7 @@ export interface IFilter {
 
 type Rating = 0.5 | 1.5 | 2.5 | 3.5 | 4.5
 
-export interface IFilterActive extends Omit<IFilter, 'price' | 'publishYear'> {
+export type FilterActive = Omit<FilterProps, 'price' | 'publishYear'> & {
   priceMin: number | null
   priceMax: number | null
   publishYearMin: number | null

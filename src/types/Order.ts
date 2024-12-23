@@ -6,13 +6,13 @@ export enum OrderStatus {
   Cancelled = 'CANCELLED',
 }
 
-export interface IOrder {
+export type Order = {
   paymentId: string
   paymentIntentStatus: PaymentIntent.Status
   orderStatus: OrderStatus
   orderTotal: number
   orderCurrency: string
-  orderItems: IOrderItem[]
+  orderItems: OrderItem[]
   userName?: string | null
   userFirstName?: string
   userLastName?: string
@@ -21,7 +21,7 @@ export interface IOrder {
   userAddress?: Address
 }
 
-export interface IOrderItem {
+export type OrderItem = {
   id: number
   title: string
   price: number
@@ -29,7 +29,7 @@ export interface IOrderItem {
   quantity: number
 }
 
-export interface IOrderInStore {
+export type OrderInStore = {
   intent: PaymentIntent.Status
   status: OrderStatus
   paymentId: string
@@ -38,18 +38,18 @@ export interface IOrderInStore {
   currency: string
 }
 
-export interface IOrderUpdate {
+export type OrderUpdate = {
   paymentId: string
-  fields: Partial<IOrder>
+  fields: Partial<Order>
 }
 
-export interface IPostPaymentIntent {
+export type PostPaymentIntent = {
   amount: number
   currency: string
   description: string
 }
 
-export interface IGetPaymentIntent {
+export type GetPaymentIntent = {
   client_secret: string
   amount: number
   currency: string

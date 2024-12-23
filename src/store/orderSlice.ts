@@ -1,13 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import {
-  IStateOrder,
-  IPostPaymentIntent,
-  IOrder,
-  OrderStatus,
-} from '@/interfaces'
 import { getPaymentIntent, postCreateOrder, postPaymentIntent } from '@/api'
+import { OrderStatus } from '@/types'
+import type { OrderState, PostPaymentIntent, Order } from '@/types'
 
-const initialState: IStateOrder = {
+const initialState: OrderState = {
   order: null,
   orderIsLoading: false,
   orderCreateError: undefined,
@@ -74,8 +70,8 @@ const orderSlice = createSlice({
 export const orderCreate = createAsyncThunk(
   'orderCreate',
   async (order: {
-    orderToStripe: IPostPaymentIntent
-    orderToServer: IOrder
+    orderToStripe: PostPaymentIntent
+    orderToServer: Order
   }): Promise<{
     clientSecret: string
     paymentId: string

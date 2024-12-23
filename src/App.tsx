@@ -10,8 +10,9 @@ import {
   fetchCartItems,
   fetchAuthTokens,
   fetchUserProfile,
+  orderRetrieve,
 } from '@/store'
-import { ILocalCart } from '@/interfaces'
+import type { CartLocalStorage } from '@/types'
 import GlobalStyle from '@/styles/Global.style'
 
 function App() {
@@ -35,14 +36,14 @@ function App() {
   }, [dispatch, accessToken])
 
   useEffect(() => {
-    const cart = getFromLocalStorage<ILocalCart[]>('cart')
+    const cart = getFromLocalStorage<CartLocalStorage[]>('cart')
     if (cart) {
       void dispatch(fetchCartItems(cart))
     }
 
     const paymentId = getFromLocalStorage<string>('paymentId')
     if (paymentId) {
-      //void dispatch(orderRetrieve(paymentId))
+      void dispatch(orderRetrieve(paymentId))
     }
   }, [dispatch, getFromLocalStorage])
 

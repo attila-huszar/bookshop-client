@@ -3,10 +3,10 @@ import { StyledCard, Details, Image, Title, Description } from './Card.style'
 import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'
 import { PATH } from '@/constants'
-import { IBook } from '@/interfaces'
+import type { Book } from '@/types'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
-export function Card({ book }: { book: IBook }) {
+export function Card({ book }: { book: Book }) {
   const navigate = useNavigate()
   const { cartArray, addToCart } = useCart()
   const isBookInCart = cartArray.some((item) => item.id === book.id)

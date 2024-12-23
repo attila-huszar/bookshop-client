@@ -5,9 +5,9 @@ import {
   Breadcrumb,
   DetailsSection,
   ImageWrapper,
+  BookTitle,
+  BookAuthor,
   Description,
-  Title,
-  Author,
   ButtonWrapper,
 } from './Product.style'
 import { useAppSelector, useAppDispatch, useCart } from '@/hooks'
@@ -20,7 +20,7 @@ import {
 } from '@/store'
 import { Button, Error, Price, Recommended } from '@/components'
 import { PATH } from '@/constants'
-import { IAuthor, IBook } from '@/interfaces'
+import type { Author, Book } from '@/types'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Product() {
@@ -29,8 +29,8 @@ export function Product() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
-  const author: IAuthor | undefined = useAppSelector(
+  const book: Book | undefined = useAppSelector(bookByIdSelector(id!))
+  const author: Author | undefined = useAppSelector(
     authorByIdSelector(typeof book?.author === 'number' ? book.author : null),
   )
 
@@ -51,7 +51,7 @@ export function Product() {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleCartAction = (book: IBook) => {
+  const handleCartAction = (book: Book) => {
     if (isBookInCart) {
       navigate(`/${PATH.CLIENT.cart}`)
     } else {
@@ -87,14 +87,14 @@ export function Product() {
                 width="100%"
               />
             </ImageWrapper>
-            <Title>{book.title}</Title>
-            <Author>
+            <BookTitle>{book.title}</BookTitle>
+            <BookAuthor>
               {typeof book.author === 'string'
                 ? book.author
                 : author
                   ? author.name
                   : authorError}
-            </Author>
+            </BookAuthor>
             <Price
               component="product"
               price={book.price}

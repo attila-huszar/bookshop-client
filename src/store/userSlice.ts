@@ -6,10 +6,10 @@ import {
   postUserLogout,
   patchUserProfile,
 } from '@/api/users'
-import { IUserUpdate, IStateUser, IUser } from '@/interfaces'
 import { handleErrors } from '@/errors'
+import type { UserUpdate, UserState, User } from '@/types'
 
-const initialState: IStateUser = {
+const initialState: UserState = {
   accessToken: null,
   userData: null,
   userIsLoading: false,
@@ -82,42 +82,40 @@ const userSlice = createSlice({
   },
 })
 
-export const fetchAuthTokens = createAsyncThunk<
-  string,
-  void,
-  { rejectValue: string }
->('fetchAuthTokens', async (_, { rejectWithValue }) => {
-  try {
-    const { accessToken } = await retrieveAuthTokens()
+export const fetchAuthTokens = createAsyncThunk<string, void, RejectValue>(
+  'fetchAuthTokens',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { accessToken } = await retrieveAuthTokens()
 
-    return accessToken
-  } catch (error) {
-    const errorObject = handleErrors(error, 'Unable to get auth tokens')
+      return accessToken
+    } catch (error) {
+      const errorObject = handleErrors(error, 'Unable to get auth tokens')
 
-    return rejectWithValue(errorObject.message)
-  }
-})
+      return rejectWithValue(errorObject.message)
+    }
+  },
+)
 
-export const fetchUserProfile = createAsyncThunk<
-  IUser,
-  void,
-  { rejectValue: string }
->('fetchUserProfile', async (_, { rejectWithValue }) => {
-  try {
-    const userResponse = await getUserProfile()
+export const fetchUserProfile = createAsyncThunk<User, void, RejectValue>(
+  'fetchUserProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      const userResponse = await getUserProfile()
 
-    return userResponse
-  } catch (error) {
-    const errorObject = handleErrors(error, 'Unable to get user profile')
+      return userResponse
+    } catch (error) {
+      const errorObject = handleErrors(error, 'Unable to get user profile')
 
-    return rejectWithValue(errorObject.message)
-  }
-})
+      return rejectWithValue(errorObject.message)
+    }
+  },
+)
 
 export const login = createAsyncThunk<
   { accessToken: string; firstName: string },
   { email: string; password: string },
-  { rejectValue: string }
+  RejectValue
 >('login', async (user, { rejectWithValue }) => {
   try {
     const userResponse = await postUserLogin(user.email, user.password)
@@ -133,42 +131,40 @@ export const login = createAsyncThunk<
   }
 })
 
-export const logout = createAsyncThunk<
-  { message: string },
-  void,
-  { rejectValue: string }
->('authLogout', async (_, { rejectWithValue }) => {
-  try {
-    const userResponse = await postUserLogout()
+export const logout = createAsyncThunk<{ message: string }, void, RejectValue>(
+  'authLogout',
+  async (_, { rejectWithValue }) => {
+    try {
+      const userResponse = await postUserLogout()
 
-    return userResponse
-  } catch (error) {
-    const errorObject = handleErrors(
-      error,
-      'Logout failed, please try again later',
-    )
+      return userResponse
+    } catch (error) {
+      const errorObject = handleErrors(
+        error,
+        'Logout failed, please try again later',
+      )
 
-    return rejectWithValue(errorObject.message)
-  }
-})
+      return rejectWithValue(errorObject.message)
+    }
+  },
+)
 
-export const updateUser = createAsyncThunk<
-  IUser,
-  IUserUpdate,
-  { rejectValue: string }
->('updateUser', async (fields: IUserUpdate, { rejectWithValue }) => {
-  try {
-    const userResponse = await patchUserProfile(fields)
+export const updateUser = createAsyncThunk<User, UserUpdate, RejectValue>(
+  'updateUser',
+  async (fields: UserUpdate, { rejectWithValue }) => {
+    try {
+      const userResponse = await patchUserProfile(fields)
 
-    return userResponse
-  } catch (error) {
-    const errorObject = handleErrors(
-      error,
-      'User update failed, please try again later',
-    )
+      return userResponse
+    } catch (error) {
+      const errorObject = handleErrors(
+        error,
+        'User update failed, please try again later',
+      )
 
-    return rejectWithValue(errorObject.message)
-  }
-})
+      return rejectWithValue(errorObject.message)
+    }
+  },
+)
 
 export const userReducer = userSlice.reducer

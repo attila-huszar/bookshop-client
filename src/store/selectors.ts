@@ -1,11 +1,11 @@
-import { RootState } from './store'
-import { IBook } from '@/interfaces'
+import type { RootState } from './store'
+import type { Book } from '@/types'
 
 export const booksSelector = (state: RootState) => state.books
 
 export const bookByIdSelector = (id: string) => (state: RootState) => {
   const bookId = Number(id)
-  const findBook = (books: IBook[]) => books.find((book) => book.id === bookId)
+  const findBook = (books: Book[]) => books.find((book) => book.id === bookId)
 
   return (
     findBook(state.books.booksInShop) ??

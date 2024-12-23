@@ -1,10 +1,14 @@
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
+import type { Book, News } from '@/types'
 import 'swiper/css'
 import 'swiper/css/navigation'
-import { ISwiper } from '@/interfaces'
 
-export function SwiperComponent({ children }: ISwiper) {
+type SwiperProps = {
+  children: React.ReactElement<Book>[] | React.ReactElement<News>[]
+}
+
+export function SwiperComponent({ children }: SwiperProps) {
   return (
     <Swiper
       modules={[Navigation]}

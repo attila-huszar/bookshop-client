@@ -1,4 +1,12 @@
-export interface IFormikField {
+import type { FieldInputProps, FieldMetaProps, FormikState } from 'formik'
+
+export type FormikProps = {
+  field: FieldInputProps<string>
+  form: FormikState<string>
+  meta: FieldMetaProps<string>
+}
+
+export type FormikInput = {
   name: string
   value?: string
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void

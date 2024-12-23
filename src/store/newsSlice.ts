@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getNews } from '@/api'
-import { IStateNews } from '@/interfaces'
+import type { NewsState } from '@/types'
 
-const initialState: IStateNews = {
+const initialState: NewsState = {
   newsArray: [],
   newsIsLoading: false,
   newsError: undefined,

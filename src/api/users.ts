@@ -1,7 +1,7 @@
 import { authRequest, baseRequest } from './'
 import { PATH } from '@/constants'
 import { uploadImage } from '@/services'
-import { IUser, IUserUpdate } from '@/interfaces'
+import type { User, UserUpdate } from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
@@ -9,7 +9,7 @@ export const retrieveAuthTokens = async (): Promise<{
   return baseRequest.post(PATH.SERVER.users.refresh).json()
 }
 
-export const getUserProfile = async (): Promise<IUser> => {
+export const getUserProfile = async (): Promise<User> => {
   return authRequest.get(PATH.SERVER.users.profile).json()
 }
 
@@ -23,7 +23,7 @@ export const postUserLogin = async (
 }
 
 export const postUserRegister = async (
-  user: Pick<IUser, 'email' | 'firstName' | 'lastName' | 'avatar'> & {
+  user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatar'> & {
     password: string
   },
 ): Promise<{ email: string }> => {
@@ -39,7 +39,7 @@ export const postUserLogout = async (): Promise<{ message: string }> => {
   return authRequest.post(PATH.SERVER.users.logout).json()
 }
 
-export const patchUserProfile = async (fields: IUserUpdate): Promise<IUser> => {
+export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
   return authRequest.patch(PATH.SERVER.users.profile, { json: fields }).json()
 }
 

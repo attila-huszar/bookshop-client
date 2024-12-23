@@ -1,4 +1,4 @@
-export interface IFetchParams {
+export type FetchParams = {
   currentPage: number
   itemsPerPage: number
   genre: string[]

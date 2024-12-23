@@ -4,9 +4,9 @@ import {
   type SerializedError,
 } from '@reduxjs/toolkit'
 import { getAuthorById, getAuthorsBySearch } from '@/api'
-import { IAuthor, IStateAuthor } from '@/interfaces'
+import type { Author, AuthorState } from '@/types'
 
-const initialState: IStateAuthor = {
+const initialState: AuthorState = {
   authorArray: [],
   authorIsLoading: false,
   authorError: undefined,
@@ -22,8 +22,8 @@ const authorsSlice = createSlice({
     }
 
     const handleFulfilledById = (
-      state: { authorArray: IAuthor[]; authorIsLoading: boolean },
-      action: { payload: IAuthor },
+      state: { authorArray: Author[]; authorIsLoading: boolean },
+      action: { payload: Author },
     ) => {
       const authorExists = state.authorArray.some(
         (author) => author.id === action.payload?.id,
@@ -35,8 +35,8 @@ const authorsSlice = createSlice({
     }
 
     const handleFulfilledBySearch = (
-      state: { authorArray: IAuthor[]; authorIsLoading: boolean },
-      action: { payload: IAuthor[] },
+      state: { authorArray: Author[]; authorIsLoading: boolean },
+      action: { payload: Author[] },
     ) => {
       action.payload.forEach((newAuthor) => {
         if (

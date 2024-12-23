@@ -14,6 +14,7 @@ import { loginSchema } from '@/helpers'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
+import type { UserLogin } from '@/types'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from '@/assets/svg/question_circle.svg?react'
 
@@ -24,7 +25,7 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
-  const handleLogin = (user: { email: string; password: string }) => {
+  const handleLogin = (user: UserLogin) => {
     dispatch(login(user))
       .unwrap()
       .then((response) => {

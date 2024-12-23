@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { getBookById } from '@/api'
-import { IBook, ICart, IStateCart, ILocalCart } from '@/interfaces'
+import type { Book, Cart, CartState, CartLocalStorage } from '@/types'
 
-const initialState: IStateCart = {
+const initialState: CartState = {
   cartArray: [],
   cartIsLoading: false,
   cartError: undefined,
@@ -12,9 +12,9 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    cartAdd: (state, action: { payload: IBook }) => {
+    cartAdd: (state, action: { payload: Book }) => {
       const { id, title, price, discount, imgUrl } = action.payload
-      const cartItem: ICart = {
+      const cartItem: Cart = {
         id,
         quantity: 1,
         title,
@@ -36,12 +36,12 @@ const cartSlice = createSlice({
       state.cartIsLoading = false
       state.cartError = undefined
     },
-    cartRemove: (state, action: { payload: ICart }) => {
+    cartRemove: (state, action: { payload: Cart }) => {
       state.cartArray = state.cartArray.filter(
         (item) => item.id !== action.payload.id,
       )
     },
-    cartQuantityAdd: (state, action: { payload: ICart }) => {
+    cartQuantityAdd: (state, action: { payload: Cart }) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -50,7 +50,7 @@ const cartSlice = createSlice({
         state.cartArray[itemIdx].quantity++
       }
     },
-    cartQuantityRemove: (state, action: { payload: ICart }) => {
+    cartQuantityRemove: (state, action: { payload: Cart }) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -61,7 +61,7 @@ const cartSlice = createSlice({
     },
     cartQuantitySet: (
       state,
-      action: { payload: { cartItem: ICart; newQuantity: number } },
+      action: { payload: { cartItem: Cart; newQuantity: number } },
     ) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.cartItem.id,
@@ -94,9 +94,9 @@ const cartSlice = createSlice({
 
 export const fetchCartItems = createAsyncThunk(
   'fetchCartItems',
-  async (cartArray: ILocalCart[]) => {
+  async (cartArray: CartLocalStorage[]) => {
     const promises = cartArray.map(async (item) => {
-      const book: IBook = await getBookById(item.id)
+      const book: Book = await getBookById(item.id)
 
       const {
         author,

@@ -4,10 +4,10 @@ import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { Card } from './Card'
 import { useCart } from '@/hooks'
-import { IBook } from '@/interfaces'
+import type { Book } from '@/types'
 
 describe('Card', () => {
-  const mockBook: Partial<IBook> = {
+  const mockBook: Partial<Book> = {
     id: 1,
     title: 'Test Book',
     description: 'Test Description',
@@ -27,7 +27,7 @@ describe('Card', () => {
 
     render(
       <MemoryRouter>
-        <Card book={mockBook as IBook} />
+        <Card book={mockBook as Book} />
       </MemoryRouter>,
     )
 
@@ -44,7 +44,7 @@ describe('Card', () => {
 
     render(
       <MemoryRouter>
-        <Card book={mockBook as IBook} />
+        <Card book={mockBook as Book} />
       </MemoryRouter>,
     )
 
@@ -64,7 +64,7 @@ describe('Card', () => {
 
     render(
       <MemoryRouter>
-        <Card book={mockBook as IBook} />
+        <Card book={mockBook as Book} />
       </MemoryRouter>,
     )
 

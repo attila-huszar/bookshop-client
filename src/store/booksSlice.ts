@@ -13,9 +13,9 @@ import {
 } from '@/api'
 import { generateUniqueRndNums } from '@/helpers'
 import { RootState } from './store'
-import { IBook, IStateBook, IFilter, IFilterActive } from '@/interfaces'
+import type { Book, BookState, FilterProps, FilterActive } from '@/types'
 
-const initialState: IStateBook = {
+const initialState: BookState = {
   booksInShop: [],
   booksViewed: [],
   booksTotal: 0,
@@ -71,7 +71,10 @@ const booksSlice = createSlice({
         state.booksFilters.active.genre = []
       }
     },
-    setBooksFilterPrice: (state, action: PayloadAction<IFilter['price']>) => {
+    setBooksFilterPrice: (
+      state,
+      action: PayloadAction<FilterProps['price']>,
+    ) => {
       if (action.payload.length) {
         state.booksFilters.active.price = action.payload
       } else {
@@ -80,13 +83,13 @@ const booksSlice = createSlice({
     },
     setBooksFilterDiscount: (
       state,
-      action: PayloadAction<IFilter['discount']>,
+      action: PayloadAction<FilterProps['discount']>,
     ) => {
       state.booksFilters.active.discount = action.payload
     },
     setBooksFilterPublishYear: (
       state,
-      action: PayloadAction<IFilter['publishYear']>,
+      action: PayloadAction<FilterProps['publishYear']>,
     ) => {
       if (action.payload.length) {
         state.booksFilters.active.publishYear = action.payload
@@ -95,14 +98,17 @@ const booksSlice = createSlice({
           state.booksFilters.initial.publishYear
       }
     },
-    setBooksFilterRating: (state, action: PayloadAction<IFilter['rating']>) => {
+    setBooksFilterRating: (
+      state,
+      action: PayloadAction<FilterProps['rating']>,
+    ) => {
       state.booksFilters.active.rating = action.payload
     },
   },
   extraReducers: (builder) => {
     const handleViewedBooks = (
-      state: { booksViewed: IBook[] },
-      action: { payload: IBook[] },
+      state: { booksViewed: Book[] },
+      action: { payload: Book[] },
     ) => {
       action.payload.forEach((newBook) => {
         if (
@@ -173,7 +179,7 @@ const booksSlice = createSlice({
 
 export const fetchBooks = createAsyncThunk(
   'fetchBooks',
-  (optionalFilters: IFilter | undefined, { getState }) => {
+  (optionalFilters: FilterProps | undefined, { getState }) => {
     const {
       books: {
         booksCurrentPage: currentPage,
@@ -182,7 +188,7 @@ export const fetchBooks = createAsyncThunk(
       },
     } = getState() as RootState
 
-    const isFilterActive: { [key in keyof IFilterActive]: boolean } = {
+    const isFilterActive: { [key in keyof FilterActive]: boolean } = {
       genre: active.genre.length > 0,
       priceMin: active.price[0] !== initial.price[0],
       priceMax: active.price[1] !== initial.price[1],
@@ -194,7 +200,7 @@ export const fetchBooks = createAsyncThunk(
 
     const hasAnyFilter = Object.values(isFilterActive).some(Boolean)
 
-    const criteria: IFilterActive | undefined =
+    const criteria: FilterActive | undefined =
       optionalFilters && hasAnyFilter
         ? {
             genre: isFilterActive.genre ? optionalFilters.genre : [],
@@ -239,7 +245,7 @@ export const fetchRecommendedBooks = createAsyncThunk(
   async (count: number, { getState }) => {
     const state = getState() as RootState
     const totalBooks: number = state.books.booksTotal
-    const randomBooks: IBook[] = []
+    const randomBooks: Book[] = []
     const randomIdxs = generateUniqueRndNums(count, totalBooks)
 
     for (const idx of randomIdxs) {

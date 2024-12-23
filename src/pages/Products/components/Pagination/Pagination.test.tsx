@@ -9,7 +9,7 @@ import {
   incrementBooksCurrentPage,
   fetchBooks,
 } from '@/store'
-import { IFilter } from '@/interfaces'
+import type { FilterProps } from '@/types'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
@@ -57,7 +57,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as IFilter))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
     })
   })
 
@@ -69,7 +69,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(decrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as IFilter))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
     })
   })
 
@@ -81,7 +81,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(3))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as IFilter))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
     })
   })
 
@@ -93,7 +93,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(incrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as IFilter))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
     })
   })
 
@@ -106,7 +106,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(10))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as IFilter))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
     })
   })
 })
