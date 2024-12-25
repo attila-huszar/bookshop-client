@@ -8,7 +8,7 @@ export function InfoDialog({
   reloadButton,
   backButton,
 }: {
-  dialogRef: React.RefObject<HTMLDialogElement>
+  dialogRef: React.RefObject<HTMLDialogElement | null>
   text: string
   error?: string
   reloadButton?: boolean

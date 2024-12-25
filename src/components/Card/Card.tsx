@@ -13,7 +13,7 @@ export function Card({ book }: { book: Book }) {
 
   const handleCartAction = () => {
     if (isBookInCart) {
-      navigate(`/${PATH.CLIENT.cart}`)
+      void navigate(`/${PATH.CLIENT.cart}`)
     } else {
       addToCart(book)
     }

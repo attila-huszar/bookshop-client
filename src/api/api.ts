@@ -1,5 +1,5 @@
 import ky from 'ky'
-import { store, fetchAuthTokens, logout } from '@/store'
+import { store, fetchAuthTokens } from '@/store'
 
 const httpError = {
   Unauthorized: 401,
@@ -35,8 +35,6 @@ export const authRequest = baseRequest.extend({
 
           if (accessToken) {
             return authRequest(request)
-          } else {
-            void store.dispatch(logout())
           }
         } else if (response.status === httpError.TooManyRequests) {
           throw new Error('Request aborted due to too many requests')

@@ -37,7 +37,7 @@ export function PasswordReset() {
 
           toast.error(errorMessage, { id: 'reset-error' })
 
-          navigate('/', { replace: true })
+          void navigate('/', { replace: true })
         })
     }
   }, [token, navigate])
@@ -50,7 +50,7 @@ export function PasswordReset() {
       try {
         await dispatch(updateUser({ password: values.newPassword }))
 
-        navigate(`/${PATH.CLIENT.login}`, { replace: true })
+        void navigate(`/${PATH.CLIENT.login}`, { replace: true })
         toast.success('Password Changed Successfully', {
           id: 'reset-success',
         })

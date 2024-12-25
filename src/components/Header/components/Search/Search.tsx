@@ -40,7 +40,7 @@ export function Search() {
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
-  useClickOutside(searchRef, searchOpen, setSearchOpen)
+  useClickOutside({ ref: searchRef, state: searchOpen, setter: setSearchOpen })
 
   async function getSearchResults(searchString: string) {
     if (searchString.length > 1) {
@@ -115,7 +115,7 @@ export function Search() {
 
   const handleSubmit = () => {
     if (searchResults.length) {
-      navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
+      void navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
     }
   }
 

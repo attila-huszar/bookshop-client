@@ -22,7 +22,7 @@ export function AccountMenu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { userData } = useAppSelector(userSelector)
   const { firstName, email, avatar } = { ...userData }
-  useClickOutside(menuRef, menuOpen, setMenuOpen)
+  useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
@@ -55,7 +55,7 @@ export function AccountMenu() {
         />
       ) : (
         <IconButton
-          onClick={() => navigate(PATH.CLIENT.login)}
+          onClick={() => void navigate(PATH.CLIENT.login)}
           icon={<LoginIcon />}
           title={'Login/Register'}
         />

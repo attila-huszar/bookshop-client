@@ -79,7 +79,7 @@ export function Cart() {
 
   useEffect(() => {
     if (order?.clientSecret) {
-      navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
+      void navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
     }
   }, [order?.clientSecret, navigate])
 
@@ -255,7 +255,7 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
-            onClick={() => navigate(`/${PATH.CLIENT.books}`)}
+            onClick={() => void navigate(`/${PATH.CLIENT.books}`)}
             disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
@@ -294,7 +294,7 @@ export function Cart() {
         <p>Your cart is empty</p>
         <Button
           type="button"
-          onClick={() => navigate(`/${PATH.CLIENT.books}`)}
+          onClick={() => void navigate(`/${PATH.CLIENT.books}`)}
           $withCart>
           Go Shopping
         </Button>

@@ -26,7 +26,7 @@ export function VerifyEmail() {
               id: 'verify-success',
             },
           )
-          navigate(`/${PATH.CLIENT.login}`, { replace: true })
+          void navigate(`/${PATH.CLIENT.login}`, { replace: true })
         })
         .catch(async (error) => {
           const errorMessage =
@@ -36,7 +36,7 @@ export function VerifyEmail() {
 
           toast.error(errorMessage, { id: 'verify-error' })
 
-          navigate('/', { replace: true })
+          void navigate('/', { replace: true })
         })
     }
   }, [token, navigate])

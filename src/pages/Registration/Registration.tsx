@@ -49,7 +49,7 @@ export function Registration() {
         },
       )
 
-      navigate('/', { replace: true })
+      void navigate('/', { replace: true })
     } catch (error) {
       const errorMessage =
         error instanceof HTTPError
@@ -106,7 +106,7 @@ export function Registration() {
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
-                onClick={() => navigate('/')}
+                onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}

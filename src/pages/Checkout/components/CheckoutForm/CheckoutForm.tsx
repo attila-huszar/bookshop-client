@@ -54,7 +54,7 @@ export function CheckoutForm() {
     }
 
     dispatch(orderClear())
-    navigate(`/${PATH.CLIENT.cart}`, { replace: true })
+    void navigate(`/${PATH.CLIENT.cart}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {

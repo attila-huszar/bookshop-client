@@ -53,7 +53,7 @@ export function Product() {
 
   const handleCartAction = (book: Book) => {
     if (isBookInCart) {
-      navigate(`/${PATH.CLIENT.cart}`)
+      void navigate(`/${PATH.CLIENT.cart}`)
     } else {
       addToCart(book)
     }
@@ -61,9 +61,9 @@ export function Product() {
 
   const handleGoBack = () => {
     if (window.history?.length && window.history.length > 2) {
-      navigate(-1)
+      void navigate(-1)
     } else {
-      navigate('/')
+      void navigate('/')
     }
   }
 

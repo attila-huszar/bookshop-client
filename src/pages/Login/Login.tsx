@@ -29,7 +29,7 @@ export function Login() {
     dispatch(login(user))
       .unwrap()
       .then((response) => {
-        navigate('/', { replace: true })
+        void navigate('/', { replace: true })
         toast.success(`Welcome back, ${response.firstName}!`, {
           id: 'login-success',
         })
@@ -81,7 +81,7 @@ export function Login() {
               type="reset"
               title="Back"
               disabled={userIsLoading}
-              onClick={() => navigate('/')}
+              onClick={() => void navigate('/')}
             />
             <Button type="submit" disabled={userIsLoading}>
               {userIsLoading ? 'Logging in...' : 'Login'}

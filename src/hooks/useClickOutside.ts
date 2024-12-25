@@ -1,10 +1,12 @@
-import { RefObject, useEffect } from 'react'
+import { useEffect } from 'react'
 
-export const useClickOutside = (
-  ref: RefObject<HTMLElement>,
-  state: boolean,
-  setter: React.Dispatch<React.SetStateAction<boolean>>,
-): void => {
+type Props = {
+  ref: React.RefObject<HTMLElement | null>
+  state: boolean
+  setter: (state: boolean) => void
+}
+
+export const useClickOutside = ({ ref, state, setter }: Props): void => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (state && !ref.current?.contains(event.target as Node)) {

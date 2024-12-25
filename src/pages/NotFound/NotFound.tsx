@@ -13,9 +13,9 @@ export function NotFound() {
   function handleGoBack() {
     const hasPreviousPage = window.history.length > 2
     if (hasPreviousPage) {
-      navigate(-1)
+      void navigate(-1)
     } else {
-      navigate('/')
+      void navigate('/')
     }
   }
 

@@ -9,7 +9,7 @@ import MenuIcon from '@/assets/svg/menu.svg?react'
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  useClickOutside(menuRef, menuOpen, setMenuOpen)
+  useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
