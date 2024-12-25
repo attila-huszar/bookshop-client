@@ -43,7 +43,13 @@ export default tseslint.config(
         'error',
         { ignoreRestSiblings: true },
       ],
-      '@typescript-eslint/consistent-type-definitions': ['warn', 'type'],
+      '@typescript-eslint/no-namespace': [
+        'error',
+        {
+          allowDeclarations: true,
+        },
+      ],
+      '@typescript-eslint/consistent-type-definitions': 'off',
       'prettier/prettier': 'warn',
     },
   },

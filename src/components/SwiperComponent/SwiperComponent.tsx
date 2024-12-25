@@ -1,25 +1,39 @@
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation } from 'swiper/modules'
+import { register } from 'swiper/element/bundle'
+import type { SwiperSlideProps, SwiperProps } from 'swiper/react'
 import type { Book, News } from '@/types'
-import 'swiper/css'
-import 'swiper/css/navigation'
 
-type SwiperProps = {
+register()
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'swiper-container': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & SwiperProps,
+        HTMLElement
+      >
+      'swiper-slide': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & SwiperSlideProps,
+        HTMLElement
+      >
+    }
+  }
+}
+
+type Swiper = {
   children: React.ReactElement<Book>[] | React.ReactElement<News>[]
 }
 
-export function SwiperComponent({ children }: SwiperProps) {
+export function SwiperComponent({ children }: Swiper) {
   return (
-    <Swiper
-      modules={[Navigation]}
+    <swiper-container
       navigation={true}
-      slidesPerView={'auto'}
-      spaceBetween={50}>
+      slides-per-view="auto"
+      space-between="50">
       {children.map((child, idx) => (
-        <SwiperSlide key={idx} style={{ width: 'fit-content' }}>
+        <swiper-slide key={idx} style={{ width: 'fit-content' }}>
           {child}
-        </SwiperSlide>
+        </swiper-slide>
       ))}
-    </Swiper>
+    </swiper-container>
   )
 }

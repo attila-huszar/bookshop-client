@@ -19,12 +19,9 @@ import {
   useAppDispatch,
   useAppSelector,
 } from '@/hooks'
-import {
-  authorsSelector,
-  fetchAuthorsBySearch,
-  fetchBooksByAuthor,
-  fetchBooksBySearch,
-} from '@/store'
+import { authorsSelector } from '@/store/selectors'
+import { fetchBooksByAuthor, fetchBooksBySearch } from '@/store/booksSlice'
+import { fetchAuthorsBySearch } from '@/store/authorsSlice'
 import { PATH } from '@/constants'
 import type { Author, Book } from '@/types'
 import LinkIcon from '@/assets/svg/link.svg?react'
