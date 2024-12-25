@@ -4,11 +4,21 @@ import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import path from 'path'
 
+const ReactCompilerConfig = {}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
 
   return {
-    plugins: [react(), svgr(), visualizer()],
+    plugins: [
+      react({
+        babel: {
+          plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
+        },
+      }),
+      svgr(),
+      visualizer(),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

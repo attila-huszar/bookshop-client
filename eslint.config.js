@@ -1,10 +1,9 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import importPlugin from 'eslint-plugin-import'
+import reactCompiler from 'eslint-plugin-react-compiler'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import react from 'eslint-plugin-react'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
 import jest from 'eslint-plugin-jest'
@@ -12,11 +11,8 @@ import jestDom from 'eslint-plugin-jest-dom'
 
 export default tseslint.config(
   js.configs.recommended,
-  importPlugin.flatConfigs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
-  react.configs.flat.recommended,
-  react.configs.flat['jsx-runtime'],
   prettierConfig,
   {
     files: ['**/*.{ts,tsx}'],
@@ -26,21 +22,18 @@ export default tseslint.config(
       globals: globals.browser,
       parser: tseslint.parser,
       parserOptions: {
-        projectService: {
-          defaultProject: './tsconfig.json',
-        },
-        tsconfigRootDir: import.meta.dirname,
+        projectService: true,
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      react,
+      'react-compiler': reactCompiler,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       prettier,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -64,7 +57,6 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
     rules: {
       ...tseslint.configs.disableTypeChecked.rules,
-      'import/no-named-as-default-member': 'off',
     },
   },
   {
