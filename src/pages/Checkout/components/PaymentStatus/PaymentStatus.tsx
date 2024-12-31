@@ -36,14 +36,20 @@ export function PaymentStatus() {
               message: 'Success! Payment received.',
             })
 
+            const fullName = paymentIntent.shipping?.name?.trim() ?? ''
+            const [firstName, ...rest] = fullName.split(/\s+/)
+            const lastName = rest.join(' ')
+
             void updateOrder({
               paymentId: paymentIntent.id,
               fields: {
+                paymentIntentStatus: paymentIntent.status,
                 orderStatus: OrderStatus.Paid,
-                userName: paymentIntent.shipping?.name,
-                userEmail: paymentIntent.receipt_email,
-                userPhone: paymentIntent.shipping?.phone,
-                userAddress: paymentIntent.shipping?.address,
+                firstName,
+                lastName,
+                email: paymentIntent.receipt_email,
+                phone: paymentIntent.shipping?.phone,
+                address: paymentIntent.shipping?.address,
               },
             })
 

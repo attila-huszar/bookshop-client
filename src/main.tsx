@@ -1,9 +1,10 @@
+import * as Sentry from '@sentry/react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import { store } from '@/store'
+import { store } from './store'
+import { serverUrl } from './constants'
 import App from './App.tsx'
-import * as Sentry from '@sentry/react'
 
 Sentry.init({
   dsn: 'https://afe5bb4ce6b2b89cb11447bdfcc66d40@o4508474170802176.ingest.de.sentry.io/4508529143447632',
@@ -12,19 +13,14 @@ Sentry.init({
     Sentry.replayIntegration(),
   ],
   tracesSampleRate: 1.0,
-  tracePropagationTargets: [
-    'localhost',
-    /^https:\/\/bee-capital-highly.ngrok-free.app\/api/,
-  ],
+  tracePropagationTargets: [serverUrl],
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 })
 
 const container = document.getElementById('root')!
 const root = createRoot(container, {
-  onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
-    console.warn('Uncaught error', error, errorInfo.componentStack)
-  }),
+  onUncaughtError: Sentry.reactErrorHandler(),
   onCaughtError: Sentry.reactErrorHandler(),
   onRecoverableError: Sentry.reactErrorHandler(),
 })

@@ -12,6 +12,7 @@ export { getNews } from './news'
 export {
   postPaymentIntent,
   getPaymentIntent,
+  deletePaymentIntent,
   postCreateOrder,
   updateOrder,
 } from './orders'

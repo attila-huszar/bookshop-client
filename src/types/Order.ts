@@ -3,22 +3,22 @@ import { PaymentIntent, type Address } from '@stripe/stripe-js'
 export enum OrderStatus {
   Pending = 'PENDING',
   Paid = 'PAID',
-  Cancelled = 'CANCELLED',
+  Canceled = 'CANCELED',
 }
 
 export type Order = {
   paymentId: string
   paymentIntentStatus: PaymentIntent.Status
   orderStatus: OrderStatus
-  orderTotal: number
-  orderCurrency: string
-  orderItems: OrderItem[]
-  userName?: string | null
-  userFirstName?: string
-  userLastName?: string
-  userEmail?: string | null
-  userPhone?: string | null
-  userAddress?: Address
+  total: number
+  currency: string
+  items: OrderItem[]
+  name?: string | null
+  firstName?: string
+  lastName?: string
+  email?: string | null
+  phone?: string | null
+  address?: Address
 }
 
 export type OrderItem = {
@@ -53,4 +53,5 @@ export type GetPaymentIntent = {
   client_secret: string
   amount: number
   currency: string
+  status: PaymentIntent.Status
 }

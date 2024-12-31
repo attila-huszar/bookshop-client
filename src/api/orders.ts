@@ -1,4 +1,4 @@
-import { authRequest } from './'
+import { baseRequest } from './'
 import { PATH } from '@/constants'
 import type {
   Order,
@@ -12,7 +12,7 @@ export const postPaymentIntent = async ({
   currency,
   description,
 }: PostPaymentIntent): Promise<{ clientSecret: string }> => {
-  return authRequest
+  return baseRequest
     .post(PATH.SERVER.orders.paymentIntent, {
       json: { amount, currency, description },
     })
@@ -22,15 +22,23 @@ export const postPaymentIntent = async ({
 export const getPaymentIntent = async (
   paymentId: string,
 ): Promise<GetPaymentIntent> => {
-  return authRequest
+  return baseRequest
     .get(`${PATH.SERVER.orders.paymentIntent}/${paymentId}`)
+    .json()
+}
+
+export const deletePaymentIntent = async (
+  paymentId: string,
+): Promise<GetPaymentIntent> => {
+  return baseRequest
+    .delete(`${PATH.SERVER.orders.paymentIntent}/${paymentId}`)
     .json()
 }
 
 export const postCreateOrder = async (
   orderData: Order,
 ): Promise<{ paymentId: string }> => {
-  return authRequest
+  return baseRequest
     .post(PATH.SERVER.orders.create, {
       json: orderData,
     })
@@ -41,8 +49,8 @@ export const updateOrder = async ({
   paymentId,
   fields,
 }: OrderUpdate): Promise<Order> => {
-  return authRequest
-    .post(PATH.SERVER.orders.update, {
+  return baseRequest
+    .patch(PATH.SERVER.orders.update, {
       json: { paymentId, fields },
     })
     .json()

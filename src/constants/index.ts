@@ -18,3 +18,4 @@ export {
   cloudinaryUploadPreset,
   googleMapsKey,
 } from './envConfig'
+export { currencyOptions } from './currencyOptions'

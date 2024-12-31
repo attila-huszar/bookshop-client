@@ -32,7 +32,7 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.style'
-import { PATH } from '@/constants'
+import { PATH, currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
 import { OrderStatus } from '@/types'
 import type { Cart, PostPaymentIntent, Order } from '@/types'
@@ -50,9 +50,9 @@ const calculateTotalAmount = (cartArray: Cart[]): number => {
   )
 }
 
-const createPaymentData = (
+const createStripeIntent = (
   amount: number,
-  currency: string,
+  currency: string = currencyOptions.usd,
 ): PostPaymentIntent => {
   return {
     amount: Math.round(amount * 100),
@@ -129,22 +129,21 @@ export function Cart() {
   const handleCheckout = () => {
     if (cartArray.length) {
       const total = calculateTotalAmount(cartArray)
-      const currency = 'usd'
-      const orderToStripe = createPaymentData(total, currency)
+      const orderToStripe = createStripeIntent(total)
       const { firstName, lastName, email, phone, address } = { ...userData }
 
       const orderToServer: Order = {
         paymentId: '',
         paymentIntentStatus: 'processing',
         orderStatus: OrderStatus.Pending,
-        userFirstName: firstName,
-        userLastName: lastName,
-        userEmail: email,
-        userPhone: phone,
-        userAddress: address,
-        orderTotal: Number(total.toFixed(2)),
-        orderCurrency: currency,
-        orderItems: cartArray,
+        total: Number(total.toFixed(2)),
+        currency: currencyOptions.usd,
+        items: cartArray,
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
       }
 
       void dispatch(orderCreate({ orderToStripe, orderToServer }))

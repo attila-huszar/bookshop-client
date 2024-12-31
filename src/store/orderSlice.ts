@@ -1,5 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getPaymentIntent, postCreateOrder, postPaymentIntent } from '@/api'
+import {
+  postCreateOrder,
+  getPaymentIntent,
+  deletePaymentIntent,
+  postPaymentIntent,
+  updateOrder,
+} from '@/api'
 import { OrderStatus } from '@/types'
 import type { OrderState, PostPaymentIntent, Order } from '@/types'
 
@@ -48,21 +54,28 @@ const orderSlice = createSlice({
         state.orderIsLoading = true
         state.orderRetrieveError = undefined
       })
-      // .addCase(orderRetrieve.fulfilled, (state, action) => {
-      //   state.orderStatus = {
-      //     intent: 'processing',
-      //     paymentId: action.payload.clientSecret.split('_secret_')[0],
-      //     clientSecret: action.payload.clientSecret,
-      //     amount: action.payload.amount,
-      //     currency: action.payload.currency,
-      //   }
-      //   state.orderIsLoading = false
-      //   state.orderRetrieveError = undefined
-      // })
+      .addCase(orderRetrieve.fulfilled, (state, action) => {
+        state.order = {
+          intent: 'processing',
+          status: OrderStatus.Pending,
+          paymentId: action.payload.clientSecret.split('_secret_')[0],
+          clientSecret: action.payload.clientSecret,
+          amount: action.payload.amount,
+          currency: action.payload.currency,
+        }
+        state.orderIsLoading = false
+        state.orderRetrieveError = undefined
+      })
       .addCase(orderRetrieve.rejected, (state, action) => {
         state.order = null
         state.orderIsLoading = false
         state.orderRetrieveError = action.error.message
+      })
+      .addCase(orderCancel.fulfilled, (state) => {
+        state.order = null
+        state.orderIsLoading = false
+        state.orderCreateError = undefined
+        state.orderRetrieveError = undefined
       })
   },
 })
@@ -100,13 +113,30 @@ export const orderRetrieve = createAsyncThunk(
   async (paymentId: string) => {
     const stripeResponse = await getPaymentIntent(paymentId)
 
-    const clientSecret = stripeResponse.client_secret
-    const amount = stripeResponse.amount
-    const currency = stripeResponse.currency
     return {
-      clientSecret,
-      amount,
-      currency,
+      clientSecret: stripeResponse.client_secret,
+      amount: stripeResponse.amount,
+      currency: stripeResponse.currency,
+      status: stripeResponse.status,
+    }
+  },
+)
+
+export const orderCancel = createAsyncThunk(
+  'orderCancel',
+  async (paymentId: string) => {
+    const stripeDelRes = await deletePaymentIntent(paymentId)
+
+    const updateRes = await updateOrder({
+      paymentId,
+      fields: {
+        paymentIntentStatus: stripeDelRes.status,
+        orderStatus: OrderStatus.Canceled,
+      },
+    })
+
+    return {
+      orderStatus: updateRes.orderStatus,
     }
   },
 )

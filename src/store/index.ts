@@ -35,7 +35,12 @@ export {
   cartClear,
   fetchCartItems,
 } from './cartSlice'
-export { orderCreate, orderRetrieve, orderClear } from './orderSlice'
+export {
+  orderCreate,
+  orderRetrieve,
+  orderClear,
+  orderCancel,
+} from './orderSlice'
 export {
   booksSelector,
   bookByIdSelector,
