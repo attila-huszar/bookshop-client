@@ -8,6 +8,7 @@ const ReactCompilerConfig = {}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
+  const isDevelopment = mode === 'development'
 
   return {
     plugins: [
@@ -25,14 +26,16 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_SERVER_URL,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      proxy: isDevelopment
+        ? {
+            '/api': {
+              target: env.VITE_SERVER_URL,
+              rewrite: (path) => path.replace(/^\/api/, ''),
+              changeOrigin: true,
+              secure: false,
+            },
+          }
+        : undefined,
     },
     test: {
       restoreMocks: true,

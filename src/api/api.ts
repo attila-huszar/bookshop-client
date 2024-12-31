@@ -1,5 +1,6 @@
 import ky from 'ky'
 import { store, fetchAuthTokens } from '@/store'
+import { serverUrl } from '@/constants'
 
 const httpError = {
   Unauthorized: 401,
@@ -7,7 +8,7 @@ const httpError = {
 }
 
 export const baseRequest = ky.create({
-  prefixUrl: '/api',
+  prefixUrl: import.meta.env.PROD ? serverUrl : '/api',
   headers: {
     credentials: 'include',
     'Content-Type': 'application/json',
