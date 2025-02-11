@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { NavList } from '../../Footer.style'
 import { StyledLogo } from './Navigation.style'
 import { navLinks } from '@/constants'

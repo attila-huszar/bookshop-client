@@ -7,7 +7,7 @@ import {
   Routes,
   useLocation,
   useNavigate,
-} from 'react-router-dom'
+} from 'react-router'
 import { toast } from 'react-hot-toast'
 import { PasswordReset } from './PasswordReset'
 import { updateUser } from '@/store'

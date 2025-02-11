@@ -1,10 +1,10 @@
 import { vi } from 'vitest'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import { Provider } from 'react-redux'
 import { store } from './store'
 import '@testing-library/jest-dom'
 
-vi.mock(import('react-router-dom'), async (importOriginal) => {
+vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,

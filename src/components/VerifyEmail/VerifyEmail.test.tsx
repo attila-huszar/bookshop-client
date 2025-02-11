@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { VerifyEmail } from './VerifyEmail'
 import { postVerifyEmail } from '@/api/users'

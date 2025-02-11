@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLoaderData } from 'react-router-dom'
+import { Navigate, Outlet, useLoaderData } from 'react-router'
 
 export function ProtectedRoute() {
   const isUserLoggedIn = useLoaderData<unknown>()

@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { MemoryRouter, useNavigate } from 'react-router-dom'
+import { MemoryRouter, useNavigate } from 'react-router'
 import { Card } from './Card'
 import { useCart } from '@/hooks'
 import type { Book } from '@/types'

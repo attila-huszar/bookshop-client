@@ -3,7 +3,7 @@ import {
   RouterProvider,
   createBrowserRouter,
   type RouteObject,
-} from 'react-router-dom'
+} from 'react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Home,

@@ -1,9 +1,9 @@
 import { MockedFunction, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, useLoaderData } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLoaderData } from 'react-router'
 import { ProtectedRoute } from './ProtectedRoute'
 
-vi.mock(import('react-router-dom'), async (importOriginal) => {
+vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,

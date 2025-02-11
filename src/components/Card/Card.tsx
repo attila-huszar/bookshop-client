@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import { StyledCard, Details, Image, Title, Description } from './Card.style'
 import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'

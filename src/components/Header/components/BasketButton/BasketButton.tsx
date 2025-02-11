@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { StyledBasketButton, CartItemCount } from './BasketButton.style'
 import { Button } from '@/components'
 import { useAppSelector, useCart } from '@/hooks'

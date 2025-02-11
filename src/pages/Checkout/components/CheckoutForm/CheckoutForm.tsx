@@ -6,7 +6,7 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
 import { baseURL, PATH } from '@/constants'
