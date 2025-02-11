@@ -7,7 +7,7 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.style'
-import { IconButton, Avatar } from '@/components'
+import { IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { PATH } from '@/constants'
@@ -21,7 +21,7 @@ export function AccountMenu() {
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const { userData } = useAppSelector(userSelector)
-  const { firstName, email, avatar } = { ...userData }
+  const { firstName, email } = { ...userData }
   useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
   const toggleMenu = () => {
@@ -47,13 +47,7 @@ export function AccountMenu() {
 
   return (
     <StyledMenu ref={menuRef}>
-      {userData ? (
-        <Avatar
-          imgUrl={avatar as string}
-          onClick={toggleMenu}
-          title={firstName}
-        />
-      ) : (
+      {userData && (
         <IconButton
           onClick={() => void navigate(PATH.CLIENT.login)}
           icon={<LoginIcon />}

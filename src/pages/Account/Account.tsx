@@ -11,7 +11,7 @@ import {
   AddressLine,
   ButtonWrapper,
 } from './Account.style'
-import { Avatar, Button, FormikField, IconButton } from '@/components'
+import { Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser } from '@/store'
@@ -39,9 +39,7 @@ export function Account() {
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
-  const handleAvatarClick = () => {
-    inputFile.current?.click()
-  }
+  //const handleAvatarClick = () => inputFile.current?.click()
 
   const handleImgChange = async (img: File) => {
     const imageResponse = await uploadImage(img, 'avatars')
@@ -53,7 +51,7 @@ export function Account() {
   }
 
   if (userData) {
-    const { email, firstName, lastName, avatar, phone, address } = userData
+    const { email, firstName, lastName, phone, address } = userData
 
     return (
       <StyledAccount>
@@ -65,14 +63,6 @@ export function Account() {
             <h5>General Information</h5>
             <div>
               <AvatarPanel>
-                <Avatar
-                  imgUrl={avatar as string}
-                  onClick={handleAvatarClick}
-                  title="Change Profile Picture"
-                  $size={160}
-                  $clip
-                  $camera
-                />
                 <input
                   type="file"
                   name="avatarChangeInput"
