@@ -9,13 +9,5 @@ export {
   discountOptions,
 } from './defaultValues'
 export { countryList } from './countryList'
-export {
-  baseURL,
-  serverUrl,
-  stripeKey,
-  cloudinaryName,
-  cloudinaryUpload,
-  cloudinaryUploadPreset,
-  googleMapsKey,
-} from './envConfig'
+export { baseURL, serverUrl, stripeKey, googleMapsKey } from './envConfig'
 export { currencyOptions } from './currencyOptions'
