@@ -21,7 +21,7 @@ export function AccountMenu() {
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const { userData } = useAppSelector(userSelector)
-  const { firstName, email } = { ...userData }
+
   useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
   const toggleMenu = () => {
@@ -34,7 +34,7 @@ export function AccountMenu() {
     dispatch(logout())
       .unwrap()
       .then(() => {
-        toast.success(`${email} successfully logged out`, {
+        toast.success(`${userData?.email} successfully logged out`, {
           id: 'logout-success',
         })
       })
@@ -47,21 +47,14 @@ export function AccountMenu() {
 
   return (
     <StyledMenu ref={menuRef}>
-      {userData && (
-        <IconButton
-          onClick={() => void navigate(PATH.CLIENT.login)}
-          icon={<LoginIcon />}
-          title={'Login/Register'}
-        />
-      )}
-      {userData && (
+      {userData ? (
         <Dropdown $show={menuOpen}>
           <DropdownList>
             <li>
               <Link to={`/${PATH.CLIENT.account}`} onClick={toggleMenu}>
                 <MenuItem>
                   <img src={accountIcon} alt="account" />
-                  <span>{firstName}</span>
+                  <span>{userData.firstName}</span>
                 </MenuItem>
               </Link>
             </li>
@@ -75,6 +68,12 @@ export function AccountMenu() {
             </li>
           </DropdownList>
         </Dropdown>
+      ) : (
+        <IconButton
+          onClick={() => void navigate(PATH.CLIENT.login)}
+          icon={<LoginIcon />}
+          title={'Login/Register'}
+        />
       )}
     </StyledMenu>
   )
