@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { PATH } from '@/constants'
 import LoginIcon from '@/assets/svg/account.svg?react'
+import AccountDefaultIcon from '@/assets/svg/account_default.svg?react'
 import accountIcon from '@/assets/svg/user_account.svg'
 import logoutIcon from '@/assets/svg/logout.svg'
 
@@ -48,26 +49,33 @@ export function AccountMenu() {
   return (
     <StyledMenu ref={menuRef}>
       {userData ? (
-        <Dropdown $show={menuOpen}>
-          <DropdownList>
-            <li>
-              <Link to={`/${PATH.CLIENT.account}`} onClick={toggleMenu}>
-                <MenuItem>
-                  <img src={accountIcon} alt="account" />
-                  <span>{userData.firstName}</span>
-                </MenuItem>
-              </Link>
-            </li>
-            <li>
-              <Link to={'/'} onClick={handleLogout}>
-                <MenuItem>
-                  <img src={logoutIcon} alt="logout" />
-                  <span>Logout</span>
-                </MenuItem>
-              </Link>
-            </li>
-          </DropdownList>
-        </Dropdown>
+        <>
+          <IconButton
+            onClick={toggleMenu}
+            icon={<AccountDefaultIcon />}
+            title={userData.firstName}
+          />
+          <Dropdown $show={menuOpen}>
+            <DropdownList>
+              <li>
+                <Link to={`/${PATH.CLIENT.account}`} onClick={toggleMenu}>
+                  <MenuItem>
+                    <img src={accountIcon} alt="account" />
+                    <span>{userData.firstName}</span>
+                  </MenuItem>
+                </Link>
+              </li>
+              <li>
+                <Link to={'/'} onClick={handleLogout}>
+                  <MenuItem>
+                    <img src={logoutIcon} alt="logout" />
+                    <span>Logout</span>
+                  </MenuItem>
+                </Link>
+              </li>
+            </DropdownList>
+          </Dropdown>
+        </>
       ) : (
         <IconButton
           onClick={() => void navigate(PATH.CLIENT.login)}
