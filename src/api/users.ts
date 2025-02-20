@@ -6,7 +6,7 @@ import type { User, UserUpdate } from '@/types'
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
 }> => {
-  return baseRequest.post(PATH.SERVER.users.refresh).json()
+  return baseRequest.get(PATH.SERVER.users.refresh).json()
 }
 
 export const getUserProfile = async (): Promise<User> => {
