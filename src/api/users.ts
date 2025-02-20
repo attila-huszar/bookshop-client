@@ -6,7 +6,9 @@ import type { User, UserUpdate } from '@/types'
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
 }> => {
-  return baseRequest.post(PATH.SERVER.users.refresh, { credentials: 'include' }).json()
+  return baseRequest
+    .post(PATH.SERVER.users.refresh, { credentials: 'include' })
+    .json()
 }
 
 export const getUserProfile = async (): Promise<User> => {
@@ -18,7 +20,10 @@ export const postUserLogin = async (
   password: string,
 ): Promise<{ accessToken: string; firstName: string }> => {
   return baseRequest
-    .post(PATH.SERVER.users.login, { json: { email, password }, credentials: 'include' })
+    .post(PATH.SERVER.users.login, {
+      json: { email, password },
+      credentials: 'include',
+    })
     .json()
 }
 
@@ -36,7 +41,9 @@ export const postUserRegister = async (
 }
 
 export const postUserLogout = async (): Promise<{ message: string }> => {
-  return authRequest.post(PATH.SERVER.users.logout).json()
+  return authRequest
+    .post(PATH.SERVER.users.logout, { credentials: 'include' })
+    .json()
 }
 
 export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
