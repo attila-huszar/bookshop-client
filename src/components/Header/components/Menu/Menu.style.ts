@@ -6,13 +6,15 @@ export const StyledMenu = styled.div`
 `
 
 export const Dropdown = styled.div<MenuTypes>`
-  position: absolute;
-  width: 12rem;
-  top: 3rem;
-  left: 0;
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  position: absolute;
+  top: 3rem;
+  left: 0;
+  width: 12rem;
+  border-radius: 5px;
+  box-shadow: var(--shadow);
   transition: all 0.2s ease;
 
   ${({ $show }) => $show && 'grid-template-rows: 1fr; opacity: 1;'}

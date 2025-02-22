@@ -2,21 +2,20 @@ import { styled } from 'styled-components'
 import { StyleTypes } from './IconButton.types'
 
 const iconHeight = {
-  sm: '22px',
-  md: '26px',
-  lg: '30px',
+  sm: '1.375rem',
+  md: '1.625rem',
+  lg: '1.875rem',
 }
 
 const iconWidth = {
-  sm: '24px',
-  md: '28px',
-  lg: '32px',
+  sm: '1.5rem',
+  md: '1.75rem',
+  lg: '2rem',
 }
 
 export const StyledIconButton = styled.button<StyleTypes>`
   display: flex;
   align-items: center;
-  padding: 3px 10px;
   color: ${({ $color }) => $color ?? 'var(--light-black)'};
   background: none;
   border: none;

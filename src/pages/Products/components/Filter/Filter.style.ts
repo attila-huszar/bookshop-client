@@ -3,7 +3,7 @@ import { StyleTypes } from '../../../../components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
   position: sticky;
-  top: 8rem;
+  top: 7.5rem;
   bottom: 0;
   height: fit-content;
   width: auto;
@@ -80,6 +80,7 @@ export const InputFields = styled.div`
 export const Rating = styled.div`
   display: flex;
   justify-content: space-between;
+  padding: 0.5rem 0;
 `
 
 export const ButtonWrapper = styled.div`
