@@ -8,7 +8,7 @@ export const StyledMenu = styled.div`
 export const Dropdown = styled.div<MenuTypes>`
   position: absolute;
   width: 12rem;
-  top: 3.5rem;
+  top: 3rem;
   left: 0;
   display: grid;
   grid-template-rows: 0fr;

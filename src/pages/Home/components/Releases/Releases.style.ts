@@ -3,15 +3,18 @@ import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`
   display: flex;
+  justify-content: space-between;
+  gap: 2.5rem;
   width: 100%;
   max-width: 90rem;
-  padding: 2.5rem 6.25rem;
+  padding: 3rem 6.25rem 2.5rem;
+  overflow-x: clip;
+`
 
-  div {
-    width: 50%;
-  }
+export const Welcome = styled.div`
+  width: 50%;
 
-  h1 {
+  h2 {
     margin-bottom: 2rem;
   }
 
@@ -24,7 +27,7 @@ export const StyledReleases = styled.section`
 export const ImageWrapper = styled.div`
   display: grid;
   align-items: center;
-  margin: 0 auto;
+  margin-left: -9rem;
 `
 
 export const ImageItem = styled.div<ReleasesTypes>`
@@ -38,9 +41,9 @@ export const ImageItem = styled.div<ReleasesTypes>`
   }
 
   ${({ $idx }) =>
-    ($idx === 0 && 'height: 18rem; &:hover { z-index: 2; }') ||
-    ($idx === 1 && 'height: 20rem; left: -40%; z-index: 1;') ||
-    ($idx === 2 && 'height: 18rem; left: -80%; &:hover { z-index: 2; }') ||
+    ($idx === 0 && 'height: 18rem; right: -80%; &:hover { z-index: 2; }') ||
+    ($idx === 1 && 'height: 20rem; right: -40%; z-index: 1;') ||
+    ($idx === 2 && 'height: 18rem; &:hover { z-index: 2; }') ||
     ($idx > 2 && 'display: none;')}
 
   img {

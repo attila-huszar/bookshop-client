@@ -25,6 +25,8 @@ import { fetchAuthorsBySearch } from '@/store/authorsSlice'
 import { PATH } from '@/constants'
 import type { Author, Book } from '@/types'
 import LinkIcon from '@/assets/svg/link.svg?react'
+import SearchIcon from '@/assets/svg/search.svg?react'
+import ClearIcon from '@/assets/svg/xmark_circle.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Search() {
@@ -134,7 +136,7 @@ export function Search() {
         initialValues={initialValues}
         validationSchema={searchSchema}
         onSubmit={handleSubmit}>
-        {({ values, handleChange, handleBlur, isSubmitting }) => (
+        {({ values, handleChange, handleBlur }) => (
           <Form>
             <SearchField
               ref={inputRef}
@@ -188,19 +190,18 @@ export function Search() {
                 </DropdownList>
               )}
             </Dropdown>
-            <SearchButton
-              type="submit"
-              disabled={isSubmitting}
-              title="Search"
-            />
+            <SearchButton type="submit" title="Search">
+              <SearchIcon />
+            </SearchButton>
             <ClearButton
               type="button"
               onClick={() => {
                 handleReset(values)
                 inputRef.current?.focus()
               }}
-              title="Clear"
-            />
+              title="Clear">
+              <ClearIcon />
+            </ClearButton>
           </Form>
         )}
       </Formik>

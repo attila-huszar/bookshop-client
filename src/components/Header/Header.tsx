@@ -1,5 +1,5 @@
 import { StyledHeader, ExtraSpace } from './Header.style'
-import { AccountMenu, BasketButton, Favorite, Menu, Search } from './components'
+import { AccountMenu, BasketButton, Menu, Search } from './components'
 
 export function Header() {
   return (
@@ -9,7 +9,7 @@ export function Header() {
         <Menu />
         <Search />
         <AccountMenu />
-        <Favorite />
+        {/* <Favorite /> */}
         <BasketButton />
       </StyledHeader>
     </>
