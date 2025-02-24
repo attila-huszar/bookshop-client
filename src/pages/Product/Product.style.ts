@@ -1,34 +1,18 @@
 import { styled } from 'styled-components'
-import caret_left from '../../assets/svg/caret_left.svg'
 
 export const StyledProduct = styled.main`
   padding: 0 6.25rem;
 `
 
-export const Breadcrumb = styled.div`
-  position: relative;
+export const Breadcrumb = styled.button`
   display: flex;
+  gap: 10px;
   align-items: center;
-
-  button {
-    position: relative;
-    padding-left: 2rem;
-    margin-left: -2rem;
-    font-size: 1.25rem;
-    font-weight: 700;
-    border: none;
-    background: none;
-    cursor: pointer;
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: -2rem;
-    height: 20px;
-    width: 20px;
-    background: url(${caret_left}) center no-repeat;
-  }
+  font-size: 1.25rem;
+  font-weight: 700;
+  border: none;
+  background: none;
+  cursor: pointer;
 `
 
 export const DetailsSection = styled.section`

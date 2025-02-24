@@ -21,6 +21,7 @@ import {
 import { Button, Error, Price, Recommended } from '@/components'
 import { PATH } from '@/constants'
 import type { Author, Book } from '@/types'
+import CaretIcon from '@/assets/svg/caret_left.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Product() {
@@ -70,10 +71,9 @@ export function Product() {
   return (
     <>
       <StyledProduct>
-        <Breadcrumb>
-          <button onClick={handleGoBack} type="button">
-            Book Details
-          </button>
+        <Breadcrumb onClick={handleGoBack} title="Go back">
+          <CaretIcon height={18} />
+          Book Details
         </Breadcrumb>
         {book ? (
           <DetailsSection>
