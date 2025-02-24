@@ -80,7 +80,6 @@ export const InputFields = styled.div`
 export const Rating = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
 `
 
 export const ButtonWrapper = styled.div`

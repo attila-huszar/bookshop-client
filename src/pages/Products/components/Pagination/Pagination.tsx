@@ -27,6 +27,7 @@ export function Pagination() {
         }}
         icon={<ChevronLeftEndIcon />}
         title="First Page"
+        $size="sm"
         disabled={booksCurrentPage === 1}
       />
       <IconButton
@@ -38,6 +39,7 @@ export function Pagination() {
         }}
         icon={<ChevronLeftIcon />}
         title="Previous Page"
+        $size="sm"
         disabled={booksCurrentPage === 1}
       />
       {Array.from(
@@ -66,8 +68,9 @@ export function Pagination() {
         }}
         icon={<ChevronLeftIcon />}
         title="Next Page"
-        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
+        $size="sm"
         $flipHorizontal
+        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
       />
       <IconButton
         onClick={() => {
@@ -78,8 +81,9 @@ export function Pagination() {
         }}
         icon={<ChevronLeftEndIcon />}
         title="Last Page"
-        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
+        $size="sm"
         $flipHorizontal
+        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
       />
     </StyledPagination>
   )

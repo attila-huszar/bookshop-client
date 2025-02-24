@@ -189,6 +189,7 @@ export function Cart() {
                   onClick={() => handleRemoveQuantity(item)}
                   icon={<RemoveQuantityIcon />}
                   title="Remove quantity"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity <= 1}
@@ -206,6 +207,7 @@ export function Cart() {
                   onClick={() => handleAddQuantity(item)}
                   icon={<AddQuantityIcon />}
                   title="Add quantity"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity >= 50}
@@ -230,6 +232,7 @@ export function Cart() {
                   onClick={() => removeFromCart(item)}
                   icon={<RemoveFromCartIcon />}
                   title="Remove from cart"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--orange)"
                 />
@@ -259,15 +262,16 @@ export function Cart() {
             $size="lg"
             $textSize="lg"
             $inverted>
-            Continue Shopping
+            Back to Shop
           </Button>
           <IconButton
             icon={<RemoveFromCartIcon />}
             onClick={handleCartClear}
             disabled={orderIsLoading}
             title="Reset Cart"
+            $size="lg"
             $color="var(--primary-color)"
-            $bordered
+            $outline
           />
           <Button
             onClick={handleCheckout}

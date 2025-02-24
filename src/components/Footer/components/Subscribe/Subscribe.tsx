@@ -1,13 +1,11 @@
-import { SubscribeForm } from './Subscribe.style'
+import { Text, SubscribeForm } from './Subscribe.style'
 
 export function Subscribe() {
   return (
     <>
-      <p>
-        {
-          "Subscribe to stay tuned for new product and latest updates. Let's do it!"
-        }
-      </p>
+      <Text>
+        Subscribe to stay tuned for new product and latest updates. Let's do it!
+      </Text>
       <SubscribeForm>
         <input
           name="subscribe"

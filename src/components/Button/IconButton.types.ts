@@ -1,7 +1,8 @@
 export type StyleTypes = {
-  $iconSize?: 'sm' | 'md' | 'lg'
+  $size?: 'xs' | 'sm' | 'md' | 'lg'
+  $iconSize?: 'xs' | 'sm' | 'md' | 'lg'
   $color?: string
-  $bordered?: boolean
+  $outline?: boolean
   $round?: boolean
   $flipHorizontal?: boolean
   $flipVertical?: boolean
