@@ -1,4 +1,4 @@
-# [Bookshop](http://)
+# [Bookshop](https://book-shop.pages.dev/)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-grey?logo=react)](https://reactjs.org/)
@@ -12,4 +12,4 @@
 
 ▶ [Bookshop Server](https://github.com/attila-huszar/bookshop-server)
 
-[![Bookshop](https://s3.eu-central-1.amazonaws.com/attila.huszar/bookshop/bookshop-front.webp)](https://)
+[![Bookshop](https://s3.eu-central-1.amazonaws.com/attila.huszar/bookshop/bookshop-front.webp)](https://book-shop.pages.dev/)
