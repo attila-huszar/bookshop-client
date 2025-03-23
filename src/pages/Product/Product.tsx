@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useMemo } from 'react'
+import { memo, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   StyledProduct,
@@ -48,30 +48,30 @@ export function Product() {
     }
   }, [book, dispatch, id])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleCartAction = (book: Book) => {
+  const handleCartAction = async (book: Book) => {
     if (isBookInCart) {
-      void navigate(`/${PATH.CLIENT.cart}`)
+      await navigate(`/${PATH.CLIENT.cart}`)
     } else {
       addToCart(book)
     }
   }
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     if (window.history?.length && window.history.length > 2) {
-      void navigate(-1)
+      await navigate(-1)
     } else {
-      void navigate('/')
+      await navigate('/')
     }
   }
 
   return (
     <>
       <StyledProduct>
-        <Breadcrumb onClick={handleGoBack} title="Go back">
+        <Breadcrumb onClick={() => void handleGoBack()} title="Go back">
           <CaretIcon height={18} />
           Book Details
         </Breadcrumb>
@@ -106,7 +106,7 @@ export function Product() {
             </Description>
             <ButtonWrapper>
               <Button
-                onClick={() => handleCartAction(book)}
+                onClick={() => void handleCartAction(book)}
                 $withCartAdd={!isBookInCart}
                 $textSize="lg"
                 $size="lg">

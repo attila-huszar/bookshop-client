@@ -112,9 +112,9 @@ export function Search() {
     setSearchResults([])
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (searchResults.length) {
-      void navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
+      await navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
     }
   }
 

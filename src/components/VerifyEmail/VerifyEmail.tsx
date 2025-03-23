@@ -17,29 +17,31 @@ export function VerifyEmail() {
     if (isEffectRun.current || !token) return
     isEffectRun.current = true
 
-    if (token) {
-      postVerifyEmail(token)
-        .then((verifyResponse) => {
-          toast.success(
-            `${verifyResponse.email} successfully verified, you can now login`,
-            {
-              id: 'verify-success',
-            },
-          )
-          void navigate(`/${PATH.CLIENT.login}`, { replace: true })
-        })
-        .catch(async (error) => {
-          const errorMessage =
-            error instanceof HTTPError
-              ? (await error.response.json<{ error: string }>()).error
-              : 'Verification failed, please try again later'
+    const verifyEmailToken = async () => {
+      try {
+        const verifyResponse = await postVerifyEmail(token)
+        toast.success(
+          `${verifyResponse.email} successfully verified, you can now login`,
+          {
+            id: 'verify-success',
+          },
+        )
+        await navigate(`/${PATH.CLIENT.login}`, { replace: true })
+      } catch (error) {
+        let errorMessage = 'Verification failed, please try again later'
 
-          toast.error(errorMessage, { id: 'verify-error' })
+        if (error instanceof HTTPError) {
+          const errorData = await error.response.json<{ error: string }>()
+          errorMessage = errorData.error
+        }
 
-          void navigate('/', { replace: true })
-        })
+        toast.error(errorMessage, { id: 'verify-error' })
+        await navigate('/', { replace: true })
+      }
     }
-  }, [token, navigate])
+
+    void verifyEmailToken()
+  }, [navigate, token])
 
   return <Loading text="Verifying" />
 }

@@ -92,6 +92,10 @@ export function PaymentStatus() {
       )
   }, [dispatch, stripe])
 
+  const navigateToHome = async () => {
+    await navigate('/')
+  }
+
   return (
     <StyledPaymentStatus>
       <Logo>
@@ -111,7 +115,7 @@ export function PaymentStatus() {
         )}
       </Status>
       <p>{status.message}</p>
-      <button onClick={() => void navigate('/')} type="button">
+      <button onClick={() => void navigateToHome()} type="button">
         Back to home
       </button>
     </StyledPaymentStatus>

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
@@ -25,28 +25,30 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
-  const handleLogin = (user: UserLogin) => {
-    dispatch(login(user))
-      .unwrap()
-      .then((response) => {
-        void navigate('/', { replace: true })
-        toast.success(`Welcome back, ${response.firstName}!`, {
-          id: 'login-success',
-        })
-      })
-      .catch((error: string) => {
-        toast.error(error, {
-          id: 'login-error',
-        })
-      })
-  }
-
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
+  const handleLogin = async (user: UserLogin) => {
+    try {
+      const response = await dispatch(login(user)).unwrap()
+      await navigate('/', { replace: true })
+      toast.success(`Welcome back, ${response.firstName}!`, {
+        id: 'login-success',
+      })
+    } catch (error) {
+      toast.error(String(error), {
+        id: 'login-error',
+      })
+    }
+  }
+
   const handleDialogOpen = () => {
     forgotPasswordDialog.current?.showModal()
+  }
+
+  const navigateToHome = async () => {
+    await navigate('/')
   }
 
   return (
@@ -81,7 +83,7 @@ export function Login() {
               type="reset"
               title="Back"
               disabled={userIsLoading}
-              onClick={() => void navigate('/')}
+              onClick={() => void navigateToHome()}
             />
             <Button type="submit" disabled={userIsLoading}>
               {userIsLoading ? 'Logging in...' : 'Login'}

@@ -26,20 +26,24 @@ export function PasswordReset() {
     if (isEffectRun.current || !token) return
     isEffectRun.current = true
 
-    if (token) {
-      postVerifyPasswordReset(token)
-        .then((resetResponse) => setEmail(resetResponse.email))
-        .catch(async (error) => {
-          const errorMessage =
-            error instanceof HTTPError
-              ? (await error.response.json<{ error: string }>()).error
-              : 'Password reset failed, please try again later'
+    const verifyToken = async () => {
+      try {
+        const resetResponse = await postVerifyPasswordReset(token)
+        setEmail(resetResponse.email)
+      } catch (error) {
+        let errorMessage = 'Password reset failed, please try again later'
 
-          toast.error(errorMessage, { id: 'reset-error' })
+        if (error instanceof HTTPError) {
+          const errorData = await error.response.json<{ error: string }>()
+          errorMessage = errorData.error
+        }
 
-          void navigate('/', { replace: true })
-        })
+        toast.error(errorMessage, { id: 'reset-error' })
+        await navigate('/', { replace: true })
+      }
     }
+
+    void verifyToken()
   }, [token, navigate])
 
   const handleSubmit = async (values: {
@@ -50,7 +54,7 @@ export function PasswordReset() {
       try {
         await dispatch(updateUser({ password: values.newPassword }))
 
-        void navigate(`/${PATH.CLIENT.login}`, { replace: true })
+        await navigate(`/${PATH.CLIENT.login}`, { replace: true })
         toast.success('Password Changed Successfully', {
           id: 'reset-success',
         })

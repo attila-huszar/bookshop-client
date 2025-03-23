@@ -46,6 +46,10 @@ export function AccountMenu() {
       })
   }
 
+  const navigateToLogin = async () => {
+    await navigate(PATH.CLIENT.login)
+  }
+
   return (
     <StyledMenu ref={menuRef}>
       {userData ? (
@@ -78,7 +82,7 @@ export function AccountMenu() {
         </>
       ) : (
         <IconButton
-          onClick={() => void navigate(PATH.CLIENT.login)}
+          onClick={() => void navigateToLogin()}
           icon={<LoginIcon />}
           title={'Login/Register'}
         />

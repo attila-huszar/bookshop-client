@@ -1,10 +1,4 @@
-import {
-  Fragment,
-  ChangeEvent,
-  useLayoutEffect,
-  useEffect,
-  useRef,
-} from 'react'
+import { Fragment, ChangeEvent, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
@@ -78,9 +72,13 @@ export function Cart() {
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (order?.clientSecret) {
-      void navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
+    const redirectToCheckout = async () => {
+      if (order?.clientSecret) {
+        await navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
+      }
     }
+
+    void redirectToCheckout()
   }, [order?.clientSecret, navigate])
 
   useEffect(() => {
@@ -99,7 +97,7 @@ export function Cart() {
     }
   }, [orderCreateError])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -153,6 +151,10 @@ export function Cart() {
   const handleCartClear = () => {
     dispatch(cartClear())
     dispatch(orderClear())
+  }
+
+  const navigateToBooks = async () => {
+    await navigate(`/${PATH.CLIENT.books}`)
   }
 
   if (cartIsLoading) {
@@ -257,7 +259,7 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
-            onClick={() => void navigate(`/${PATH.CLIENT.books}`)}
+            onClick={() => void navigateToBooks()}
             disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
@@ -295,10 +297,7 @@ export function Cart() {
       <EmptyCart>
         <CartEmptyIcon />
         <p>Your cart is empty</p>
-        <Button
-          type="button"
-          onClick={() => void navigate(`/${PATH.CLIENT.books}`)}
-          $withCart>
+        <Button type="button" onClick={() => void navigateToBooks()} $withCart>
           Go Shopping
         </Button>
       </EmptyCart>

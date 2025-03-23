@@ -48,13 +48,13 @@ export function CheckoutForm() {
     setIsLoading(false)
   }
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (order) {
-      void dispatch(orderCancel(order.paymentId))
+      await dispatch(orderCancel(order.paymentId))
     }
 
     dispatch(orderClear())
-    void navigate(`/${PATH.CLIENT.cart}`, { replace: true })
+    await navigate(`/${PATH.CLIENT.cart}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -110,7 +110,7 @@ export function CheckoutForm() {
       )}
       <button
         type="button"
-        onClick={handleCancel}
+        onClick={() => void handleCancel()}
         style={{ backgroundColor: 'var(--grey)' }}>
         <span>Cancel Checkout</span>
       </button>

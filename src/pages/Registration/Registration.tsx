@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
@@ -20,7 +20,7 @@ export function Registration() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
@@ -49,7 +49,7 @@ export function Registration() {
         },
       )
 
-      void navigate('/', { replace: true })
+      await navigate('/', { replace: true })
     } catch (error) {
       const errorMessage =
         error instanceof HTTPError
@@ -58,6 +58,10 @@ export function Registration() {
 
       toast.error(errorMessage, { id: 'register-error' })
     }
+  }
+
+  const navigateToHome = async () => {
+    await navigate('/')
   }
 
   return (
@@ -106,7 +110,7 @@ export function Registration() {
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
-                onClick={() => void navigate('/')}
+                onClick={() => void navigateToHome()}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}

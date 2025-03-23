@@ -10,12 +10,12 @@ import books from '@/assets/image/books.png'
 export function NotFound() {
   const navigate = useNavigate()
 
-  function handleGoBack() {
+  async function handleGoBack() {
     const hasPreviousPage = window.history.length > 2
     if (hasPreviousPage) {
-      void navigate(-1)
+      await navigate(-1)
     } else {
-      void navigate('/')
+      await navigate('/')
     }
   }
 
@@ -31,7 +31,7 @@ export function NotFound() {
           {"The page you're looking for doesn't exist or has been moved."}
         </h4>
       </NotFoundSection>
-      <BackButton type="button" onClick={handleGoBack}>
+      <BackButton type="button" onClick={() => void handleGoBack()}>
         Go Back
       </BackButton>
     </StyledNotFound>

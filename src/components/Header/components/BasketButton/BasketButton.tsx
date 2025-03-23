@@ -10,10 +10,14 @@ export function BasketButton() {
   const { cartArray } = useCart()
   const navigate = useNavigate()
 
+  const navigateToCart = async () => {
+    await navigate(`/${PATH.CLIENT.cart}`)
+  }
+
   return (
     <StyledBasketButton>
       <Button
-        onClick={() => void navigate(`/${PATH.CLIENT.cart}`)}
+        onClick={() => void navigateToCart()}
         $size="smMd"
         $withCart
         title={order ? 'Checkout' : 'Basket'}>
