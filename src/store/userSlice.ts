@@ -7,7 +7,13 @@ import {
   patchUserProfile,
 } from '@/api/users'
 import { handleErrors } from '@/errors'
-import type { UserUpdate, UserState, User } from '@/types'
+import type {
+  UserUpdate,
+  UserState,
+  User,
+  LoginRequest,
+  LoginResponse,
+} from '@/types'
 
 const initialState: UserState = {
   accessToken: null,
@@ -112,24 +118,26 @@ export const fetchUserProfile = createAsyncThunk<User, void, RejectValue>(
   },
 )
 
-export const login = createAsyncThunk<
-  { accessToken: string; firstName: string },
-  { email: string; password: string },
-  RejectValue
->('login', async (user, { rejectWithValue }) => {
-  try {
-    const userResponse = await postUserLogin(user.email, user.password)
+export const login = createAsyncThunk<LoginResponse, LoginRequest, RejectValue>(
+  'login',
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const userResponse = await postUserLogin({
+        email,
+        password,
+      })
 
-    return userResponse
-  } catch (error) {
-    const errorObject = handleErrors(
-      error,
-      'Login failed, please try again later',
-    )
+      return userResponse
+    } catch (error) {
+      const errorObject = handleErrors(
+        error,
+        'Login failed, please try again later',
+      )
 
-    return rejectWithValue(errorObject.message)
-  }
-})
+      return rejectWithValue(errorObject.message)
+    }
+  },
+)
 
 export const logout = createAsyncThunk<{ message: string }, void, RejectValue>(
   'authLogout',

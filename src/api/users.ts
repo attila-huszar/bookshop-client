@@ -1,7 +1,13 @@
 import { authRequest, baseRequest } from './'
 import { PATH } from '@/constants'
-import { uploadImage } from '@/services'
-import type { User, UserUpdate } from '@/types'
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  User,
+  UserUpdate,
+} from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
@@ -15,10 +21,10 @@ export const getUserProfile = async (): Promise<User> => {
   return authRequest.get(PATH.SERVER.users.profile).json()
 }
 
-export const postUserLogin = async (
-  email: string,
-  password: string,
-): Promise<{ accessToken: string; firstName: string }> => {
+export const postUserLogin = async ({
+  email,
+  password,
+}: LoginRequest): Promise<LoginResponse> => {
   return baseRequest
     .post(PATH.SERVER.users.login, {
       json: { email, password },
@@ -28,16 +34,18 @@ export const postUserLogin = async (
 }
 
 export const postUserRegister = async (
-  user: Pick<User, 'email' | 'firstName' | 'lastName' | 'avatar'> & {
-    password: string
-  },
-): Promise<{ email: string }> => {
+  user: RegisterRequest,
+): Promise<RegisterResponse> => {
+  const formData = new FormData()
+  formData.append('firstName', user.firstName)
+  formData.append('lastName', user.lastName)
+  formData.append('email', user.email)
+  formData.append('password', user.password)
   if (user.avatar instanceof File) {
-    const imageResponse = await uploadImage(user.avatar, 'avatars')
-    user.avatar = imageResponse?.url
+    formData.append('avatar', user.avatar)
   }
 
-  return baseRequest.post(PATH.SERVER.users.register, { json: user }).json()
+  return baseRequest.post(PATH.SERVER.users.register, { body: formData }).json()
 }
 
 export const postUserLogout = async (): Promise<{ message: string }> => {

@@ -7,12 +7,11 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.style'
-import { IconButton } from '@/components'
+import { Avatar, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { PATH } from '@/constants'
 import LoginIcon from '@/assets/svg/account.svg?react'
-import AccountDefaultIcon from '@/assets/svg/account_default.svg?react'
 import accountIcon from '@/assets/svg/user_account.svg'
 import logoutIcon from '@/assets/svg/logout.svg'
 
@@ -54,9 +53,9 @@ export function AccountMenu() {
     <StyledMenu ref={menuRef}>
       {userData ? (
         <>
-          <IconButton
+          <Avatar
+            imgUrl={userData.avatar}
             onClick={toggleMenu}
-            icon={<AccountDefaultIcon />}
             title={userData.firstName}
           />
           <Dropdown $show={menuOpen}>

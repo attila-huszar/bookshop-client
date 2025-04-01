@@ -13,7 +13,7 @@ import {
 } from '@/components'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
-import type { UserRegister } from '@/types'
+import type { RegisterRequest } from '@/types'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
@@ -24,23 +24,9 @@ export function Registration() {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleSubmit = async (values: {
-    firstName: string
-    lastName: string
-    email: string
-    password: string
-    avatar: File | undefined
-  }) => {
-    const user: UserRegister = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      password: values.password,
-      avatar: values.avatar,
-    }
-
+  const handleSubmit = async (values: RegisterRequest) => {
     try {
-      const registerResponse = await postUserRegister(user)
+      const registerResponse = await postUserRegister(values)
 
       toast.success(
         `${registerResponse.email} registered successfully, please verify your email address`,

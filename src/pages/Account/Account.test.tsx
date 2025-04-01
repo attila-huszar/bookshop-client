@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { Account } from './Account'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { uploadImage } from '@/services'
 import { Providers } from '@/setupTests'
 
 vi.mock('@/services', () => ({
@@ -78,7 +77,6 @@ describe('Account page', () => {
     const mockUploadImage = vi.fn(() =>
       Promise.resolve({ url: 'mock-avatar-url' }),
     )
-    vi.mocked(uploadImage).mockImplementation(mockUploadImage)
 
     render(<Account />, { wrapper: Providers })
 

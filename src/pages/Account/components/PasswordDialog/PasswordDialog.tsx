@@ -42,7 +42,10 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const user = await postUserLogin(email, values.currentPassword)
+    const user = await postUserLogin({
+      email,
+      password: values.currentPassword,
+    })
 
     if (user.accessToken) {
       if (values.currentPassword !== values.newPassword) {

@@ -7,10 +7,30 @@ export type User = {
   email: string
   phone?: string
   address?: Address
-  avatar?: File | string
+  avatar?: string
   role?: 'user' | 'admin'
 }
 
+export type RegisterRequest = {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  avatar?: File
+}
+
+export type RegisterResponse = {
+  email: string
+}
+
+export type LoginRequest = {
+  email: string
+  password: string
+}
+
+export type LoginResponse = {
+  accessToken: string
+  firstName: string
+}
+
 export type UserUpdate = Partial<User> & { password?: string }
-export type UserLogin = Pick<User, 'email'> & { password: string }
-export type UserRegister = Omit<User, 'uuid'> & { password: string }

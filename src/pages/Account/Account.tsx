@@ -15,7 +15,6 @@ import { Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser } from '@/store'
-import { uploadImage } from '@/services'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
 import type { User } from '@/types'
@@ -41,9 +40,11 @@ export function Account() {
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
   //const handleAvatarClick = () => inputFile.current?.click()
 
-  const handleImgChange = async (img: File) => {
-    const imageResponse = await uploadImage(img, 'avatars')
-    void dispatch(updateUser({ avatar: imageResponse?.url }))
+  const handleImgChange = (img: File) => {
+    const formData = new FormData()
+    formData.append('avatar', img)
+
+    // TODO: Add a function to handle the image upload
   }
 
   const handlePasswordDialogOpen = () => {

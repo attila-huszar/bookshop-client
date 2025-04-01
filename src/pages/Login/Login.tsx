@@ -14,7 +14,7 @@ import { loginSchema } from '@/helpers'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
-import type { UserLogin } from '@/types'
+import type { LoginRequest } from '@/types'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from '@/assets/svg/question_circle.svg?react'
 
@@ -29,13 +29,15 @@ export function Login() {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleLogin = async (user: UserLogin) => {
+  const handleSubmit = async (values: LoginRequest) => {
     try {
-      const response = await dispatch(login(user)).unwrap()
-      await navigate('/', { replace: true })
-      toast.success(`Welcome back, ${response.firstName}!`, {
+      const loginResponse = await dispatch(login(values)).unwrap()
+
+      toast.success(`Welcome back, ${loginResponse.firstName}!`, {
         id: 'login-success',
       })
+
+      await navigate('/', { replace: true })
     } catch (error) {
       toast.error(String(error), {
         id: 'login-error',
@@ -57,7 +59,7 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={handleLogin}>
+        onSubmit={handleSubmit}>
         <Form noValidate>
           <p>Email</p>
           <FormikField
