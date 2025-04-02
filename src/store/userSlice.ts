@@ -6,7 +6,6 @@ import {
   postUserLogout,
   patchUserProfile,
 } from '@/api/users'
-import { handleErrors } from '@/errors'
 import type {
   UserUpdate,
   UserState,
@@ -96,9 +95,9 @@ export const fetchAuthTokens = createAsyncThunk<string, void, RejectValue>(
 
       return accessToken
     } catch (error) {
-      const errorObject = handleErrors(error, 'Unable to get auth tokens')
-
-      return rejectWithValue(errorObject.message)
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+      )
     }
   },
 )
@@ -111,9 +110,9 @@ export const fetchUserProfile = createAsyncThunk<User, void, RejectValue>(
 
       return userResponse
     } catch (error) {
-      const errorObject = handleErrors(error, 'Unable to get user profile')
-
-      return rejectWithValue(errorObject.message)
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+      )
     }
   },
 )
@@ -129,12 +128,9 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest, RejectValue>(
 
       return userResponse
     } catch (error) {
-      const errorObject = handleErrors(
-        error,
-        'Login failed, please try again later',
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
       )
-
-      return rejectWithValue(errorObject.message)
     }
   },
 )
@@ -147,12 +143,9 @@ export const logout = createAsyncThunk<{ message: string }, void, RejectValue>(
 
       return userResponse
     } catch (error) {
-      const errorObject = handleErrors(
-        error,
-        'Logout failed, please try again later',
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
       )
-
-      return rejectWithValue(errorObject.message)
     }
   },
 )
@@ -165,12 +158,9 @@ export const updateUser = createAsyncThunk<User, UserUpdate, RejectValue>(
 
       return userResponse
     } catch (error) {
-      const errorObject = handleErrors(
-        error,
-        'User update failed, please try again later',
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
       )
-
-      return rejectWithValue(errorObject.message)
     }
   },
 )

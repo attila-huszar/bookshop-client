@@ -3,18 +3,36 @@ import { PATH } from '@/constants'
 import { handleErrors } from '@/errors'
 import type { Author } from '@/types'
 
-export const getAuthorById = (id: number): Promise<Author> => {
+export const getAuthorById = async (id: number): Promise<Author> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.authors}/${id}`).json()
+    const response = await baseRequest.get<Author>(
+      `${PATH.SERVER.authors}/${id}`,
+    )
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Author not found')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Author not found',
+    })
+    throw formattedError
   }
 }
 
-export const getAuthorsBySearch = (searchString: string): Promise<Author[]> => {
+export const getAuthorsBySearch = async (
+  searchString: string,
+): Promise<Author[]> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.authors}?name=${searchString}`).json()
+    const response = await baseRequest.get<Author[]>(
+      `${PATH.SERVER.authors}?name=${searchString}`,
+    )
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get authors by search')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get authors by search',
+    })
+    throw formattedError
   }
 }

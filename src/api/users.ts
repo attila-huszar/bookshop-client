@@ -1,5 +1,6 @@
 import { authRequest, baseRequest } from './'
 import { PATH } from '@/constants'
+import { handleErrors } from '@/errors'
 import type {
   LoginRequest,
   LoginResponse,
@@ -12,72 +13,169 @@ import type {
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
 }> => {
-  return baseRequest
-    .post(PATH.SERVER.users.refresh, { credentials: 'include' })
-    .json()
+  try {
+    const response = await baseRequest.post<{
+      accessToken: string
+    }>(PATH.SERVER.users.refresh, { credentials: 'include' })
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to retrieve auth tokens',
+    })
+    throw formattedError
+  }
 }
 
 export const getUserProfile = async (): Promise<User> => {
-  return authRequest.get(PATH.SERVER.users.profile).json()
+  try {
+    const response = await authRequest.get<User>(PATH.SERVER.users.profile)
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to get user profile',
+    })
+    throw formattedError
+  }
 }
 
 export const postUserLogin = async ({
   email,
   password,
 }: LoginRequest): Promise<LoginResponse> => {
-  return baseRequest
-    .post(PATH.SERVER.users.login, {
-      json: { email, password },
-      credentials: 'include',
+  try {
+    const response = await baseRequest.post<LoginResponse>(
+      PATH.SERVER.users.login,
+      { json: { email, password }, credentials: 'include' },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to login',
     })
-    .json()
+    throw formattedError
+  }
 }
 
 export const postUserRegister = async (
   user: RegisterRequest,
 ): Promise<RegisterResponse> => {
-  const formData = new FormData()
-  formData.append('firstName', user.firstName)
-  formData.append('lastName', user.lastName)
-  formData.append('email', user.email)
-  formData.append('password', user.password)
-  if (user.avatar instanceof File) {
-    formData.append('avatar', user.avatar)
-  }
+  try {
+    const formData = new FormData()
+    formData.append('firstName', user.firstName)
+    formData.append('lastName', user.lastName)
+    formData.append('email', user.email)
+    formData.append('password', user.password)
+    if (user.avatar instanceof File) {
+      formData.append('avatar', user.avatar)
+    }
 
-  return baseRequest.post(PATH.SERVER.users.register, { body: formData }).json()
+    const response = await baseRequest.post<RegisterResponse>(
+      PATH.SERVER.users.register,
+      { body: formData },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to register',
+    })
+    throw formattedError
+  }
 }
 
 export const postUserLogout = async (): Promise<{ message: string }> => {
-  return authRequest
-    .post(PATH.SERVER.users.logout, { credentials: 'include' })
-    .json()
+  try {
+    const response = await authRequest.post<{ message: string }>(
+      PATH.SERVER.users.logout,
+      { credentials: 'include' },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to logout',
+    })
+    throw formattedError
+  }
 }
 
 export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
-  return authRequest.patch(PATH.SERVER.users.profile, { json: fields }).json()
+  try {
+    const response = await authRequest.patch<User>(PATH.SERVER.users.profile, {
+      json: fields,
+    })
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to update user profile',
+    })
+    throw formattedError
+  }
 }
 
 export const postVerifyEmail = async (
   token: string,
 ): Promise<{ email: string }> => {
-  return baseRequest
-    .post(PATH.SERVER.users.verification, { json: { token } })
-    .json()
+  try {
+    const response = await baseRequest.post<{ email: string }>(
+      PATH.SERVER.users.verification,
+      { json: { token } },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to verify email',
+    })
+    throw formattedError
+  }
 }
 
 export const postPasswordReset = async (
   email: string,
 ): Promise<{ email: string }> => {
-  return baseRequest
-    .post(PATH.SERVER.users.passwordResetRequest, { json: { email } })
-    .json()
+  try {
+    const response = await baseRequest.post<{ email: string }>(
+      PATH.SERVER.users.passwordResetRequest,
+      { json: { email } },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to send password reset email',
+    })
+    throw formattedError
+  }
 }
 
 export const postVerifyPasswordReset = async (
   token: string,
 ): Promise<{ email: string }> => {
-  return baseRequest
-    .post(PATH.SERVER.users.passwordResetToken, { json: { token } })
-    .json()
+  try {
+    const response = await baseRequest.post<{ email: string }>(
+      PATH.SERVER.users.passwordResetToken,
+      { json: { token } },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to verify password reset token',
+    })
+    throw formattedError
+  }
 }

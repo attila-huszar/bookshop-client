@@ -10,7 +10,6 @@ const httpError = {
 export const baseRequest = ky.create({
   prefixUrl: import.meta.env.PROD ? serverUrl : '/api',
   headers: {
-    'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
 })

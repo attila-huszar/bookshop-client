@@ -5,8 +5,14 @@ import type { News } from '@/types'
 
 export const getNews = async (): Promise<News[]> => {
   try {
-    return baseRequest.get(PATH.SERVER.news).json()
+    const response = await baseRequest.get<News[]>(PATH.SERVER.news)
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get news')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get news',
+    })
+    throw formattedError
   }
 }

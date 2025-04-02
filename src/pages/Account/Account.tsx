@@ -11,7 +11,7 @@ import {
   AddressLine,
   ButtonWrapper,
 } from './Account.style'
-import { Button, FormikField, IconButton } from '@/components'
+import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser } from '@/store'
@@ -38,7 +38,7 @@ export function Account() {
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
-  //const handleAvatarClick = () => inputFile.current?.click()
+  const handleAvatarClick = () => inputFile.current?.click()
 
   const handleImgChange = (img: File) => {
     const formData = new FormData()
@@ -52,7 +52,7 @@ export function Account() {
   }
 
   if (userData) {
-    const { email, firstName, lastName, phone, address } = userData
+    const { email, firstName, lastName, phone, address, avatar } = userData
 
     return (
       <StyledAccount>
@@ -64,6 +64,14 @@ export function Account() {
             <h5>General Information</h5>
             <div>
               <AvatarPanel>
+                <Avatar
+                  imgUrl={avatar}
+                  onClick={handleAvatarClick}
+                  title="Change Profile Picture"
+                  $size={160}
+                  $clip
+                  $camera
+                />
                 <input
                   type="file"
                   name="avatarChangeInput"
@@ -87,12 +95,7 @@ export function Account() {
               </AvatarPanel>
               <General>
                 <Formik
-                  initialValues={{
-                    firstName: firstName ?? '',
-                    lastName: lastName ?? '',
-                    email: email ?? '',
-                    phone: phone ?? '',
-                  }}
+                  initialValues={{ firstName, lastName, email, phone }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
                   onSubmit={handleBasicInfoSubmit}

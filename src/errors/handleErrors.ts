@@ -1,16 +1,23 @@
 import { HTTPError } from 'ky'
 import { ParameterError } from './ParameterError'
 
-export function handleErrors(error: unknown, message: string): Error {
+const DEFAULT_ERROR_MESSAGE = 'Unknown error occurred'
+
+export async function handleErrors({
+  error,
+  message = DEFAULT_ERROR_MESSAGE,
+}: {
+  error: unknown
+  message?: string
+}): Promise<Error> {
   if (error instanceof HTTPError) {
-    error.response
-      .json<{ error: string }>()
-      .then((response) => {
-        return new Error(response.error)
-      })
-      .catch(() => {
-        return new Error('Unknown error occurred')
-      })
+    try {
+      const response = await error.response.json<{ error: string }>()
+
+      return new Error(response.error || message)
+    } catch {
+      return new Error(message)
+    }
   } else if (error instanceof ParameterError) {
     return new Error(error.message)
   }

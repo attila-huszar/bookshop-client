@@ -1,5 +1,6 @@
 import { baseRequest } from './'
 import { PATH } from '@/constants'
+import { handleErrors } from '@/errors'
 import type {
   Order,
   OrderUpdate,
@@ -12,46 +13,92 @@ export const postPaymentIntent = async ({
   currency,
   description,
 }: PostPaymentIntent): Promise<{ clientSecret: string }> => {
-  return baseRequest
-    .post(PATH.SERVER.orders.paymentIntent, {
-      json: { amount, currency, description },
+  try {
+    const response = await baseRequest.post<{ clientSecret: string }>(
+      PATH.SERVER.orders.paymentIntent,
+      { json: { amount, currency, description } },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to create payment intent',
     })
-    .json()
+    throw formattedError
+  }
 }
 
 export const getPaymentIntent = async (
   paymentId: string,
 ): Promise<GetPaymentIntent> => {
-  return baseRequest
-    .get(`${PATH.SERVER.orders.paymentIntent}/${paymentId}`)
-    .json()
+  try {
+    const response = await baseRequest.get<GetPaymentIntent>(
+      `${PATH.SERVER.orders.paymentIntent}/${paymentId}`,
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get payment intent',
+    })
+    throw formattedError
+  }
 }
 
 export const deletePaymentIntent = async (
   paymentId: string,
 ): Promise<GetPaymentIntent> => {
-  return baseRequest
-    .delete(`${PATH.SERVER.orders.paymentIntent}/${paymentId}`)
-    .json()
+  try {
+    const response = await baseRequest.delete<GetPaymentIntent>(
+      `${PATH.SERVER.orders.paymentIntent}/${paymentId}`,
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to delete payment intent',
+    })
+    throw formattedError
+  }
 }
 
 export const postCreateOrder = async (
   orderData: Order,
 ): Promise<{ paymentId: string }> => {
-  return baseRequest
-    .post(PATH.SERVER.orders.create, {
-      json: orderData,
+  try {
+    const response = await baseRequest.post<{ paymentId: string }>(
+      PATH.SERVER.orders.create,
+      { json: orderData },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to create order',
     })
-    .json()
+    throw formattedError
+  }
 }
 
 export const updateOrder = async ({
   paymentId,
   fields,
 }: OrderUpdate): Promise<Order> => {
-  return baseRequest
-    .patch(PATH.SERVER.orders.update, {
+  try {
+    const response = await baseRequest.patch<Order>(PATH.SERVER.orders.update, {
       json: { paymentId, fields },
     })
-    .json()
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to update order',
+    })
+    throw formattedError
+  }
 }

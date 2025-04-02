@@ -63,50 +63,96 @@ export const getBooks = async ({
       books,
     }
   } catch (error) {
-    throw handleErrors(error, 'Unable to get books')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get books',
+    })
+    throw formattedError
   }
 }
 
-export const getBookById = (id: number): Promise<Book> => {
+export const getBookById = async (id: number): Promise<Book> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.books}/${id}`).json()
+    const response = await baseRequest.get<Book>(`${PATH.SERVER.books}/${id}`)
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get book by ID')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get book by ID',
+    })
+    throw formattedError
   }
 }
 
-export const getBooksByProperty = (
+export const getBooksByProperty = async (
   property: 'newRelease' | 'topSellers',
 ): Promise<Book[]> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.books}?${property}=true`).json()
+    const response = await baseRequest.get<Book[]>(
+      `${PATH.SERVER.books}?${property}=true`,
+    )
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get books by property')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get books by property',
+    })
+    throw formattedError
   }
 }
 
-export const getBooksBySearch = (searchString: string): Promise<Book[]> => {
+export const getBooksBySearch = async (
+  searchString: string,
+): Promise<Book[]> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.books}?title=${searchString}`).json()
+    const response = await baseRequest.get<Book[]>(
+      `${PATH.SERVER.books}?title=${searchString}`,
+    )
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get books by search')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get books by search',
+    })
+    throw formattedError
   }
 }
 
-export const getBooksByAuthor = (id: number): Promise<Book[]> => {
+export const getBooksByAuthor = async (id: number): Promise<Book[]> => {
   try {
-    return baseRequest.get(`${PATH.SERVER.books}?authorId=${id}`).json()
+    const response = await baseRequest.get<Book[]>(
+      `${PATH.SERVER.books}?authorId=${id}`,
+    )
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get books by author')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get books by author',
+    })
+    throw formattedError
   }
 }
 
-export const getBookSearchOptions = (): Promise<
+export const getBookSearchOptions = async (): Promise<
   Pick<FilterProps, 'genre' | 'price' | 'publishYear'>
 > => {
   try {
-    return baseRequest.get(`${PATH.SERVER.searchOptions}`).json()
+    const response = await baseRequest.get<{
+      genre: string[]
+      price: number[]
+      publishYear: number[]
+    }>(`${PATH.SERVER.searchOptions}`)
+    const data = await response.json()
+    return data
   } catch (error) {
-    throw handleErrors(error, 'Unable to get book search options')
+    const formattedError = await handleErrors({
+      error,
+      message: 'Unable to get book search options',
+    })
+    throw formattedError
   }
 }
