@@ -10,7 +10,8 @@ import { updateUser } from '@/store'
 import { useAppDispatch } from '@/hooks'
 import { postVerifyPasswordReset } from '@/api/users'
 import { resetPasswordSchema } from '@/helpers'
-import { PATH, passwordResetInitialValues } from '@/constants'
+import { passwordResetInitialValues } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function PasswordReset() {
   const navigate = useNavigate()
@@ -54,7 +55,7 @@ export function PasswordReset() {
       try {
         await dispatch(updateUser({ password: values.newPassword }))
 
-        await navigate(`/${PATH.CLIENT.login}`, { replace: true })
+        await navigate(`/${ROUTE.LOGIN}`, { replace: true })
         toast.success('Password Changed Successfully', {
           id: 'reset-success',
         })

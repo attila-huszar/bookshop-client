@@ -1,9 +1,5 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  type SerializedError,
-} from '@reduxjs/toolkit'
-import { getAuthorById, getAuthorsBySearch } from '@/api'
+import { createSlice, type SerializedError } from '@reduxjs/toolkit'
+import { fetchAuthorById, fetchAuthorsBySearch } from '../thunks/authors'
 import type { Author, AuthorState } from '@/types'
 
 const initialState: AuthorState = {
@@ -67,15 +63,5 @@ const authorsSlice = createSlice({
       .addCase(fetchAuthorsBySearch.rejected, handleRejected)
   },
 })
-
-export const fetchAuthorById = createAsyncThunk(
-  'fetchAuthorById',
-  getAuthorById,
-)
-
-export const fetchAuthorsBySearch = createAsyncThunk(
-  'fetchAuthorsBySearch',
-  getAuthorsBySearch,
-)
 
 export const authorsReducer = authorsSlice.reducer

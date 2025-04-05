@@ -9,7 +9,7 @@ import {
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Button } from '@/components'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)
@@ -35,7 +35,7 @@ export function Releases() {
       <ImageWrapper>
         {booksReleases.map((book, idx) => (
           <ImageItem key={book.id} $idx={idx}>
-            <Link to={`/${PATH.CLIENT.books}/${book.id}`}>
+            <Link to={`/${ROUTE.BOOKS}/${book.id}`}>
               <img src={book.imgUrl} alt={book.title} />
             </Link>
             <MirrorImg>

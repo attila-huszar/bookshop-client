@@ -9,7 +9,8 @@ import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { useNavigate } from 'react-router'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
-import { baseURL, PATH } from '@/constants'
+import { ROUTE } from '@/routes'
+import { baseURL } from '@/constants'
 
 export function CheckoutForm() {
   const stripe = useStripe()
@@ -35,7 +36,7 @@ export function CheckoutForm() {
       elements,
       confirmParams: {
         receipt_email: emailInput || userData?.email,
-        return_url: `${baseURL}/${PATH.CLIENT.checkout}`,
+        return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
       },
     })
 
@@ -54,7 +55,7 @@ export function CheckoutForm() {
     }
 
     dispatch(orderClear())
-    await navigate(`/${PATH.CLIENT.cart}`, { replace: true })
+    await navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {

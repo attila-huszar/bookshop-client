@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast'
 import { Cart } from './Cart'
 import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
 import { orderCreate } from '@/store'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
 import type { Cart as CartType, Order, PostPaymentIntent } from '@/types'
 
@@ -75,7 +75,7 @@ describe('Cart component', () => {
     expect(button).toBeInTheDocument()
 
     await userEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.CLIENT.books}`)
+    expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.BOOKS}`)
   })
 
   it('should render cart items correctly', () => {
@@ -129,7 +129,7 @@ describe('Cart component', () => {
     render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.CLIENT.checkout}`, {
+      expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
         replace: true,
       })
     })

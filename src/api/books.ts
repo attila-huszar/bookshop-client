@@ -1,5 +1,5 @@
-import { baseRequest } from './'
-import { PATH } from '@/constants'
+import { baseRequest } from './api'
+import { PATH } from './path'
 import { handleErrors } from '@/errors'
 import type { Book, FilterProps, FilterActive } from '@/types'
 
@@ -52,7 +52,7 @@ export const getBooks = async ({
     }
 
     const booksResponse = await baseRequest.get<Book[]>(
-      `${PATH.SERVER.books}?${params}`,
+      `${PATH.books}?${params}`,
     )
 
     const total = booksResponse.headers.get('x-total-count')
@@ -73,7 +73,7 @@ export const getBooks = async ({
 
 export const getBookById = async (id: number): Promise<Book> => {
   try {
-    const response = await baseRequest.get<Book>(`${PATH.SERVER.books}/${id}`)
+    const response = await baseRequest.get<Book>(`${PATH.books}/${id}`)
     const data = await response.json()
     return data
   } catch (error) {
@@ -90,7 +90,7 @@ export const getBooksByProperty = async (
 ): Promise<Book[]> => {
   try {
     const response = await baseRequest.get<Book[]>(
-      `${PATH.SERVER.books}?${property}=true`,
+      `${PATH.books}?${property}=true`,
     )
     const data = await response.json()
     return data
@@ -108,7 +108,7 @@ export const getBooksBySearch = async (
 ): Promise<Book[]> => {
   try {
     const response = await baseRequest.get<Book[]>(
-      `${PATH.SERVER.books}?title=${searchString}`,
+      `${PATH.books}?title=${searchString}`,
     )
     const data = await response.json()
     return data
@@ -124,7 +124,7 @@ export const getBooksBySearch = async (
 export const getBooksByAuthor = async (id: number): Promise<Book[]> => {
   try {
     const response = await baseRequest.get<Book[]>(
-      `${PATH.SERVER.books}?authorId=${id}`,
+      `${PATH.books}?authorId=${id}`,
     )
     const data = await response.json()
     return data
@@ -145,7 +145,7 @@ export const getBookSearchOptions = async (): Promise<
       genre: string[]
       price: number[]
       publishYear: number[]
-    }>(`${PATH.SERVER.searchOptions}`)
+    }>(`${PATH.searchOptions}`)
     const data = await response.json()
     return data
   } catch (error) {

@@ -1,5 +1,6 @@
 import { useState, useRef, ChangeEvent } from 'react'
 import { Form, Formik } from 'formik'
+import toast from 'react-hot-toast'
 import {
   StyledAccount,
   UserDataFields,
@@ -14,7 +15,8 @@ import {
 import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { userSelector, updateUser } from '@/store'
+import { userSelector, updateUser, fetchUserProfile } from '@/store'
+import { uploadAvatar } from '@/api'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
 import type { User } from '@/types'
@@ -40,11 +42,54 @@ export function Account() {
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
   const handleAvatarClick = () => inputFile.current?.click()
 
-  const handleImgChange = (img: File) => {
-    const formData = new FormData()
-    formData.append('avatar', img)
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target
+    const files = fileInput.files
 
-    // TODO: Add a function to handle the image upload
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+
+    if (!(file instanceof File)) {
+      toast.error('Invalid file selected', { id: 'upload-error-type' })
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file', { id: 'upload-error-format' })
+      return
+    }
+
+    if (file.size > 512 * 1024) {
+      toast.error('Image must be smaller than 512KB', {
+        id: 'upload-error-size',
+      })
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+    void uploadAvatarFile(formData)
+
+    fileInput.value = ''
+  }
+
+  const uploadAvatarFile = async (formData: FormData) => {
+    try {
+      toast.loading('Uploading avatar...', { id: 'avatar-upload' })
+
+      await uploadAvatar(formData)
+      await dispatch(fetchUserProfile())
+
+      toast.success('Avatar updated successfully', { id: 'avatar-upload' })
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to upload avatar, please try again'
+
+      toast.error(errorMessage, { id: 'avatar-upload' })
+    }
   }
 
   const handlePasswordDialogOpen = () => {
@@ -76,11 +121,7 @@ export function Account() {
                   type="file"
                   name="avatarChangeInput"
                   aria-label="Change Avatar"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    if (e.target.files) {
-                      void handleImgChange(e.target.files[0])
-                    }
-                  }}
+                  onChange={handleAvatarChange}
                   accept="image/*"
                   ref={inputFile}
                   style={{ display: 'none' }}

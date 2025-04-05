@@ -1,5 +1,5 @@
-import { authRequest, baseRequest } from './'
-import { PATH } from '@/constants'
+import { authRequest, baseRequest } from './api'
+import { PATH } from './path'
 import { handleErrors } from '@/errors'
 import type {
   LoginRequest,
@@ -16,7 +16,7 @@ export const retrieveAuthTokens = async (): Promise<{
   try {
     const response = await baseRequest.post<{
       accessToken: string
-    }>(PATH.SERVER.users.refresh, { credentials: 'include' })
+    }>(PATH.users.refresh, { credentials: 'include' })
     const data = await response.json()
     return data
   } catch (error) {
@@ -30,7 +30,7 @@ export const retrieveAuthTokens = async (): Promise<{
 
 export const getUserProfile = async (): Promise<User> => {
   try {
-    const response = await authRequest.get<User>(PATH.SERVER.users.profile)
+    const response = await authRequest.get<User>(PATH.users.profile)
     const data = await response.json()
     return data
   } catch (error) {
@@ -47,10 +47,10 @@ export const postUserLogin = async ({
   password,
 }: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await baseRequest.post<LoginResponse>(
-      PATH.SERVER.users.login,
-      { json: { email, password }, credentials: 'include' },
-    )
+    const response = await baseRequest.post<LoginResponse>(PATH.users.login, {
+      json: { email, password },
+      credentials: 'include',
+    })
     const data = await response.json()
     return data
   } catch (error) {
@@ -76,7 +76,7 @@ export const postUserRegister = async (
     }
 
     const response = await baseRequest.post<RegisterResponse>(
-      PATH.SERVER.users.register,
+      PATH.users.register,
       { body: formData },
     )
     const data = await response.json()
@@ -93,7 +93,7 @@ export const postUserRegister = async (
 export const postUserLogout = async (): Promise<{ message: string }> => {
   try {
     const response = await authRequest.post<{ message: string }>(
-      PATH.SERVER.users.logout,
+      PATH.users.logout,
       { credentials: 'include' },
     )
     const data = await response.json()
@@ -109,7 +109,7 @@ export const postUserLogout = async (): Promise<{ message: string }> => {
 
 export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
   try {
-    const response = await authRequest.patch<User>(PATH.SERVER.users.profile, {
+    const response = await authRequest.patch<User>(PATH.users.profile, {
       json: fields,
     })
     const data = await response.json()
@@ -128,7 +128,7 @@ export const postVerifyEmail = async (
 ): Promise<{ email: string }> => {
   try {
     const response = await baseRequest.post<{ email: string }>(
-      PATH.SERVER.users.verification,
+      PATH.users.verification,
       { json: { token } },
     )
     const data = await response.json()
@@ -147,7 +147,7 @@ export const postPasswordReset = async (
 ): Promise<{ email: string }> => {
   try {
     const response = await baseRequest.post<{ email: string }>(
-      PATH.SERVER.users.passwordResetRequest,
+      PATH.users.passwordResetRequest,
       { json: { email } },
     )
     const data = await response.json()
@@ -166,7 +166,7 @@ export const postVerifyPasswordReset = async (
 ): Promise<{ email: string }> => {
   try {
     const response = await baseRequest.post<{ email: string }>(
-      PATH.SERVER.users.passwordResetToken,
+      PATH.users.passwordResetToken,
       { json: { token } },
     )
     const data = await response.json()
@@ -175,6 +175,25 @@ export const postVerifyPasswordReset = async (
     const formattedError = await handleErrors({
       error,
       message: 'Failed to verify password reset token',
+    })
+    throw formattedError
+  }
+}
+
+export const uploadAvatar = async (
+  formData: FormData,
+): Promise<{ message: 'Upload success' }> => {
+  try {
+    const response = await authRequest.post<{ message: 'Upload success' }>(
+      PATH.upload,
+      { body: formData },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to upload avatar',
     })
     throw formattedError
   }

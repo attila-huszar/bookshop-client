@@ -1,13 +1,11 @@
-import { baseRequest } from './'
-import { PATH } from '@/constants'
+import { baseRequest } from './api'
+import { PATH } from './path'
 import { handleErrors } from '@/errors'
 import type { Author } from '@/types'
 
 export const getAuthorById = async (id: number): Promise<Author> => {
   try {
-    const response = await baseRequest.get<Author>(
-      `${PATH.SERVER.authors}/${id}`,
-    )
+    const response = await baseRequest.get<Author>(`${PATH.authors}/${id}`)
     const data = await response.json()
     return data
   } catch (error) {
@@ -24,7 +22,7 @@ export const getAuthorsBySearch = async (
 ): Promise<Author[]> => {
   try {
     const response = await baseRequest.get<Author[]>(
-      `${PATH.SERVER.authors}?name=${searchString}`,
+      `${PATH.authors}?name=${searchString}`,
     )
     const data = await response.json()
     return data

@@ -19,7 +19,7 @@ import {
   authorByIdSelector,
 } from '@/store'
 import { Button, Error, Price, Recommended } from '@/components'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
 import CaretIcon from '@/assets/svg/caret_left.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
@@ -54,7 +54,7 @@ export function Product() {
 
   const handleCartAction = async (book: Book) => {
     if (isBookInCart) {
-      await navigate(`/${PATH.CLIENT.cart}`)
+      await navigate(`/${ROUTE.CART}`)
     } else {
       addToCart(book)
     }

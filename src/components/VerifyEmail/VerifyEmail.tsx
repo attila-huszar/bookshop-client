@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast'
 import { HTTPError } from 'ky'
 import { postVerifyEmail } from '@/api/users'
 import { Loading } from '@/components'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function VerifyEmail() {
   const navigate = useNavigate()
@@ -26,7 +26,7 @@ export function VerifyEmail() {
             id: 'verify-success',
           },
         )
-        await navigate(`/${PATH.CLIENT.login}`, { replace: true })
+        await navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
         let errorMessage = 'Verification failed, please try again later'
 

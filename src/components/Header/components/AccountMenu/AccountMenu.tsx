@@ -10,7 +10,7 @@ import {
 import { Avatar, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import LoginIcon from '@/assets/svg/account.svg?react'
 import accountIcon from '@/assets/svg/user_account.svg'
 import logoutIcon from '@/assets/svg/logout.svg'
@@ -46,7 +46,7 @@ export function AccountMenu() {
   }
 
   const navigateToLogin = async () => {
-    await navigate(PATH.CLIENT.login)
+    await navigate(ROUTE.LOGIN)
   }
 
   return (
@@ -61,7 +61,7 @@ export function AccountMenu() {
           <Dropdown $show={menuOpen}>
             <DropdownList>
               <li>
-                <Link to={`/${PATH.CLIENT.account}`} onClick={toggleMenu}>
+                <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
                   <MenuItem>
                     <img src={accountIcon} alt="account" />
                     <span>{userData.firstName}</span>

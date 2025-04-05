@@ -26,7 +26,8 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.style'
-import { PATH, currencyOptions } from '@/constants'
+import { ROUTE } from '@/routes'
+import { currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
 import { OrderStatus } from '@/types'
 import type { Cart, PostPaymentIntent, Order } from '@/types'
@@ -74,7 +75,7 @@ export function Cart() {
   useEffect(() => {
     const redirectToCheckout = async () => {
       if (order?.clientSecret) {
-        await navigate(`/${PATH.CLIENT.checkout}`, { replace: true })
+        await navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
       }
     }
 
@@ -154,7 +155,7 @@ export function Cart() {
   }
 
   const navigateToBooks = async () => {
-    await navigate(`/${PATH.CLIENT.books}`)
+    await navigate(`/${ROUTE.BOOKS}`)
   }
 
   if (cartIsLoading) {
@@ -173,7 +174,7 @@ export function Cart() {
           {cartArray.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${PATH.CLIENT.books}/${item.id}`}>
+                <Link to={`/${ROUTE.BOOKS}/${item.id}`}>
                   <ImageWrapper>
                     <img
                       src={item.imgUrl}

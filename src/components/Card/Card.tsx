@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router'
 import { StyledCard, Details, Image, Title, Description } from './Card.style'
 import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import type { Book } from '@/types'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
@@ -13,7 +13,7 @@ export function Card({ book }: { book: Book }) {
 
   const handleCartAction = async () => {
     if (isBookInCart) {
-      await navigate(`/${PATH.CLIENT.cart}`)
+      await navigate(`/${ROUTE.CART}`)
     } else {
       addToCart(book)
     }
@@ -21,7 +21,7 @@ export function Card({ book }: { book: Book }) {
 
   return (
     <StyledCard>
-      <Link to={`/${PATH.CLIENT.books}/${book.id}`}>
+      <Link to={`/${ROUTE.BOOKS}/${book.id}`}>
         <Image
           src={book.imgUrl}
           onError={(e) =>

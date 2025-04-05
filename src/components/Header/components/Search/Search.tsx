@@ -19,10 +19,13 @@ import {
   useAppDispatch,
   useAppSelector,
 } from '@/hooks'
-import { authorsSelector } from '@/store/selectors'
-import { fetchBooksByAuthor, fetchBooksBySearch } from '@/store/booksSlice'
-import { fetchAuthorsBySearch } from '@/store/authorsSlice'
-import { PATH } from '@/constants'
+import {
+  fetchBooksByAuthor,
+  fetchBooksBySearch,
+  fetchAuthorsBySearch,
+  authorsSelector,
+} from '@/store'
+import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
 import LinkIcon from '@/assets/svg/link.svg?react'
 import SearchIcon from '@/assets/svg/search.svg?react'
@@ -114,7 +117,7 @@ export function Search() {
 
   const handleSubmit = async () => {
     if (searchResults.length) {
-      await navigate(`/${PATH.CLIENT.books}/${searchResults[0].id}`)
+      await navigate(`/${ROUTE.BOOKS}/${searchResults[0].id}`)
     }
   }
 
@@ -156,7 +159,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${PATH.CLIENT.books}/${book.id}`}
+                        to={`/${ROUTE.BOOKS}/${book.id}`}
                         onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img

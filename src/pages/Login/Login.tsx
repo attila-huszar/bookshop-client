@@ -34,13 +34,13 @@ export function Login() {
       const loginResponse = await dispatch(login(values)).unwrap()
 
       toast.success(`Welcome back, ${loginResponse.firstName}!`, {
-        id: 'login-success',
+        id: 'login',
       })
 
       await navigate('/', { replace: true })
     } catch (error) {
       toast.error(String(error), {
-        id: 'login-error',
+        id: 'login',
       })
     }
   }
@@ -49,7 +49,7 @@ export function Login() {
     forgotPasswordDialog.current?.showModal()
   }
 
-  const navigateToHome = async () => {
+  const navigateHome = async () => {
     await navigate('/')
   }
 
@@ -85,7 +85,7 @@ export function Login() {
               type="reset"
               title="Back"
               disabled={userIsLoading}
-              onClick={() => void navigateToHome()}
+              onClick={() => void navigateHome()}
             />
             <Button type="submit" disabled={userIsLoading}>
               {userIsLoading ? 'Logging in...' : 'Login'}

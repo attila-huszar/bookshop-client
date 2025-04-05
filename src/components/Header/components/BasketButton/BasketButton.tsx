@@ -3,7 +3,7 @@ import { StyledBasketButton, CartItemCount } from './BasketButton.style'
 import { Button } from '@/components'
 import { useAppSelector, useCart } from '@/hooks'
 import { orderSelector } from '@/store'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function BasketButton() {
   const { order } = useAppSelector(orderSelector)
@@ -11,7 +11,7 @@ export function BasketButton() {
   const navigate = useNavigate()
 
   const navigateToCart = async () => {
-    await navigate(`/${PATH.CLIENT.cart}`)
+    await navigate(`/${ROUTE.CART}`)
   }
 
   return (

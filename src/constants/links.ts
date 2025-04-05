@@ -1,4 +1,4 @@
-import { PATH } from './'
+import { ROUTE } from '@/routes'
 import homeIcon from '@/assets/svg/home.svg'
 import bookIcon from '@/assets/svg/book.svg'
 import instagramIcon from '@/assets/svg/instagram.svg'
@@ -7,7 +7,7 @@ import fbIcon from '@/assets/svg/facebook.svg'
 
 export const menuLinks = [
   { path: '/', name: 'Home', key: 'home', icon: homeIcon },
-  { path: `/${PATH.CLIENT.books}`, name: 'Shop', key: 'shop', icon: bookIcon },
+  { path: `/${ROUTE.BOOKS}`, name: 'Shop', key: 'shop', icon: bookIcon },
 ]
 
 export const navLinks = [

@@ -1,5 +1,5 @@
-import { baseRequest } from './'
-import { PATH } from '@/constants'
+import { baseRequest } from './api'
+import { PATH } from './path'
 import { handleErrors } from '@/errors'
 import type {
   Order,
@@ -15,7 +15,7 @@ export const postPaymentIntent = async ({
 }: PostPaymentIntent): Promise<{ clientSecret: string }> => {
   try {
     const response = await baseRequest.post<{ clientSecret: string }>(
-      PATH.SERVER.orders.paymentIntent,
+      PATH.orders.paymentIntent,
       { json: { amount, currency, description } },
     )
     const data = await response.json()
@@ -34,7 +34,7 @@ export const getPaymentIntent = async (
 ): Promise<GetPaymentIntent> => {
   try {
     const response = await baseRequest.get<GetPaymentIntent>(
-      `${PATH.SERVER.orders.paymentIntent}/${paymentId}`,
+      `${PATH.orders.paymentIntent}/${paymentId}`,
     )
     const data = await response.json()
     return data
@@ -52,7 +52,7 @@ export const deletePaymentIntent = async (
 ): Promise<GetPaymentIntent> => {
   try {
     const response = await baseRequest.delete<GetPaymentIntent>(
-      `${PATH.SERVER.orders.paymentIntent}/${paymentId}`,
+      `${PATH.orders.paymentIntent}/${paymentId}`,
     )
     const data = await response.json()
     return data
@@ -70,7 +70,7 @@ export const postCreateOrder = async (
 ): Promise<{ paymentId: string }> => {
   try {
     const response = await baseRequest.post<{ paymentId: string }>(
-      PATH.SERVER.orders.create,
+      PATH.orders.create,
       { json: orderData },
     )
     const data = await response.json()
@@ -89,7 +89,7 @@ export const updateOrder = async ({
   fields,
 }: OrderUpdate): Promise<Order> => {
   try {
-    const response = await baseRequest.patch<Order>(PATH.SERVER.orders.update, {
+    const response = await baseRequest.patch<Order>(PATH.orders.update, {
       json: { paymentId, fields },
     })
     const data = await response.json()

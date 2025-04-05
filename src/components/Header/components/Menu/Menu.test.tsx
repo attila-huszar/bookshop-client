@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { Menu } from './Menu'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
 
 describe('Menu component', () => {
@@ -33,6 +33,6 @@ describe('Menu component', () => {
     const shopLink = screen.getByText('Shop')
     await userEvent.click(shopLink)
 
-    expect(global.window.location.pathname).toContain(PATH.CLIENT.books)
+    expect(global.window.location.pathname).toContain(ROUTE.BOOKS)
   })
 })

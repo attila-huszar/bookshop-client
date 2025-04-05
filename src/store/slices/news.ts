@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getNews } from '@/api'
+import { createSlice } from '@reduxjs/toolkit'
+import { fetchNews } from '../thunks/news'
 import type { NewsState } from '@/types'
 
 const initialState: NewsState = {
@@ -27,7 +27,5 @@ const newsSlice = createSlice({
       })
   },
 })
-
-export const fetchNews = createAsyncThunk('fetchNews', getNews)
 
 export const newsReducer = newsSlice.reducer

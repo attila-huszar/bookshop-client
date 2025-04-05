@@ -26,13 +26,13 @@ export function Registration() {
 
   const handleSubmit = async (values: RegisterRequest) => {
     try {
-      const registerResponse = await postUserRegister(values)
+      toast.loading('Registering...', { id: 'register' })
+
+      const response = await postUserRegister(values)
 
       toast.success(
-        `${registerResponse.email} registered successfully, please verify your email address`,
-        {
-          id: 'register-success',
-        },
+        `${response.email} registered successfully, please verify your email address`,
+        { id: 'register' },
       )
 
       await navigate('/', { replace: true })
@@ -42,11 +42,11 @@ export function Registration() {
           ? (await error.response.json<{ error: string }>()).error
           : 'Registration failed, please try again later'
 
-      toast.error(errorMessage, { id: 'register-error' })
+      toast.error(errorMessage, { id: 'register' })
     }
   }
 
-  const navigateToHome = async () => {
+  const navigateHome = async () => {
     await navigate('/')
   }
 
@@ -96,7 +96,7 @@ export function Registration() {
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
-                onClick={() => void navigateToHome()}
+                onClick={() => void navigateHome()}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}

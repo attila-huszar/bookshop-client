@@ -7,8 +7,9 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
   cartClear,
-} from './cartSlice'
-import { orderClear, orderCreate } from './orderSlice'
+} from './slices/cart'
+import { orderClear } from './slices/order'
+import { orderCreate } from './thunks/order'
 import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()

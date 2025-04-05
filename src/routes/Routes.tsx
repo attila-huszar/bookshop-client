@@ -16,7 +16,7 @@ import {
   Checkout,
   NotFound,
 } from '@/pages'
-import { PATH } from '@/constants'
+import { ROUTE } from './route'
 import {
   ProtectedRoute,
   Loading,
@@ -34,7 +34,10 @@ const Layout = lazy(() =>
 
 const routes: RouteObject[] = [
   {
-    path: '/',
+    path: ROUTE.HOME,
+    errorElement: (
+      <Error text="Couldn't load the page. Please try again later." />
+    ),
     element: (
       <ErrorBoundary
         fallback={
@@ -51,31 +54,31 @@ const routes: RouteObject[] = [
         element: <Home />,
       },
       {
-        path: PATH.CLIENT.books,
+        path: ROUTE.BOOKS,
         element: <Products />,
       },
       {
-        path: `${PATH.CLIENT.books}/:id`,
+        path: ROUTE.BOOK,
         element: <Product />,
       },
       {
-        path: PATH.CLIENT.register,
+        path: ROUTE.REGISTER,
         element: <Registration />,
       },
       {
-        path: PATH.CLIENT.login,
+        path: ROUTE.LOGIN,
         element: <Login />,
       },
       {
-        path: PATH.CLIENT.cart,
+        path: ROUTE.CART,
         element: <Cart />,
       },
       {
-        path: PATH.CLIENT.verification,
+        path: ROUTE.VERIFICATION,
         element: <VerifyEmail />,
       },
       {
-        path: PATH.CLIENT.passwordReset,
+        path: ROUTE.PASSWORD_RESET,
         element: <PasswordReset />,
       },
       {
@@ -83,7 +86,7 @@ const routes: RouteObject[] = [
         loader: protectedRouteLoader,
         children: [
           {
-            path: PATH.CLIENT.account,
+            path: ROUTE.ACCOUNT,
             element: <Account />,
           },
         ],
@@ -95,7 +98,7 @@ const routes: RouteObject[] = [
     ],
   },
   {
-    path: PATH.CLIENT.checkout,
+    path: ROUTE.CHECKOUT,
     element: <Checkout />,
   },
 ]

@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getBookById } from '@/api'
-import type { Book, Cart, CartState, CartLocalStorage } from '@/types'
+import { createSlice } from '@reduxjs/toolkit'
+import { fetchCartItems } from '../thunks/cart'
+import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
   cartArray: [],
@@ -91,39 +91,6 @@ const cartSlice = createSlice({
       })
   },
 })
-
-export const fetchCartItems = createAsyncThunk(
-  'fetchCartItems',
-  async (cartArray: CartLocalStorage[]) => {
-    const promises = cartArray.map(async (item) => {
-      const book: Book = await getBookById(item.id)
-
-      const {
-        author,
-        genre,
-        description,
-        publishYear,
-        rating,
-        topSellers,
-        newRelease,
-        ...rest
-      } = book
-
-      return {
-        ...rest,
-        quantity: item.quantity,
-      }
-    })
-
-    const settledItems = await Promise.allSettled(promises)
-
-    const itemsToCart = settledItems
-      .filter((item) => item.status === 'fulfilled')
-      .map((item) => item.value)
-
-    return itemsToCart
-  },
-)
 
 export const cartReducer = cartSlice.reducer
 export const {
