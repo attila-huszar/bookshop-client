@@ -1,13 +1,23 @@
 import { StyledError } from './Error.style'
 import WarningIcon from '@/assets/svg/warning.svg?react'
 
-export function Error({ text, error }: { text: string; error?: string }) {
+type Props = {
+  text?: string
+  error?: string
+  fullScreen?: boolean
+}
+
+export function Error({
+  text = 'Something went wrong. Please try again later.',
+  error,
+  fullScreen,
+}: Props) {
   return (
-    <StyledError>
+    <StyledError $fullScreen={fullScreen}>
       <WarningIcon />
       <div>
         <p>{text}</p>
-        <p>{error}</p>
+        {error && <p>{error}</p>}
       </div>
     </StyledError>
   )

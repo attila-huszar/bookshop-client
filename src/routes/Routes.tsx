@@ -35,15 +35,10 @@ const Layout = lazy(() =>
 const routes: RouteObject[] = [
   {
     path: ROUTE.HOME,
-    errorElement: (
-      <Error text="Couldn't load the page. Please try again later." />
-    ),
+    errorElement: <Error fullScreen />,
     element: (
-      <ErrorBoundary
-        fallback={
-          <Error text="Couldn't load the page. Please try again later." />
-        }>
-        <Suspense fallback={<Loading />}>
+      <ErrorBoundary fallback={<Error fullScreen />}>
+        <Suspense fallback={<Loading fullScreen />}>
           <Layout />
         </Suspense>
       </ErrorBoundary>

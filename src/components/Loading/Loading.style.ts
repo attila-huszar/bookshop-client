@@ -1,11 +1,14 @@
 import { styled } from 'styled-components'
 
-export const StyledLoading = styled.div`
+export const StyledLoading = styled.div<{ $fullScreen?: boolean }>`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 2rem;
   padding: 2rem 4rem;
+
+  ${({ $fullScreen }) => $fullScreen && 'height: 100vh;'}
 
   svg {
     height: 2.5rem;
