@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { HTTPError } from 'ky'
-import { postVerifyEmail } from '@/api/users'
+import { postVerifyEmail } from '@/api'
 import { Loading } from '@/components'
 import { ROUTE } from '@/routes'
 

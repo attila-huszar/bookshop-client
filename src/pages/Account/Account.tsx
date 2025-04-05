@@ -109,7 +109,7 @@ export function Account() {
                   onClick={handleAvatarClick}
                   title="Change Profile Picture"
                   $size={160}
-                  $clip
+                  $hoverControls
                 />
                 <input
                   type="file"

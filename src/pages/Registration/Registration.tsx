@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { HTTPError } from 'ky'
-import { postUserRegister } from '@/api/users'
+import { postUserRegister } from '@/api'
 import { ButtonWrapper } from '@/styles/Form.style'
 import {
   AuthorizationMenu,

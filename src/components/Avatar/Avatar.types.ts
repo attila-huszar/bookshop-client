@@ -1,6 +1,6 @@
 export type StyleTypes = {
   $size?: number
-  $clip?: boolean
+  $hoverControls?: boolean
 }
 
 export type AvatarTypes = React.DetailedHTMLProps<

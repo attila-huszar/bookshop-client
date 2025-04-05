@@ -12,12 +12,6 @@ import { toast } from 'react-hot-toast'
 import { PasswordReset } from './PasswordReset'
 import { updateUser } from '@/store'
 
-vi.mock('@/api/apiHandler', () => ({
-  apiHandler: {
-    passwordReset: vi.fn(),
-  },
-}))
-
 vi.mock('@/store', () => ({
   updateUser: vi.fn(),
 }))

@@ -4,9 +4,9 @@ import { toast } from 'react-hot-toast'
 import { StyledForgotPassword } from './ForgotPassword.style'
 import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
+import { postPasswordReset } from '@/api'
 import { forgotPasswordSchema } from '@/helpers'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
-import { postPasswordReset } from '@/api/users'
 
 function ForgotPassword(
   _props: unknown,

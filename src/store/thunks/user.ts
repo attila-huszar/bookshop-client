@@ -6,7 +6,7 @@ import {
   postUserLogout,
   patchUserProfile,
   uploadAvatar,
-} from '@/api/users'
+} from '@/api'
 import type { UserUpdate, User, LoginRequest, LoginResponse } from '@/types'
 
 export const fetchAuthTokens = createAsyncThunk<string, void, RejectValue>(
