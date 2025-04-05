@@ -1,19 +1,25 @@
 import { styled } from 'styled-components'
 import { StyleTypes } from './Avatar.types'
-import cameraIcon from '../../assets/svg/camera.svg'
 
-export const StyledAvatar = styled.button<StyleTypes>`
+export const StyledAvatar = styled.div<StyleTypes>`
   position: relative;
   display: flex;
   height: ${({ $size }) => $size + 'px'};
   width: ${({ $size }) => $size + 'px'};
-  aspect-ratio: 1;
   border: 2px solid transparent;
   border-radius: 50%;
   outline: 2px solid var(--secondary-color);
   cursor: pointer;
   overflow: hidden;
   transition: all 0.2s ease-out;
+
+  & > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 
   &::after {
     content: '';
@@ -26,23 +32,31 @@ export const StyledAvatar = styled.button<StyleTypes>`
     background-color: #f7f7f775;
     transition: all 0.2s ease-out;
     ${({ $clip }) => $clip && 'clip-path: inset(75% 0 0 0);'}
-    ${({ $camera }) =>
-      $camera &&
-      `background-image: url(${cameraIcon});
-      background-repeat: no-repeat;
-      background-position: bottom 8% center;
-      background-size: 20px 20px;
-      `}
   }
 
   &:hover::after {
     opacity: 1;
   }
 
-  svg {
+  & > svg {
     height: auto;
     width: ${({ $size }) => $size + 'px'};
     padding: 4px;
     border-radius: 50%;
+  }
+`
+
+export const CameraOverlay = styled.div`
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+
+  ${StyledAvatar}:hover & {
+    opacity: 1;
   }
 `

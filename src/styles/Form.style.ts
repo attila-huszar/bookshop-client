@@ -77,12 +77,13 @@ export const ErrorMessage = styled.div<{
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: ${({ $passwordError }) => ($passwordError ? '3.5rem' : '0.5rem')};
+  right: ${({ $passwordError }) => ($passwordError ? '3.25rem' : '0.5rem')};
   padding: 0.5rem 0.75rem;
   color: rgb(120, 27, 0);
   background-color: rgb(255, 245, 245);
   border-radius: 5px;
   font-size: 0.875rem;
+  user-select: none;
   z-index: 1;
 `
 

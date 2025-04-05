@@ -15,8 +15,7 @@ import {
 import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { userSelector, updateUser, fetchUserProfile } from '@/store'
-import { uploadAvatar } from '@/api'
+import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
 import type { User } from '@/types'
@@ -75,20 +74,16 @@ export function Account() {
   }
 
   const uploadAvatarFile = async (formData: FormData) => {
-    try {
-      toast.loading('Uploading avatar...', { id: 'avatar-upload' })
+    toast.loading('Uploading avatar...', { id: 'avatar-upload' })
 
-      await uploadAvatar(formData)
-      await dispatch(fetchUserProfile())
+    const result = await dispatch(updateAvatar(formData))
 
+    if (result.meta.requestStatus === 'fulfilled') {
       toast.success('Avatar updated successfully', { id: 'avatar-upload' })
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to upload avatar, please try again'
-
-      toast.error(errorMessage, { id: 'avatar-upload' })
+    } else {
+      toast.error('Failed to update avatar, please try again later', {
+        id: 'avatar-upload',
+      })
     }
   }
 
@@ -115,7 +110,6 @@ export function Account() {
                   title="Change Profile Picture"
                   $size={160}
                   $clip
-                  $camera
                 />
                 <input
                   type="file"
@@ -128,7 +122,7 @@ export function Account() {
                 />
                 <Button
                   onClick={handlePasswordDialogOpen}
-                  $size="sm"
+                  $size="smMd"
                   $textSize="sm">
                   Change Password
                 </Button>
@@ -136,7 +130,12 @@ export function Account() {
               </AvatarPanel>
               <General>
                 <Formik
-                  initialValues={{ firstName, lastName, email, phone }}
+                  initialValues={{
+                    firstName,
+                    lastName,
+                    email,
+                    phone: phone ?? '',
+                  }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
                   onSubmit={handleBasicInfoSubmit}

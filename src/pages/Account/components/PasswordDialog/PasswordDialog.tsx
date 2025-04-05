@@ -42,32 +42,33 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const user = await postUserLogin({
-      email,
-      password: values.currentPassword,
-    })
+    if (values.currentPassword !== values.newPassword) {
+      try {
+        await postUserLogin({
+          email,
+          password: values.currentPassword,
+        })
+      } catch {
+        toast.error('Current password invalid', {
+          id: 'password-change-fail',
+        })
+        return
+      }
 
-    if (user.accessToken) {
-      if (values.currentPassword !== values.newPassword) {
-        try {
-          await dispatch(updateUser({ password: values.newPassword }))
+      try {
+        await dispatch(updateUser({ password: values.newPassword }))
 
-          handleClose()
-          actions.resetForm()
-          toast.success('Password changed successfully')
-        } catch {
-          toast.error('Failed to change password, please try again later', {
-            id: 'password-change-error',
-          })
-        }
-      } else {
-        toast.error('Password must be different from current password', {
-          id: 'password-same-error',
+        handleClose()
+        actions.resetForm()
+        toast.success('Password changed successfully')
+      } catch {
+        toast.error('Failed to change password, please try again later', {
+          id: 'password-change-fail',
         })
       }
     } else {
-      toast.error('Current password invalid', {
-        id: 'password-invalid-error',
+      toast.error('Password must be different from current password', {
+        id: 'password-change-fail',
       })
     }
   }

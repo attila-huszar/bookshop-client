@@ -5,7 +5,7 @@ export type User = {
   firstName: string
   lastName: string
   email: string
-  phone?: string
+  phone?: string | null
   address?: Address
   avatar?: string
   role?: 'user' | 'admin'

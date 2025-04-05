@@ -1,5 +1,4 @@
-import { authRequest, baseRequest } from './api'
-import { PATH } from './path'
+import { baseRequest, authRequest, PATH } from './'
 import { handleErrors } from '@/errors'
 import type {
   LoginRequest,
@@ -180,14 +179,11 @@ export const postVerifyPasswordReset = async (
   }
 }
 
-export const uploadAvatar = async (
-  formData: FormData,
-): Promise<{ message: 'Upload success' }> => {
+export const uploadAvatar = async (formData: FormData): Promise<User> => {
   try {
-    const response = await authRequest.post<{ message: 'Upload success' }>(
-      PATH.upload,
-      { body: formData },
-    )
+    const response = await authRequest.post<User>(PATH.upload, {
+      body: formData,
+    })
     const data = await response.json()
     return data
   } catch (error) {

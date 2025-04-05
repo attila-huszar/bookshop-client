@@ -1,5 +1,4 @@
-import { baseRequest } from './api'
-import { PATH } from './path'
+import { baseRequest, PATH } from './'
 import { handleErrors } from '@/errors'
 import type { News } from '@/types'
 

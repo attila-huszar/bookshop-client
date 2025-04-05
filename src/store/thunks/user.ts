@@ -5,6 +5,7 @@ import {
   postUserLogin,
   postUserLogout,
   patchUserProfile,
+  uploadAvatar,
 } from '@/api/users'
 import type { UserUpdate, User, LoginRequest, LoginResponse } from '@/types'
 
@@ -76,6 +77,21 @@ export const updateUser = createAsyncThunk<User, UserUpdate, RejectValue>(
   async (fields: UserUpdate, { rejectWithValue }) => {
     try {
       const userResponse = await patchUserProfile(fields)
+
+      return userResponse
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+      )
+    }
+  },
+)
+
+export const updateAvatar = createAsyncThunk<User, FormData, RejectValue>(
+  'user/updateAvatar',
+  async (formData: FormData, { rejectWithValue }) => {
+    try {
+      const userResponse = await uploadAvatar(formData)
 
       return userResponse
     } catch (error) {

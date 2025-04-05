@@ -1,5 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { login, logout, fetchUserProfile, fetchAuthTokens, updateUser } from '../thunks/user'
+import {
+  login,
+  logout,
+  fetchUserProfile,
+  fetchAuthTokens,
+  updateUser,
+  updateAvatar,
+} from '../thunks/user'
 import type { UserState } from '@/types'
 
 const initialState: UserState = {
@@ -71,6 +78,15 @@ const userSlice = createSlice({
         state.userIsUpdating = false
         state.userError = action.payload
         state.userData = null
+      })
+      .addCase(updateAvatar.fulfilled, (state, action) => {
+        state.userIsUpdating = false
+        state.userData = action.payload
+        state.userError = undefined
+      })
+      .addCase(updateAvatar.rejected, (state, action) => {
+        state.userIsUpdating = false
+        state.userError = action.payload
       })
   },
 })
