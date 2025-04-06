@@ -17,14 +17,10 @@ import {
   NotFound,
 } from '@/pages'
 import { ROUTE } from './route'
-import {
-  ProtectedRoute,
-  Loading,
-  VerifyEmail,
-  PasswordReset,
-  Error,
-} from '@/components'
-import { protectedRouteLoader } from '@/helpers'
+import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
+import { PublicRoute } from './PublicRoute/PublicRoute'
+import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
+import { protectedRouteLoader } from './helpers/protectedRouteLoader'
 
 const Layout = lazy(() =>
   import('../pages/Layout/Layout').then(({ Layout }) => ({
@@ -57,14 +53,6 @@ const routes: RouteObject[] = [
         element: <Product />,
       },
       {
-        path: ROUTE.REGISTER,
-        element: <Registration />,
-      },
-      {
-        path: ROUTE.LOGIN,
-        element: <Login />,
-      },
-      {
         path: ROUTE.CART,
         element: <Cart />,
       },
@@ -75,6 +63,20 @@ const routes: RouteObject[] = [
       {
         path: ROUTE.PASSWORD_RESET,
         element: <PasswordReset />,
+      },
+      {
+        element: <PublicRoute />,
+        loader: protectedRouteLoader,
+        children: [
+          {
+            path: ROUTE.REGISTER,
+            element: <Registration />,
+          },
+          {
+            path: ROUTE.LOGIN,
+            element: <Login />,
+          },
+        ],
       },
       {
         element: <ProtectedRoute />,
