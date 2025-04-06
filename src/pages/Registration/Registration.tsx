@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { HTTPError } from 'ky'
 import { postUserRegister } from '@/api'
 import { ButtonWrapper } from '@/styles/Form.style'
 import {
@@ -13,7 +12,8 @@ import {
 } from '@/components'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
-import type { RegisterRequest } from '@/types'
+import { RegisterRequest } from '@/types'
+import { handleErrors } from '@/errors'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
@@ -37,12 +37,12 @@ export function Registration() {
 
       await navigate('/', { replace: true })
     } catch (error) {
-      const errorMessage =
-        error instanceof HTTPError
-          ? (await error.response.json<{ error: string }>()).error
-          : 'Registration failed, please try again later'
+      const formattedError = await handleErrors({
+        error,
+        message: 'Registration failed, please try again later',
+      })
 
-      toast.error(errorMessage, { id: 'register' })
+      toast.error(formattedError.message, { id: 'register' })
     }
   }
 

@@ -5,6 +5,6 @@ export const baseRequest = ky.create({
   headers: {
     'ngrok-skip-browser-warning': 'true',
   },
-  timeout: 5000,
+  timeout: 10000,
   retry: 3,
 })

@@ -1,5 +1,4 @@
 import { HTTPError } from 'ky'
-import { ParameterError } from './ParameterError'
 
 const DEFAULT_ERROR_MESSAGE = 'Unknown error occurred'
 
@@ -12,29 +11,17 @@ export async function handleErrors({
 }): Promise<Error> {
   if (error instanceof HTTPError) {
     try {
-      const response = await error.response.json<{ error: string }>()
-
-      return new Error(response.error || message)
-    } catch {
+      const response = await error.response.json<{ error?: string }>()
+      return new Error(response.error ?? message)
+    } catch (jsonError) {
+      console.warn('Error parsing HTTP error response:', jsonError)
       return new Error(message)
     }
-  } else if (error instanceof ParameterError) {
-    return new Error(error.message)
+  } else if (error instanceof Error) {
+    console.warn('Non-HTTP error:', error)
+    return new Error(error.message || message)
+  } else {
+    console.error('Unknown error:', error)
+    return new Error(message)
   }
-
-  const textError = extractTextError(error)
-
-  return textError ?? new Error(message)
-}
-
-function extractTextError(error: unknown): Error | null {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'text' in error &&
-    typeof error.text === 'string'
-  ) {
-    return new Error(error.text)
-  }
-  return null
 }
