@@ -143,9 +143,9 @@ export const postVerifyEmail = async (
 
 export const postPasswordReset = async (
   email: string,
-): Promise<{ email: string }> => {
+): Promise<{ message: string }> => {
   try {
-    const response = await baseRequest.post<{ email: string }>(
+    const response = await baseRequest.post<{ message: string }>(
       PATH.users.passwordResetRequest,
       { json: { email } },
     )

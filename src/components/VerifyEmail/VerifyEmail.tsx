@@ -24,7 +24,7 @@ export function VerifyEmail() {
         const response = await postVerifyEmail(token)
 
         toast.success(
-          `${response.email} successfully verified, you can now login`,
+          `${response.email} successfully verified, you can now log in.`,
           { id: 'verify' },
         )
 
@@ -32,7 +32,7 @@ export function VerifyEmail() {
       } catch (error) {
         const formattedError = await handleErrors({
           error,
-          message: 'Verification failed, please try again later',
+          message: 'Verification failed, please try again later.',
         })
 
         toast.error(formattedError.message, { id: 'verify' })

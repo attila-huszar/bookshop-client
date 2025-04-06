@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
-import { HTTPError } from 'ky'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
@@ -12,6 +11,7 @@ import { postVerifyPasswordReset } from '@/api'
 import { resetPasswordSchema } from '@/helpers'
 import { passwordResetInitialValues } from '@/constants'
 import { ROUTE } from '@/routes'
+import { handleErrors } from '@/errors'
 
 export function PasswordReset() {
   const navigate = useNavigate()
@@ -29,17 +29,22 @@ export function PasswordReset() {
 
     const verifyToken = async () => {
       try {
-        const resetResponse = await postVerifyPasswordReset(token)
-        setEmail(resetResponse.email)
+        const response = await postVerifyPasswordReset(token)
+
+        setEmail(response.email)
+
+        toast.success(
+          `Password reset token verified for ${response.email}. Please enter your new password.`,
+          { id: 'passwordReset' },
+        )
       } catch (error) {
-        let errorMessage = 'Password reset failed, please try again later'
+        const formattedError = await handleErrors({
+          error,
+          message: 'Password reset failed, please try again later.',
+        })
 
-        if (error instanceof HTTPError) {
-          const errorData = await error.response.json<{ error: string }>()
-          errorMessage = errorData.error
-        }
+        toast.error(formattedError.message, { id: 'passwordReset' })
 
-        toast.error(errorMessage, { id: 'reset-error' })
         await navigate('/', { replace: true })
       }
     }
@@ -52,18 +57,21 @@ export function PasswordReset() {
     newPasswordConfirmation: string
   }) => {
     if (email && values.newPassword === values.newPasswordConfirmation) {
-      try {
-        await dispatch(updateUser({ password: values.newPassword }))
+      const response = await dispatch(
+        updateUser({ password: values.newPassword }),
+      )
 
-        await navigate(`/${ROUTE.LOGIN}`, { replace: true })
-        toast.success('Password Changed Successfully', {
-          id: 'reset-success',
+      if (response.meta.requestStatus === 'fulfilled') {
+        toast.success('Password successfully changed.', {
+          id: 'passwordChange',
         })
-      } catch {
+      } else {
         toast.error('Error changing password, please try again later', {
-          id: 'password-change-error',
+          id: 'passwordChange',
         })
       }
+
+      await navigate(`/${ROUTE.LOGIN}`, { replace: true })
     }
   }
 
