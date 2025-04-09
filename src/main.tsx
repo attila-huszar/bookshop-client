@@ -2,13 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { store } from './store'
+import { logger } from './helpers'
 import App from './App.tsx'
 
 const container = document.getElementById('root')!
 const root = createRoot(container, {
-  onUncaughtError: console.error,
-  onCaughtError: console.warn,
-  onRecoverableError: console.warn,
+  onUncaughtError: (error, errorInfo) => logger.error(error, errorInfo),
+  onRecoverableError: (error, errorInfo) => logger.error(error, errorInfo),
 })
 
 root.render(
