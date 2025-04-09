@@ -1,12 +1,15 @@
 import { styled } from 'styled-components'
 
-export const StyledError = styled.div`
+export const StyledError = styled.div<{ $fullScreen?: boolean }>`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 2rem;
   padding: 2rem 4rem;
   color: var(--black);
+
+  ${({ $fullScreen }) => $fullScreen && 'height: 100vh;'}
 
   p {
     margin-bottom: 0.5rem;

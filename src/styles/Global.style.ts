@@ -13,6 +13,7 @@ export default createGlobalStyle`
   }
 
   #root {
+    margin: 0 1.5rem 1.5rem;
     --primary-color: #ffce1a;
     --primary-faded: #f0d153;
     --secondary-color: #ecb346;
@@ -24,6 +25,7 @@ export default createGlobalStyle`
     --light-black: #555555;
     --black: #0F0F0F;
     --orange: #ff4500;
+    --shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
   }
 
   body {

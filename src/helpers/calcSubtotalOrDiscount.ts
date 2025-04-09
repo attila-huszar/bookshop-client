@@ -1,7 +1,7 @@
-import { ICart } from '@/interfaces'
+import type { Cart } from '@/types'
 
 export function calcSubtotalOrDiscount(
-  data: ICart[],
+  data: Cart[],
   type: 'subtotal' | 'discount',
 ) {
   return data.reduce((acc, item) => {

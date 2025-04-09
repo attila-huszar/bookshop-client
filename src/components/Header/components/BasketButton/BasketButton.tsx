@@ -1,23 +1,27 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { StyledBasketButton, CartItemCount } from './BasketButton.style'
 import { Button } from '@/components'
 import { useAppSelector, useCart } from '@/hooks'
 import { orderSelector } from '@/store'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function BasketButton() {
-  const { orderStatus } = useAppSelector(orderSelector)
+  const { order } = useAppSelector(orderSelector)
   const { cartArray } = useCart()
   const navigate = useNavigate()
+
+  const navigateToCart = async () => {
+    await navigate(`/${ROUTE.CART}`)
+  }
 
   return (
     <StyledBasketButton>
       <Button
-        onClick={() => navigate(`/${PATH.cart}`)}
-        $size="sm"
+        onClick={() => void navigateToCart()}
+        $size="smMd"
         $withCart
-        title={orderStatus ? 'Checkout' : 'Basket'}>
-        {orderStatus ? 'Checkout' : 'Basket'}
+        title={order ? 'Checkout' : 'Basket'}>
+        {order ? 'Checkout' : 'Basket'}
       </Button>
       {cartArray?.length ? (
         <CartItemCount>

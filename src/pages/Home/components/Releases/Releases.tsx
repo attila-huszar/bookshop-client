@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import {
   StyledReleases,
+  Welcome,
   ImageWrapper,
   ImageItem,
   MirrorImg,
@@ -8,38 +9,41 @@ import {
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
 import { Button } from '@/components'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)
 
+  const scrollToBottom = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  }
+
   return (
     <StyledReleases>
-      <div>
-        <h1>New Releases This Week</h1>
+      <Welcome>
+        <h2>New Releases This Week</h2>
         <p>
-          {
-            "It's time to update your reading list with some of the latest and greatest releases in the literary world. From heart-pumping thrillers to captivating memoirs, this week's new releases offer something for everyone."
-          }
+          It's time to update your reading list with some of the latest and
+          greatest releases in the literary world. From heart-pumping thrillers
+          to captivating memoirs, this week's new releases offer something for
+          everyone.
         </p>
-        <Button onClick={() => undefined} $shadowed $size="wide" $textSize="lg">
+        <Button onClick={scrollToBottom} $shadowed $size="wide" $textSize="lg">
           Subscribe
         </Button>
-      </div>
-      <div>
-        <ImageWrapper>
-          {booksReleases.map((book, idx) => (
-            <ImageItem key={book.id} $idx={idx}>
-              <Link to={`/${PATH.books}/${book.id}`}>
-                <img src={book.imgUrl} alt={book.title} />
-              </Link>
-              <MirrorImg>
-                <img src={book.imgUrl} alt={book.title} aria-hidden="true" />
-              </MirrorImg>
-            </ImageItem>
-          ))}
-        </ImageWrapper>
-      </div>
+      </Welcome>
+      <ImageWrapper>
+        {booksReleases.map((book, idx) => (
+          <ImageItem key={book.id} $idx={idx}>
+            <Link to={`/${ROUTE.BOOKS}/${book.id}`}>
+              <img src={book.imgUrl} alt={book.title} />
+            </Link>
+            <MirrorImg>
+              <img src={book.imgUrl} alt={book.title} aria-hidden="true" />
+            </MirrorImg>
+          </ImageItem>
+        ))}
+      </ImageWrapper>
     </StyledReleases>
   )
 }

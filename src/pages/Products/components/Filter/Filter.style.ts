@@ -3,7 +3,7 @@ import { StyleTypes } from '../../../../components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
   position: sticky;
-  top: 8rem;
+  top: 7.5rem;
   bottom: 0;
   height: fit-content;
   width: auto;

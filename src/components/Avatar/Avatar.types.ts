@@ -1,10 +1,9 @@
 export type StyleTypes = {
   $size?: number
-  $clip?: boolean
-  $camera?: boolean
+  $hoverControls?: boolean
 }
 
 export type AvatarTypes = React.DetailedHTMLProps<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  HTMLButtonElement
-> & { imgUrl: string } & StyleTypes
+  React.HTMLAttributes<HTMLDivElement>,
+  HTMLDivElement
+> & { imgUrl?: string } & StyleTypes

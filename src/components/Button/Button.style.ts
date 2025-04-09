@@ -3,17 +3,19 @@ import { StyleTypes } from './Button.types'
 
 const height = {
   xs: '1.5rem',
-  sm: '2.25rem',
+  sm: '2rem',
+  smMd: '2.25rem',
   md: '2.5rem',
   lg: '3rem',
   wide: '2.5rem',
 }
 
 const width = {
-  xs: '5rem',
-  sm: '8rem',
-  md: '12rem',
-  lg: '15rem',
+  xs: '6rem',
+  sm: '7.5rem',
+  smMd: '9rem',
+  md: '10.5rem',
+  lg: '12rem',
   wide: '18rem',
 }
 

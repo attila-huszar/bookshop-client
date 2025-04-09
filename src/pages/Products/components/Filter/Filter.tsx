@@ -28,18 +28,25 @@ import { sliderStyles } from '@/styles/Global.style'
 import 'rc-slider/assets/index.css'
 import Star from '@/assets/svg/star.svg?react'
 import StarFilled from '@/assets/svg/star_solid.svg?react'
-import { IFilter, IInputEvent, IDiscountChangeEvent } from '@/interfaces'
+import type { FilterProps, InputEvent, DiscountChangeEvent } from '@/types'
 
 export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)
   const dispatch = useAppDispatch()
 
-  const [priceMinInitial = 0, priceMaxInitial = 100] =
+  const [priceMinInitialFloat = 0, priceMaxInitialFloat = 500] =
     booksFilters.initial.price
-  const [priceMin = 0, priceMax = 100] = booksFilters.active.price
-  const [yearMinInitial = 1000, yearMaxInitial = 2020] =
+  const priceMinInitial = Math.floor(priceMinInitialFloat)
+  const priceMaxInitial = Math.ceil(priceMaxInitialFloat)
+
+  const [priceMinFloat = 0, priceMaxFloat = 500] = booksFilters.active.price
+  const priceMin = Math.floor(priceMinFloat)
+  const priceMax = Math.ceil(priceMaxFloat)
+
+  const [yearMinInitial = 1000, yearMaxInitial = new Date().getFullYear()] =
     booksFilters.initial.publishYear
-  const [yearMin = 1000, yearMax = 2020] = booksFilters.active.publishYear
+  const [yearMin = 1000, yearMax = new Date().getFullYear()] =
+    booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,
@@ -84,7 +91,7 @@ export function Filter() {
     dispatch(setBooksFilterRating(0.5))
   }
 
-  const handleGenreChange = (e: IInputEvent) => {
+  const handleGenreChange = (e: InputEvent) => {
     dispatch(setBooksFilterGenre(e.target.value))
   }
 
@@ -92,19 +99,19 @@ export function Filter() {
     dispatch(setBooksFilterGenre([]))
   }
 
-  const handlePriceChange = (value: IFilter['price']) => {
+  const handlePriceChange = (value: FilterProps['price']) => {
     dispatch(setBooksFilterPrice(value))
   }
 
-  const handleDiscountChange = (value: IFilter['discount']) => {
+  const handleDiscountChange = (value: FilterProps['discount']) => {
     dispatch(setBooksFilterDiscount(value))
   }
 
-  const handlePublishYearChange = (value: IFilter['publishYear']) => {
+  const handlePublishYearChange = (value: FilterProps['publishYear']) => {
     dispatch(setBooksFilterPublishYear(value))
   }
 
-  const handleRatingChange = (value: IFilter['rating']) => {
+  const handleRatingChange = (value: FilterProps['rating']) => {
     dispatch(setBooksFilterRating(value))
   }
 
@@ -126,7 +133,7 @@ export function Filter() {
                         type="checkbox"
                         value={filter}
                         id={filter}
-                        onChange={(e: IInputEvent) => handleGenreChange(e)}
+                        onChange={handleGenreChange}
                         checked={booksFilters.active.genre.includes(filter)}
                       />
                       <label htmlFor={filter}>{filter}</label>
@@ -158,10 +165,10 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={priceMin}
-                        onChange={(e: IInputEvent) =>
+                        onChange={(e: InputEvent) =>
                           handlePriceChange([Number(e.target.value), priceMax])
                         }
-                        onBlur={(e: IInputEvent) =>
+                        onBlur={(e: InputEvent) =>
                           handlePriceChange([
                             Math.min(enforceMinMax(e.target), priceMax),
                             priceMax,
@@ -175,10 +182,10 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={priceMax}
-                        onChange={(e: IInputEvent) =>
+                        onChange={(e: InputEvent) =>
                           handlePriceChange([priceMin, Number(e.target.value)])
                         }
-                        onBlur={(e: IInputEvent) =>
+                        onBlur={(e: InputEvent) =>
                           handlePriceChange([
                             priceMin,
                             Math.max(enforceMinMax(e.target), priceMin),
@@ -200,7 +207,7 @@ export function Filter() {
                       name="discount"
                       value={item.value}
                       id={item.value}
-                      onChange={(e: IDiscountChangeEvent) =>
+                      onChange={(e: DiscountChangeEvent) =>
                         handleDiscountChange(e.target.value)
                       }
                       checked={item.value === booksFilters.active.discount}
@@ -232,13 +239,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={yearMin}
-                        onChange={(e: IInputEvent) =>
+                        onChange={(e: InputEvent) =>
                           handlePublishYearChange([
                             Number(e.target.value),
                             yearMax,
                           ])
                         }
-                        onBlur={(e: IInputEvent) =>
+                        onBlur={(e: InputEvent) =>
                           handlePublishYearChange([
                             Math.min(enforceMinMax(e.target), yearMax),
                             yearMax,
@@ -252,13 +259,13 @@ export function Filter() {
                         type="number"
                         inputMode="numeric"
                         value={yearMax}
-                        onChange={(e: IInputEvent) =>
+                        onChange={(e: InputEvent) =>
                           handlePublishYearChange([
                             yearMin,
                             Number(e.target.value),
                           ])
                         }
-                        onBlur={(e: IInputEvent) =>
+                        onBlur={(e: InputEvent) =>
                           handlePublishYearChange([
                             yearMin,
                             Math.max(enforceMinMax(e.target), yearMin),
@@ -276,7 +283,7 @@ export function Filter() {
                 <Rating>
                   {Array.from({ length: 5 }, (_, idx) => {
                     const isFilled = idx < booksFilters.active.rating
-                    const rating = (idx + 0.5) as IFilter['rating']
+                    const rating = (idx + 0.5) as FilterProps['rating']
 
                     return (
                       <IconButton

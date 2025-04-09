@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { AuthorizationMenu } from './AuthorizationMenu'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 
 describe('AuthorizationMenu', () => {
   const renderWithRouter = (children: React.ReactNode) => {
@@ -18,11 +18,11 @@ describe('AuthorizationMenu', () => {
     renderWithRouter(<AuthorizationMenu />)
     expect(screen.getByRole('link', { name: /login/i })).toHaveAttribute(
       'href',
-      `/${PATH.login}`,
+      `/${ROUTE.LOGIN}`,
     )
     expect(screen.getByRole('link', { name: /register/i })).toHaveAttribute(
       'href',
-      `/${PATH.registration}`,
+      `/${ROUTE.REGISTER}`,
     )
   })
 

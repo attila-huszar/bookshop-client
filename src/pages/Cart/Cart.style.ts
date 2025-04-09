@@ -79,6 +79,7 @@ export const Quantity = styled.div`
   grid-column: 2/3;
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 0.5rem;
 
   input {
@@ -144,7 +145,7 @@ export const ButtonWrapper = styled.div`
   display: flex;
   justify-content: end;
   flex-wrap: wrap;
-  gap: 3rem;
+  gap: 2rem;
 `
 
 export const EmptyCart = styled.div`

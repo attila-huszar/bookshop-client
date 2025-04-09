@@ -3,14 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { toast } from 'react-hot-toast'
 import { PasswordDialogRef } from './PasswordDialog'
-import { apiHandler } from '@/api/apiHandler'
 import { useAppDispatch } from '@/hooks'
+import { postUserLogin } from '@/api/users'
 import { updateUser } from '@/store'
 
-vi.mock('@/api/apiHandler', () => ({
-  apiHandler: {
-    verifyPassword: vi.fn(),
-  },
+vi.mock('@/api/users', () => ({
+  postUserLogin: vi.fn(),
 }))
 
 vi.mock('@/store', () => ({
@@ -18,7 +16,7 @@ vi.mock('@/store', () => ({
 }))
 
 describe('PasswordDialog', () => {
-  const uuid = 'test-uuid'
+  const email = 'test-uuid'
   const mockDispatch = vi.fn()
 
   beforeEach(() => {
@@ -30,7 +28,7 @@ describe('PasswordDialog', () => {
   })
 
   it('should render form fields and submit button', () => {
-    render(<PasswordDialogRef uuid={uuid} />)
+    render(<PasswordDialogRef email={email} />)
 
     expect(screen.getByPlaceholderText('Current Password')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('New Password')).toBeInTheDocument()
@@ -43,10 +41,13 @@ describe('PasswordDialog', () => {
   })
 
   it('should call verifyPassword and dispatch updateUser on successful password change, then close the dialog', async () => {
-    vi.mocked(apiHandler.verifyPassword).mockResolvedValue(true)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
     mockDispatch.mockResolvedValue(true)
 
-    const { container } = render(<PasswordDialogRef uuid={uuid} />)
+    const { container } = render(<PasswordDialogRef email={email} />)
 
     const dialog = container.querySelector('dialog')!
 
@@ -70,24 +71,21 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(apiHandler.verifyPassword).toHaveBeenCalledWith(
-        uuid,
-        'oldPassword',
-      )
+      expect(postUserLogin).toHaveBeenCalledWith(email, 'oldPassword')
       expect(mockDispatch).toHaveBeenCalledWith(
-        updateUser({
-          uuid,
-          fields: { password: expect.any(String) as string },
-        }),
+        updateUser({ password: expect.any(String) as string }),
       )
       expect(dialog.open).toBe(false)
     })
   })
 
   it('should show error if current password is invalid', async () => {
-    vi.mocked(apiHandler.verifyPassword).mockResolvedValue(false)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
 
-    render(<PasswordDialogRef uuid={uuid} />)
+    render(<PasswordDialogRef email={email} />)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
@@ -109,10 +107,7 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(apiHandler.verifyPassword).toHaveBeenCalledWith(
-        uuid,
-        'invalidPassword',
-      )
+      expect(postUserLogin).toHaveBeenCalledWith(email, 'invalidPassword')
     })
 
     expect(toast.error).toHaveBeenCalledWith('Current password invalid', {
@@ -121,9 +116,12 @@ describe('PasswordDialog', () => {
   })
 
   it('should show error if new password matches the current password', async () => {
-    vi.mocked(apiHandler.verifyPassword).mockResolvedValue(true)
+    vi.mocked(postUserLogin).mockResolvedValue({
+      accessToken: expect.any(String) as string,
+      firstName: expect.any(String) as string,
+    })
 
-    render(<PasswordDialogRef uuid={uuid} />)
+    render(<PasswordDialogRef email={email} />)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),

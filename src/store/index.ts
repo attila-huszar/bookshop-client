@@ -1,42 +1,17 @@
 export { store } from './store'
 export type { RootState, AppDispatch } from './store'
-export {
-  fetchBooks,
-  fetchBookById,
-  fetchBooksBySearch,
-  fetchBooksByAuthor,
-  fetchBookSearchOptions,
-  fetchBooksByProperty,
-  fetchRecommendedBooks,
-  incrementBooksCurrentPage,
-  decrementBooksCurrentPage,
-  setBooksCurrentPage,
-  setBooksFilterGenre,
-  setBooksFilterPrice,
-  setBooksFilterDiscount,
-  setBooksFilterPublishYear,
-  setBooksFilterRating,
-} from './booksSlice'
-export { fetchAuthorById, fetchAuthorsBySearch } from './authorsSlice'
-export { fetchNews } from './newsSlice'
-export { fetchUserByUUID, loginUser, logoutUser, updateUser } from './userSlice'
-export {
-  cartAdd,
-  cartRemove,
-  cartQuantityAdd,
-  cartQuantityRemove,
-  cartQuantitySet,
-  cartClear,
-  fetchCartItems,
-} from './cartSlice'
-export { orderCreate, orderRetrieve, orderClear } from './orderSlice'
-export {
-  booksSelector,
-  bookByIdSelector,
-  authorsSelector,
-  authorByIdSelector,
-  newsSelector,
-  userSelector,
-  cartSelector,
-  orderSelector,
-} from './selectors'
+export * from './slices/books'
+export * from './slices/authors'
+export * from './slices/news'
+export * from './slices/user'
+export * from './slices/cart'
+export * from './slices/order'
+
+export * from './thunks/books'
+export * from './thunks/authors'
+export * from './thunks/news'
+export * from './thunks/user'
+export * from './thunks/cart'
+export * from './thunks/order'
+
+export * from './selectors'

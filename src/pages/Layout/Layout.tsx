@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router'
 import { Toaster } from 'react-hot-toast'
 import { StyledLayout } from './Layout.style'
 import { Header, Footer } from '@/components'

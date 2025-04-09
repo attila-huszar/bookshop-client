@@ -1,11 +1,5 @@
-import {
-  Fragment,
-  ChangeEvent,
-  useLayoutEffect,
-  useEffect,
-  useRef,
-} from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Fragment, ChangeEvent, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import {
@@ -14,6 +8,7 @@ import {
   orderClear,
   orderCreate,
   orderSelector,
+  userSelector,
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import {
@@ -31,16 +26,18 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.style'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
+import { currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
-import { ICart, ICreateOrder } from '@/interfaces'
+import { OrderStatus } from '@/types'
+import type { Cart, PostPaymentIntent, Order } from '@/types'
 import AddQuantityIcon from '@/assets/svg/plus.svg?react'
 import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
 import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
 import CartEmptyIcon from '@/assets/svg/cart_empty.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
-const calculateTotalAmount = (cartArray: ICart[]): number => {
+const calculateTotalAmount = (cartArray: Cart[]): number => {
   return cartArray.reduce(
     (total, item) =>
       total + (item.price - (item.price * item.discount) / 100) * item.quantity,
@@ -48,10 +45,10 @@ const calculateTotalAmount = (cartArray: ICart[]): number => {
   )
 }
 
-const createPaymentData = (
+const createStripeIntent = (
   amount: number,
-  currency: string,
-): ICreateOrder['orderToStripe'] => {
+  currency: string = currencyOptions.usd,
+): PostPaymentIntent => {
   return {
     amount: Math.round(amount * 100),
     currency,
@@ -69,16 +66,21 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
-  const { orderStatus, orderIsLoading, orderCreateError } =
+  const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
+  const { userData } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (orderStatus?.clientSecret) {
-      navigate(`/${PATH.checkout}`, { replace: true })
+    const redirectToCheckout = async () => {
+      if (order?.clientSecret) {
+        await navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+      }
     }
-  }, [orderStatus?.clientSecret, navigate])
+
+    void redirectToCheckout()
+  }, [order?.clientSecret, navigate])
 
   useEffect(() => {
     if (orderIsLoading) {
@@ -96,27 +98,27 @@ export function Cart() {
     }
   }, [orderCreateError])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
   const subtotal = calcSubtotalOrDiscount(cartArray, 'subtotal')
   const discount = calcSubtotalOrDiscount(cartArray, 'discount')
 
-  const handleRemoveQuantity = (item: ICart) => {
+  const handleRemoveQuantity = (item: Cart) => {
     if (item.quantity > 0) {
       removeQuantity(item)
     }
   }
 
-  const handleAddQuantity = (item: ICart) => {
+  const handleAddQuantity = (item: Cart) => {
     if (item.quantity < 50) {
       addQuantity(item)
     }
   }
 
   const handleSetQuantity = (
-    cartItem: ICart,
+    cartItem: Cart,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const newQuantity = enforceMinMax(event.target)
@@ -126,16 +128,21 @@ export function Cart() {
   const handleCheckout = () => {
     if (cartArray.length) {
       const total = calculateTotalAmount(cartArray)
-      const currency = 'usd'
-      const orderToStripe = createPaymentData(total, currency)
+      const orderToStripe = createStripeIntent(total)
+      const { firstName, lastName, email, phone, address } = { ...userData }
 
-      const orderToServer: ICreateOrder['orderToServer'] = {
+      const orderToServer: Order = {
         paymentId: '',
-        orderStatus: 'pending',
-        orderTotal: Number(total.toFixed(2)),
-        orderCurrency: currency,
-        orderItems: cartArray,
-        orderCreatedAt: new Date(),
+        paymentIntentStatus: 'processing',
+        orderStatus: OrderStatus.Pending,
+        total: Number(total.toFixed(2)),
+        currency: currencyOptions.usd,
+        items: cartArray,
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
       }
 
       void dispatch(orderCreate({ orderToStripe, orderToServer }))
@@ -145,6 +152,10 @@ export function Cart() {
   const handleCartClear = () => {
     dispatch(cartClear())
     dispatch(orderClear())
+  }
+
+  const navigateToBooks = async () => {
+    await navigate(`/${ROUTE.BOOKS}`)
   }
 
   if (cartIsLoading) {
@@ -160,10 +171,10 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          {cartArray.map((item: ICart) => (
+          {cartArray.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${PATH.books}/${item.id}`}>
+                <Link to={`/${ROUTE.BOOKS}/${item.id}`}>
                   <ImageWrapper>
                     <img
                       src={item.imgUrl}
@@ -181,6 +192,7 @@ export function Cart() {
                   onClick={() => handleRemoveQuantity(item)}
                   icon={<RemoveQuantityIcon />}
                   title="Remove quantity"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity <= 1}
@@ -198,6 +210,7 @@ export function Cart() {
                   onClick={() => handleAddQuantity(item)}
                   icon={<AddQuantityIcon />}
                   title="Add quantity"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity >= 50}
@@ -222,6 +235,7 @@ export function Cart() {
                   onClick={() => removeFromCart(item)}
                   icon={<RemoveFromCartIcon />}
                   title="Remove from cart"
+                  $size="sm"
                   $iconSize="sm"
                   $color="var(--orange)"
                 />
@@ -246,20 +260,21 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
-            onClick={() => navigate(`/${PATH.books}`)}
+            onClick={() => void navigateToBooks()}
             disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
             $inverted>
-            Continue Shopping
+            Back to Shop
           </Button>
           <IconButton
             icon={<RemoveFromCartIcon />}
             onClick={handleCartClear}
             disabled={orderIsLoading}
             title="Reset Cart"
+            $size="lg"
             $color="var(--primary-color)"
-            $bordered
+            $outline
           />
           <Button
             onClick={handleCheckout}
@@ -283,10 +298,7 @@ export function Cart() {
       <EmptyCart>
         <CartEmptyIcon />
         <p>Your cart is empty</p>
-        <Button
-          type="button"
-          onClick={() => navigate(`/${PATH.books}`)}
-          $withCart>
+        <Button type="button" onClick={() => void navigateToBooks()} $withCart>
           Go Shopping
         </Button>
       </EmptyCart>

@@ -1,13 +1,13 @@
-import { memo, useEffect, useLayoutEffect, useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { memo, useEffect, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router'
 import {
   StyledProduct,
   Breadcrumb,
   DetailsSection,
   ImageWrapper,
+  BookTitle,
+  BookAuthor,
   Description,
-  Title,
-  Author,
   ButtonWrapper,
 } from './Product.style'
 import { useAppSelector, useAppDispatch, useCart } from '@/hooks'
@@ -19,8 +19,9 @@ import {
   authorByIdSelector,
 } from '@/store'
 import { Button, Error, Price, Recommended } from '@/components'
-import { PATH } from '@/constants'
-import { IAuthor, IBook } from '@/interfaces'
+import { ROUTE } from '@/routes'
+import type { Author, Book } from '@/types'
+import CaretIcon from '@/assets/svg/caret_left.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Product() {
@@ -29,9 +30,9 @@ export function Product() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const book: IBook | undefined = useAppSelector(bookByIdSelector(id!))
-  const author: IAuthor | undefined = useAppSelector(
-    authorByIdSelector(book?.author ?? null),
+  const book: Book | undefined = useAppSelector(bookByIdSelector(id!))
+  const author: Author | undefined = useAppSelector(
+    authorByIdSelector(typeof book?.author === 'number' ? book.author : null),
   )
 
   const { booksError } = useAppSelector(booksSelector)
@@ -47,33 +48,32 @@ export function Product() {
     }
   }, [book, dispatch, id])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleCartAction = (book: IBook) => {
+  const handleCartAction = async (book: Book) => {
     if (isBookInCart) {
-      navigate(`/${PATH.cart}`)
+      await navigate(`/${ROUTE.CART}`)
     } else {
       addToCart(book)
     }
   }
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
     if (window.history?.length && window.history.length > 2) {
-      navigate(-1)
+      await navigate(-1)
     } else {
-      navigate('/')
+      await navigate('/')
     }
   }
 
   return (
     <>
       <StyledProduct>
-        <Breadcrumb>
-          <button onClick={handleGoBack} type="button">
-            Book Details
-          </button>
+        <Breadcrumb onClick={() => void handleGoBack()} title="Go back">
+          <CaretIcon height={18} />
+          Book Details
         </Breadcrumb>
         {book ? (
           <DetailsSection>
@@ -87,8 +87,14 @@ export function Product() {
                 width="100%"
               />
             </ImageWrapper>
-            <Title>{book.title}</Title>
-            <Author>{author ? author.name : authorError}</Author>
+            <BookTitle>{book.title}</BookTitle>
+            <BookAuthor>
+              {typeof book.author === 'string'
+                ? book.author
+                : author
+                  ? author.name
+                  : authorError}
+            </BookAuthor>
             <Price
               component="product"
               price={book.price}
@@ -100,7 +106,7 @@ export function Product() {
             </Description>
             <ButtonWrapper>
               <Button
-                onClick={() => handleCartAction(book)}
+                onClick={() => void handleCartAction(book)}
                 $withCartAdd={!isBookInCart}
                 $textSize="lg"
                 $size="lg">

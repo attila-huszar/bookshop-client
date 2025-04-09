@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Search } from './Search'
 import { fetchBooksBySearch, fetchAuthorsBySearch } from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'

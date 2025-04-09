@@ -1,14 +1,14 @@
 import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { Cart } from './Cart'
 import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
 import { orderCreate } from '@/store'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
-import { ICart, ICreateOrder } from '@/interfaces'
+import type { Cart as CartType, Order, PostPaymentIntent } from '@/types'
 
 vi.mock('@/store', () => ({
   cartSelector: vi.fn(),
@@ -65,7 +65,7 @@ describe('Cart component', () => {
 
   it('should display empty cart message when cart is empty', async () => {
     vi.mocked(useCart).mockReturnValueOnce({
-      cartArray: [] as ICart[],
+      cartArray: [] as CartType[],
     } as ReturnType<typeof useCart>)
 
     render(<Cart />, { wrapper: Providers })
@@ -75,7 +75,7 @@ describe('Cart component', () => {
     expect(button).toBeInTheDocument()
 
     await userEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.books}`)
+    expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.BOOKS}`)
   })
 
   it('should render cart items correctly', () => {
@@ -111,8 +111,8 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
-          orderToStripe: expect.any(Object) as ICreateOrder['orderToStripe'],
-          orderToServer: expect.any(Object) as ICreateOrder['orderToServer'],
+          orderToStripe: expect.any(Object) as PostPaymentIntent,
+          orderToServer: expect.any(Object) as Order,
         }),
       )
     })
@@ -129,7 +129,7 @@ describe('Cart component', () => {
     render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(`/${PATH.checkout}`, {
+      expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
         replace: true,
       })
     })

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import {
   StyledForm,
@@ -20,19 +20,21 @@ import {
   useAppSelector,
 } from '@/hooks'
 import {
-  authorsSelector,
-  fetchAuthorsBySearch,
   fetchBooksByAuthor,
   fetchBooksBySearch,
+  fetchAuthorsBySearch,
+  authorsSelector,
 } from '@/store'
-import { PATH } from '@/constants'
-import { IAuthor, IBook } from '@/interfaces'
+import { ROUTE } from '@/routes'
+import type { Author, Book } from '@/types'
 import LinkIcon from '@/assets/svg/link.svg?react'
+import SearchIcon from '@/assets/svg/search.svg?react'
+import ClearIcon from '@/assets/svg/xmark_circle.svg?react'
 import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
-  const [searchResults, setSearchResults] = useState<IBook[]>([])
+  const [searchResults, setSearchResults] = useState<Book[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useAppDispatch()
@@ -40,12 +42,12 @@ export function Search() {
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
-  useClickOutside(searchRef, searchOpen, setSearchOpen)
+  useClickOutside({ ref: searchRef, state: searchOpen, setter: setSearchOpen })
 
   async function getSearchResults(searchString: string) {
     if (searchString.length > 1) {
-      let booksSearched: IBook[] = []
-      let authorsSearched: IAuthor[] = []
+      let booksSearched: Book[] = []
+      let authorsSearched: Author[] = []
 
       const booksSearchResponse = await dispatch(
         fetchBooksBySearch(searchString),
@@ -56,11 +58,11 @@ export function Search() {
       )
 
       if (booksSearchResponse.payload) {
-        booksSearched = booksSearchResponse.payload as IBook[]
+        booksSearched = booksSearchResponse.payload as Book[]
       }
 
       if (authorsSearchResponse.payload) {
-        authorsSearched = authorsSearchResponse.payload as IAuthor[]
+        authorsSearched = authorsSearchResponse.payload as Author[]
       }
 
       if (authorsSearched.length) {
@@ -72,7 +74,7 @@ export function Search() {
 
         authorsMatched.forEach((book) => {
           if (book.status === 'fulfilled') {
-            const newBooks = book.value.payload as IBook[]
+            const newBooks = book.value.payload as Book[]
             newBooks.forEach((newBook) => {
               const exists = booksSearched.some(
                 (existingBook) => existingBook.id === newBook.id,
@@ -113,15 +115,22 @@ export function Search() {
     setSearchResults([])
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (searchResults.length) {
-      navigate(`/${PATH.books}/${searchResults[0].id}`)
+      await navigate(`/${ROUTE.BOOKS}/${searchResults[0].id}`)
     }
   }
 
-  const getAuthorName = (authorId: number, authorArray: IAuthor[]) => {
-    const author = authorArray?.find((author) => author.id === authorId)
-    return author ? author.name : 'Unknown Author'
+  const getAuthorName = (
+    authorNameOrId: string | number,
+    authorArray: Author[],
+  ) => {
+    if (typeof authorNameOrId === 'number') {
+      const author = authorArray?.find((author) => author.id === authorNameOrId)
+      return author ? author.name : 'Unknown Author'
+    }
+
+    return authorNameOrId
   }
 
   return (
@@ -130,7 +139,7 @@ export function Search() {
         initialValues={initialValues}
         validationSchema={searchSchema}
         onSubmit={handleSubmit}>
-        {({ values, handleChange, handleBlur, isSubmitting }) => (
+        {({ values, handleChange, handleBlur }) => (
           <Form>
             <SearchField
               ref={inputRef}
@@ -150,7 +159,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${PATH.books}/${book.id}`}
+                        to={`/${ROUTE.BOOKS}/${book.id}`}
                         onClick={() => handleReset(values)}>
                         <MenuItem>
                           <img
@@ -184,19 +193,18 @@ export function Search() {
                 </DropdownList>
               )}
             </Dropdown>
-            <SearchButton
-              type="submit"
-              disabled={isSubmitting}
-              title="Search"
-            />
+            <SearchButton type="submit" title="Search">
+              <SearchIcon />
+            </SearchButton>
             <ClearButton
               type="button"
               onClick={() => {
                 handleReset(values)
                 inputRef.current?.focus()
               }}
-              title="Clear"
-            />
+              title="Clear">
+              <ClearIcon />
+            </ClearButton>
           </Form>
         )}
       </Formik>

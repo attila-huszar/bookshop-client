@@ -4,8 +4,9 @@ import { toast } from 'react-hot-toast'
 import { StyledForgotPassword } from './ForgotPassword.style'
 import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
-import { apiHandler } from '@/api/apiHandler'
+import { postPasswordReset } from '@/api'
 import { forgotPasswordSchema } from '@/helpers'
+import { handleErrors } from '@/errors'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 function ForgotPassword(
@@ -30,14 +31,21 @@ function ForgotPassword(
     actions: { resetForm: () => void },
   ) => {
     try {
-      const response = await apiHandler.postUserPasswordReset(values.email)
+      const resetResponse = await postPasswordReset(values.email)
+
+      toast.success(resetResponse.message, {
+        id: 'passwordReset',
+      })
+
       handleClose()
       actions.resetForm()
-      toast.success(response)
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
-      )
+      const formattedError = await handleErrors({
+        error,
+        message: 'Password reset failed, please try again later',
+      })
+
+      toast.error(formattedError.message, { id: 'passwordReset' })
     }
   }
 
@@ -50,9 +58,7 @@ function ForgotPassword(
         }
       </p>
       <Formik
-        initialValues={{
-          email: '',
-        }}
+        initialValues={{ email: '' }}
         validationSchema={forgotPasswordSchema}
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (

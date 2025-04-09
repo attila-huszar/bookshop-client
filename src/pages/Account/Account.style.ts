@@ -41,10 +41,11 @@ export const Details = styled.div`
 `
 
 export const AvatarPanel = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1.75rem;
 `
 
 export const General = styled.div`

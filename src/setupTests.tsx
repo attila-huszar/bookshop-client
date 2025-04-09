@@ -1,11 +1,10 @@
 import { vi } from 'vitest'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import { Provider } from 'react-redux'
 import { store } from './store'
-import { apiChoice } from './constants'
 import '@testing-library/jest-dom'
 
-vi.mock(import('react-router-dom'), async (importOriginal) => {
+vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...actual,
@@ -14,17 +13,6 @@ vi.mock(import('react-router-dom'), async (importOriginal) => {
     useParams: vi.fn(),
   }
 })
-
-vi.mock(
-  import('@/constants'),
-  async (importOriginal): Promise<{ apiChoice: typeof apiChoice }> => {
-    const actual = await importOriginal()
-    return {
-      ...actual,
-      apiChoice: 'ELASTIC',
-    }
-  },
-)
 
 vi.mock('@/services', () => ({
   cloudinaryConfig: {

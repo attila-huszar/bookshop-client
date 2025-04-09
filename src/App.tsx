@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Routes } from '@/routes'
-import { useAppDispatch, useLocalStorage } from '@/hooks'
+import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
 import {
   fetchBooks,
   fetchBooksByProperty,
@@ -8,29 +8,35 @@ import {
   fetchRecommendedBooks,
   fetchNews,
   fetchCartItems,
-  fetchUserByUUID,
+  fetchAuthTokens,
+  fetchUserProfile,
   orderRetrieve,
 } from '@/store'
-import { ILocalCart } from '@/interfaces'
+import type { CartLocalStorage } from '@/types'
 import GlobalStyle from '@/styles/Global.style'
 
 function App() {
   const dispatch = useAppDispatch()
+  const { accessToken } = useAppSelector((state) => state.user)
   const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
+    void dispatch(fetchAuthTokens())
     void dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
     void dispatch(fetchBooksByProperty('newRelease'))
     void dispatch(fetchBooksByProperty('topSellers'))
     void dispatch(fetchNews())
     void dispatch(fetchBookSearchOptions())
+  }, [dispatch])
 
-    const uuid = getFromLocalStorage<string>('uuid')
-    if (uuid) {
-      void dispatch(fetchUserByUUID(uuid))
+  useEffect(() => {
+    if (accessToken) {
+      void dispatch(fetchUserProfile())
     }
+  }, [dispatch, accessToken])
 
-    const cart = getFromLocalStorage<ILocalCart[]>('cart')
+  useEffect(() => {
+    const cart = getFromLocalStorage<CartLocalStorage[]>('cart')
     if (cart) {
       void dispatch(fetchCartItems(cart))
     }

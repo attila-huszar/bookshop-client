@@ -7,7 +7,7 @@ import {
   ErrorMessage,
   PasswordEye,
 } from '@/styles/Form.style'
-import { IFormik, IFormikField } from '@/interfaces'
+import type { FormikProps, FormikInput } from '@/types'
 import PasswordEyeIcon from '@/assets/svg/eye.svg?react'
 import PasswordEyeSlashIcon from '@/assets/svg/eye_slash.svg?react'
 
@@ -23,7 +23,7 @@ export function FormikField({
   children,
   showPassword,
   setShowPassword,
-}: IFormikField) {
+}: FormikInput) {
   const formikRef = useRef<HTMLInputElement>(null)
   const formikContext = useFormikContext()
 
@@ -69,7 +69,7 @@ export function FormikField({
   if (type === 'select') {
     return (
       <Field name={name} value={value} onChange={onChange}>
-        {({ field, form, meta }: IFormik) => {
+        {({ field, form, meta }: FormikProps) => {
           const shouldShowError = meta.touched && form.submitCount > 0
 
           return (
@@ -93,7 +93,7 @@ export function FormikField({
 
   return (
     <Field name={name} value={value} onChange={onChange}>
-      {({ field, form, meta }: IFormik) => {
+      {({ field, form, meta }: FormikProps) => {
         const shouldShowError = meta.touched && form.submitCount > 0
 
         return (

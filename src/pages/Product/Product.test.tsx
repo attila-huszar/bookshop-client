@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Product } from './Product'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { authorsSelector, booksSelector, fetchBookById } from '@/store'

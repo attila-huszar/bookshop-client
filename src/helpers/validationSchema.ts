@@ -49,7 +49,6 @@ export const registrationSchema = Yup.object().shape({
     .max(320, 'Max 320 characters')
     .email('Invalid Email')
     .required('Required'),
-
   password: Yup.string()
     .min(6, 'Min 6 characters')
     .max(30, 'Max 30 characters')

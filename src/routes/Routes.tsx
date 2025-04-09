@@ -3,7 +3,7 @@ import {
   RouterProvider,
   createBrowserRouter,
   type RouteObject,
-} from 'react-router-dom'
+} from 'react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Home,
@@ -16,15 +16,11 @@ import {
   Checkout,
   NotFound,
 } from '@/pages'
-import { PATH } from '@/constants'
-import {
-  ProtectedRoute,
-  Loading,
-  VerifyEmail,
-  PasswordReset,
-  Error,
-} from '@/components'
-import { protectedRouteLoader } from '@/helpers'
+import { ROUTE } from './route'
+import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
+import { PublicRoute } from './PublicRoute/PublicRoute'
+import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
+import { protectedRouteLoader } from './helpers/protectedRouteLoader'
 
 const Layout = lazy(() =>
   import('../pages/Layout/Layout').then(({ Layout }) => ({
@@ -34,13 +30,11 @@ const Layout = lazy(() =>
 
 const routes: RouteObject[] = [
   {
-    path: '/',
+    path: ROUTE.HOME,
+    errorElement: <Error fullScreen />,
     element: (
-      <ErrorBoundary
-        fallback={
-          <Error text="Couldn't load the page. Please try again later." />
-        }>
-        <Suspense fallback={<Loading />}>
+      <ErrorBoundary fallback={<Error fullScreen />}>
+        <Suspense fallback={<Loading fullScreen />}>
           <Layout />
         </Suspense>
       </ErrorBoundary>
@@ -51,39 +45,45 @@ const routes: RouteObject[] = [
         element: <Home />,
       },
       {
-        path: PATH.books,
+        path: ROUTE.BOOKS,
         element: <Products />,
       },
       {
-        path: `${PATH.books}/:id`,
+        path: ROUTE.BOOK,
         element: <Product />,
       },
       {
-        path: PATH.registration,
-        element: <Registration />,
-      },
-      {
-        path: PATH.login,
-        element: <Login />,
-      },
-      {
-        path: PATH.cart,
+        path: ROUTE.CART,
         element: <Cart />,
       },
       {
-        path: PATH.verify,
+        path: ROUTE.VERIFICATION,
         element: <VerifyEmail />,
       },
       {
-        path: PATH.passwordReset,
+        path: ROUTE.PASSWORD_RESET,
         element: <PasswordReset />,
+      },
+      {
+        element: <PublicRoute />,
+        loader: protectedRouteLoader,
+        children: [
+          {
+            path: ROUTE.REGISTER,
+            element: <Registration />,
+          },
+          {
+            path: ROUTE.LOGIN,
+            element: <Login />,
+          },
+        ],
       },
       {
         element: <ProtectedRoute />,
         loader: protectedRouteLoader,
         children: [
           {
-            path: PATH.account,
+            path: ROUTE.ACCOUNT,
             element: <Account />,
           },
         ],
@@ -95,7 +95,7 @@ const routes: RouteObject[] = [
     ],
   },
   {
-    path: PATH.checkout,
+    path: ROUTE.CHECKOUT,
     element: <Checkout />,
   },
 ]

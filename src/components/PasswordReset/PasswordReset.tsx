@@ -1,66 +1,82 @@
-import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
-import { apiHandler } from '@/api/apiHandler'
-import { PATH, passwordResetInitialValues } from '@/constants'
-import { passwordEncrypt, resetPasswordSchema } from '@/helpers'
-import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
+import { useAppDispatch } from '@/hooks'
+import { postVerifyPasswordReset } from '@/api'
+import { resetPasswordSchema } from '@/helpers'
+import { passwordResetInitialValues } from '@/constants'
+import { ROUTE } from '@/routes'
+import { handleErrors } from '@/errors'
 
 export function PasswordReset() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
-  const resetCode = queryParams.get('code')
-  const [uuid, setUUID] = useState<string | null>(null)
+  const token = queryParams.get('token')
+  const [email, setEmail] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
+  const isEffectRun = useRef(false)
 
   useEffect(() => {
-    if (resetCode) {
-      apiHandler
-        .passwordReset(resetCode)
-        .then((resetResponse) => setUUID(resetResponse))
-        .catch((error: Error) => {
-          toast.error(error.message, {
-            id: 'reset-error',
-          })
-          navigate('/', { replace: true })
+    if (isEffectRun.current || !token) return
+    isEffectRun.current = true
+
+    const verifyToken = async () => {
+      try {
+        const response = await postVerifyPasswordReset(token)
+
+        setEmail(response.email)
+
+        toast.success(
+          `Password reset token verified for ${response.email}. Please enter your new password.`,
+          { id: 'passwordReset' },
+        )
+      } catch (error) {
+        const formattedError = await handleErrors({
+          error,
+          message: 'Password reset failed, please try again later.',
         })
+
+        toast.error(formattedError.message, { id: 'passwordReset' })
+
+        await navigate('/', { replace: true })
+      }
     }
-  }, [resetCode, navigate])
+
+    void verifyToken()
+  }, [token, navigate])
 
   const handleSubmit = async (values: {
     newPassword: string
     newPasswordConfirmation: string
   }) => {
-    if (uuid && values.newPassword === values.newPasswordConfirmation) {
-      try {
-        await dispatch(
-          updateUser({
-            uuid,
-            fields: { password: passwordEncrypt(values.newPassword) },
-          }),
-        )
+    if (email && values.newPassword === values.newPasswordConfirmation) {
+      const response = await dispatch(
+        updateUser({ password: values.newPassword }),
+      )
 
-        navigate(`/${PATH.login}`, { replace: true })
-        toast.success('Password Changed Successfully', {
-          id: 'reset-success',
+      if (response.meta.requestStatus === 'fulfilled') {
+        toast.success('Password successfully changed.', {
+          id: 'passwordChange',
         })
-      } catch {
+      } else {
         toast.error('Error changing password, please try again later', {
-          id: 'password-change-error',
+          id: 'passwordChange',
         })
       }
+
+      await navigate(`/${ROUTE.LOGIN}`, { replace: true })
     }
   }
 
   return (
-    uuid && (
+    email && (
       <StyledPasswordReset>
         <h2>Password Reset</h2>
         <p>Please enter your new password below.</p>

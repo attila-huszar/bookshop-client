@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { ButtonWrapper } from '@/styles/Form.style'
@@ -11,9 +11,10 @@ import {
 } from '@/components'
 import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/helpers'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { loginUser, userSelector } from '@/store'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
+import type { LoginRequest } from '@/types'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from '@/assets/svg/question_circle.svg?react'
 
@@ -21,33 +22,35 @@ export function Login() {
   const { userIsLoading } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { setToLocalStorage } = useLocalStorage()
   const [showPassword, setShowPassword] = useState(false)
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
-  const handleLogin = (user: { email: string; password: string }) => {
-    dispatch(loginUser(user))
-      .unwrap()
-      .then((response) => {
-        setToLocalStorage('uuid', response.uuid)
-        navigate('/', { replace: true })
-        toast.success(`Welcome back, ${response.firstName}!`, {
-          id: 'login-success',
-        })
-      })
-      .catch((error: Error) => {
-        toast.error(error.message, {
-          id: 'login-error',
-        })
-      })
-  }
-
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
+  const handleSubmit = async (values: LoginRequest) => {
+    try {
+      const loginResponse = await dispatch(login(values)).unwrap()
+
+      toast.success(`Welcome back, ${loginResponse.firstName}!`, {
+        id: 'login',
+      })
+
+      await navigate('/', { replace: true })
+    } catch (error) {
+      toast.error(String(error), {
+        id: 'login',
+      })
+    }
+  }
+
   const handleDialogOpen = () => {
     forgotPasswordDialog.current?.showModal()
+  }
+
+  const navigateHome = async () => {
+    await navigate('/')
   }
 
   return (
@@ -56,7 +59,7 @@ export function Login() {
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
         validateOnBlur={false}
-        onSubmit={handleLogin}>
+        onSubmit={handleSubmit}>
         <Form noValidate>
           <p>Email</p>
           <FormikField
@@ -82,7 +85,7 @@ export function Login() {
               type="reset"
               title="Back"
               disabled={userIsLoading}
-              onClick={() => navigate('/')}
+              onClick={() => void navigateHome()}
             />
             <Button type="submit" disabled={userIsLoading}>
               {userIsLoading ? 'Logging in...' : 'Login'}

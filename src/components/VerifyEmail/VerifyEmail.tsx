@@ -1,34 +1,48 @@
-import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
+import { postVerifyEmail } from '@/api'
 import { Loading } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
-import { PATH } from '@/constants'
+import { ROUTE } from '@/routes'
+import { handleErrors } from '@/errors'
 
 export function VerifyEmail() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
-  const code = queryParams.get('code')
+  const token = queryParams.get('token')
+  const isEffectRun = useRef(false)
 
   useEffect(() => {
-    if (code) {
-      apiHandler
-        .verifyEmail(code)
-        .then((verifyResult) => {
-          toast.success(verifyResult, {
-            id: 'verify-success',
-          })
-          navigate(`/${PATH.login}`, { replace: true })
+    if (isEffectRun.current || !token) return
+    isEffectRun.current = true
+
+    const verifyEmailToken = async () => {
+      try {
+        toast.loading('Verifying email...', { id: 'verify' })
+
+        const response = await postVerifyEmail(token)
+
+        toast.success(
+          `${response.email} successfully verified, you can now log in.`,
+          { id: 'verify' },
+        )
+
+        await navigate(`/${ROUTE.LOGIN}`, { replace: true })
+      } catch (error) {
+        const formattedError = await handleErrors({
+          error,
+          message: 'Verification failed, please try again later.',
         })
-        .catch((error: Error) => {
-          toast.error(error.message, {
-            id: 'verify-error',
-          })
-          navigate('/', { replace: true })
-        })
+
+        toast.error(formattedError.message, { id: 'verify' })
+
+        await navigate('/', { replace: true })
+      }
     }
-  }, [code, navigate])
+
+    void verifyEmailToken()
+  }, [navigate, token])
 
   return <Loading text="Verifying" />
 }

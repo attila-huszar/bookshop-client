@@ -1,13 +1,12 @@
 import { styled } from 'styled-components'
 
 export const StyledFooter = styled.footer`
-  position: absolute;
-  bottom: 0;
   display: grid;
-  grid-template-rows: 1fr 3.5rem;
+  grid-template-rows: 16rem 3.5rem;
   grid-template-columns: 1fr 1fr;
-  height: 25rem;
+  column-gap: 2.5rem;
   width: 100%;
+  min-width: 54rem;
   max-width: 90rem;
   padding: 0 6.25rem;
 
@@ -18,11 +17,12 @@ export const StyledFooter = styled.footer`
 
 export const LeftSection = styled.section`
   grid-area: 1 / 1 / 2 / 2;
+  align-self: center;
 `
 
 export const RightSection = styled.section`
   grid-area: 1 / 2 / 2 / 3;
-  padding: 4.75rem 2.5rem;
+  align-self: center;
 
   p {
     text-wrap: balance;
@@ -40,6 +40,7 @@ export const BottomSection = styled.section`
 export const NavList = styled.ul`
   display: flex;
   flex-wrap: wrap;
+  min-width: 14rem;
   gap: 2rem;
   list-style-type: none;
 `

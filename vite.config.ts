@@ -1,34 +1,41 @@
 import { defineConfig, loadEnv } from 'vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import path from 'path'
 
+const ReactCompilerConfig = {}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
+  const isDevelopment = mode === 'development'
 
   return {
-    plugins: [react(), svgr()],
+    plugins: [
+      react({
+        babel: {
+          plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
+        },
+      }),
+      svgr(),
+      visualizer(),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
     server: {
-      proxy: {
-        [env.VITE_ELASTIC_PATH]: {
-          target: env.VITE_ELASTIC_URL,
-          headers: {
-            Authorization: `ApiKey ${env.VITE_ELASTIC_API_KEY}`,
-          },
-          rewrite: (path) => path.replace(env.VITE_ELASTIC_PATH, ''),
-          secure: false,
-        },
-        [env.VITE_JSON_SERVER_PATH]: {
-          target: env.VITE_JSON_SERVER_URL,
-          rewrite: (path) => path.replace(env.VITE_JSON_SERVER_PATH, ''),
-          secure: false,
-        },
-      },
+      proxy: isDevelopment
+        ? {
+            '/api': {
+              target: env.VITE_SERVER_URL,
+              rewrite: (path) => path.replace(/^\/api/, ''),
+              changeOrigin: true,
+              secure: false,
+            },
+          }
+        : undefined,
     },
     test: {
       restoreMocks: true,

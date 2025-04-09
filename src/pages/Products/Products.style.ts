@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 
 export const StyledProducts = styled.main`
-  padding: 2rem 6.25rem 4rem;
+  padding: 0 5rem 4rem;
   display: flex;
   justify-content: space-between;
 
@@ -12,7 +12,8 @@ export const StyledProducts = styled.main`
   > section > div {
     display: flex;
     flex-wrap: wrap;
-    gap: 2rem;
+    column-gap: 0.5rem;
+    row-gap: 2rem;
     min-width: 31.5rem;
   }
 `

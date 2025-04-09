@@ -1,7 +1,8 @@
-import { useLayoutEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
+import { postUserRegister } from '@/api'
 import { ButtonWrapper } from '@/styles/Form.style'
 import {
   AuthorizationMenu,
@@ -9,61 +10,44 @@ import {
   Button,
   IconButton,
 } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
-import { registrationSchema, passwordEncrypt } from '@/helpers'
+import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
-import { IUser } from '@/interfaces'
+import { RegisterRequest } from '@/types'
+import { handleErrors } from '@/errors'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleSubmit = async (values: {
-    firstName: string
-    lastName: string
-    email: string
-    password: string
-    avatar: File | undefined
-  }) => {
-    const user: IUser = {
-      uuid: crypto.randomUUID(),
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      password: passwordEncrypt(values.password),
-      address: {
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        postal_code: '',
-        country: '',
-      },
-      phone: '',
-      avatar: values.avatar,
-      role: 'user',
-      verified: false,
-      verificationCode: crypto.randomUUID(),
-      verificationCodeExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
+  const handleSubmit = async (values: RegisterRequest) => {
     try {
-      const registerResponse = await apiHandler.postUserRegister(user)
+      toast.loading('Registering...', { id: 'register' })
 
-      navigate('/', { replace: true })
-      toast.success(registerResponse)
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
+      const response = await postUserRegister(values)
+
+      toast.success(
+        `${response.email} registered successfully, please verify your email address`,
+        { id: 'register' },
       )
+
+      await navigate('/', { replace: true })
+    } catch (error) {
+      const formattedError = await handleErrors({
+        error,
+        message: 'Registration failed, please try again later',
+      })
+
+      toast.error(formattedError.message, { id: 'register' })
     }
+  }
+
+  const navigateHome = async () => {
+    await navigate('/')
   }
 
   return (
@@ -112,7 +96,7 @@ export function Registration() {
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
-                onClick={() => navigate('/')}
+                onClick={() => void navigateHome()}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Registering...' : 'Register'}

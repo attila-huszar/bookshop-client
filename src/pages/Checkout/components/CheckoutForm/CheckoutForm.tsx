@@ -6,17 +6,17 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { orderClear, orderSelector, userSelector } from '@/store'
-import { apiHandler } from '@/api/apiHandler'
-import { baseURL, PATH } from '@/constants'
+import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
+import { ROUTE } from '@/routes'
+import { baseURL } from '@/constants'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { orderStatus } = useAppSelector(orderSelector)
+  const { order } = useAppSelector(orderSelector)
   const [message, setMessage] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [emailInput, setEmailInput] = useState('')
@@ -36,7 +36,7 @@ export function CheckoutForm() {
       elements,
       confirmParams: {
         receipt_email: emailInput || userData?.email,
-        return_url: `${baseURL}/${PATH.checkout}`,
+        return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
       },
     })
 
@@ -49,13 +49,13 @@ export function CheckoutForm() {
     setIsLoading(false)
   }
 
-  const handleCancel = () => {
-    if (orderStatus) {
-      void apiHandler.getStripePaymentCancel(orderStatus.paymentId)
+  const handleCancel = async () => {
+    if (order) {
+      await dispatch(orderCancel(order.paymentId))
     }
 
     dispatch(orderClear())
-    navigate(`/${PATH.cart}`, { replace: true })
+    await navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -70,20 +70,20 @@ export function CheckoutForm() {
     },
   }
 
-  const order = orderStatus && {
-    num: orderStatus.paymentId.slice(-6).toUpperCase(),
-    amount: (orderStatus.amount / 100).toFixed(2),
-    currency: orderStatus.currency.toUpperCase(),
+  const orderForm = order && {
+    num: order.paymentId.slice(-6).toUpperCase(),
+    amount: (order.amount / 100).toFixed(2),
+    currency: order.currency.toUpperCase(),
   }
 
   return (
     <form id="payment-form" onSubmit={(event) => void handleSubmit(event)}>
-      {order && (
+      {orderForm && (
         <>
           <div>
-            <p>Order #{order.num}</p>
+            <p>Order #{orderForm.num}</p>
             <span>
-              {order.amount} {order.currency}
+              {orderForm.amount} {orderForm.currency}
             </span>
           </div>
           <LinkAuthenticationElement
@@ -94,12 +94,15 @@ export function CheckoutForm() {
             id="payment-element"
             options={paymentElementOptions}
           />
-          <button disabled={isLoading || !stripe || !elements} id="submit">
-            <span id="button-text">
+          <button
+            type="submit"
+            disabled={isLoading || !stripe || !elements}
+            id="submit">
+            <span>
               {isLoading ? (
                 <div className="spinner" id="spinner"></div>
               ) : (
-                `Pay ${order.amount} ${order.currency}`
+                `Pay ${orderForm.amount} ${orderForm.currency}`
               )}
             </span>
           </button>
@@ -108,9 +111,9 @@ export function CheckoutForm() {
       )}
       <button
         type="button"
-        onClick={handleCancel}
+        onClick={() => void handleCancel()}
         style={{ backgroundColor: 'var(--grey)' }}>
-        <span id="button-text">Cancel Checkout</span>
+        <span>Cancel Checkout</span>
       </button>
       {message && <div id="payment-message">{message}</div>}
     </form>

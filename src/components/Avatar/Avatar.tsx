@@ -1,32 +1,35 @@
-import { StyledAvatar } from './Avatar.style'
+import { RemoveAvatar, IconOverlay, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
-import { CloudinaryImage } from '@cloudinary/url-gen'
-import { thumbnail } from '@cloudinary/url-gen/actions/resize'
-import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
-import { face } from '@cloudinary/url-gen/qualifiers/focusOn'
-import { AdvancedImage } from '@cloudinary/react'
-import { cloudinaryConfig } from '@/services'
-import { cloudinaryUploadPreset } from '@/constants'
+import { useAppDispatch } from '@/hooks'
+import { updateUser } from '@/store'
 import AccountDefaultIcon from '@/assets/svg/account_default.svg?react'
+import CameraIcon from '@/assets/svg/camera.svg?react'
+import BinIcon from '@/assets/svg/bin.svg?react'
 
-export function Avatar({
-  imgUrl,
-  onClick,
-  title,
-  $size = 40,
-  ...props
-}: AvatarTypes) {
-  const avatar = imgUrl
-    ? new CloudinaryImage(
-        `${cloudinaryUploadPreset}/avatars/${imgUrl.split('/').pop()}`,
-        cloudinaryConfig,
-      ).resize(thumbnail().width($size).height($size).gravity(focusOn(face())))
-    : null
+export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
+  const dispatch = useAppDispatch()
+
+  const handleRemoveAvatar = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    void dispatch(updateUser({ avatar: '' }))
+  }
 
   return (
-    <StyledAvatar onClick={onClick} $size={$size} title={title} {...props}>
-      {avatar ? (
-        <AdvancedImage cldImg={avatar} />
+    <StyledAvatar onClick={props.onClick} $size={$size} {...props}>
+      {props.$hoverControls && (
+        <>
+          {imgUrl && (
+            <RemoveAvatar onClick={handleRemoveAvatar} title="Remove Avatar">
+              <BinIcon />
+            </RemoveAvatar>
+          )}
+          <IconOverlay>
+            <CameraIcon />
+          </IconOverlay>
+        </>
+      )}
+      {imgUrl ? (
+        <img src={imgUrl} alt={props.title} />
       ) : (
         <AccountDefaultIcon color="var(--light-black)" />
       )}

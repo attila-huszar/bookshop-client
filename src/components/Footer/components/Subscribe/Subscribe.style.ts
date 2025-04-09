@@ -1,8 +1,12 @@
 import { styled } from 'styled-components'
 
+export const Text = styled.p`
+  margin: 1.25rem 0;
+  font-size: 1rem;
+`
+
 export const SubscribeForm = styled.form`
   display: flex;
-  margin-top: 3.5rem;
   border: 2px solid var(--primary-color);
   border-radius: 10px;
   overflow: hidden;

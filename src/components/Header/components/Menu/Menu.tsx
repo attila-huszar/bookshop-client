@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.style'
 import { IconButton } from '@/components'
 import { useClickOutside } from '@/hooks'
@@ -9,7 +9,7 @@ import MenuIcon from '@/assets/svg/menu.svg?react'
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  useClickOutside(menuRef, menuOpen, setMenuOpen)
+  useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)

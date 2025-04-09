@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useStripe } from '@stripe/react-stripe-js'
+import { updateOrder } from '@/api'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
-import { apiHandler } from '@/api/apiHandler'
 import { useAppDispatch } from '@/hooks'
 import { cartClear, orderClear } from '@/store'
+import { OrderStatus } from '@/types'
 import logo from '@/assets/image/logo.png'
 
 export function PaymentStatus() {
@@ -35,14 +36,20 @@ export function PaymentStatus() {
               message: 'Success! Payment received.',
             })
 
-            void apiHandler.updateOrder({
+            const fullName = paymentIntent.shipping?.name?.trim() ?? ''
+            const [firstName, ...rest] = fullName.split(/\s+/)
+            const lastName = rest.join(' ')
+
+            void updateOrder({
               paymentId: paymentIntent.id,
               fields: {
-                orderStatus: 'paid',
-                userName: paymentIntent.shipping?.name,
-                userEmail: paymentIntent.receipt_email,
-                userPhone: paymentIntent.shipping?.phone,
-                userAddress: paymentIntent.shipping?.address,
+                paymentIntentStatus: paymentIntent.status,
+                orderStatus: OrderStatus.Paid,
+                firstName,
+                lastName,
+                email: paymentIntent.receipt_email,
+                phone: paymentIntent.shipping?.phone,
+                address: paymentIntent.shipping?.address,
               },
             })
 
@@ -83,7 +90,11 @@ export function PaymentStatus() {
           message: 'Error retrieving payment status.',
         }),
       )
-  }, [stripe])
+  }, [dispatch, stripe])
+
+  const navigateHome = async () => {
+    await navigate('/')
+  }
 
   return (
     <StyledPaymentStatus>
@@ -104,7 +115,7 @@ export function PaymentStatus() {
         )}
       </Status>
       <p>{status.message}</p>
-      <button onClick={() => navigate('/')} type="button">
+      <button onClick={() => void navigateHome()} type="button">
         Back to home
       </button>
     </StyledPaymentStatus>

@@ -1,4 +1,4 @@
-export { PATH } from './path'
+export { baseURL, serverUrl, stripeKey, googleMapsKey } from './envConfig'
 export { menuLinks, navLinks, socialLinks, legalLinks } from './links'
 export {
   loginInitialValues,
@@ -8,20 +8,5 @@ export {
   filterInitialValues,
   discountOptions,
 } from './defaultValues'
+export { currencyOptions } from './currencyOptions'
 export { countryList } from './countryList'
-export {
-  baseURL,
-  apiChoice,
-  elasticPath,
-  jsonServerPath,
-  cloudinaryName,
-  cloudinaryUpload,
-  cloudinaryUploadPreset,
-  emailjsKey,
-  emailjsService,
-  emailjsVerificationTemplate,
-  emailjsResetPasswordTemplate,
-  stripeKey,
-  stripeURL,
-  googleMapsKey,
-} from './envKeys'

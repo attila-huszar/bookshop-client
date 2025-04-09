@@ -1,58 +1,16 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import { AppDispatch, RootState } from './store'
 import {
-  fetchBooks,
-  fetchBookById,
-  fetchBooksByProperty,
-  fetchBooksBySearch,
-  fetchBooksByAuthor,
-  fetchRecommendedBooks,
-} from './booksSlice'
-import { fetchAuthorById } from './authorsSlice'
-import {
   cartAdd,
   cartRemove,
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
   cartClear,
-} from './cartSlice'
-import { orderClear, orderCreate } from './orderSlice'
-import { IBook, ICart, ILocalCart } from '@/interfaces'
-
-export const authorFetch = createListenerMiddleware()
-
-const authorFetchTyped = authorFetch.startListening.withTypes<
-  RootState,
-  AppDispatch
->()
-
-authorFetchTyped({
-  matcher: isAnyOf(
-    fetchBooks.fulfilled,
-    fetchBookById.fulfilled,
-    fetchBooksByProperty.fulfilled,
-    fetchBooksBySearch.fulfilled,
-    fetchBooksByAuthor.fulfilled,
-    fetchRecommendedBooks.fulfilled,
-  ),
-  effect: (action, listenerApi) => {
-    if (action.type === fetchBooks.fulfilled.type) {
-      const booksFetchPayload = action.payload as { books: IBook[] }
-      booksFetchPayload.books.forEach((book) => {
-        void listenerApi.dispatch(fetchAuthorById(book.author))
-      })
-    } else if (action.type === fetchBookById.fulfilled.type) {
-      const bookFetchByIdPayload = action.payload as IBook
-      void listenerApi.dispatch(fetchAuthorById(bookFetchByIdPayload.author))
-    } else {
-      const booksFetchByPropsPayload = action.payload as IBook[]
-      booksFetchByPropsPayload.forEach((book) => {
-        void listenerApi.dispatch(fetchAuthorById(book.author))
-      })
-    }
-  },
-})
+} from './slices/cart'
+import { orderClear } from './slices/order'
+import { orderCreate } from './thunks/order'
+import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
 
@@ -72,15 +30,15 @@ cartToLocalStorageTyped({
   ),
   effect: (action) => {
     if (action.payload) {
-      const cartFromLocalStorage: ILocalCart[] = JSON.parse(
+      const cartFromLocalStorage: CartLocalStorage[] = JSON.parse(
         localStorage.getItem('cart') ?? '[]',
-      ) as ILocalCart[]
+      ) as CartLocalStorage[]
 
-      let cartToLocalStorage: ILocalCart[] = []
+      let cartToLocalStorage: CartLocalStorage[] = []
 
-      const payload = action.payload as ICart
+      const payload = action.payload as Cart
       const { cartItem, newQuantity } = payload as unknown as {
-        cartItem: ICart
+        cartItem: Cart
         newQuantity: number
       }
 

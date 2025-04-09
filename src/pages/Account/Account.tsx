@@ -1,5 +1,6 @@
 import { useState, useRef, ChangeEvent } from 'react'
 import { Form, Formik } from 'formik'
+import toast from 'react-hot-toast'
 import {
   StyledAccount,
   UserDataFields,
@@ -14,11 +15,10 @@ import {
 import { Avatar, Button, FormikField, IconButton } from '@/components'
 import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { userSelector, updateUser } from '@/store'
-import { uploadImage } from '@/services'
+import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
-import { IUserStore } from '@/interfaces'
+import type { User } from '@/types'
 import EditIcon from '@/assets/svg/edit.svg?react'
 
 export function Account() {
@@ -29,42 +29,62 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<IUserStore>, uuid: string) => {
-    void dispatch(
-      updateUser({
-        uuid,
-        fields: { ...values },
-      }),
-    )
+  const handleBasicInfoSubmit = (values: Partial<User>) => {
+    void dispatch(updateUser({ ...values }))
   }
 
-  const handleAddressInfoSubmit = (
-    values: IUserStore['address'],
-    uuid: string,
-  ) => {
-    void dispatch(
-      updateUser({
-        uuid,
-        fields: { address: values },
-      }),
-    )
+  const handleAddressInfoSubmit = (values: User['address']) => {
+    void dispatch(updateUser({ address: values }))
   }
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
   const handleAddressInfoReset = () => setEditingAddressInfo(false)
-  const handleAvatarClick = () => {
-    inputFile.current?.click()
+  const handleAvatarClick = () => inputFile.current?.click()
+
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target
+    const files = fileInput.files
+
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+
+    if (!(file instanceof File)) {
+      toast.error('Invalid file selected', { id: 'upload-error-type' })
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file', { id: 'upload-error-format' })
+      return
+    }
+
+    if (file.size > 512 * 1024) {
+      toast.error('Image must be smaller than 512KB', {
+        id: 'upload-error-size',
+      })
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+    void uploadAvatarFile(formData)
+
+    fileInput.value = ''
   }
 
-  const handleImgChange = async (img: File, uuid: string) => {
-    const imageResponse = await uploadImage(img, 'avatars')
+  const uploadAvatarFile = async (formData: FormData) => {
+    toast.loading('Uploading avatar...', { id: 'avatar-upload' })
 
-    void dispatch(
-      updateUser({
-        uuid,
-        fields: { avatar: imageResponse?.url },
-      }),
-    )
+    const result = await dispatch(updateAvatar(formData))
+
+    if (result.meta.requestStatus === 'fulfilled') {
+      toast.success('Avatar updated successfully', { id: 'avatar-upload' })
+    } else {
+      toast.error('Failed to update avatar, please try again later', {
+        id: 'avatar-upload',
+      })
+    }
   }
 
   const handlePasswordDialogOpen = () => {
@@ -72,8 +92,7 @@ export function Account() {
   }
 
   if (userData) {
-    const { uuid, firstName, lastName, email, phone, avatar, address } =
-      userData
+    const { email, firstName, lastName, phone, address, avatar } = userData
 
     return (
       <StyledAccount>
@@ -86,40 +105,40 @@ export function Account() {
             <div>
               <AvatarPanel>
                 <Avatar
-                  imgUrl={avatar as string}
+                  imgUrl={avatar}
                   onClick={handleAvatarClick}
                   title="Change Profile Picture"
                   $size={160}
-                  $clip
-                  $camera
+                  $hoverControls
                 />
                 <input
                   type="file"
                   name="avatarChangeInput"
                   aria-label="Change Avatar"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    if (e.target.files) {
-                      void handleImgChange(e.target.files[0], uuid)
-                    }
-                  }}
+                  onChange={handleAvatarChange}
                   accept="image/*"
                   ref={inputFile}
                   style={{ display: 'none' }}
                 />
                 <Button
                   onClick={handlePasswordDialogOpen}
-                  $size="sm"
+                  $size="smMd"
                   $textSize="sm">
                   Change Password
                 </Button>
-                <PasswordDialogRef ref={passwordDialog} uuid={uuid} />
+                <PasswordDialogRef ref={passwordDialog} email={email} />
               </AvatarPanel>
               <General>
                 <Formik
-                  initialValues={{ firstName, lastName, email, phone }}
+                  initialValues={{
+                    firstName,
+                    lastName,
+                    email,
+                    phone: phone ?? '',
+                  }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={(values) => handleBasicInfoSubmit(values, uuid)}
+                  onSubmit={handleBasicInfoSubmit}
                   onReset={handleBasicInfoReset}>
                   <Form>
                     <GeneralLine>
@@ -192,16 +211,16 @@ export function Account() {
             <Address>
               <Formik
                 initialValues={{
-                  line1: address.line1,
-                  line2: address.line2,
-                  city: address.city,
-                  state: address.state,
-                  postal_code: address.postal_code,
-                  country: address.country,
+                  line1: address?.line1 ?? '',
+                  line2: address?.line2 ?? '',
+                  city: address?.city ?? '',
+                  state: address?.state ?? '',
+                  postal_code: address?.postal_code ?? '',
+                  country: address?.country ?? '',
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}
-                onSubmit={(values) => handleAddressInfoSubmit(values, uuid)}
+                onSubmit={handleAddressInfoSubmit}
                 onReset={handleAddressInfoReset}>
                 <Form>
                   <AddressLine>

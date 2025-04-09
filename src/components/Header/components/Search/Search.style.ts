@@ -1,15 +1,13 @@
 import { styled } from 'styled-components'
-import searchIcon from '../../../../assets/svg/search.svg'
-import clearIcon from '../../../../assets/svg/xmark_circle.svg'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
-  display: flex;
-  align-items: center;
   margin-right: auto;
 
   form {
     position: relative;
+    display: flex;
+    align-items: center;
   }
 `
 
@@ -37,38 +35,25 @@ export const Dropdown = styled.div<SearchTypes>`
 `
 
 export const SearchButton = styled.button`
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  height: 20px;
-  width: 20px;
+  margin-left: -19.25rem;
+  height: 1rem;
+  width: 1rem;
   padding: 0;
-  color: inherit;
+  background-color: transparent;
   border: none;
   outline: inherit;
   cursor: pointer;
-  background: url(${searchIcon}) center no-repeat;
 `
 
 export const ClearButton = styled.button`
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  height: 20px;
-  width: 20px;
+  margin-left: 16.5rem;
+  height: 1rem;
+  width: 1rem;
   padding: 0;
+  background-color: transparent;
   border: none;
   outline: none;
   cursor: pointer;
-  background-color: transparent;
-  background-image: url(${clearIcon});
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 20px;
-
-  &:hover {
-    background-color: transparent;
-  }
 `
 
 export const DropdownList = styled.ul`

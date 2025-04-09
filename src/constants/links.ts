@@ -1,4 +1,3 @@
-import { PATH } from '@/constants'
 import homeIcon from '@/assets/svg/home.svg'
 import bookIcon from '@/assets/svg/book.svg'
 import instagramIcon from '@/assets/svg/instagram.svg'
@@ -7,7 +6,7 @@ import fbIcon from '@/assets/svg/facebook.svg'
 
 export const menuLinks = [
   { path: '/', name: 'Home', key: 'home', icon: homeIcon },
-  { path: `/${PATH.books}`, name: 'Shop', key: 'shop', icon: bookIcon },
+  { path: '/books', name: 'Shop', key: 'shop', icon: bookIcon },
 ]
 
 export const navLinks = [

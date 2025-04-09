@@ -9,16 +9,16 @@ import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.style'
 import { ButtonWrapper } from '@/styles/Form.style'
-import { Button, FormikField, IconButton } from '@/components'
-import { apiHandler } from '@/api/apiHandler'
-import { passwordChangeInitialValues } from '@/constants'
-import { accountPasswordSchema, passwordEncrypt } from '@/helpers'
+import { postUserLogin } from '@/api'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
+import { Button, FormikField, IconButton } from '@/components'
+import { passwordChangeInitialValues } from '@/constants'
+import { accountPasswordSchema } from '@/helpers'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 function PasswordDialog(
-  { uuid }: { uuid: string },
+  { email }: { email: string },
   ref: ForwardedRef<Partial<HTMLDialogElement>>,
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -42,37 +42,33 @@ function PasswordDialog(
     },
     actions: { resetForm: () => void },
   ) => {
-    const isPasswordValid = await apiHandler.verifyPassword(
-      uuid,
-      values.currentPassword,
-    )
+    if (values.currentPassword !== values.newPassword) {
+      try {
+        await postUserLogin({
+          email,
+          password: values.currentPassword,
+        })
+      } catch {
+        toast.error('Current password invalid', {
+          id: 'password-change-fail',
+        })
+        return
+      }
 
-    if (isPasswordValid) {
-      if (values.currentPassword !== values.newPassword) {
-        try {
-          await dispatch(
-            updateUser({
-              uuid,
-              fields: { password: passwordEncrypt(values.newPassword) },
-            }),
-          )
+      try {
+        await dispatch(updateUser({ password: values.newPassword }))
 
-          handleClose()
-          actions.resetForm()
-          toast.success('Password changed successfully')
-        } catch {
-          toast.error('Failed to change password, please try again later', {
-            id: 'password-change-error',
-          })
-        }
-      } else {
-        toast.error('Password must be different from current password', {
-          id: 'password-same-error',
+        handleClose()
+        actions.resetForm()
+        toast.success('Password changed successfully')
+      } catch {
+        toast.error('Failed to change password, please try again later', {
+          id: 'password-change-fail',
         })
       }
     } else {
-      toast.error('Current password invalid', {
-        id: 'password-invalid-error',
+      toast.error('Password must be different from current password', {
+        id: 'password-change-fail',
       })
     }
   }
