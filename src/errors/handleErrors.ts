@@ -1,4 +1,5 @@
 import { HTTPError } from 'ky'
+import { logger } from '@/helpers'
 
 const DEFAULT_ERROR_MESSAGE = 'Unknown error occurred'
 
@@ -13,15 +14,15 @@ export async function handleErrors({
     try {
       const response = await error.response.json<{ error?: string }>()
       return new Error(response.error ?? message)
-    } catch (jsonError) {
-      console.warn('Error parsing HTTP error response:', jsonError)
+    } catch (error) {
+      logger.warn('Error parsing HTTP error response', { error })
       return new Error(message)
     }
   } else if (error instanceof Error) {
-    console.warn('Non-HTTP error:', error)
+    logger.warn('Non-HTTP error', { error })
     return new Error(error.message || message)
   } else {
-    console.error('Unknown error:', error)
+    logger.error(error)
     return new Error(message)
   }
 }
