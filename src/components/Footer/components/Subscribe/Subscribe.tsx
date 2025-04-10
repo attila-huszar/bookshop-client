@@ -1,6 +1,17 @@
+import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Text, SubscribeForm } from './Subscribe.style'
 
 export function Subscribe() {
+  const [email, setEmail] = useState('')
+
+  const handleSubscribe = () => {
+    toast('Subscription feature not yet implemented.', {
+      icon: '💌',
+    })
+    setEmail('')
+  }
+
   return (
     <>
       <Text>
@@ -11,8 +22,12 @@ export function Subscribe() {
           name="subscribe"
           type="email"
           placeholder="Enter your email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-        <button type="button">Subscribe</button>
+        <button onClick={handleSubscribe} type="button">
+          Subscribe
+        </button>
       </SubscribeForm>
     </>
   )
