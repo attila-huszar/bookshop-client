@@ -10,6 +10,10 @@
 [![CI](https://github.com/attila-huszar/bookshop-client/actions/workflows/node.js.yml/badge.svg)](https://github.com/attila-huszar/bookshop-client/actions/workflows/node.js.yml)
 [![CodeQL](https://github.com/attila-huszar/bookshop-client/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/attila-huszar/bookshop-client/actions/workflows/github-code-scanning/codeql)
 
-▶ [Bookshop Server](https://github.com/attila-huszar/bookshop-server)
+[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v2/monitor/1vrpa.svg)](https://uptime.betterstack.com/?utm_source=status_badge)
 
-[![Bookshop](https://s3.eu-central-1.amazonaws.com/attila.huszar/bookshop/bookshop-front.webp)](https://book-shop.pages.dev/)
+🛠️ [Service Status](https://bookshop.betteruptime.com/)
+
+👉 [Bookshop Server](https://github.com/attila-huszar/bookshop-server)
+
+[![Bookshop](https://s3.eu-central-1.amazonaws.com/attila.huszar/portfolio/bookshop.webp)](https://book-shop.pages.dev/)
