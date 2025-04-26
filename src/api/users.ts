@@ -162,9 +162,9 @@ export const postPasswordReset = async (
 
 export const postVerifyPasswordReset = async (
   token: string,
-): Promise<{ email: string }> => {
+): Promise<{ token: string }> => {
   try {
-    const response = await baseRequest.post<{ email: string }>(
+    const response = await baseRequest.post<{ token: string }>(
       PATH.users.passwordResetToken,
       { json: { token } },
     )
@@ -174,6 +174,26 @@ export const postVerifyPasswordReset = async (
     const formattedError = await handleErrors({
       error,
       message: 'Failed to verify password reset token',
+    })
+    throw formattedError
+  }
+}
+
+export const postPasswordResetSubmit = async (
+  token: string,
+  password: string,
+): Promise<{ message: string }> => {
+  try {
+    const response = await baseRequest.post<{ message: string }>(
+      PATH.users.passwordResetSubmit,
+      { json: { token, password } },
+    )
+    const data = await response.json()
+    return data
+  } catch (error) {
+    const formattedError = await handleErrors({
+      error,
+      message: 'Failed to reset password',
     })
     throw formattedError
   }

@@ -13,6 +13,7 @@ export const PATH = {
     verification: `${users}/verification`,
     passwordResetRequest: `${users}/password-reset-request`,
     passwordResetToken: `${users}/password-reset-token`,
+    passwordResetSubmit: `${users}/password-reset-submit`,
     profile: `${users}/profile`,
     refresh: `${users}/refresh`,
   },
