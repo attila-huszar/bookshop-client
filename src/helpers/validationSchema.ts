@@ -27,35 +27,35 @@ function isValidFileSize(file: File, fileSize: number) {
   }
 }
 
+export const emailSchema = Yup.string()
+  .email('Invalid Email')
+  .required('Required')
+
+export const passwordSchema = Yup.string()
+  .min(6, 'Min 6 characters')
+  .matches(/^(?=.*[a-z])(?=.*\d)/, 'One number required')
+  .required('Required')
+
+export const passwordConfirmSchema = Yup.string().oneOf(
+  [Yup.ref('password'), Yup.ref('newPassword')],
+  'Passwords must match',
+)
+
+export const nameSchema = Yup.string()
+  .min(2, 'Min 2 characters')
+  .max(50, 'Max 50 characters')
+  .matches(
+    /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
+    'Latin letters only',
+  )
+  .required('Required')
+
 export const registrationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .matches(
-      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
-      'Latin letters only',
-    )
-    .required('Required'),
-  lastName: Yup.string()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .matches(
-      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
-      'Latin letters only',
-    )
-    .required('Required'),
-  email: Yup.string()
-    .min(5, 'Invalid Email')
-    .max(320, 'Max 320 characters')
-    .email('Invalid Email')
-    .required('Required'),
-  password: Yup.string()
-    .min(6, 'Min 6 characters')
-    .max(30, 'Max 30 characters')
-    .required('Required'),
-  passwordConfirmation: Yup.string()
-    .oneOf([Yup.ref('password')], 'Passwords must match')
-    .required('Required'),
+  firstName: nameSchema,
+  lastName: nameSchema,
+  email: emailSchema,
+  password: passwordSchema,
+  passwordConfirmation: passwordConfirmSchema,
   avatar: Yup.mixed()
     .test('is-valid-type', 'Invalid image type', (file) =>
       isValidFileType(file as File, 'image'),
@@ -67,34 +67,15 @@ export const registrationSchema = Yup.object().shape({
 })
 
 export const loginSchema = Yup.object().shape({
-  email: Yup.string().email('Invalid Email').required('Required'),
-  password: Yup.string()
-    .min(6, 'Min 6 characters')
-    .max(30, 'Max 30 characters')
-    .required('Required'),
+  email: emailSchema,
+  password: passwordSchema,
 })
 
-export const searchSchema = Yup.object().shape({
-  search: Yup.string().required(),
-})
+export const searchSchema = Yup.string().required('Required')
 
 export const accountBasicSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .matches(
-      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
-      'Latin letters only',
-    )
-    .required('Required'),
-  lastName: Yup.string()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .matches(
-      /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
-      'Latin letters only',
-    )
-    .required('Required'),
+  firstName: nameSchema,
+  lastName: nameSchema,
   phone: Yup.string().matches(
     /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,
     'Invalid Phone number',
@@ -111,29 +92,14 @@ export const accountAddressSchema = Yup.object().shape({
 })
 
 export const accountPasswordSchema = Yup.object().shape({
-  currentPassword: Yup.string()
-    .min(6, 'Min 6 characters')
-    .max(30, 'Max 30 characters')
-    .required('Required'),
-  newPassword: Yup.string()
-    .min(6, 'Min 6 characters')
-    .max(30, 'Max 30 characters')
-    .required('Required'),
-  newPasswordConfirmation: Yup.string()
-    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
-    .required('Required'),
+  currentPassword: passwordSchema,
+  newPassword: passwordSchema,
+  newPasswordConfirmation: passwordConfirmSchema,
 })
 
-export const forgotPasswordSchema = Yup.object().shape({
-  email: Yup.string().email('Invalid Email').required('Required'),
-})
+export const forgotPasswordSchema = emailSchema
 
 export const resetPasswordSchema = Yup.object().shape({
-  newPassword: Yup.string()
-    .min(6, 'Min 6 characters')
-    .max(30, 'Max 30 characters')
-    .required('Required'),
-  newPasswordConfirmation: Yup.string()
-    .oneOf([Yup.ref('newPassword')], 'Passwords must match')
-    .required('Required'),
+  newPassword: passwordSchema,
+  newPasswordConfirmation: passwordConfirmSchema,
 })
