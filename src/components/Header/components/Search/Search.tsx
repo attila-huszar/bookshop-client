@@ -36,7 +36,6 @@ export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<Book[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useAppDispatch()
   const { authorArray } = useAppSelector(authorsSelector)
   const navigate = useNavigate()
@@ -109,9 +108,8 @@ export function Search() {
     }
   }
 
-  const handleReset = (values: { search: string }) => {
+  const handleReset = () => {
     setSearchOpen(false)
-    values.search = ''
     setSearchResults([])
   }
 
@@ -139,10 +137,10 @@ export function Search() {
         initialValues={initialValues}
         validationSchema={searchSchema}
         onSubmit={handleSubmit}>
-        {({ values, handleChange, handleBlur }) => (
+        {({ values, handleChange, handleBlur, resetForm }) => (
           <Form>
             <SearchField
-              ref={inputRef}
+              id="search-books"
               type="text"
               name="search"
               aria-label="search"
@@ -160,7 +158,10 @@ export function Search() {
                     <li key={book.id}>
                       <Link
                         to={`/${ROUTE.BOOKS}/${book.id}`}
-                        onClick={() => handleReset(values)}>
+                        onClick={() => {
+                          resetForm()
+                          handleReset()
+                        }}>
                         <MenuItem>
                           <img
                             src={book.imgUrl}
@@ -196,15 +197,17 @@ export function Search() {
             <SearchButton type="submit" title="Search">
               <SearchIcon />
             </SearchButton>
-            <ClearButton
-              type="button"
-              onClick={() => {
-                handleReset(values)
-                inputRef.current?.focus()
-              }}
-              title="Clear">
-              <ClearIcon />
-            </ClearButton>
+            {values.search && (
+              <ClearButton
+                type="reset"
+                onClick={() => {
+                  handleReset()
+                  document.getElementById('search-books')?.focus()
+                }}
+                title="Clear">
+                <ClearIcon />
+              </ClearButton>
+            )}
           </Form>
         )}
       </Formik>
