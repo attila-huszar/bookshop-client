@@ -1,4 +1,4 @@
-import { logger } from '@/helpers'
+import { log } from '@/helpers'
 
 function getEnvVar(key: string, defaultValue?: string | null): string {
   const importEnv = import.meta.env as Record<string, string>
@@ -6,7 +6,7 @@ function getEnvVar(key: string, defaultValue?: string | null): string {
 
   if (value === undefined || value === '') {
     if (defaultValue !== undefined) {
-      logger.warn(
+      void log.warn(
         `Environment variable ${key} is not set. Using default: ${defaultValue}`,
       )
 
