@@ -128,7 +128,7 @@ const booksSlice = createSlice({
         state.booksAreLoading = false
       })
       .addCase(fetchBooks.rejected, (state, action) => {
-        state.booksError = action.error.message
+        state.booksError = action.error?.message
         state.booksAreLoading = false
       })
       .addCase(fetchBookById.pending, (state) => {
@@ -146,7 +146,7 @@ const booksSlice = createSlice({
         state.bookIsLoading = false
       })
       .addCase(fetchBookById.rejected, (state, action) => {
-        state.booksError = action.error.message
+        state.booksError = action.error?.message
         state.bookIsLoading = false
       })
       .addCase(fetchBooksByProperty.fulfilled, (state, action) => {

@@ -5,6 +5,7 @@ import { updateOrder } from '@/api'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
 import { useAppDispatch } from '@/hooks'
 import { cartClear, orderClear } from '@/store'
+import { handleErrors } from '@/errors'
 import { OrderStatus } from '@/types'
 import logo from '@/assets/image/logo.png'
 
@@ -26,9 +27,11 @@ export function PaymentStatus() {
       return
     }
 
-    stripe
-      .retrievePaymentIntent(clientSecret)
-      .then(({ paymentIntent }) => {
+    const getPaymentIntent = async () => {
+      try {
+        const { paymentIntent } =
+          await stripe.retrievePaymentIntent(clientSecret)
+
         switch (paymentIntent?.status) {
           case 'succeeded': {
             setStatus({
@@ -40,7 +43,7 @@ export function PaymentStatus() {
             const [firstName, ...rest] = fullName.split(/\s+/)
             const lastName = rest.join(' ')
 
-            void updateOrder({
+            await updateOrder({
               paymentId: paymentIntent.id,
               fields: {
                 paymentIntentStatus: paymentIntent.status,
@@ -83,13 +86,20 @@ export function PaymentStatus() {
             break
           }
         }
-      })
-      .catch(() =>
+      } catch (error) {
+        const formattedError = await handleErrors({
+          error,
+          message: 'Error retrieving payment status.',
+        })
+
         setStatus({
           intent: 'retrieve_error',
-          message: 'Error retrieving payment status.',
-        }),
-      )
+          message: formattedError.message,
+        })
+      }
+    }
+
+    void getPaymentIntent()
   }, [dispatch, stripe])
 
   const navigateHome = async () => {

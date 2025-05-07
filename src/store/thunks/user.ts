@@ -9,95 +9,45 @@ import {
 } from '@/api'
 import type { UserUpdate, User, LoginRequest, LoginResponse } from '@/types'
 
-export const fetchAuthTokens = createAsyncThunk<string, void, RejectValue>(
+export const fetchAuthTokens = createAsyncThunk<string, void>(
   'user/fetchAuthTokens',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { accessToken } = await retrieveAuthTokens()
-
-      return accessToken
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async () => {
+    const { accessToken } = await retrieveAuthTokens()
+    return accessToken
   },
 )
 
-export const fetchUserProfile = createAsyncThunk<User, void, RejectValue>(
+export const fetchUserProfile = createAsyncThunk<User, void>(
   'user/fetchUserProfile',
-  async (_, { rejectWithValue }) => {
-    try {
-      const userResponse = await getUserProfile()
-
-      return userResponse
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async () => {
+    return await getUserProfile()
   },
 )
 
-export const login = createAsyncThunk<LoginResponse, LoginRequest, RejectValue>(
+export const login = createAsyncThunk<LoginResponse, LoginRequest>(
   'user/login',
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      const userResponse = await postUserLogin({
-        email,
-        password,
-      })
-
-      return userResponse
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async ({ email, password }) => {
+    return await postUserLogin({ email, password })
   },
 )
 
-export const logout = createAsyncThunk<{ message: string }, void, RejectValue>(
+export const logout = createAsyncThunk<{ message: string }, void>(
   'user/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      const userResponse = await postUserLogout()
-
-      return userResponse
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async () => {
+    return await postUserLogout()
   },
 )
 
-export const updateUser = createAsyncThunk<User, UserUpdate, RejectValue>(
+export const updateUser = createAsyncThunk<User, UserUpdate>(
   'user/updateUser',
-  async (fields: UserUpdate, { rejectWithValue }) => {
-    try {
-      const userResponse = await patchUserProfile(fields)
-
-      return userResponse
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async (fields: UserUpdate) => {
+    return await patchUserProfile(fields)
   },
 )
 
-export const updateAvatar = createAsyncThunk<User, FormData, RejectValue>(
+export const updateAvatar = createAsyncThunk<User, FormData>(
   'user/updateAvatar',
-  async (formData: FormData, { rejectWithValue }) => {
-    try {
-      const userResponse = await uploadAvatar(formData)
-
-      return userResponse
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-      )
-    }
+  async (formData: FormData) => {
+    return await uploadAvatar(formData)
   },
 )

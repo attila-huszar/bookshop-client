@@ -41,7 +41,7 @@ const orderSlice = createSlice({
       .addCase(orderCreate.rejected, (state, action) => {
         state.order = null
         state.orderIsLoading = false
-        state.orderCreateError = action.error.message
+        state.orderCreateError = action.error?.message
       })
       .addCase(orderRetrieve.pending, (state) => {
         state.orderIsLoading = true
@@ -62,7 +62,7 @@ const orderSlice = createSlice({
       .addCase(orderRetrieve.rejected, (state, action) => {
         state.order = null
         state.orderIsLoading = false
-        state.orderRetrieveError = action.error.message
+        state.orderRetrieveError = action.error?.message
       })
       .addCase(orderCancel.fulfilled, (state) => {
         state.order = null

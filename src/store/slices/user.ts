@@ -32,7 +32,7 @@ const userSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.accessToken = null
-        state.loginError = action.payload
+        state.loginError = action.error?.message
       })
 
       .addCase(logout.fulfilled, (state) => {
@@ -40,7 +40,7 @@ const userSlice = createSlice({
         state.userData = null
       })
       .addCase(logout.rejected, (state, action) => {
-        state.userError = action.payload
+        state.userError = action.error?.message
       })
 
       .addCase(fetchAuthTokens.fulfilled, (state, action) => {
@@ -48,7 +48,7 @@ const userSlice = createSlice({
         state.tokenError = undefined
       })
       .addCase(fetchAuthTokens.rejected, (state, action) => {
-        state.tokenError = action.payload
+        state.tokenError = action.error?.message
         state.accessToken = null
       })
 
@@ -63,7 +63,7 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.userData = null
         state.userIsLoading = false
-        state.userError = action.payload
+        state.userError = action.error?.message
       })
 
       .addCase(updateUser.pending, (state) => {
@@ -76,7 +76,7 @@ const userSlice = createSlice({
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.userIsUpdating = false
-        state.userError = action.payload
+        state.userError = action.error?.message
         state.userData = null
       })
       .addCase(updateAvatar.fulfilled, (state, action) => {
@@ -86,7 +86,7 @@ const userSlice = createSlice({
       })
       .addCase(updateAvatar.rejected, (state, action) => {
         state.userIsUpdating = false
-        state.userError = action.payload
+        state.userError = action.error?.message
       })
   },
 })

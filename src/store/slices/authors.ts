@@ -50,7 +50,7 @@ const authorsSlice = createSlice({
       state: { authorError: string | undefined; authorIsLoading: boolean },
       action: { error: SerializedError },
     ) => {
-      state.authorError = action.error.message
+      state.authorError = action.error?.message
       state.authorIsLoading = false
     }
 

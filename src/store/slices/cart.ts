@@ -86,7 +86,7 @@ const cartSlice = createSlice({
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
-        state.cartError = action.error.message
+        state.cartError = action.error?.message
         state.cartIsLoading = false
       })
   },

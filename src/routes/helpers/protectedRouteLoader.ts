@@ -1,7 +1,15 @@
 import { retrieveAuthTokens } from '@/api'
+import { handleErrors } from '@/errors'
 
 export const protectedRouteLoader = async () => {
-  const { accessToken } = await retrieveAuthTokens()
-
-  return Boolean(accessToken)
+  try {
+    const { accessToken } = await retrieveAuthTokens()
+    return Boolean(accessToken)
+  } catch (error) {
+    await handleErrors({
+      error,
+      message: 'Error retrieving auth tokens.',
+    })
+    return false
+  }
 }
