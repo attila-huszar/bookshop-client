@@ -19,7 +19,7 @@ import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 import QuestionIcon from '@/assets/svg/question_circle.svg?react'
 
 export function Login() {
-  const { userIsLoading } = useAppSelector(userSelector)
+  const { userIsLoading, loginError } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
@@ -38,10 +38,12 @@ export function Login() {
       })
 
       await navigate('/', { replace: true })
-    } catch (error) {
-      toast.error(String(error), {
-        id: 'login',
-      })
+    } catch {
+      if (loginError) {
+        toast.error(loginError, {
+          id: 'login',
+        })
+      }
     }
   }
 

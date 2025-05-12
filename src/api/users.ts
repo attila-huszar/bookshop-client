@@ -1,3 +1,4 @@
+import { HTTPError } from 'ky'
 import { baseRequest, authRequest, PATH } from './'
 import type {
   LoginRequest,
@@ -26,11 +27,19 @@ export const postUserLogin = async ({
   email,
   password,
 }: LoginRequest): Promise<LoginResponse> => {
-  const response = await baseRequest.post<LoginResponse>(PATH.users.login, {
-    json: { email, password },
-    credentials: 'include',
-  })
-  return await response.json()
+  try {
+    const response = await baseRequest.post<LoginResponse>(PATH.users.login, {
+      json: { email, password },
+      credentials: 'include',
+    })
+    return await response.json()
+  } catch (error) {
+    if (error instanceof HTTPError) {
+      const errorResponse = await error.response.json<{ error: string }>()
+      throw new Error(errorResponse.error)
+    }
+    throw new Error('An unknown error occurred')
+  }
 }
 
 export const postUserRegister = async (
