@@ -3,7 +3,7 @@ import { log } from '@/helpers'
 
 const DEFAULT_ERROR_MESSAGE = 'Unknown error occurred'
 
-export async function handleErrors({
+export async function handleError({
   error,
   message = DEFAULT_ERROR_MESSAGE,
 }: {

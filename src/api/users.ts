@@ -1,4 +1,3 @@
-import { HTTPError } from 'ky'
 import { baseRequest, authRequest, PATH } from './'
 import type {
   LoginRequest,
@@ -8,6 +7,7 @@ import type {
   User,
   UserUpdate,
 } from '@/types'
+import { handleError } from '@/errors'
 
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string
@@ -34,39 +34,55 @@ export const postUserLogin = async ({
     })
     return await response.json()
   } catch (error) {
-    if (error instanceof HTTPError) {
-      const errorResponse = await error.response.json<{ error: string }>()
-      throw new Error(errorResponse.error)
-    }
-    throw new Error('An unknown error occurred')
+    const formattedError = await handleError({
+      error,
+      message: 'Login failed, please try again later',
+    })
+    throw new Error(formattedError.message)
   }
 }
 
 export const postUserRegister = async (
   user: RegisterRequest,
 ): Promise<RegisterResponse> => {
-  const formData = new FormData()
-  formData.append('firstName', user.firstName)
-  formData.append('lastName', user.lastName)
-  formData.append('email', user.email)
-  formData.append('password', user.password)
-  if (user.avatar instanceof File) {
-    formData.append('avatar', user.avatar)
-  }
+  try {
+    const formData = new FormData()
+    formData.append('firstName', user.firstName)
+    formData.append('lastName', user.lastName)
+    formData.append('email', user.email)
+    formData.append('password', user.password)
+    if (user.avatar instanceof File) {
+      formData.append('avatar', user.avatar)
+    }
 
-  const response = await baseRequest.post<RegisterResponse>(
-    PATH.users.register,
-    { body: formData },
-  )
-  return await response.json()
+    const response = await baseRequest.post<RegisterResponse>(
+      PATH.users.register,
+      { body: formData },
+    )
+    return await response.json()
+  } catch (error) {
+    const formattedError = await handleError({
+      error,
+      message: 'Registration failed, please try again later',
+    })
+    throw new Error(formattedError.message)
+  }
 }
 
 export const postUserLogout = async (): Promise<{ message: string }> => {
-  const response = await authRequest.post<{ message: string }>(
-    PATH.users.logout,
-    { credentials: 'include' },
-  )
-  return await response.json()
+  try {
+    const response = await authRequest.post<{ message: string }>(
+      PATH.users.logout,
+      { credentials: 'include' },
+    )
+    return await response.json()
+  } catch (error) {
+    const formattedError = await handleError({
+      error,
+      message: 'Logout failed, please try again later',
+    })
+    throw new Error(formattedError.message)
+  }
 }
 
 export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {

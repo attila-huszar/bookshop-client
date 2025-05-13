@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { postUserRegister } from '@/api'
 import { ButtonWrapper } from '@/styles/Form.style'
 import {
   AuthorizationMenu,
@@ -10,15 +9,17 @@ import {
   Button,
   IconButton,
 } from '@/components'
+import { register } from '@/store'
+import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
-import { handleErrors } from '@/errors'
 import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
 
 export function Registration() {
-  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -28,21 +29,23 @@ export function Registration() {
     try {
       toast.loading('Registering...', { id: 'register' })
 
-      const response = await postUserRegister(values)
+      const registerResponse = await dispatch(register(values)).unwrap()
 
       toast.success(
-        `${response.email} registered successfully, please verify your email address`,
+        `${registerResponse.email} registered successfully, please verify your email address`,
         { id: 'register' },
       )
 
       await navigate('/', { replace: true })
     } catch (error) {
-      const formattedError = await handleErrors({
-        error,
-        message: 'Registration failed, please try again later',
-      })
-
-      toast.error(formattedError.message, { id: 'register' })
+      if (
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof error.message === 'string'
+      ) {
+        toast.error(error.message, { id: 'register' })
+      }
     }
   }
 
@@ -69,6 +72,7 @@ export function Registration() {
               placeholder="Email"
               type="email"
               inputMode="email"
+              autoComplete="email"
             />
             <p>Password</p>
             <FormikField
@@ -77,6 +81,7 @@ export function Registration() {
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              autoComplete="new-password"
             />
             <p>Password Confirm</p>
             <FormikField
@@ -85,6 +90,7 @@ export function Registration() {
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              autoComplete="new-password"
             />
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />

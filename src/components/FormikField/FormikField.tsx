@@ -20,6 +20,7 @@ export function FormikField({
   inputMode,
   focus,
   readOnly,
+  autoComplete,
   children,
   showPassword,
   setShowPassword,
@@ -106,6 +107,7 @@ export function FormikField({
               inputMode={inputMode}
               ref={formikRef}
               readOnly={readOnly}
+              autoComplete={autoComplete}
               {...field}
             />
             {/password/i.test(name) && (

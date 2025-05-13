@@ -8,7 +8,7 @@ import { ButtonWrapper } from '@/styles/Form.style'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
 import { resetPasswordSchema } from '@/helpers'
 import { passwordResetInitialValues } from '@/constants'
-import { handleErrors } from '@/errors'
+import { handleError } from '@/errors'
 
 export function PasswordReset() {
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ export function PasswordReset() {
           id: 'passwordReset',
         })
       } catch (error) {
-        const formattedError = await handleErrors({
+        const formattedError = await handleError({
           error,
           message: 'Password reset failed, please try again later',
         })
@@ -63,7 +63,7 @@ export function PasswordReset() {
         })
       }
     } catch (error) {
-      const formattedError = await handleErrors({
+      const formattedError = await handleError({
         error,
         message: 'Error changing password, please try again later',
       })
