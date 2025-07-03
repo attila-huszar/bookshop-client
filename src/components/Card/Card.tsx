@@ -21,7 +21,7 @@ export function Card({ book }: { book: Book }) {
 
   return (
     <StyledCard>
-      <Link to={`/${ROUTE.BOOKS}/${book.id}`}>
+      <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
         <Image
           src={book.imgUrl}
           onError={(e) =>

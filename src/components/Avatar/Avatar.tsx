@@ -2,9 +2,7 @@ import { RemoveAvatar, IconOverlay, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
-import AccountDefaultIcon from '@/assets/svg/account_default.svg?react'
-import CameraIcon from '@/assets/svg/camera.svg?react'
-import BinIcon from '@/assets/svg/bin.svg?react'
+import { AccountDefaultIcon, BinIcon, CameraIcon } from '@/assets/svg'
 
 export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
   const dispatch = useAppDispatch()

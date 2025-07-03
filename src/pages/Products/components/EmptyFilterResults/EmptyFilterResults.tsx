@@ -9,7 +9,7 @@ import {
   setBooksFilterRating,
 } from '@/store'
 import { Button } from '@/components'
-import NoResultsIcon from '@/assets/svg/empty_filter_result.svg?react'
+import { EmptyFilterResultIcon } from '@/assets/svg'
 
 export function EmptyFilterResults() {
   const dispatch = useAppDispatch()
@@ -26,7 +26,7 @@ export function EmptyFilterResults() {
   return (
     <StyledEmptyFilterResults>
       <div role="img" aria-label="no results">
-        <NoResultsIcon color="var(--grey)" />
+        <EmptyFilterResultIcon color="var(--grey)" />
       </div>
       <p>Sorry, no results match your filter criteria.</p>
       <p>Please try adjusting your filters or searching again.</p>

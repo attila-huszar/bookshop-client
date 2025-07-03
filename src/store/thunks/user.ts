@@ -6,8 +6,16 @@ import {
   postUserLogout,
   patchUserProfile,
   uploadAvatar,
+  postUserRegister,
 } from '@/api'
-import type { UserUpdate, User, LoginRequest, LoginResponse } from '@/types'
+import type {
+  UserUpdate,
+  User,
+  LoginRequest,
+  LoginResponse,
+  RegisterResponse,
+  RegisterRequest,
+} from '@/types'
 
 export const fetchAuthTokens = createAsyncThunk<string, void>(
   'user/fetchAuthTokens',
@@ -28,6 +36,13 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest>(
   'user/login',
   async ({ email, password }) => {
     return await postUserLogin({ email, password })
+  },
+)
+
+export const register = createAsyncThunk<RegisterResponse, RegisterRequest>(
+  'user/register',
+  async (user: RegisterRequest) => {
+    return await postUserRegister(user)
   },
 )
 

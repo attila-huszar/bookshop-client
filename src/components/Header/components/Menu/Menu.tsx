@@ -4,7 +4,7 @@ import { StyledMenu, Dropdown, DropdownList, MenuItem } from './Menu.style'
 import { IconButton } from '@/components'
 import { useClickOutside } from '@/hooks'
 import { menuLinks } from '@/constants'
-import MenuIcon from '@/assets/svg/menu.svg?react'
+import { MenuIcon } from '@/assets/svg'
 
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)

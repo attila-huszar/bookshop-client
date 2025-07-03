@@ -6,8 +6,8 @@ import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles/Form.style'
 import { postPasswordReset } from '@/api'
 import { forgotPasswordSchema } from '@/helpers'
-import { handleErrors } from '@/errors'
-import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { handleError } from '@/errors'
+import { BackIcon } from '@/assets/svg'
 
 function ForgotPassword(
   _props: unknown,
@@ -40,7 +40,7 @@ function ForgotPassword(
       handleClose()
       actions.resetForm()
     } catch (error) {
-      const formattedError = await handleErrors({
+      const formattedError = await handleError({
         error,
         message: 'Password reset failed, please try again later',
       })

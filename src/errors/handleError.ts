@@ -1,9 +1,17 @@
 import { HTTPError } from 'ky'
 import { log } from '@/helpers'
 
+type ErrorResponse = {
+  error?: string
+  validation?: {
+    fieldErrors: Record<string, string[]>
+    formErrors: string[]
+  }
+}
+
 const DEFAULT_ERROR_MESSAGE = 'Unknown error occurred'
 
-export async function handleErrors({
+export async function handleError({
   error,
   message = DEFAULT_ERROR_MESSAGE,
 }: {
@@ -12,25 +20,29 @@ export async function handleErrors({
 }): Promise<Error> {
   if (error instanceof HTTPError) {
     try {
-      const response = await error.response.json<{
-        error?: string
-      }>()
+      const response = await error.response.json<ErrorResponse>()
 
-      if (response.error) {
-        void log.warn('Server error', {
-          error: response.error,
+      if (response.validation) {
+        void log.warn('Validation error', {
+          error: response.validation,
           status: error.response.status,
         })
 
-        return new Error(response.error)
+        const fieldErrors = Object.values(
+          response.validation.fieldErrors,
+        ).flat()
+        const formErrors = response.validation.formErrors
+        const allErrors = [...fieldErrors, ...formErrors]
+
+        return new Error(allErrors.join(', ') || message)
       }
 
-      void log.warn('Server error (no message)', {
-        error: message,
+      void log.warn('Server error', {
+        error: response.error,
         status: error.response.status,
       })
 
-      return new Error(message)
+      return new Error(response.error ?? message)
     } catch (parseError) {
       void log.warn('Failed to parse server error', {
         parseError,
@@ -43,7 +55,6 @@ export async function handleErrors({
 
   if (error instanceof Error) {
     void log.error('Generic JS error', { error })
-
     return new Error(error.message || message)
   }
 

@@ -11,9 +11,7 @@ import { Avatar, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { ROUTE } from '@/routes'
-import LoginIcon from '@/assets/svg/account.svg?react'
-import accountIcon from '@/assets/svg/user_account.svg'
-import logoutIcon from '@/assets/svg/logout.svg'
+import { AccountIcon, profileIcon, logoutIcon } from '@/assets/svg'
 
 export function AccountMenu() {
   const navigate = useNavigate()
@@ -63,7 +61,7 @@ export function AccountMenu() {
               <li>
                 <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
                   <MenuItem>
-                    <img src={accountIcon} alt="account" />
+                    <img src={profileIcon} alt="profile" />
                     <span>{userData.firstName}</span>
                   </MenuItem>
                 </Link>
@@ -82,7 +80,7 @@ export function AccountMenu() {
       ) : (
         <IconButton
           onClick={() => void navigateToLogin()}
-          icon={<LoginIcon />}
+          icon={<AccountIcon />}
           title={'Login/Register'}
         />
       )}

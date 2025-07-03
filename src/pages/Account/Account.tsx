@@ -19,7 +19,7 @@ import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
 import { accountBasicSchema, accountAddressSchema } from '@/helpers'
 import type { User } from '@/types'
-import EditIcon from '@/assets/svg/edit.svg?react'
+import { EditIcon } from '@/assets/svg'
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)

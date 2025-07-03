@@ -1,7 +1,7 @@
 export const ROUTE = {
   HOME: '/',
   BOOKS: 'books',
-  BOOK: 'books/:id',
+  BOOK: 'book',
   LOGIN: 'login',
   REGISTER: 'register',
   ACCOUNT: 'account',

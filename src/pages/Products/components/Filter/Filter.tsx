@@ -26,9 +26,8 @@ import { enforceMinMax, generateFilterArray } from '@/helpers'
 import { filterInitialValues, discountOptions } from '@/constants'
 import { sliderStyles } from '@/styles/Global.style'
 import 'rc-slider/assets/index.css'
-import Star from '@/assets/svg/star.svg?react'
-import StarFilled from '@/assets/svg/star_solid.svg?react'
 import type { FilterProps, InputEvent, DiscountChangeEvent } from '@/types'
+import { StarIcon, StarFilledIcon } from '@/assets/svg'
 
 export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)
@@ -288,7 +287,7 @@ export function Filter() {
                     return (
                       <IconButton
                         key={`rating-${rating + 0.5}`}
-                        icon={isFilled ? <StarFilled /> : <Star />}
+                        icon={isFilled ? <StarFilledIcon /> : <StarIcon />}
                         type="button"
                         onClick={() => {
                           handleRatingChange(rating)

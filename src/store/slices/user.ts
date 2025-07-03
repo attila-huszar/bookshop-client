@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import {
+  register,
   login,
   logout,
   fetchUserProfile,
@@ -42,7 +43,12 @@ const userSlice = createSlice({
       .addCase(logout.rejected, (state, action) => {
         state.userError = action.error?.message
       })
-
+      .addCase(register.fulfilled, (state) => {
+        state.registerError = undefined
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.registerError = action.error?.message
+      })
       .addCase(fetchAuthTokens.fulfilled, (state, action) => {
         state.accessToken = action.payload
         state.tokenError = undefined

@@ -24,6 +24,7 @@ export type FormikInput = {
     | undefined
   focus?: boolean
   readOnly?: boolean
+  autoComplete?: string
   children?: React.ReactNode
   showPassword?: boolean
   setShowPassword?: React.Dispatch<React.SetStateAction<boolean>>

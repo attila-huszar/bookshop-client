@@ -5,7 +5,7 @@ import { updateOrder } from '@/api'
 import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
 import { useAppDispatch } from '@/hooks'
 import { cartClear, orderClear } from '@/store'
-import { handleErrors } from '@/errors'
+import { handleError } from '@/errors'
 import { OrderStatus } from '@/types'
 import logo from '@/assets/image/logo.png'
 
@@ -87,7 +87,7 @@ export function PaymentStatus() {
           }
         }
       } catch (error) {
-        const formattedError = await handleErrors({
+        const formattedError = await handleError({
           error,
           message: 'Error retrieving payment status.',
         })

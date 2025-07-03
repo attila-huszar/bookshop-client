@@ -60,7 +60,7 @@ export const getBooks = async ({
 }
 
 export const getBookById = async (id: number): Promise<Book> => {
-  const response = await baseRequest.get<Book>(`${PATH.books}/${id}`)
+  const response = await baseRequest.get<Book>(`${PATH.books}?id=${id}`)
   return await response.json()
 }
 

@@ -1,6 +1,6 @@
 import { Header, Item, Content } from './AccordionItem.style'
 import { AccordionItemProps } from './AccordionItem.types'
-import Caret from '@/assets/svg/caret_down.svg?react'
+import { CaretDownIcon } from '@/assets/svg'
 
 export function AccordionItem({
   panelKey = 0,
@@ -13,7 +13,7 @@ export function AccordionItem({
     <>
       <Header $isOpen={isOpen} onClick={() => setIsOpen(panelKey)}>
         <p>{header}</p>
-        <Caret color="var(--grey)" />
+        <CaretDownIcon color="var(--grey)" />
       </Header>
       <Item $isOpen={isOpen}>
         <Content>{children}</Content>

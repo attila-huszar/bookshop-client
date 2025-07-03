@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import {
   StyledProduct,
   Breadcrumb,
@@ -21,19 +21,17 @@ import {
 import { Button, Error, Price, Recommended } from '@/components'
 import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
-import CaretIcon from '@/assets/svg/caret_left.svg?react'
-import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
+import { CaretLeftIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Product() {
-  const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const id = searchParams.get('id')
   const { cartArray, addToCart } = useCart()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const book: Book | undefined = useAppSelector(bookByIdSelector(id!))
-  const author: Author | undefined = useAppSelector(
-    authorByIdSelector(typeof book?.author === 'number' ? book.author : null),
-  )
+  const book: Book | null = useAppSelector(bookByIdSelector(id))
+  const author: Author | null = useAppSelector(authorByIdSelector(book?.author))
 
   const { booksError } = useAppSelector(booksSelector)
   const { authorError } = useAppSelector(authorsSelector)
@@ -72,7 +70,7 @@ export function Product() {
     <>
       <StyledProduct>
         <Breadcrumb onClick={() => void handleGoBack()} title="Go back">
-          <CaretIcon height={18} />
+          <CaretLeftIcon height={18} />
           Book Details
         </Breadcrumb>
         {book ? (
@@ -115,7 +113,7 @@ export function Product() {
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          booksError && <Error text="Not found" error={booksError} />
+          booksError && <Error text="Book not found" backButton />
         )}
       </StyledProduct>
       <RecommendedMemoized />

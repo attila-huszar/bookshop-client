@@ -8,8 +8,7 @@ import {
   fetchBooks,
   setBooksCurrentPage,
 } from '@/store'
-import ChevronLeftIcon from '@/assets/svg/chevron_left.svg?react'
-import ChevronLeftEndIcon from '@/assets/svg/chevron_left_end.svg?react'
+import { ChevronLeftIcon, ChevronLeftEndIcon } from '@/assets/svg'
 
 export function Pagination() {
   const dispatch = useAppDispatch()

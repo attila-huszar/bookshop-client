@@ -31,11 +31,13 @@ import { currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
 import { OrderStatus } from '@/types'
 import type { Cart, PostPaymentIntent, Order } from '@/types'
-import AddQuantityIcon from '@/assets/svg/plus.svg?react'
-import RemoveQuantityIcon from '@/assets/svg/minus.svg?react'
-import RemoveFromCartIcon from '@/assets/svg/bin.svg?react'
-import CartEmptyIcon from '@/assets/svg/cart_empty.svg?react'
-import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
+import {
+  MinusIcon,
+  PlusIcon,
+  BinIcon,
+  CartEmptyIcon,
+  imagePlaceholder,
+} from '@/assets/svg'
 
 const calculateTotalAmount = (cartArray: Cart[]): number => {
   return cartArray.reduce(
@@ -174,7 +176,7 @@ export function Cart() {
           {cartArray.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${ROUTE.BOOKS}/${item.id}`}>
+                <Link to={`/${ROUTE.BOOK}?id=${item.id}`}>
                   <ImageWrapper>
                     <img
                       src={item.imgUrl}
@@ -190,7 +192,7 @@ export function Cart() {
               <Quantity>
                 <IconButton
                   onClick={() => handleRemoveQuantity(item)}
-                  icon={<RemoveQuantityIcon />}
+                  icon={<MinusIcon />}
                   title="Remove quantity"
                   $size="sm"
                   $iconSize="sm"
@@ -208,7 +210,7 @@ export function Cart() {
                 />
                 <IconButton
                   onClick={() => handleAddQuantity(item)}
-                  icon={<AddQuantityIcon />}
+                  icon={<PlusIcon />}
                   title="Add quantity"
                   $size="sm"
                   $iconSize="sm"
@@ -233,7 +235,7 @@ export function Cart() {
               <RemoveItem>
                 <IconButton
                   onClick={() => removeFromCart(item)}
-                  icon={<RemoveFromCartIcon />}
+                  icon={<BinIcon />}
                   title="Remove from cart"
                   $size="sm"
                   $iconSize="sm"
@@ -268,7 +270,7 @@ export function Cart() {
             Back to Shop
           </Button>
           <IconButton
-            icon={<RemoveFromCartIcon />}
+            icon={<BinIcon />}
             onClick={handleCartClear}
             disabled={orderIsLoading}
             title="Reset Cart"

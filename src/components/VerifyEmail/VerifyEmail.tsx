@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast'
 import { postVerifyEmail } from '@/api'
 import { Loading } from '@/components'
 import { ROUTE } from '@/routes'
-import { handleErrors } from '@/errors'
+import { handleError } from '@/errors'
 
 export function VerifyEmail() {
   const navigate = useNavigate()
@@ -30,7 +30,7 @@ export function VerifyEmail() {
 
         await navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
-        const formattedError = await handleErrors({
+        const formattedError = await handleError({
           error,
           message: 'Verification failed, please try again later.',
         })

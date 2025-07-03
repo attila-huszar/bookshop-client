@@ -35,7 +35,7 @@ export function Releases() {
       <ImageWrapper>
         {booksReleases.map((book, idx) => (
           <ImageItem key={book.id} $idx={idx}>
-            <Link to={`/${ROUTE.BOOKS}/${book.id}`}>
+            <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
               <img src={book.imgUrl} alt={book.title} />
             </Link>
             <MirrorImg>
