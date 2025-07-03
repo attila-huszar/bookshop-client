@@ -27,10 +27,7 @@ import {
 } from '@/store'
 import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
-import LinkIcon from '@/assets/svg/link.svg?react'
-import SearchIcon from '@/assets/svg/search.svg?react'
-import ClearIcon from '@/assets/svg/xmark_circle.svg?react'
-import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
+import { SearchIcon, XMarkIcon, LinkIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -195,7 +192,7 @@ export function Search() {
               )}
             </Dropdown>
             <SearchButton type="submit" title="Search">
-              <SearchIcon />
+              <SearchIcon color="#888888" />
             </SearchButton>
             {values.search && (
               <ClearButton
@@ -205,7 +202,7 @@ export function Search() {
                   document.getElementById('search-books')?.focus()
                 }}
                 title="Clear">
-                <ClearIcon />
+                <XMarkIcon color="#888888" />
               </ClearButton>
             )}
           </Form>

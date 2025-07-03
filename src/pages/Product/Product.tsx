@@ -21,8 +21,7 @@ import {
 import { Button, Error, Price, Recommended } from '@/components'
 import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
-import CaretIcon from '@/assets/svg/caret_left.svg?react'
-import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
+import { CaretLeftIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Product() {
   const { id } = useParams()
@@ -72,7 +71,7 @@ export function Product() {
     <>
       <StyledProduct>
         <Breadcrumb onClick={() => void handleGoBack()} title="Go back">
-          <CaretIcon height={18} />
+          <CaretLeftIcon height={18} />
           Book Details
         </Breadcrumb>
         {book ? (

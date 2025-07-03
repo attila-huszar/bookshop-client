@@ -1,8 +1,10 @@
-import homeIcon from '@/assets/svg/home.svg'
-import bookIcon from '@/assets/svg/book.svg'
-import instagramIcon from '@/assets/svg/instagram.svg'
-import googleIcon from '@/assets/svg/google.svg'
-import fbIcon from '@/assets/svg/facebook.svg'
+import {
+  homeIcon,
+  bookIcon,
+  facebookIcon,
+  googleIcon,
+  instagramIcon,
+} from '@/assets/svg'
 
 export const menuLinks = [
   { path: '/', name: 'Home', key: 'home', icon: homeIcon },
@@ -20,7 +22,7 @@ export const navLinks = [
 export const socialLinks = [
   { path: '#', name: 'Instagram', key: 'instagram', icon: instagramIcon },
   { path: '#', name: 'Google', key: 'google', icon: googleIcon },
-  { path: '#', name: 'Facebook', key: 'facebook', icon: fbIcon },
+  { path: '#', name: 'Facebook', key: 'facebook', icon: facebookIcon },
 ]
 
 export const legalLinks = [

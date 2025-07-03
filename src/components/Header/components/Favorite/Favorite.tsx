@@ -1,5 +1,5 @@
 import { IconButton } from '@/components'
-import FavoriteIcon from '@/assets/svg/favorite.svg?react'
+import { FavoriteIcon } from '@/assets/svg'
 
 export function Favorite() {
   return (

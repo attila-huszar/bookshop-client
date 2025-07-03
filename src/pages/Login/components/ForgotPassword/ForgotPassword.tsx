@@ -7,7 +7,7 @@ import { ButtonWrapper } from '@/styles/Form.style'
 import { postPasswordReset } from '@/api'
 import { forgotPasswordSchema } from '@/helpers'
 import { handleError } from '@/errors'
-import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { BackIcon } from '@/assets/svg'
 
 function ForgotPassword(
   _props: unknown,

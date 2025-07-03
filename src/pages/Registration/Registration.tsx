@@ -14,7 +14,7 @@ import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
-import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { BackIcon } from '@/assets/svg'
 
 export function Registration() {
   const dispatch = useAppDispatch()

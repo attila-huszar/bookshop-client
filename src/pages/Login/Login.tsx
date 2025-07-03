@@ -15,8 +15,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks'
 import { login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
-import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
-import QuestionIcon from '@/assets/svg/question_circle.svg?react'
+import { BackIcon, QuestionIcon } from '@/assets/svg'
 
 export function Login() {
   const { userIsLoading, loginError } = useAppSelector(userSelector)

@@ -1,5 +1,5 @@
 import { StyledLoading, Text } from './Loading.style'
-import LoadingIcon from '@/assets/svg/loading.svg?react'
+import { LoadingIcon } from '@/assets/svg'
 
 type Props = {
   text?: string

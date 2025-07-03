@@ -8,8 +8,7 @@ import {
   PasswordEye,
 } from '@/styles/Form.style'
 import type { FormikProps, FormikInput } from '@/types'
-import PasswordEyeIcon from '@/assets/svg/eye.svg?react'
-import PasswordEyeSlashIcon from '@/assets/svg/eye_slash.svg?react'
+import { EyeIcon, EyeHideIcon } from '@/assets/svg'
 
 export function FormikField({
   name,
@@ -114,7 +113,7 @@ export function FormikField({
               <PasswordEye
                 type="button"
                 onClick={() => setShowPassword?.((prev) => !prev)}>
-                {showPassword ? <PasswordEyeSlashIcon /> : <PasswordEyeIcon />}
+                {showPassword ? <EyeHideIcon /> : <EyeIcon />}
               </PasswordEye>
             )}
             {shouldShowError && meta.error && (

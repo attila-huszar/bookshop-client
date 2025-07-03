@@ -1,5 +1,5 @@
 import { StyledError } from './Error.style'
-import WarningIcon from '@/assets/svg/warning.svg?react'
+import { WarningIcon } from '@/assets/svg'
 
 type Props = {
   text?: string

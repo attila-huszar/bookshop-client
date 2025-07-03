@@ -15,7 +15,7 @@ import { updateUser } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { passwordChangeInitialValues } from '@/constants'
 import { accountPasswordSchema } from '@/helpers'
-import BackIcon from '@/assets/svg/chevron_left_circle.svg?react'
+import { BackIcon } from '@/assets/svg'
 
 function PasswordDialog(
   { email }: { email: string },
