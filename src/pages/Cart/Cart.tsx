@@ -176,7 +176,7 @@ export function Cart() {
           {cartArray.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
-                <Link to={`/${ROUTE.BOOKS}/${item.id}`}>
+                <Link to={`/${ROUTE.BOOK}?id=${item.id}`}>
                   <ImageWrapper>
                     <img
                       src={item.imgUrl}

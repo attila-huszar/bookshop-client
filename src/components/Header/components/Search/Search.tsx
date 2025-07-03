@@ -154,7 +154,7 @@ export function Search() {
                   {searchResults.map((book) => (
                     <li key={book.id}>
                       <Link
-                        to={`/${ROUTE.BOOKS}/${book.id}`}
+                        to={`/${ROUTE.BOOK}?id=${book.id}`}
                         onClick={() => {
                           resetForm()
                           handleReset()
