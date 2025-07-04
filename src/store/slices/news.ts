@@ -5,7 +5,7 @@ import type { NewsState } from '@/types'
 const initialState: NewsState = {
   newsArray: [],
   newsIsLoading: false,
-  newsError: undefined,
+  newsError: null,
 }
 
 const newsSlice = createSlice({
@@ -23,7 +23,7 @@ const newsSlice = createSlice({
       })
       .addCase(fetchNews.rejected, (state, action) => {
         state.newsIsLoading = false
-        state.newsError = action.error?.message
+        state.newsError = action.error.message ?? 'Failed to fetch news'
       })
   },
 })
