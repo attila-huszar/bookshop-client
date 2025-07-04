@@ -60,6 +60,7 @@ const userSlice = createSlice({
         state.tokenError = null
       })
       .addCase(fetchAuthTokens.rejected, (state, action) => {
+        state.accessToken = null
         state.tokenError = action.error.message ?? 'Failed to fetch auth tokens'
       })
 
