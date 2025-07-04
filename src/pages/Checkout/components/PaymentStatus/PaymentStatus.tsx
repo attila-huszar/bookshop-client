@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useStripe } from '@stripe/react-stripe-js'
 import { updateOrder } from '@/api'
@@ -17,17 +17,20 @@ export function PaymentStatus() {
     message: 'Retrieving payment status...',
   })
   const dispatch = useAppDispatch()
+  const effectRan = useRef(false)
 
   useEffect(() => {
+    if (effectRan.current) return
+
     const clientSecret = new URLSearchParams(window.location.search).get(
       'payment_intent_client_secret',
     )
 
-    if (!stripe || !clientSecret) {
-      return
-    }
+    if (!stripe || !clientSecret) return
 
-    const getPaymentIntent = async () => {
+    effectRan.current = true
+
+    const retrievePaymentStatus = async () => {
       try {
         const { paymentIntent } =
           await stripe.retrievePaymentIntent(clientSecret)
@@ -89,7 +92,7 @@ export function PaymentStatus() {
       } catch (error) {
         const formattedError = await handleError({
           error,
-          message: 'Error retrieving payment status.',
+          message: 'Error retrieving payment intent.',
         })
 
         setStatus({
@@ -99,7 +102,7 @@ export function PaymentStatus() {
       }
     }
 
-    void getPaymentIntent()
+    void retrievePaymentStatus()
   }, [dispatch, stripe])
 
   const navigateHome = async () => {

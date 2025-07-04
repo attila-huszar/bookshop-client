@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import {
   StyledProduct,
@@ -35,10 +35,8 @@ export function Product() {
 
   const { booksError } = useAppSelector(booksSelector)
   const { authorError } = useAppSelector(authorsSelector)
-  const RecommendedMemoized = memo(Recommended)
-  const isBookInCart = useMemo(() => {
-    return cartArray.some((item) => item.id === book?.id)
-  }, [cartArray, book])
+
+  const isBookInCart = cartArray.some((item) => item.id === book?.id)
 
   useEffect(() => {
     if (!book && id) {
@@ -116,7 +114,7 @@ export function Product() {
           booksError && <Error text="Book not found" backButton />
         )}
       </StyledProduct>
-      <RecommendedMemoized />
+      <Recommended />
     </>
   )
 }

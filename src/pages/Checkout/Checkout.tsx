@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { stripeKey } from '@/constants'
@@ -9,9 +9,6 @@ import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
 import { InfoDialog } from '@/components'
-
-const stripePromise = loadStripe(stripeKey)
-const loader = 'auto'
 
 export function Checkout() {
   const { order, orderIsLoading, orderRetrieveError } =
@@ -24,15 +21,14 @@ export function Checkout() {
     }
   }, [orderIsLoading, orderRetrieveError])
 
-  const redirectStatus = useMemo(
-    () => new URLSearchParams(window.location.search).get('redirect_status'),
-    [],
+  const redirectStatus = new URLSearchParams(window.location.search).get(
+    'redirect_status',
   )
 
   const options: StripeElementsOptions = {
     clientSecret: order?.clientSecret,
     appearance: { theme: 'flat', variables: {} },
-    loader,
+    loader: 'auto',
   }
 
   function renderCheckout() {
@@ -65,7 +61,7 @@ export function Checkout() {
 
   return (
     <StyledCheckout>
-      <Elements options={options} stripe={stripePromise} key={order?.paymentId}>
+      <Elements stripe={loadStripe(stripeKey)} options={options}>
         {renderCheckout()}
       </Elements>
     </StyledCheckout>
