@@ -10,7 +10,7 @@ export function InfoDialog({
 }: {
   dialogRef: React.RefObject<HTMLDialogElement | null>
   text: string
-  error?: string
+  error?: string | null
   reloadButton?: boolean
   backButton?: boolean
 }) {

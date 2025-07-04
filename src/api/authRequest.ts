@@ -6,6 +6,8 @@ const httpError = {
   TooManyRequests: 429,
 }
 
+let refreshPromise: Promise<unknown> | null = null
+
 export const authRequest = baseRequest.extend({
   hooks: {
     beforeRequest: [
@@ -20,7 +22,9 @@ export const authRequest = baseRequest.extend({
     afterResponse: [
       async (request, _options, response) => {
         if (response.status === httpError.Unauthorized) {
-          await store.dispatch(fetchAuthTokens())
+          refreshPromise ??= store.dispatch(fetchAuthTokens())
+          await refreshPromise
+          refreshPromise = null
 
           const accessToken = store.getState().user.accessToken
 

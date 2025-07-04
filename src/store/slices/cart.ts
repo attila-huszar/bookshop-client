@@ -1,18 +1,18 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { fetchCartItems } from '../thunks/cart'
 import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
   cartArray: [],
   cartIsLoading: false,
-  cartError: undefined,
+  cartError: null,
 }
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    cartAdd: (state, action: { payload: Book }) => {
+    cartAdd: (state, action: PayloadAction<Book>) => {
       const { id, title, price, discount, imgUrl } = action.payload
       const cartItem: Cart = {
         id,
@@ -34,14 +34,14 @@ const cartSlice = createSlice({
     cartClear: (state) => {
       state.cartArray = []
       state.cartIsLoading = false
-      state.cartError = undefined
+      state.cartError = null
     },
-    cartRemove: (state, action: { payload: Cart }) => {
+    cartRemove: (state, action: PayloadAction<Cart>) => {
       state.cartArray = state.cartArray.filter(
         (item) => item.id !== action.payload.id,
       )
     },
-    cartQuantityAdd: (state, action: { payload: Cart }) => {
+    cartQuantityAdd: (state, action: PayloadAction<Cart>) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -50,7 +50,7 @@ const cartSlice = createSlice({
         state.cartArray[itemIdx].quantity++
       }
     },
-    cartQuantityRemove: (state, action: { payload: Cart }) => {
+    cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.id,
       )
@@ -61,7 +61,7 @@ const cartSlice = createSlice({
     },
     cartQuantitySet: (
       state,
-      action: { payload: { cartItem: Cart; newQuantity: number } },
+      action: PayloadAction<{ cartItem: Cart; newQuantity: number }>,
     ) => {
       const itemIdx = state.cartArray.findIndex(
         (item) => item.id === action.payload.cartItem.id,
@@ -86,7 +86,7 @@ const cartSlice = createSlice({
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
-        state.cartError = action.error?.message
+        state.cartError = action.error.message ?? 'Failed to fetch cart items'
         state.cartIsLoading = false
       })
   },

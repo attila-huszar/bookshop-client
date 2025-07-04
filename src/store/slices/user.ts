@@ -15,10 +15,10 @@ const initialState: UserState = {
   userData: null,
   userIsLoading: false,
   userIsUpdating: false,
-  tokenError: undefined,
-  userError: undefined,
-  loginError: undefined,
-  registerError: undefined,
+  tokenError: null,
+  userError: null,
+  loginError: null,
+  registerError: null,
 }
 
 const userSlice = createSlice({
@@ -29,70 +29,84 @@ const userSlice = createSlice({
     builder
       .addCase(login.fulfilled, (state, action) => {
         state.accessToken = action.payload.accessToken
-        state.loginError = undefined
+        state.loginError = null
+        state.tokenError = null
       })
       .addCase(login.rejected, (state, action) => {
         state.accessToken = null
-        state.loginError = action.error?.message
+        state.loginError = action.error.message ?? 'Login failed'
       })
 
       .addCase(logout.fulfilled, (state) => {
-        state.accessToken = null
         state.userData = null
+        state.userError = null
+        state.loginError = null
+        state.registerError = null
+        state.tokenError = null
+        state.accessToken = null
       })
       .addCase(logout.rejected, (state, action) => {
-        state.userError = action.error?.message
+        state.userError = action.error.message ?? 'Logout failed'
       })
+
       .addCase(register.fulfilled, (state) => {
-        state.registerError = undefined
+        state.registerError = null
       })
       .addCase(register.rejected, (state, action) => {
-        state.registerError = action.error?.message
+        state.registerError = action.error.message ?? 'Registration failed'
       })
+
       .addCase(fetchAuthTokens.fulfilled, (state, action) => {
         state.accessToken = action.payload
-        state.tokenError = undefined
+        state.tokenError = null
       })
       .addCase(fetchAuthTokens.rejected, (state, action) => {
-        state.tokenError = action.error?.message
         state.accessToken = null
+        state.tokenError = action.error.message ?? 'Failed to fetch auth tokens'
       })
 
       .addCase(fetchUserProfile.pending, (state) => {
         state.userIsLoading = true
+        state.userError = null
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.userData = action.payload
         state.userIsLoading = false
-        state.userError = undefined
+        state.userError = null
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.userData = null
         state.userIsLoading = false
-        state.userError = action.error?.message
+        state.userError = action.error.message ?? 'Failed to fetch user profile'
       })
 
       .addCase(updateUser.pending, (state) => {
         state.userIsUpdating = true
+        state.userError = null
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.userIsUpdating = false
         state.userData = action.payload
-        state.userError = undefined
+        state.userError = null
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.userIsUpdating = false
-        state.userError = action.error?.message
-        state.userData = null
+        state.userError =
+          action.error.message ?? 'Failed to update user profile'
+      })
+
+      .addCase(updateAvatar.pending, (state) => {
+        state.userIsUpdating = true
+        state.userError = null
       })
       .addCase(updateAvatar.fulfilled, (state, action) => {
         state.userIsUpdating = false
         state.userData = action.payload
-        state.userError = undefined
+        state.userError = null
       })
       .addCase(updateAvatar.rejected, (state, action) => {
         state.userIsUpdating = false
-        state.userError = action.error?.message
+        state.userError = action.error.message ?? 'Failed to update avatar'
       })
   },
 })

@@ -1,11 +1,11 @@
-import { createSlice, type SerializedError } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { fetchAuthorById, fetchAuthorsBySearch } from '../thunks/authors'
 import type { Author, AuthorState } from '@/types'
 
 const initialState: AuthorState = {
   authorArray: [],
   authorIsLoading: false,
-  authorError: undefined,
+  authorError: null,
 }
 
 const authorsSlice = createSlice({
@@ -13,16 +13,16 @@ const authorsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    const handlePending = (state: { authorIsLoading: boolean }) => {
+    const handlePending = (state: AuthorState) => {
       state.authorIsLoading = true
     }
 
     const handleFulfilledById = (
-      state: { authorArray: Author[]; authorIsLoading: boolean },
-      action: { payload: Author },
+      state: AuthorState,
+      action: PayloadAction<Author>,
     ) => {
       const authorExists = state.authorArray.some(
-        (author) => author.id === action.payload?.id,
+        (author) => author.id === action.payload.id,
       )
       if (!authorExists && action.payload) {
         state.authorArray.push(action.payload)
@@ -31,8 +31,8 @@ const authorsSlice = createSlice({
     }
 
     const handleFulfilledBySearch = (
-      state: { authorArray: Author[]; authorIsLoading: boolean },
-      action: { payload: Author[] },
+      state: AuthorState,
+      action: PayloadAction<Author[]>,
     ) => {
       action.payload.forEach((newAuthor) => {
         if (
@@ -47,10 +47,12 @@ const authorsSlice = createSlice({
     }
 
     const handleRejected = (
-      state: { authorError: string | undefined; authorIsLoading: boolean },
-      action: { error: SerializedError },
+      state: AuthorState,
+      action:
+        | ReturnType<typeof fetchAuthorById.rejected>
+        | ReturnType<typeof fetchAuthorsBySearch.rejected>,
     ) => {
-      state.authorError = action.error?.message
+      state.authorError = action.error.message ?? 'Failed to fetch authors'
       state.authorIsLoading = false
     }
 

@@ -5,8 +5,8 @@ import { OrderState, OrderStatus } from '@/types'
 const initialState: OrderState = {
   order: null,
   orderIsLoading: false,
-  orderCreateError: undefined,
-  orderRetrieveError: undefined,
+  orderCreateError: null,
+  orderRetrieveError: null,
 }
 
 const orderSlice = createSlice({
@@ -16,15 +16,15 @@ const orderSlice = createSlice({
     orderClear: (state) => {
       state.order = null
       state.orderIsLoading = false
-      state.orderCreateError = undefined
-      state.orderRetrieveError = undefined
+      state.orderCreateError = null
+      state.orderRetrieveError = null
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(orderCreate.pending, (state) => {
         state.orderIsLoading = true
-        state.orderCreateError = undefined
+        state.orderCreateError = null
       })
       .addCase(orderCreate.fulfilled, (state, action) => {
         state.order = {
@@ -36,16 +36,17 @@ const orderSlice = createSlice({
           currency: action.payload.currency,
         }
         state.orderIsLoading = false
-        state.orderCreateError = undefined
+        state.orderCreateError = null
       })
       .addCase(orderCreate.rejected, (state, action) => {
         state.order = null
         state.orderIsLoading = false
-        state.orderCreateError = action.error?.message
+        state.orderCreateError =
+          action.error.message ?? 'Failed to create order'
       })
       .addCase(orderRetrieve.pending, (state) => {
         state.orderIsLoading = true
-        state.orderRetrieveError = undefined
+        state.orderRetrieveError = null
       })
       .addCase(orderRetrieve.fulfilled, (state, action) => {
         state.order = {
@@ -57,18 +58,19 @@ const orderSlice = createSlice({
           currency: action.payload.currency,
         }
         state.orderIsLoading = false
-        state.orderRetrieveError = undefined
+        state.orderRetrieveError = null
       })
       .addCase(orderRetrieve.rejected, (state, action) => {
         state.order = null
         state.orderIsLoading = false
-        state.orderRetrieveError = action.error?.message
+        state.orderRetrieveError =
+          action.error.message ?? 'Failed to retrieve order'
       })
       .addCase(orderCancel.fulfilled, (state) => {
         state.order = null
         state.orderIsLoading = false
-        state.orderCreateError = undefined
-        state.orderRetrieveError = undefined
+        state.orderCreateError = null
+        state.orderRetrieveError = null
       })
   },
 })

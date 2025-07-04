@@ -16,7 +16,7 @@ export type BookState = {
   booksPerPage: number
   bookIsLoading: boolean
   booksAreLoading: boolean
-  booksError: string | undefined
+  booksError: string | null
   booksRecommended: Book[]
   booksTopSellers: Book[]
   booksReleases: Book[]
@@ -29,13 +29,13 @@ export type BookState = {
 export type AuthorState = {
   authorArray: Author[]
   authorIsLoading: boolean
-  authorError: string | undefined
+  authorError: string | null
 }
 
 export type NewsState = {
   newsArray: News[]
   newsIsLoading: boolean
-  newsError: string | undefined
+  newsError: string | null
 }
 
 export type UserState = {
@@ -43,21 +43,21 @@ export type UserState = {
   userData: User | null
   userIsLoading: boolean
   userIsUpdating: boolean
-  tokenError: string | undefined
-  userError: string | undefined
-  loginError: string | undefined
-  registerError: string | undefined
+  tokenError: string | null
+  userError: string | null
+  loginError: string | null
+  registerError: string | null
 }
 
 export type CartState = {
   cartArray: Cart[]
   cartIsLoading: boolean
-  cartError: string | undefined
+  cartError: string | null
 }
 
 export type OrderState = {
   order: OrderInStore | null
   orderIsLoading: boolean
-  orderCreateError: string | undefined
-  orderRetrieveError: string | undefined
+  orderCreateError: string | null
+  orderRetrieveError: string | null
 }

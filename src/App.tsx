@@ -8,7 +8,6 @@ import {
   fetchRecommendedBooks,
   fetchNews,
   fetchCartItems,
-  fetchAuthTokens,
   fetchUserProfile,
   orderRetrieve,
 } from '@/store'
@@ -21,7 +20,6 @@ function App() {
   const { getFromLocalStorage } = useLocalStorage()
 
   useEffect(() => {
-    void dispatch(fetchAuthTokens())
     void dispatch(fetchBooks()).then(() => dispatch(fetchRecommendedBooks(4)))
     void dispatch(fetchBooksByProperty('newRelease'))
     void dispatch(fetchBooksByProperty('topSellers'))

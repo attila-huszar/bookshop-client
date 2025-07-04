@@ -18,7 +18,7 @@ const initialState: BookState = {
   booksPerPage: 8,
   bookIsLoading: false,
   booksAreLoading: false,
-  booksError: undefined,
+  booksError: null,
   booksFilters: {
     initial: {
       genre: [],
@@ -102,8 +102,8 @@ const booksSlice = createSlice({
   },
   extraReducers: (builder) => {
     const handleViewedBooks = (
-      state: { booksViewed: Book[] },
-      action: { payload: Book[] },
+      state: BookState,
+      action: PayloadAction<Book[]>,
     ) => {
       action.payload.forEach((newBook) => {
         if (
@@ -118,21 +118,21 @@ const booksSlice = createSlice({
 
     builder
       .addCase(fetchBooks.pending, (state) => {
-        state.booksError = undefined
+        state.booksError = null
         state.booksAreLoading = true
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
         state.booksInShop = action.payload.books
         state.booksTotal = action.payload.total
-        state.booksError = undefined
+        state.booksError = null
         state.booksAreLoading = false
       })
       .addCase(fetchBooks.rejected, (state, action) => {
-        state.booksError = action.error?.message
+        state.booksError = action.error.message ?? 'Failed to fetch books'
         state.booksAreLoading = false
       })
       .addCase(fetchBookById.pending, (state) => {
-        state.booksError = undefined
+        state.booksError = null
         state.bookIsLoading = true
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
@@ -142,11 +142,11 @@ const booksSlice = createSlice({
         if (!bookExists && action.payload) {
           state.booksViewed.push(action.payload)
         }
-        state.booksError = undefined
+        state.booksError = null
         state.bookIsLoading = false
       })
       .addCase(fetchBookById.rejected, (state, action) => {
-        state.booksError = action.error?.message
+        state.booksError = action.error.message ?? 'Failed to fetch book'
         state.bookIsLoading = false
       })
       .addCase(fetchBooksByProperty.fulfilled, (state, action) => {
