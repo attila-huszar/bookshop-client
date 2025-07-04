@@ -30,6 +30,7 @@ const userSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.accessToken = action.payload.accessToken
         state.loginError = null
+        state.tokenError = null
       })
       .addCase(login.rejected, (state, action) => {
         state.accessToken = null
