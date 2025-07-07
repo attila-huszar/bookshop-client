@@ -9,8 +9,8 @@ export const StyledCMS = styled.section`
 export const MainContainer = styled.div`
   position: relative;
   padding: 1.5rem;
-  background: var(--white);
   border-radius: 20px;
+  background: var(--white);
   box-shadow: var(--shadow);
 `
 

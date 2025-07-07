@@ -1,5 +1,5 @@
-import { baseRequest, PATH } from './'
-import type { Book, FilterProps, FilterActive } from '@/types'
+import { authRequest, baseRequest, PATH } from './'
+import type { Book, FilterProps, FilterActive, Author } from '@/types'
 
 export const getBooks = async ({
   currentPage,
@@ -95,5 +95,12 @@ export const getBookSearchOptions = async (): Promise<
     price: number[]
     publishYear: number[]
   }>(`${PATH.searchOptions}`)
+  return await response.json()
+}
+
+export const getAllBooks = async (): Promise<
+  { books: Book; authors: Author }[]
+> => {
+  const response = await authRequest.get(PATH.cms.books.all)
   return await response.json()
 }

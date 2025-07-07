@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import {
+  getAllBooks,
   getBookById,
   getBooks,
   getBooksByAuthor,
@@ -98,4 +99,16 @@ export const fetchRecommendedBooks = createAsyncThunk(
 export const fetchBookSearchOptions = createAsyncThunk(
   'books/fetchBookSearchOptions',
   getBookSearchOptions,
+)
+
+export const fetchAllBooks = createAsyncThunk(
+  'books/fetchAllBooks',
+  async () => {
+    const res = await getAllBooks()
+
+    return res.map((r) => ({
+      ...r.books,
+      author: r.authors.name,
+    }))
+  },
 )

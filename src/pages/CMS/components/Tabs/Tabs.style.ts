@@ -30,23 +30,12 @@ export const StyledTabs = styled.div`
       border-bottom: 2px solid #222;
     }
   }
-
-  .tab-content {
-    padding: 2rem;
-  }
 `
 
 export const StyledTable = styled.div`
   max-width: var(--max-width);
-  padding: 1rem;
-  border-radius: 10px;
   background: var(--white);
   box-shadow: var(--shadow);
-
-  h1 {
-    margin-bottom: 2rem;
-    text-align: center;
-  }
 
   table {
     width: 100%;
@@ -54,7 +43,7 @@ export const StyledTable = styled.div`
 
     th,
     td {
-      padding: 0.75rem 1rem;
+      padding: 0.5rem;
       border-bottom: 1px solid #eee;
       text-align: left;
     }

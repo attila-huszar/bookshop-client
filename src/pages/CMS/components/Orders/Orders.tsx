@@ -38,7 +38,7 @@ export const Orders = () => {
               <th>Address</th>
               <th>Items</th>
               <th>Total</th>
-              <th>Curr.</th>
+              <th>Curr</th>
             </tr>
           </thead>
           <tbody>
@@ -47,15 +47,19 @@ export const Orders = () => {
 
               return (
                 <tr key={order.paymentId}>
-                  <td>{order.paymentId}</td>
+                  <td>
+                    <p style={{ width: 96, wordWrap: 'break-word' }}>
+                      {order.paymentId}
+                    </p>
+                  </td>
                   <td>{order.paymentIntentStatus}</td>
                   <td>{order.orderStatus}</td>
                   <td>{order.name}</td>
                   <td>{order.email}</td>
                   <td>{Object.values(order.address).join(', ')}</td>
                   <td>{order.items.map((item) => item.title).join(', ')}</td>
-                  <td>${order.total}</td>
-                  <td>${order.currency}</td>
+                  <td>{order.total}</td>
+                  <td>{order.currency}</td>
                 </tr>
               )
             })}

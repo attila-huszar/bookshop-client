@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { fetchBooks } from '@/store'
+import { fetchAllBooks } from '@/store'
 import { useAppDispatch } from '@/hooks'
-import { Book } from '@/types'
+import type { Book } from '@/types'
+
+type BookWithAuthor = Omit<Book, 'author'> & { author: string }
 
 export const Products = () => {
   const dispatch = useAppDispatch()
-  const [books, setBooks] = useState<Book[]>([])
+  const [books, setBooks] = useState<BookWithAuthor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    dispatch(fetchBooks())
+    dispatch(fetchAllBooks())
       .unwrap()
-      .then((res) => setBooks(res.books))
+      .then(setBooks)
       .catch((err) =>
         setError(typeof err === 'string' ? err : 'Failed to fetch books'),
       )

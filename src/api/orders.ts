@@ -57,6 +57,6 @@ export const updateOrder = async ({
 }
 
 export const getAllOrders = async (): Promise<Order[]> => {
-  const response = await authRequest.get<Order[]>(PATH.orders.all)
+  const response = await authRequest.get<Order[]>(PATH.cms.orders.all)
   return await response.json()
 }
