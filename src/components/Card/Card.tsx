@@ -4,7 +4,7 @@ import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'
 import { ROUTE } from '@/routes'
 import type { Book } from '@/types'
-import imagePlaceholder from '@/assets/svg/image_placeholder.svg'
+import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Card({ book }: { book: Book }) {
   const navigate = useNavigate()
@@ -37,7 +37,7 @@ export function Card({ book }: { book: Book }) {
               e.preventDefault()
               void handleCartAction()
             }}
-            $withCartAdd={!isBookInCart}>
+            $icon={!isBookInCart && <CartAddIcon />}>
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}
           </Button>
         </Details>

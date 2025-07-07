@@ -30,7 +30,7 @@ export function EmptyFilterResults() {
       </div>
       <p>Sorry, no results match your filter criteria.</p>
       <p>Please try adjusting your filters or searching again.</p>
-      <Button onClick={handleFormReset} $shadowed>
+      <Button onClick={handleFormReset} $shadow>
         Reset Filters
       </Button>
     </StyledEmptyFilterResults>

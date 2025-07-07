@@ -37,6 +37,8 @@ import {
   BinIcon,
   CartEmptyIcon,
   imagePlaceholder,
+  CartIcon,
+  SpinnerIcon,
 } from '@/assets/svg'
 
 const calculateTotalAmount = (cartArray: Cart[]): number => {
@@ -281,11 +283,10 @@ export function Cart() {
           <Button
             onClick={handleCheckout}
             disabled={orderIsLoading}
-            $spinner={orderIsLoading}
-            $withCart={!orderIsLoading}
+            $icon={orderIsLoading ? <SpinnerIcon /> : <CartIcon />}
             $size="lg"
             $textSize="lg"
-            $shadowed>
+            $shadow>
             Checkout
           </Button>
         </ButtonWrapper>
@@ -300,7 +301,10 @@ export function Cart() {
       <EmptyCart>
         <CartEmptyIcon />
         <p>Your cart is empty</p>
-        <Button type="button" onClick={() => void navigateToBooks()} $withCart>
+        <Button
+          type="button"
+          onClick={() => void navigateToBooks()}
+          $icon={<CartIcon />}>
           Go Shopping
         </Button>
       </EmptyCart>

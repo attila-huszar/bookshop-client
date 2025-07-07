@@ -10,4 +10,5 @@ export const ROUTE = {
   ORDERS: 'orders',
   VERIFICATION: 'verification',
   PASSWORD_RESET: 'password-reset',
+  CMS: 'cms',
 } as const

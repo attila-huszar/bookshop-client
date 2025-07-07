@@ -6,9 +6,14 @@ export type User = {
   lastName: string
   email: string
   phone?: string | null
-  address?: Address
+  address?: Address | object
   avatar?: string
-  role?: 'user' | 'admin'
+  role?: USER_ROLE
+}
+
+export const enum USER_ROLE {
+  USER = 'user',
+  ADMIN = 'admin',
 }
 
 export type RegisterRequest = {

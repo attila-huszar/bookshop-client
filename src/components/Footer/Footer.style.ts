@@ -6,8 +6,8 @@ export const StyledFooter = styled.footer`
   grid-template-columns: 1fr 1fr;
   column-gap: 2.5rem;
   width: 100%;
-  min-width: 54rem;
-  max-width: 90rem;
+  min-width: var(--min-width);
+  max-width: var(--max-width);
   padding: 0 6.25rem;
 
   a:hover {

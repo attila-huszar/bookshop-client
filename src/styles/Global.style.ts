@@ -14,6 +14,8 @@ export default createGlobalStyle`
 
   #root {
     margin: 0 1.5rem 1.5rem;
+    --min-width: 54rem;
+    --max-width: 90rem;
     --primary-color: #ffce1a;
     --primary-faded: #f0d153;
     --secondary-color: #ecb346;

@@ -139,3 +139,8 @@ export const uploadAvatar = async (formData: FormData): Promise<User> => {
   })
   return await response.json()
 }
+
+export const getAllUsers = async (): Promise<User[]> => {
+  const response = await authRequest.get<User[]>(PATH.users.all)
+  return await response.json()
+}

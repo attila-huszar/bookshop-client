@@ -11,7 +11,8 @@ import { Avatar, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { ROUTE } from '@/routes'
-import { AccountIcon, profileIcon, logoutIcon } from '@/assets/svg'
+import { USER_ROLE } from '@/types'
+import { AccountIcon, ProfileIcon, LogoutIcon, CMSIcon } from '@/assets/svg'
 
 export function AccountMenu() {
   const navigate = useNavigate()
@@ -21,6 +22,8 @@ export function AccountMenu() {
   const { userData } = useAppSelector(userSelector)
 
   useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
+
+  const isAdmin = userData?.role === USER_ROLE.ADMIN
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
@@ -61,15 +64,25 @@ export function AccountMenu() {
               <li>
                 <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
                   <MenuItem>
-                    <img src={profileIcon} alt="profile" />
+                    <ProfileIcon height="1.5rem" />
                     <span>{userData.firstName}</span>
                   </MenuItem>
                 </Link>
               </li>
+              {isAdmin && (
+                <li>
+                  <Link to={`/${ROUTE.CMS}`} onClick={toggleMenu}>
+                    <MenuItem>
+                      <CMSIcon height="1.5rem" />
+                      <span>CMS</span>
+                    </MenuItem>
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to={'/'} onClick={handleLogout}>
                   <MenuItem>
-                    <img src={logoutIcon} alt="logout" />
+                    <LogoutIcon height="1.5rem" />
                     <span>Logout</span>
                   </MenuItem>
                 </Link>

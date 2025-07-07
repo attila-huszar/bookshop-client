@@ -18,7 +18,7 @@ export type Order = {
   lastName?: string
   email?: string | null
   phone?: string | null
-  address?: Address
+  address?: Address | object
 }
 
 export type OrderItem = {

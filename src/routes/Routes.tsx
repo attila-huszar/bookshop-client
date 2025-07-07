@@ -15,6 +15,7 @@ import {
   Account,
   Checkout,
   NotFound,
+  CMS,
 } from '@/pages'
 import { ROUTE } from './route'
 import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
@@ -62,6 +63,11 @@ const routes: RouteObject[] = [
     ],
   },
   { path: ROUTE.CHECKOUT, element: <Checkout /> },
+  {
+    element: <ProtectedRoute adminRequired />,
+    loader: authLoader,
+    children: [{ path: ROUTE.CMS, element: <CMS /> }],
+  },
 ]
 
 const router = createBrowserRouter(routes)

@@ -19,7 +19,7 @@ const width = {
   wide: '18rem',
 }
 
-const textSize = {
+const fontSize = {
   sm: '0.75rem',
   md: '0.875rem',
   lg: '1rem',
@@ -33,13 +33,13 @@ export const StyledButton = styled.button<StyleTypes>`
   gap: 8px;
   height: ${({ $size = 'md' }) => height[$size]};
   width: ${({ $size = 'md' }) => width[$size]};
-  font-size: ${({ $textSize = 'md' }) => textSize[$textSize]};
+  font-size: ${({ $textSize = 'md' }) => fontSize[$textSize]};
   font-weight: 700;
   color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
   background-color: ${({ $inverted }) =>
     $inverted ? '#fff' : 'var(--primary-color)'};
-  box-shadow: ${({ $shadowed }) =>
-    $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
+  box-shadow: ${({ $shadow }) =>
+    $shadow ? '#ffce1a50 0px 5px 10px' : undefined};
   border: none;
   border-radius: 10px;
   outline: 3px solid var(--primary-color);

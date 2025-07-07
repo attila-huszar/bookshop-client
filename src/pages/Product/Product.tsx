@@ -21,7 +21,7 @@ import {
 import { Button, Error, Price, Recommended } from '@/components'
 import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
-import { CaretLeftIcon, imagePlaceholder } from '@/assets/svg'
+import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Product() {
   const [searchParams] = useSearchParams()
@@ -103,9 +103,9 @@ export function Product() {
             <ButtonWrapper>
               <Button
                 onClick={() => void handleCartAction(book)}
-                $withCartAdd={!isBookInCart}
-                $textSize="lg"
-                $size="lg">
+                $icon={!isBookInCart && <CartAddIcon />}
+                $size="lg"
+                $textSize="lg">
                 {isBookInCart ? 'View in Basket' : 'Add to Basket'}
               </Button>
             </ButtonWrapper>

@@ -5,6 +5,7 @@ import {
   deletePaymentIntent,
   postPaymentIntent,
   updateOrder,
+  getAllOrders,
 } from '@/api'
 import { OrderStatus, PostPaymentIntent, Order } from '@/types'
 
@@ -66,5 +67,13 @@ export const orderCancel = createAsyncThunk(
     return {
       orderStatus: updateRes.orderStatus,
     }
+  },
+)
+
+export const fetchAllOrders = createAsyncThunk(
+  'order/fetchAllOrders',
+  async () => {
+    const orders = await getAllOrders()
+    return orders
   },
 )

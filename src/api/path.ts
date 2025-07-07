@@ -16,11 +16,13 @@ export const PATH = {
     passwordResetSubmit: `${users}/password-reset-submit`,
     profile: `${users}/profile`,
     refresh: `${users}/refresh`,
+    all: `${users}/all`,
   },
   orders: {
     paymentIntent: `${orders}/payment-intent`,
     create: `${orders}/create`,
     update: `${orders}/update`,
+    all: `${orders}/all`,
   },
   upload: 'upload',
 } as const

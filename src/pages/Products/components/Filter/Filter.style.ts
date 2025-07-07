@@ -100,8 +100,8 @@ export const CustomButton = styled.button<StyleTypes>`
   color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
   background-color: ${({ $inverted }) =>
     $inverted ? '#fff' : 'var(--primary-color)'};
-  box-shadow: ${({ $shadowed }) =>
-    $shadowed ? '#ffce1a50 0px 5px 10px' : undefined};
+  box-shadow: ${({ $shadow }) =>
+    $shadow ? '#ffce1a50 0px 5px 10px' : undefined};
   border: none;
   border-radius: 5px;
   outline: 1px solid var(--primary-color);

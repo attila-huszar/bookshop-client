@@ -28,7 +28,7 @@ export function Releases() {
           to captivating memoirs, this week's new releases offer something for
           everyone.
         </p>
-        <Button onClick={scrollToBottom} $shadowed $size="wide" $textSize="lg">
+        <Button onClick={scrollToBottom} $shadow $size="wide" $textSize="lg">
           Subscribe
         </Button>
       </Welcome>

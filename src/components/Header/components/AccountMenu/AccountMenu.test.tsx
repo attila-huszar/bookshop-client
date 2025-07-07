@@ -10,7 +10,9 @@ import { Providers } from '@/setupTests'
 
 describe('AccountMenu component', () => {
   const mockNavigate = vi.fn()
-  const mockDispatch = vi.fn()
+  const mockDispatch = vi.fn(() => ({
+    unwrap: () => Promise.resolve(),
+  })) as unknown as ReturnType<typeof useAppDispatch>
   const mockRemoveFromLocalStorage = vi.fn()
 
   beforeEach(() => {
@@ -28,6 +30,13 @@ describe('AccountMenu component', () => {
       setToLocalStorage: vi.fn(),
       removeFromLocalStorage: mockRemoveFromLocalStorage,
     })
+    mockRemoveFromLocalStorage.mockClear()
+    vi.spyOn(toast, 'success').mockImplementation(() => '')
+    vi.spyOn(toast, 'error').mockImplementation(() => '')
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   it('should render the user avatar when logged in and open the menu on click', async () => {
