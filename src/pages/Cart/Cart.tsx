@@ -163,7 +163,7 @@ export function Cart() {
   }
 
   if (cartIsLoading) {
-    return <Loading text="Loading Cart" />
+    return <Loading message="Loading Cart" />
   }
 
   if (cartArray.length) {
@@ -290,7 +290,7 @@ export function Cart() {
             Checkout
           </Button>
         </ButtonWrapper>
-        <InfoDialog dialogRef={ref} text="Checking out" />
+        <InfoDialog dialogRef={ref} message="Checking out" />
       </StyledCart>
     )
   }

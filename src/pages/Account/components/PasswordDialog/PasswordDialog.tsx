@@ -1,10 +1,4 @@
-import {
-  ForwardedRef,
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react'
+import { useImperativeHandle, useRef, useState } from 'react'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.style'
@@ -17,10 +11,14 @@ import { passwordChangeInitialValues } from '@/constants'
 import { accountPasswordSchema } from '@/helpers'
 import { BackIcon } from '@/assets/svg'
 
-function PasswordDialog(
-  { email }: { email: string },
-  ref: ForwardedRef<Partial<HTMLDialogElement>>,
-) {
+type PasswordDialogHandle = {
+  showModal: () => void
+  close: () => void
+}
+
+type Props = { email: string; ref: React.Ref<PasswordDialogHandle> }
+
+export function PasswordDialog({ email, ref }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useAppDispatch()
@@ -86,11 +84,18 @@ function PasswordDialog(
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
+            <input
+              type="hidden"
+              name="email"
+              value={email}
+              autoComplete="username"
+            />
             <p>Current Password</p>
             <FormikField
               name="currentPassword"
               placeholder="Current Password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
@@ -99,6 +104,7 @@ function PasswordDialog(
               name="newPassword"
               placeholder="New Password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
@@ -107,6 +113,7 @@ function PasswordDialog(
               name="newPasswordConfirmation"
               placeholder="Confirm New Password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
@@ -129,5 +136,3 @@ function PasswordDialog(
     </StyledPasswordDialog>
   )
 }
-
-export const PasswordDialogRef = forwardRef(PasswordDialog)

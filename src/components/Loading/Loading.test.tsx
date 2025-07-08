@@ -9,7 +9,7 @@ describe('Loading Component', () => {
   })
 
   it('should display custom loading text when provided', () => {
-    render(<Loading text="Please wait..." />)
+    render(<Loading message="Please wait..." />)
 
     expect(screen.getByText(/please wait.../i)).toBeInTheDocument()
   })

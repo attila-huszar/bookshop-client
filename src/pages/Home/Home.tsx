@@ -24,7 +24,7 @@ export function Home() {
       <News />
       <InfoDialog
         dialogRef={ref}
-        text="Couldn't load the shop. Please try again later."
+        message="Couldn't load the shop. Please try again later."
         error={booksError}
         reloadButton
       />

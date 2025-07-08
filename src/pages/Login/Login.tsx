@@ -68,6 +68,7 @@ export function Login() {
             placeholder="Email"
             type="email"
             inputMode="email"
+            autoComplete="username"
             focus
           />
           <p>Password</p>
@@ -75,6 +76,8 @@ export function Login() {
             name="password"
             placeholder="Password"
             type={showPassword ? 'text' : 'password'}
+            inputMode="text"
+            autoComplete="current-password"
             showPassword={showPassword}
             setShowPassword={setShowPassword}
           />

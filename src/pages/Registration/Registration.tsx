@@ -72,7 +72,7 @@ export function Registration() {
               placeholder="Email"
               type="email"
               inputMode="email"
-              autoComplete="email"
+              autoComplete="username"
             />
             <p>Password</p>
             <FormikField

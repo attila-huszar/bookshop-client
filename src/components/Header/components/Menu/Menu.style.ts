@@ -54,7 +54,12 @@ export const MenuItem = styled.div`
   gap: 1rem;
   padding: 0.75rem;
 
-  span {
+  > svg {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  > span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -1,4 +1,4 @@
-import { authRequest, baseRequest, PATH } from './'
+import { baseRequest, PATH } from './'
 import type {
   Order,
   OrderUpdate,
@@ -53,10 +53,5 @@ export const updateOrder = async ({
   const response = await baseRequest.patch<Order>(PATH.orders.update, {
     json: { paymentId, fields },
   })
-  return await response.json()
-}
-
-export const getAllOrders = async (): Promise<Order[]> => {
-  const response = await authRequest.get<Order[]>(PATH.cms.orders.all)
   return await response.json()
 }

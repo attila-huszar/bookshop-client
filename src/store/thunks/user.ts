@@ -7,7 +7,6 @@ import {
   patchUserProfile,
   uploadAvatar,
   postUserRegister,
-  getAllUsers,
 } from '@/api'
 import type {
   UserUpdate,
@@ -65,12 +64,5 @@ export const updateAvatar = createAsyncThunk<User, FormData>(
   'user/updateAvatar',
   async (formData: FormData) => {
     return await uploadAvatar(formData)
-  },
-)
-
-export const fetchAllUsers = createAsyncThunk<User[], void>(
-  'user/fetchAllUsers',
-  async () => {
-    return await getAllUsers()
   },
 )

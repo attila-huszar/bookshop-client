@@ -1,4 +1,5 @@
 export { Tabs } from './Tabs/Tabs'
 export { Users } from './Users/Users'
-export { Products } from './Products/Products'
+export { Books } from './Books/Books'
+export { Authors } from './Authors/Authors'
 export { Orders } from './Orders/Orders'

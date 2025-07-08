@@ -1,71 +1,62 @@
-import { useEffect, useState } from 'react'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { fetchAllOrders } from '@/store'
-import { useAppDispatch } from '@/hooks'
-import { Order } from '@/types'
+import { InfoDialog } from '@/components'
+import { cmsOrdersSelector } from '@/store'
+import { useAppSelector } from '@/hooks'
 
 export const Orders = () => {
-  const dispatch = useAppDispatch()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { orders, ordersIsLoading, ordersError } =
+    useAppSelector(cmsOrdersSelector)
 
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    dispatch(fetchAllOrders())
-      .unwrap()
-      .then(setOrders)
-      .catch((err) =>
-        setError(typeof err === 'string' ? err : 'Failed to fetch orders'),
-      )
-      .finally(() => setLoading(false))
-  }, [dispatch])
+  if (ordersIsLoading) {
+    return <InfoDialog message="Loading orders..." />
+  }
+
+  if (ordersError) {
+    return <InfoDialog message="Error loading orders" error={ordersError} />
+  }
 
   return (
     <StyledTable>
-      {loading && <p>Loading users...</p>}
-      {error && <p>{error}</p>}
-      {!loading && (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Payment Status</th>
-              <th>Order Status</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Address</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Curr</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => {
-              order.address ??= {}
-
-              return (
-                <tr key={order.paymentId}>
-                  <td>
-                    <p style={{ width: 96, wordWrap: 'break-word' }}>
-                      {order.paymentId}
-                    </p>
-                  </td>
-                  <td>{order.paymentIntentStatus}</td>
-                  <td>{order.orderStatus}</td>
-                  <td>{order.name}</td>
-                  <td>{order.email}</td>
-                  <td>{Object.values(order.address).join(', ')}</td>
-                  <td>{order.items.map((item) => item.title).join(', ')}</td>
-                  <td>{order.total}</td>
-                  <td>{order.currency}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      )}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>PaymentID</th>
+            <th>Payment Status</th>
+            <th>Order Status</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Curr</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((order) => {
+            return (
+              <tr key={order.paymentId}>
+                <td>{order.id}</td>
+                <td>
+                  <p style={{ width: 96, wordWrap: 'break-word' }}>
+                    {order.paymentId}
+                  </p>
+                </td>
+                <td>{order.paymentIntentStatus}</td>
+                <td>{order.orderStatus}</td>
+                <td>{order.name}</td>
+                <td>{order.email}</td>
+                <td>
+                  {order.address && Object.values(order.address).join(', ')}
+                </td>
+                <td>{order.items.map((item) => item.title).join(', ')}</td>
+                <td>{order.total}</td>
+                <td>{order.currency}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </StyledTable>
   )
 }

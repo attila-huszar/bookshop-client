@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { toast } from 'react-hot-toast'
-import { PasswordDialogRef } from './PasswordDialog'
+import { PasswordDialog } from './PasswordDialog'
 import { useAppDispatch } from '@/hooks'
 import { postUserLogin } from '@/api/users'
 import { updateUser } from '@/store'
@@ -28,7 +28,7 @@ describe('PasswordDialog', () => {
   })
 
   it('should render form fields and submit button', () => {
-    render(<PasswordDialogRef email={email} />)
+    render(<PasswordDialog ref={null} email={email} />)
 
     expect(screen.getByPlaceholderText('Current Password')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('New Password')).toBeInTheDocument()
@@ -47,7 +47,7 @@ describe('PasswordDialog', () => {
     })
     mockDispatch.mockResolvedValue(true)
 
-    const { container } = render(<PasswordDialogRef email={email} />)
+    const { container } = render(<PasswordDialog ref={null} email={email} />)
 
     const dialog = container.querySelector('dialog')!
 
@@ -85,7 +85,7 @@ describe('PasswordDialog', () => {
       firstName: expect.any(String) as string,
     })
 
-    render(<PasswordDialogRef email={email} />)
+    render(<PasswordDialog ref={null} email={email} />)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
@@ -121,7 +121,7 @@ describe('PasswordDialog', () => {
       firstName: expect.any(String) as string,
     })
 
-    render(<PasswordDialogRef email={email} />)
+    render(<PasswordDialog ref={null} email={email} />)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),

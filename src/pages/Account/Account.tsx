@@ -13,7 +13,7 @@ import {
   ButtonWrapper,
 } from './Account.style'
 import { Avatar, Button, FormikField, IconButton } from '@/components'
-import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
+import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
@@ -126,7 +126,7 @@ export function Account() {
                   $textSize="sm">
                   Change Password
                 </Button>
-                <PasswordDialogRef ref={passwordDialog} email={email} />
+                <PasswordDialog ref={passwordDialog} email={email} />
               </AvatarPanel>
               <General>
                 <Formik

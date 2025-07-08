@@ -1,8 +1,7 @@
-import { Navigate, Outlet } from 'react-router'
-import { useAppSelector } from '@/hooks'
+import { Navigate, Outlet, useLoaderData } from 'react-router'
 
 export const PublicRoute = () => {
-  const isAuthenticated = useAppSelector((state) => state.user.accessToken)
+  const isAuthenticated = useLoaderData<boolean>()
 
   return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />
 }

@@ -11,7 +11,7 @@ import { Avatar, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { ROUTE } from '@/routes'
-import { USER_ROLE } from '@/types'
+import { UserRole } from '@/types'
 import { AccountIcon, ProfileIcon, LogoutIcon, CMSIcon } from '@/assets/svg'
 
 export function AccountMenu() {
@@ -23,7 +23,7 @@ export function AccountMenu() {
 
   useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
 
-  const isAdmin = userData?.role === USER_ROLE.ADMIN
+  const isAdmin = userData?.role === UserRole.Admin
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)

@@ -1,3 +1,5 @@
+export { default as HomeIcon } from './home.svg?react'
+export { default as BookIcon } from './book.svg?react'
 export { default as AccountDefaultIcon } from './account_default.svg?react'
 export { default as AccountIcon } from './account.svg?react'
 export { default as BackIcon } from './back.svg?react'
@@ -33,8 +35,6 @@ export { default as CMSIcon } from './cms.svg?react'
 export { default as LogoutIcon } from './logout.svg?react'
 
 // Plain SVG exports
-export { default as homeIcon } from './home.svg'
-export { default as bookIcon } from './book.svg'
 export { default as googleIcon } from './google.svg'
 export { default as facebookIcon } from './facebook.svg'
 export { default as instagramIcon } from './instagram.svg'

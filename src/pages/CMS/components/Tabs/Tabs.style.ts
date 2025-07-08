@@ -43,9 +43,8 @@ export const StyledTable = styled.div`
 
     th,
     td {
-      padding: 0.5rem;
+      padding: 0.25rem 0.75rem;
       border-bottom: 1px solid #eee;
-      text-align: left;
     }
 
     th {

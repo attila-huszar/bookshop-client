@@ -1,17 +1,7 @@
-import { Navigate, Outlet } from 'react-router'
-import { useAppSelector } from '@/hooks'
-import { USER_ROLE } from '@/types'
+import { Navigate, Outlet, useLoaderData } from 'react-router'
 
-export function ProtectedRoute({ adminRequired = false }) {
-  const isAuthenticated = useAppSelector((state) => state.user.accessToken)
-  const isAdmin =
-    useAppSelector((state) => state.user.userData?.role) === USER_ROLE.ADMIN
+export function ProtectedRoute() {
+  const isAuthenticated = useLoaderData<boolean>()
 
-  if (adminRequired) {
-    if (isAuthenticated && isAdmin) return <Outlet />
-    return <Navigate to="/login" replace />
-  }
-
-  if (isAuthenticated) return <Outlet />
-  return <Navigate to="/login" replace />
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
 }

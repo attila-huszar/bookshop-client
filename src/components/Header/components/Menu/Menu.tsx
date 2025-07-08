@@ -24,7 +24,7 @@ export function Menu() {
             <li key={link.key}>
               <Link to={link.path} onClick={toggleMenu}>
                 <MenuItem>
-                  <img src={link.icon} alt={link.name} />
+                  <link.Icon />
                   <span>{link.name}</span>
                 </MenuItem>
               </Link>

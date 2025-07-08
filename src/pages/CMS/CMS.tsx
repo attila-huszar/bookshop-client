@@ -9,15 +9,6 @@ export const CMS = () => {
   const navigate = useNavigate()
   const { userData } = useAppSelector((state) => state.user)
 
-  async function handleGoBack() {
-    const hasPreviousPage = window.history.length > 2
-    if (hasPreviousPage) {
-      await navigate(-1)
-    } else {
-      await navigate('/')
-    }
-  }
-
   return (
     <StyledCMS>
       <ExtraSpace />
@@ -25,12 +16,11 @@ export const CMS = () => {
         <Tabs />
         <BackToMain>
           <Button
+            onClick={() => void navigate('/')}
             $icon={<LogoutIcon />}
             $iconPos="right"
             $size="sm"
-            type="button"
-            onClick={() => void handleGoBack()}
-            color="#fdfdfd">
+            type="button">
             {userData?.firstName}
           </Button>
         </BackToMain>

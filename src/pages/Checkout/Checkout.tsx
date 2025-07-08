@@ -33,7 +33,7 @@ export function Checkout() {
 
   function renderCheckout() {
     if (orderIsLoading) {
-      return <InfoDialog dialogRef={ref} text="Loading your checkout" />
+      return <InfoDialog dialogRef={ref} message="Loading your checkout" />
     }
 
     if (redirectStatus === 'succeeded') {
@@ -52,7 +52,7 @@ export function Checkout() {
     return (
       <InfoDialog
         dialogRef={ref}
-        text="No checkout in progress"
+        message="No checkout in progress"
         error={orderRetrieveError}
         backButton
       />

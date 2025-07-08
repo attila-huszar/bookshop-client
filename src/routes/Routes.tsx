@@ -21,7 +21,7 @@ import { ROUTE } from './route'
 import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
-import { authLoader } from './loaders/authLoader'
+import { authLoader, productsLoader, cartLoader, cmsLoader } from './loaders'
 
 const Layout = lazy(() =>
   import('../pages/Layout/Layout').then(({ Layout }) => ({
@@ -33,7 +33,12 @@ const routes: RouteObject[] = [
   {
     path: ROUTE.HOME,
     errorElement: <Error fullScreen />,
-    loader: authLoader,
+    loader: () => {
+      void authLoader()
+      void productsLoader()
+      void cartLoader()
+    },
+    hydrateFallbackElement: <Loading fullScreen />,
     element: (
       <ErrorBoundary fallback={<Error fullScreen />}>
         <Suspense fallback={<Loading fullScreen />}>
@@ -50,6 +55,7 @@ const routes: RouteObject[] = [
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
       {
         element: <PublicRoute />,
+        loader: authLoader,
         children: [
           { path: ROUTE.REGISTER, element: <Registration /> },
           { path: ROUTE.LOGIN, element: <Login /> },
@@ -57,16 +63,22 @@ const routes: RouteObject[] = [
       },
       {
         element: <ProtectedRoute />,
+        loader: authLoader,
         children: [{ path: ROUTE.ACCOUNT, element: <Account /> }],
       },
       { path: '*', element: <NotFound /> },
     ],
   },
-  { path: ROUTE.CHECKOUT, element: <Checkout /> },
   {
-    element: <ProtectedRoute adminRequired />,
-    loader: authLoader,
-    children: [{ path: ROUTE.CMS, element: <CMS /> }],
+    path: ROUTE.CHECKOUT,
+    element: <Checkout />,
+    hydrateFallbackElement: <Loading fullScreen />,
+  },
+  {
+    element: <ProtectedRoute />,
+    loader: () => authLoader({ adminRequired: true }),
+    hydrateFallbackElement: <Loading fullScreen />,
+    children: [{ path: ROUTE.CMS, element: <CMS />, loader: cmsLoader }],
   },
 ]
 
