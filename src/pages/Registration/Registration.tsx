@@ -10,13 +10,14 @@ import {
   IconButton,
 } from '@/components'
 import { register } from '@/store'
-import { useAppDispatch } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { registrationSchema } from '@/helpers'
 import { registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
-import { BackIcon } from '@/assets/svg'
+import { BackIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Registration() {
+  const registerError = useAppSelector((state) => state.user.registerError)
   const dispatch = useAppDispatch()
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -26,31 +27,16 @@ export function Registration() {
   }, [])
 
   const handleSubmit = async (values: RegisterRequest) => {
-    try {
-      toast.loading('Registering...', { id: 'register' })
+    const result = await dispatch(register(values))
 
-      const registerResponse = await dispatch(register(values)).unwrap()
-
+    if (result.meta.requestStatus === 'fulfilled') {
       toast.success(
-        `${registerResponse.email} registered successfully, please verify your email address`,
-        { id: 'register' },
+        `${values.email} registered successfully, please verify your email address`,
       )
-
       await navigate('/', { replace: true })
-    } catch (error) {
-      if (
-        error &&
-        typeof error === 'object' &&
-        'message' in error &&
-        typeof error.message === 'string'
-      ) {
-        toast.error(error.message, { id: 'register' })
-      }
+    } else {
+      toast.error(registerError ?? 'Registration failed. Please try again.')
     }
-  }
-
-  const navigateHome = async () => {
-    await navigate('/')
   }
 
   return (
@@ -102,10 +88,10 @@ export function Registration() {
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
-                onClick={() => void navigateHome()}
+                onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Registering...' : 'Register'}
+                {isSubmitting ? <SpinnerIcon height={28} /> : 'Register'}
               </Button>
             </ButtonWrapper>
           </Form>

@@ -9,13 +9,13 @@ import {
   Button,
   IconButton,
 } from '@/components'
-import { ForgotPasswordRef } from './components/ForgotPassword/ForgotPassword'
+import { ForgotPassword } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/helpers'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { login, userSelector } from '@/store'
+import { fetchUserProfile, login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
-import { BackIcon, QuestionIcon } from '@/assets/svg'
+import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Login() {
   const { userIsLoading, loginError } = useAppSelector(userSelector)
@@ -29,29 +29,19 @@ export function Login() {
   }, [])
 
   const handleSubmit = async (values: LoginRequest) => {
-    try {
-      const loginResponse = await dispatch(login(values)).unwrap()
+    const result = await dispatch(login(values))
 
-      toast.success(`Welcome back, ${loginResponse.firstName}!`, {
-        id: 'login',
-      })
-
+    if (result.meta.requestStatus === 'fulfilled') {
+      const user = await dispatch(fetchUserProfile()).unwrap()
+      toast.success(`Welcome back, ${user.firstName}!`)
       await navigate('/', { replace: true })
-    } catch {
-      if (loginError) {
-        toast.error(loginError, {
-          id: 'login',
-        })
-      }
+    } else {
+      toast.error(loginError ?? 'Login failed. Please try again.')
     }
   }
 
   const handleDialogOpen = () => {
     forgotPasswordDialog.current?.showModal()
-  }
-
-  const navigateHome = async () => {
-    await navigate('/')
   }
 
   return (
@@ -89,10 +79,10 @@ export function Login() {
               type="reset"
               title="Back"
               disabled={userIsLoading}
-              onClick={() => void navigateHome()}
+              onClick={() => void navigate('/')}
             />
             <Button type="submit" disabled={userIsLoading}>
-              {userIsLoading ? 'Logging in...' : 'Login'}
+              {userIsLoading ? <SpinnerIcon height={28} /> : 'Login'}
             </Button>
             <IconButton
               icon={<QuestionIcon />}
@@ -106,7 +96,7 @@ export function Login() {
           </ButtonWrapper>
         </Form>
       </Formik>
-      <ForgotPasswordRef ref={forgotPasswordDialog} />
+      <ForgotPassword ref={forgotPasswordDialog} />
     </AuthorizationMenu>
   )
 }
