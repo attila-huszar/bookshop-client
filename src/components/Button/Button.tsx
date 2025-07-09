@@ -5,6 +5,7 @@ export function Button({
   onClick,
   children,
   title,
+  $color,
   $icon,
   $iconPos = 'left',
   ...props
@@ -15,6 +16,7 @@ export function Button({
     <StyledButton
       onClick={onClick}
       title={title}
+      $color={$color}
       $iconPos={$iconPos}
       {...props}>
       {$iconPos === 'left' && iconElement}

@@ -1,24 +1,28 @@
-import { useState } from 'react'
 import { Users, Books, Authors, Orders } from '../'
 import { StyledTabs } from './Tabs.style'
 
 const TABS = [
-  { label: 'Orders', value: 'orders' },
-  { label: 'Books', value: 'books' },
-  { label: 'Authors', value: 'authors' },
-  { label: 'Users', value: 'users' },
+  { label: 'Orders', value: 'order' },
+  { label: 'Books', value: 'book' },
+  { label: 'Authors', value: 'author' },
+  { label: 'Users', value: 'user' },
 ] as const
 
-type TabValue = (typeof TABS)[number]['value']
+export type TabValue = (typeof TABS)[number]['value']
 
-export const Tabs = () => {
+type Props = {
+  activeTab: TabValue
+  setActiveTab: (tab: TabValue) => void
+}
+
+export const Tabs = ({ activeTab, setActiveTab }: Props) => {
   const TAB_COMPONENTS = {
-    orders: Orders,
-    books: Books,
-    authors: Authors,
-    users: Users,
+    order: Orders,
+    book: Books,
+    author: Authors,
+    user: Users,
   }
-  const [activeTab, setActiveTab] = useState<TabValue>('orders')
+
   const ActiveComponent = TAB_COMPONENTS[activeTab]
 
   return (
