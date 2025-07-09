@@ -28,7 +28,7 @@ export const PATH = {
   cms: {
     orders: { all: `${cms}/${orders}/all` },
     users: { all: `${cms}/${users}/all` },
-    books: { all: `${cms}/${books}/all` },
+    books: { all: `${cms}/${books}/all`, add: `${cms}/${books}/add` },
     authors: { all: `${cms}/authors/all` },
   },
 } as const

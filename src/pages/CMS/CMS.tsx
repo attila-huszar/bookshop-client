@@ -1,12 +1,14 @@
+import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { Button, ExtraSpace } from '@/components'
-import { Tabs } from './components'
+import { Details, Tabs } from './components'
 import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
 import { useAppSelector } from '@/hooks'
 import { LogoutIcon } from '@/assets/svg'
 
 export const CMS = () => {
   const { userData } = useAppSelector((state) => state.user)
+  const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false)
   const navigate = useNavigate()
 
   return (
@@ -15,7 +17,7 @@ export const CMS = () => {
       <MainContainer>
         <MenuButtons>
           <Button
-            onClick={() => undefined}
+            onClick={() => setIsDetailsOpen((prev) => !prev)}
             $size="smMd"
             $color="secondary"
             type="button">
@@ -39,6 +41,7 @@ export const CMS = () => {
             {userData?.firstName}
           </Button>
         </MenuButtons>
+        {isDetailsOpen && <Details />}
         <Tabs />
         <Outlet />
       </MainContainer>

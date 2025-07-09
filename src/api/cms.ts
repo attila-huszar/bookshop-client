@@ -1,5 +1,5 @@
 import { authRequest, PATH } from './'
-import { CMSAuthor, CMSBook, CMSOrder, CMSUser } from '@/types'
+import { Book, CMSAuthor, CMSBook, CMSOrder, CMSUser } from '@/types'
 
 export const getAllBooks = async (): Promise<CMSBook[]> => {
   const response = await authRequest.get(PATH.cms.books.all)
@@ -18,5 +18,17 @@ export const getAllUsers = async (): Promise<CMSUser[]> => {
 
 export const getAllOrders = async (): Promise<CMSOrder[]> => {
   const response = await authRequest.get(PATH.cms.orders.all)
+  return await response.json()
+}
+
+export const postAddBook = async (book: Omit<Book, 'id'>): Promise<CMSBook> => {
+  const response = await authRequest.post(PATH.cms.books.add, {
+    json: book,
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to post book')
+  }
+
   return await response.json()
 }

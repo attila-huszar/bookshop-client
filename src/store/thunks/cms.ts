@@ -1,5 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getAllAuthors, getAllBooks, getAllOrders, getAllUsers } from '@/api'
+import {
+  getAllAuthors,
+  getAllBooks,
+  getAllOrders,
+  getAllUsers,
+  postAddBook,
+} from '@/api'
+import { Book } from '@/types'
 
 export const fetchAllBooks = createAsyncThunk(
   'books/fetchAllBooks',
@@ -27,4 +34,9 @@ export const fetchAllOrders = createAsyncThunk(
   async () => {
     return await getAllOrders()
   },
+)
+
+export const postBook = createAsyncThunk<Book, Omit<Book, 'id'>>(
+  'books/postBook',
+  async (book) => postAddBook(book),
 )
