@@ -19,6 +19,7 @@ import {
 } from '@/pages'
 import { ROUTE } from './route'
 import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
+import { Orders, Books, Authors, Users } from '@/pages/CMS/components'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
 import { authLoader, productsLoader, cartLoader, cmsLoader } from './loaders'
@@ -78,7 +79,20 @@ const routes: RouteObject[] = [
     element: <ProtectedRoute />,
     loader: () => authLoader({ adminRequired: true }),
     hydrateFallbackElement: <Loading fullScreen />,
-    children: [{ path: ROUTE.CMS, element: <CMS />, loader: cmsLoader }],
+    children: [
+      {
+        path: `${ROUTE.CMS}/*`,
+        element: <CMS />,
+        loader: cmsLoader,
+        children: [
+          { path: 'orders', element: <Orders /> },
+          { path: 'books', element: <Books /> },
+          { path: 'authors', element: <Authors /> },
+          { path: 'users', element: <Users /> },
+          { path: '*', element: <NotFound /> },
+        ],
+      },
+    ],
   },
 ]
 

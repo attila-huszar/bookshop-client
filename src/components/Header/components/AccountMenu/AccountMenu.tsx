@@ -71,7 +71,7 @@ export function AccountMenu() {
               </li>
               {isAdmin && (
                 <li>
-                  <Link to={`/${ROUTE.CMS}`} onClick={toggleMenu}>
+                  <Link to={`/${ROUTE.CMS}/orders`} onClick={toggleMenu}>
                     <MenuItem>
                       <CMSIcon height="1.5rem" />
                       <span>CMS</span>

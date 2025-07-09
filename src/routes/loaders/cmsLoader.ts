@@ -7,8 +7,18 @@ import {
 } from '@/store'
 
 export const cmsLoader = () => {
-  void store.dispatch(fetchAllOrders())
-  void store.dispatch(fetchAllBooks())
-  void store.dispatch(fetchAllAuthors())
-  void store.dispatch(fetchAllUsers())
+  const cmsState = store.getState().cms
+
+  if (cmsState.books.length === 0) {
+    void store.dispatch(fetchAllBooks())
+  }
+  if (cmsState.orders.length === 0) {
+    void store.dispatch(fetchAllOrders())
+  }
+  if (cmsState.authors.length === 0) {
+    void store.dispatch(fetchAllAuthors())
+  }
+  if (cmsState.users.length === 0) {
+    void store.dispatch(fetchAllUsers())
+  }
 }

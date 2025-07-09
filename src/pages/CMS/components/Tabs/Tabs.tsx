@@ -1,46 +1,23 @@
-import { Users, Books, Authors, Orders } from '../'
+import { NavLink } from 'react-router'
 import { StyledTabs } from './Tabs.style'
 
 const TABS = [
-  { label: 'Orders', value: 'order' },
-  { label: 'Books', value: 'book' },
-  { label: 'Authors', value: 'author' },
-  { label: 'Users', value: 'user' },
+  { label: 'Orders', value: 'orders' },
+  { label: 'Books', value: 'books' },
+  { label: 'Authors', value: 'authors' },
+  { label: 'Users', value: 'users' },
 ] as const
 
 export type TabValue = (typeof TABS)[number]['value']
 
-type Props = {
-  activeTab: TabValue
-  setActiveTab: (tab: TabValue) => void
-}
-
-export const Tabs = ({ activeTab, setActiveTab }: Props) => {
-  const TAB_COMPONENTS = {
-    order: Orders,
-    book: Books,
-    author: Authors,
-    user: Users,
-  }
-
-  const ActiveComponent = TAB_COMPONENTS[activeTab]
-
+export const Tabs = () => {
   return (
     <StyledTabs>
-      <div className="tab-list">
-        {TABS.map((tab) => (
-          <button
-            key={tab.value}
-            className={activeTab === tab.value ? 'active' : ''}
-            onClick={() => setActiveTab(tab.value)}
-            type="button">
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      <div className="tab-content">
-        <ActiveComponent />
-      </div>
+      {TABS.map((tab) => (
+        <NavLink to={`/cms/${tab.value}`} key={tab.value}>
+          {tab.label}
+        </NavLink>
+      ))}
     </StyledTabs>
   )
 }
