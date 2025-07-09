@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { StyledTable } from '../Tabs/Tabs.style'
 import { InfoDialog } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
@@ -7,6 +8,7 @@ import { imagePlaceholder } from '@/assets/svg'
 export const Books = () => {
   const { books, booksIsLoading, booksError } = useAppSelector(cmsBooksSelector)
   const { authors } = useAppSelector(cmsAuthorsSelector)
+  const [selectedBooks, setSelectedBooks] = useState<number[]>([])
 
   if (booksIsLoading) {
     return <InfoDialog message="Loading books..." />
@@ -16,18 +18,31 @@ export const Books = () => {
     return <InfoDialog message="Error loading books" error={booksError} />
   }
 
+  const allSelected = books.length > 0 && selectedBooks.length === books.length
+
   return (
     <StyledTable>
       <table>
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={() =>
+                  allSelected
+                    ? setSelectedBooks([])
+                    : setSelectedBooks(books.map((book) => book.id))
+                }
+              />
+            </th>
             <th>ID</th>
             <th>Cover</th>
             <th>Author</th>
             <th>Title</th>
             <th>Genre</th>
             <th>Price</th>
-            <th>Discount (%)</th>
+            <th>-%</th>
             <th>Total</th>
           </tr>
         </thead>
@@ -38,9 +53,32 @@ export const Books = () => {
               'Unknown Author'
 
             return (
-              <tr key={book.id}>
+              <tr
+                key={book.id}
+                onClick={() => {
+                  setSelectedBooks((prev) =>
+                    prev.includes(book.id)
+                      ? prev.filter((id) => id !== book.id)
+                      : [...prev, book.id],
+                  )
+                }}
+                className={selectedBooks.includes(book.id) ? 'selected' : ''}>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedBooks.includes(book.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => {
+                      setSelectedBooks((prev) =>
+                        prev.includes(book.id)
+                          ? prev.filter((id) => id !== book.id)
+                          : [...prev, book.id],
+                      )
+                    }}
+                  />
+                </td>
                 <td>{book.id}</td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   {book.imgUrl && (
                     <img
                       src={book.imgUrl}

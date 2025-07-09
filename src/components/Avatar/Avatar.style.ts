@@ -8,7 +8,7 @@ export const StyledAvatar = styled.div<StyleTypes>`
   width: ${({ $size }) => $size + 'px'};
   border: 2px solid transparent;
   border-radius: 9999px;
-  outline: 2px solid var(--secondary-color);
+  outline: 2px solid var(--primary-color);
   cursor: pointer;
   transition: all 0.2s ease-out;
 

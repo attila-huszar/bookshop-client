@@ -35,11 +35,12 @@ export const StyledButton = styled.button<StyleTypes>`
   width: ${({ $size = 'md' }) => width[$size]};
   font-size: ${({ $textSize = 'md' }) => fontSize[$textSize]};
   font-weight: 700;
-  color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
+  color: ${({ $inverted }) =>
+    $inverted ? 'var(--primary-color)' : 'var(--white)'};
   background-color: ${({ $inverted }) =>
-    $inverted ? '#fff' : 'var(--primary-color)'};
+    $inverted ? 'var(--white)' : 'var(--primary-color)'};
   box-shadow: ${({ $shadow }) =>
-    $shadow ? '#ffce1a50 0px 5px 10px' : undefined};
+    $shadow ? 'var(--primary-light) 0px 5px 10px' : undefined};
   border: none;
   border-radius: 10px;
   outline: 3px solid var(--primary-color);
@@ -48,13 +49,14 @@ export const StyledButton = styled.button<StyleTypes>`
   transition: all 0.2s ease-out;
 
   &:hover {
-    color: ${({ $inverted }) => ($inverted ? '#fff' : 'var(--primary-color)')};
+    color: ${({ $inverted }) =>
+      $inverted ? 'var(--white)' : 'var(--primary-color)'};
     background-color: ${({ $inverted }) =>
-      $inverted ? 'var(--primary-color)' : '#fff'};
+      $inverted ? 'var(--primary-color)' : 'var(--white)'};
   }
 
   &:disabled {
-    color: #fff;
+    color: var(--white);
     background-color: var(--primary-faded);
     outline: 3px solid var(--primary-faded);
   }

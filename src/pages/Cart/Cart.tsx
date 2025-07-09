@@ -277,7 +277,7 @@ export function Cart() {
             disabled={orderIsLoading}
             title="Reset Cart"
             $size="lg"
-            $color="var(--primary-color)"
+            $color="var(--mid-grey)"
             $outline
           />
           <Button

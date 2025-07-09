@@ -30,8 +30,8 @@ export const StyledIconButton = styled.button<StyleTypes>`
   transition: all 0.2s ease-out;
 
   &:hover {
-    color: var(--secondary-color);
-    border-color: var(--secondary-color);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
   }
 
   svg {

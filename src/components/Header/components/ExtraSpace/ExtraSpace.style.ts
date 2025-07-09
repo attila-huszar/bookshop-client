@@ -7,7 +7,7 @@ export const ExtraSpace = styled.div`
   width: 100%;
   min-width: var(--min-width);
   max-width: var(--max-width);
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color);
   z-index: 4;
 
   &::before {
@@ -17,7 +17,7 @@ export const ExtraSpace = styled.div`
     height: 1.5rem;
     width: 1.5rem;
     border-top-left-radius: 20px;
-    box-shadow: -20px -20px 0 20px var(--secondary-color);
+    box-shadow: -20px -20px 0 20px var(--primary-color);
   }
 
   &::after {
@@ -28,6 +28,6 @@ export const ExtraSpace = styled.div`
     height: 1.5rem;
     width: 1.5rem;
     border-top-right-radius: 20px;
-    box-shadow: 20px -20px 0 20px var(--secondary-color);
+    box-shadow: 20px -20px 0 20px var(--primary-color);
   }
 `

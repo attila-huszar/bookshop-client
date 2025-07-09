@@ -68,7 +68,7 @@ export const DropdownList = styled.ul`
   overflow-y: auto;
 
   li:hover {
-    background-color: var(--primary-faded);
+    background-color: var(--secondary-hover);
   }
 
   li:first-child {
