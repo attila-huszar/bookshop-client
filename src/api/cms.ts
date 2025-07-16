@@ -21,13 +21,41 @@ export const getAllOrders = async (): Promise<CMSOrder[]> => {
   return await response.json()
 }
 
-export const postAddBook = async (book: Omit<Book, 'id'>): Promise<CMSBook> => {
+export const postBook = async (book: Omit<Book, 'id'>): Promise<CMSBook> => {
   const response = await authRequest.post(PATH.cms.books.add, {
     json: book,
   })
 
   if (!response.ok) {
-    throw new Error('Failed to post book')
+    throw new Error('Failed to add book')
+  }
+
+  return await response.json()
+}
+
+export const deleteBooks = async (
+  bookIds: number[],
+): Promise<CMSBook['id'][]> => {
+  const response = await authRequest.delete(PATH.cms.books.delete, {
+    json: { bookIds },
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to delete books')
+  }
+
+  return await response.json()
+}
+
+export const postAuthor = async (
+  author: Omit<CMSAuthor, 'id'>,
+): Promise<CMSAuthor> => {
+  const response = await authRequest.post(PATH.cms.authors.add, {
+    json: author,
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to add author')
   }
 
   return await response.json()

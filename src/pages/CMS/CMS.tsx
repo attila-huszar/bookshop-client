@@ -1,15 +1,68 @@
-import { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router'
-import { Button, ExtraSpace } from '@/components'
+import { useRef, useState } from 'react'
+import { Outlet, useNavigate, useLocation } from 'react-router'
+import { AsyncThunkAction } from '@reduxjs/toolkit'
+import { Button, ConfirmDialog, ExtraSpace } from '@/components'
 import { Details, Tabs } from './components'
 import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
-import { useAppSelector } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { CMSContext } from './CMS.types'
 import { LogoutIcon } from '@/assets/svg'
+import { AppDispatch, delBooks, RootState } from '@/store'
+import toast from 'react-hot-toast'
 
 export const CMS = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const dispatch = useAppDispatch()
   const { userData } = useAppSelector((state) => state.user)
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false)
-  const navigate = useNavigate()
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
+  const [selectedItems, setSelectedItems] = useState<CMSContext>({
+    orders: [],
+    books: [],
+    authors: [],
+    users: [],
+  })
+  const ref = useRef<HTMLDialogElement>(null)
+
+  const activeTab = location.pathname.split('/').pop() as keyof typeof actionMap
+
+  const actionMap: Record<
+    keyof CMSContext,
+    AsyncThunkAction<
+      unknown,
+      unknown,
+      { state: RootState; dispatch: AppDispatch }
+    >
+  > = {
+    orders: delBooks(selectedItems.books),
+    books: delBooks(selectedItems.books),
+    authors: delBooks(selectedItems.books),
+    users: delBooks(selectedItems.books),
+  }
+
+  const handleConfirm = async () => {
+    const action = actionMap[activeTab]
+    const result = await dispatch(action)
+
+    if (result.meta.requestStatus === 'fulfilled') {
+      toast.success(`Successfully deleted selected ${activeTab}`)
+      setSelectedItems({
+        orders: [],
+        books: [],
+        authors: [],
+        users: [],
+      })
+    } else {
+      toast.error(`Failed to delete selected ${activeTab}`)
+    }
+
+    setIsDialogOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsDialogOpen(false)
+  }
 
   return (
     <StyledCMS>
@@ -24,7 +77,7 @@ export const CMS = () => {
             Add
           </Button>
           <Button
-            onClick={() => undefined}
+            onClick={() => setIsDialogOpen(true)}
             $size="smMd"
             $color="danger"
             type="button">
@@ -41,10 +94,19 @@ export const CMS = () => {
             {userData?.firstName}
           </Button>
         </MenuButtons>
-        {isDetailsOpen && <Details />}
         <Tabs />
-        <Outlet />
+        {isDetailsOpen && <Details setIsDetailsOpen={setIsDetailsOpen} />}
+        <Outlet context={{ selectedItems, setSelectedItems }} />
       </MainContainer>
+      <ConfirmDialog
+        ref={ref}
+        isDialogOpen={isDialogOpen}
+        handleConfirm={() => void handleConfirm()}
+        handleCancel={handleCancel}
+        message={`Are you sure you want to delete selected ${activeTab}?`}
+        buttonText="Delete"
+        buttonColor="danger"
+      />
     </StyledCMS>
   )
 }

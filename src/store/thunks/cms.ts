@@ -4,9 +4,11 @@ import {
   getAllBooks,
   getAllOrders,
   getAllUsers,
-  postAddBook,
+  postBook,
+  deleteBooks,
+  postAuthor,
 } from '@/api'
-import { Book } from '@/types'
+import { Author, Book } from '@/types'
 
 export const fetchAllBooks = createAsyncThunk(
   'books/fetchAllBooks',
@@ -36,7 +38,17 @@ export const fetchAllOrders = createAsyncThunk(
   },
 )
 
-export const postBook = createAsyncThunk<Book, Omit<Book, 'id'>>(
-  'books/postBook',
-  async (book) => postAddBook(book),
+export const addBook = createAsyncThunk<Book, Omit<Book, 'id'>>(
+  'books/addBook',
+  async (book) => postBook(book),
+)
+
+export const delBooks = createAsyncThunk<Book['id'][], number[]>(
+  'books/deleteBooks',
+  async (bookIds) => deleteBooks(bookIds),
+)
+
+export const addAuthor = createAsyncThunk(
+  'authors/addAuthor',
+  async (author: Omit<Author, 'id'>) => postAuthor(author),
 )

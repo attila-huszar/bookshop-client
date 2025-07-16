@@ -19,9 +19,7 @@ export const authLoader = async (options?: AuthLoaderOptions) => {
     userData = store.getState().user.userData
   }
 
-  if (accessToken && (!adminRequired || userData?.role === UserRole.Admin)) {
-    return true
-  }
-
-  return false
+  if (!accessToken) return false
+  if (adminRequired && userData?.role !== UserRole.Admin) return false
+  return true
 }

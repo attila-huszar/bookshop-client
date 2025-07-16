@@ -1,25 +1,46 @@
+import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { InfoDialog } from '@/components'
+import { Error } from '@/components'
 import { cmsOrdersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
+import { CMSContext } from '../../CMS.types'
 
 export const Orders = () => {
-  const { orders, ordersIsLoading, ordersError } =
-    useAppSelector(cmsOrdersSelector)
-
-  if (ordersIsLoading) {
-    return <InfoDialog message="Loading orders..." />
-  }
+  const { orders, ordersError } = useAppSelector(cmsOrdersSelector)
+  const { selectedItems, setSelectedItems } = useOutletContext<{
+    selectedItems: CMSContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  }>()
 
   if (ordersError) {
-    return <InfoDialog message="Error loading orders" error={ordersError} />
+    return <Error message="Error loading orders" error={ordersError} />
   }
+
+  const allSelected =
+    orders.length > 0 && selectedItems.orders.length === orders.length
 
   return (
     <StyledTable>
       <table>
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={() =>
+                  allSelected
+                    ? setSelectedItems({
+                        ...selectedItems,
+                        orders: [],
+                      })
+                    : setSelectedItems({
+                        ...selectedItems,
+                        orders: orders.map((order) => order.id),
+                      })
+                }
+              />
+            </th>
             <th>ID</th>
             <th>PaymentID</th>
             <th>Payment Status</th>
@@ -35,7 +56,34 @@ export const Orders = () => {
         <tbody>
           {orders.map((order) => {
             return (
-              <tr key={order.paymentId}>
+              <tr
+                key={order.id}
+                onClick={() => {
+                  setSelectedItems({
+                    ...selectedItems,
+                    orders: selectedItems.orders.includes(order.id)
+                      ? selectedItems.orders.filter((id) => id !== order.id)
+                      : [...selectedItems.orders, order.id],
+                  })
+                }}
+                className={
+                  selectedItems.orders.includes(order.id) ? 'selected' : ''
+                }>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.orders.includes(order.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => {
+                      setSelectedItems((prev) => ({
+                        ...prev,
+                        orders: prev.orders.includes(order.id)
+                          ? prev.orders.filter((id) => id !== order.id)
+                          : [...prev.orders, order.id],
+                      }))
+                    }}
+                  />
+                </td>
                 <td>{order.id}</td>
                 <td>
                   <p style={{ width: 96, wordWrap: 'break-word' }}>

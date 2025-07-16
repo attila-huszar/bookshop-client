@@ -2,7 +2,7 @@ import { useImperativeHandle, useRef, useState } from 'react'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordDialog } from './PasswordDialog.style'
-import { ButtonWrapper } from '@/styles/Form.style'
+import { ButtonWrapper } from '@/styles'
 import { postUserLogin } from '@/api'
 import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
@@ -53,13 +53,15 @@ export function PasswordDialog({ email, ref }: Props) {
         return
       }
 
-      try {
-        await dispatch(updateUser({ password: values.newPassword }))
+      const result = await dispatch(
+        updateUser({ password: values.newPassword }),
+      )
 
+      if (result.meta.requestStatus === 'fulfilled') {
         handleClose()
         actions.resetForm()
         toast.success('Password changed successfully')
-      } catch {
+      } else {
         toast.error('Failed to change password, please try again later', {
           id: 'password-change-fail',
         })

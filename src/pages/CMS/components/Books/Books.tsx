@@ -1,24 +1,25 @@
-import { useState } from 'react'
+import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { InfoDialog } from '@/components'
+import { Error } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
+import { CMSContext } from '../../CMS.types'
 import { imagePlaceholder } from '@/assets/svg'
 
 export const Books = () => {
-  const { books, booksIsLoading, booksError } = useAppSelector(cmsBooksSelector)
+  const { books, booksError } = useAppSelector(cmsBooksSelector)
   const { authors } = useAppSelector(cmsAuthorsSelector)
-  const [selectedBooks, setSelectedBooks] = useState<number[]>([])
-
-  if (booksIsLoading) {
-    return <InfoDialog message="Loading books..." />
-  }
+  const { selectedItems, setSelectedItems } = useOutletContext<{
+    selectedItems: CMSContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  }>()
 
   if (booksError) {
-    return <InfoDialog message="Error loading books" error={booksError} />
+    return <Error message="Error loading books" error={booksError} />
   }
 
-  const allSelected = books.length > 0 && selectedBooks.length === books.length
+  const allSelected =
+    books.length > 0 && selectedItems.books.length === books.length
 
   return (
     <StyledTable>
@@ -31,8 +32,14 @@ export const Books = () => {
                 checked={allSelected}
                 onChange={() =>
                   allSelected
-                    ? setSelectedBooks([])
-                    : setSelectedBooks(books.map((book) => book.id))
+                    ? setSelectedItems({
+                        ...selectedItems,
+                        books: [],
+                      })
+                    : setSelectedItems({
+                        ...selectedItems,
+                        books: books.map((book) => book.id),
+                      })
                 }
               />
             </th>
@@ -56,24 +63,28 @@ export const Books = () => {
               <tr
                 key={book.id}
                 onClick={() => {
-                  setSelectedBooks((prev) =>
-                    prev.includes(book.id)
-                      ? prev.filter((id) => id !== book.id)
-                      : [...prev, book.id],
-                  )
+                  setSelectedItems((prev) => ({
+                    ...prev,
+                    books: prev.books.includes(book.id)
+                      ? prev.books.filter((id) => id !== book.id)
+                      : [...prev.books, book.id],
+                  }))
                 }}
-                className={selectedBooks.includes(book.id) ? 'selected' : ''}>
+                className={
+                  selectedItems.books.includes(book.id) ? 'selected' : ''
+                }>
                 <td style={{ textAlign: 'center' }}>
                   <input
                     type="checkbox"
-                    checked={selectedBooks.includes(book.id)}
+                    checked={selectedItems.books.includes(book.id)}
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => {
-                      setSelectedBooks((prev) =>
-                        prev.includes(book.id)
-                          ? prev.filter((id) => id !== book.id)
-                          : [...prev, book.id],
-                      )
+                      setSelectedItems((prev) => ({
+                        ...prev,
+                        books: prev.books.includes(book.id)
+                          ? prev.books.filter((id) => id !== book.id)
+                          : [...prev.books, book.id],
+                      }))
                     }}
                   />
                 </td>

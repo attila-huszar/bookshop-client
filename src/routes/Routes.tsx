@@ -77,13 +77,16 @@ const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute />,
-    loader: () => authLoader({ adminRequired: true }),
+    loader: async () => {
+      const isAuthenticated = await authLoader({ adminRequired: true })
+      cmsLoader()
+      return isAuthenticated
+    },
     hydrateFallbackElement: <Loading fullScreen />,
     children: [
       {
         path: `${ROUTE.CMS}/*`,
         element: <CMS />,
-        loader: cmsLoader,
         children: [
           { path: 'orders', element: <Orders /> },
           { path: 'books', element: <Books /> },

@@ -1,24 +1,46 @@
+import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { InfoDialog } from '@/components'
+import { Error } from '@/components'
 import { cmsUsersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
+import { CMSContext } from '../../CMS.types'
 
 export const Users = () => {
-  const { users, usersIsLoading, usersError } = useAppSelector(cmsUsersSelector)
-
-  if (usersIsLoading) {
-    return <InfoDialog message="Loading users..." />
-  }
+  const { users, usersError } = useAppSelector(cmsUsersSelector)
+  const { selectedItems, setSelectedItems } = useOutletContext<{
+    selectedItems: CMSContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  }>()
 
   if (usersError) {
-    return <InfoDialog message="Error loading users" error={usersError} />
+    return <Error message="Error loading users" error={usersError} />
   }
+
+  const allSelected =
+    users.length > 0 && selectedItems.users.length === users.length
 
   return (
     <StyledTable>
       <table>
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={() =>
+                  allSelected
+                    ? setSelectedItems({
+                        ...selectedItems,
+                        users: [],
+                      })
+                    : setSelectedItems({
+                        ...selectedItems,
+                        users: users.map((user) => user.id),
+                      })
+                }
+              />
+            </th>
             <th>ID</th>
             <th>First Name</th>
             <th>Last Name</th>
@@ -34,7 +56,34 @@ export const Users = () => {
         <tbody>
           {users.map((user) => {
             return (
-              <tr key={user.uuid}>
+              <tr
+                key={user.id}
+                onClick={() => {
+                  setSelectedItems({
+                    ...selectedItems,
+                    users: selectedItems.users.includes(user.id)
+                      ? selectedItems.users.filter((id) => id !== user.id)
+                      : [...selectedItems.users, user.id],
+                  })
+                }}
+                className={
+                  selectedItems.users.includes(user.id) ? 'selected' : ''
+                }>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.users.includes(user.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => {
+                      setSelectedItems((prev) => ({
+                        ...prev,
+                        users: prev.users.includes(user.id)
+                          ? prev.users.filter((id) => id !== user.id)
+                          : [...prev.users, user.id],
+                      }))
+                    }}
+                  />
+                </td>
                 <td>{user.id}</td>
                 <td>{user.firstName}</td>
                 <td>{user.lastName}</td>

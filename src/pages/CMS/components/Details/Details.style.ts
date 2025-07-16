@@ -1,7 +1,8 @@
 import styled from 'styled-components'
 
 export const StyledDetails = styled.div`
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   padding: 1rem;
   border: 1px solid var(--light-grey);
   border-radius: 10px;

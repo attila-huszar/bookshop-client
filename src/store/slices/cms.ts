@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { CMSState } from '@/types'
 import {
+  addBook,
+  delBooks,
   fetchAllAuthors,
   fetchAllBooks,
   fetchAllOrders,
@@ -81,6 +83,34 @@ const cmsSlice = createSlice({
       .addCase(fetchAllOrders.rejected, (state, action) => {
         state.ordersIsLoading = false
         state.ordersError = action.error.message ?? 'Failed to fetch orders'
+      })
+
+      .addCase(addBook.pending, (state) => {
+        state.booksIsLoading = true
+        state.booksError = null
+      })
+      .addCase(addBook.fulfilled, (state, action) => {
+        state.books.push(action.payload)
+        state.booksIsLoading = false
+      })
+      .addCase(addBook.rejected, (state, action) => {
+        state.booksIsLoading = false
+        state.booksError = action.error.message ?? 'Failed to add book'
+      })
+
+      .addCase(delBooks.pending, (state) => {
+        state.booksIsLoading = true
+        state.booksError = null
+      })
+      .addCase(delBooks.fulfilled, (state, action) => {
+        state.books = state.books.filter(
+          (book) => !action.payload.includes(book.id),
+        )
+        state.booksIsLoading = false
+      })
+      .addCase(delBooks.rejected, (state, action) => {
+        state.booksIsLoading = false
+        state.booksError = action.error.message ?? 'Failed to delete books'
       })
   },
 })
