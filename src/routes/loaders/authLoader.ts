@@ -10,12 +10,18 @@ export const authLoader = async (options?: AuthLoaderOptions) => {
   let { accessToken, userData } = store.getState().user
 
   if (!accessToken) {
-    await store.dispatch(fetchAuthTokens())
+    const result = await store.dispatch(fetchAuthTokens())
+    if (result.meta.requestStatus === 'rejected') {
+      return false
+    }
     accessToken = store.getState().user.accessToken
   }
 
   if (!userData) {
-    await store.dispatch(fetchUserProfile())
+    const result = await store.dispatch(fetchUserProfile())
+    if (result.meta.requestStatus === 'rejected') {
+      return false
+    }
     userData = store.getState().user.userData
   }
 
