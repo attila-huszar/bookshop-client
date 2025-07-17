@@ -21,6 +21,12 @@ export type Order = {
   address?: Partial<Address>
 }
 
+export type OrderResponse = Order & {
+  id: number
+  createdAt: string
+  updatedAt: string
+}
+
 export type OrderItem = {
   id: number
   title: string

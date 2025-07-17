@@ -1,27 +1,33 @@
 import { authRequest, PATH } from './'
-import { Book, CMSAuthor, CMSBook, CMSOrder, CMSUser } from '@/types'
+import {
+  Author,
+  BookFormValues,
+  BookResponse,
+  OrderResponse,
+  UserResponse,
+} from '@/types'
 
-export const getAllBooks = async (): Promise<CMSBook[]> => {
+export const getAllBooks = async (): Promise<BookResponse[]> => {
   const response = await authRequest.get(PATH.cms.books.all)
   return await response.json()
 }
 
-export const getAllAuthors = async (): Promise<CMSAuthor[]> => {
+export const getAllAuthors = async (): Promise<Author[]> => {
   const response = await authRequest.get(PATH.cms.authors.all)
   return await response.json()
 }
 
-export const getAllUsers = async (): Promise<CMSUser[]> => {
+export const getAllUsers = async (): Promise<UserResponse[]> => {
   const response = await authRequest.get(PATH.cms.users.all)
   return await response.json()
 }
 
-export const getAllOrders = async (): Promise<CMSOrder[]> => {
+export const getAllOrders = async (): Promise<OrderResponse[]> => {
   const response = await authRequest.get(PATH.cms.orders.all)
   return await response.json()
 }
 
-export const postBook = async (book: Omit<Book, 'id'>): Promise<CMSBook> => {
+export const postBook = async (book: BookFormValues): Promise<BookResponse> => {
   const response = await authRequest.post(PATH.cms.books.add, {
     json: book,
   })
@@ -35,7 +41,7 @@ export const postBook = async (book: Omit<Book, 'id'>): Promise<CMSBook> => {
 
 export const deleteBooks = async (
   bookIds: number[],
-): Promise<CMSBook['id'][]> => {
+): Promise<BookResponse['id'][]> => {
   const response = await authRequest.delete(PATH.cms.books.delete, {
     json: { bookIds },
   })
@@ -48,8 +54,8 @@ export const deleteBooks = async (
 }
 
 export const postAuthor = async (
-  author: Omit<CMSAuthor, 'id'>,
-): Promise<CMSAuthor> => {
+  author: Omit<Author, 'id'>,
+): Promise<Author> => {
   const response = await authRequest.post(PATH.cms.authors.add, {
     json: author,
   })

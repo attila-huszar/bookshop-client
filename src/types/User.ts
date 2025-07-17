@@ -11,6 +11,17 @@ export type User = {
   avatar?: string
 }
 
+export type UserResponse = User & {
+  id: number
+  verified: boolean
+  verificationToken: string | null
+  verificationExpires: string | null
+  passwordResetToken: string | null
+  passwordResetExpires: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export const enum UserRole {
   User = 'user',
   Admin = 'admin',
