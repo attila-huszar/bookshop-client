@@ -22,7 +22,13 @@ import { Loading, VerifyEmail, PasswordReset, Error } from '@/components'
 import { Orders, Books, Authors, Users } from '@/pages/CMS/components'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
-import { authLoader, productsLoader, cartLoader, cmsLoader } from './loaders'
+import {
+  authLoader,
+  landingPageLoader,
+  shopLoader,
+  cartLoader,
+  cmsLoader,
+} from './loaders'
 
 const Layout = lazy(() =>
   import('../pages/Layout/Layout').then(({ Layout }) => ({
@@ -36,9 +42,9 @@ const routes: RouteObject[] = [
     errorElement: <Error fullScreen />,
     loader: () => {
       void authLoader()
-      void productsLoader()
-      void cartLoader()
+      cartLoader()
     },
+
     hydrateFallbackElement: <Loading fullScreen />,
     element: (
       <ErrorBoundary fallback={<Error fullScreen />}>
@@ -48,8 +54,8 @@ const routes: RouteObject[] = [
       </ErrorBoundary>
     ),
     children: [
-      { index: true, element: <Home /> },
-      { path: ROUTE.BOOKS, element: <Products /> },
+      { index: true, element: <Home />, loader: landingPageLoader },
+      { path: ROUTE.BOOKS, element: <Products />, loader: shopLoader },
       { path: ROUTE.BOOK, element: <Product /> },
       { path: ROUTE.CART, element: <Cart /> },
       { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
