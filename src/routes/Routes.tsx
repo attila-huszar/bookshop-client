@@ -83,7 +83,7 @@ const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute />,
-    loader: async () => await authLoader({ adminRequired: true }),
+    loader: () => authLoader({ adminRequired: true }),
     hydrateFallbackElement: <Loading fullScreen />,
     children: [
       {
