@@ -219,11 +219,19 @@ export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
                 <DefaultRow>
                   <div>
                     <p>Birth</p>
-                    <FormikField name="birth" placeholder="Birth" type="text" />
+                    <FormikField
+                      name="birthYear"
+                      placeholder="Birth"
+                      type="text"
+                    />
                   </div>
                   <div>
                     <p>Death</p>
-                    <FormikField name="death" placeholder="Death" type="text" />
+                    <FormikField
+                      name="deathYear"
+                      placeholder="Death"
+                      type="text"
+                    />
                   </div>
                 </DefaultRow>
                 <DefaultRow>

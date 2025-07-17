@@ -33,16 +33,17 @@ export const CMS = () => {
       unknown,
       unknown,
       { state: RootState; dispatch: AppDispatch }
-    >
+    > | null
   > = {
-    orders: delBooks(selectedItems.books),
+    orders: null,
     books: delBooks(selectedItems.books),
-    authors: delBooks(selectedItems.books),
-    users: delBooks(selectedItems.books),
+    authors: null,
+    users: null,
   }
 
   const handleConfirm = async () => {
     const action = actionMap[activeTab]
+    if (!action) return
     const result = await dispatch(action)
 
     if (result.meta.requestStatus === 'fulfilled') {
