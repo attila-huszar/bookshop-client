@@ -4,14 +4,14 @@ import { StyledError } from './Error.style'
 import { WarningIcon } from '@/assets/svg'
 
 type Props = {
-  text?: string
+  message?: string
   error?: string
   fullScreen?: boolean
   backButton?: boolean
 }
 
 export function Error({
-  text = 'Something went wrong. Please try again later.',
+  message = 'Something went wrong. Please try again later.',
   error,
   fullScreen,
   backButton,
@@ -31,7 +31,7 @@ export function Error({
     <StyledError $fullScreen={fullScreen}>
       <WarningIcon />
       <div>
-        <p>{text}</p>
+        <p>{message}</p>
         {error && <p>{error}</p>}
       </div>
       {backButton && (

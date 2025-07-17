@@ -18,7 +18,13 @@ export type Order = {
   lastName?: string
   email?: string | null
   phone?: string | null
-  address?: Address
+  address?: Partial<Address>
+}
+
+export type OrderResponse = Order & {
+  id: number
+  createdAt: string
+  updatedAt: string
 }
 
 export type OrderItem = {

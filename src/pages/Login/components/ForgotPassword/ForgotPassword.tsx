@@ -1,18 +1,22 @@
-import { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react'
+import { useImperativeHandle, useRef } from 'react'
 import { Form, Formik } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledForgotPassword } from './ForgotPassword.style'
 import { Button, FormikField, IconButton } from '@/components'
-import { ButtonWrapper } from '@/styles/Form.style'
+import { ButtonWrapper } from '@/styles'
 import { postPasswordReset } from '@/api'
 import { forgotPasswordSchema } from '@/helpers'
 import { handleError } from '@/errors'
 import { BackIcon } from '@/assets/svg'
 
-function ForgotPassword(
-  _props: unknown,
-  ref: ForwardedRef<Partial<HTMLDialogElement>>,
-) {
+type PasswordDialogHandle = {
+  showModal: () => void
+  close: () => void
+}
+
+type Props = { ref: React.Ref<PasswordDialogHandle> }
+
+export function ForgotPassword({ ref }: Props) {
   const forgotPassRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(ref, () => ({
@@ -85,5 +89,3 @@ function ForgotPassword(
     </StyledForgotPassword>
   )
 }
-
-export const ForgotPasswordRef = forwardRef(ForgotPassword)

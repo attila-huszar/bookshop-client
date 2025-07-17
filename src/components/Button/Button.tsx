@@ -1,26 +1,27 @@
 import { StyledButton } from './Button.style'
 import type { ButtonTypes } from './Button.types'
-import { CartIcon, CartAddIcon, SpinnerIcon } from '@/assets/svg'
 
-export function Button({ onClick, children, title, ...props }: ButtonTypes) {
+export function Button({
+  onClick,
+  children,
+  title,
+  $color,
+  $icon,
+  $iconPos = 'left',
+  ...props
+}: ButtonTypes) {
+  const iconElement = $icon ? <div role="img">{$icon}</div> : null
+
   return (
-    <StyledButton onClick={onClick} title={title} {...props}>
-      {props.$withCart && (
-        <div role="img">
-          <CartIcon />
-        </div>
-      )}
-      {props.$withCartAdd && (
-        <div role="img">
-          <CartAddIcon />
-        </div>
-      )}
-      {props.$spinner && (
-        <div role="img">
-          <SpinnerIcon />
-        </div>
-      )}
+    <StyledButton
+      onClick={onClick}
+      title={title}
+      $color={$color}
+      $iconPos={$iconPos}
+      {...props}>
+      {$iconPos === 'left' && iconElement}
       {children}
+      {$iconPos === 'right' && iconElement}
     </StyledButton>
   )
 }

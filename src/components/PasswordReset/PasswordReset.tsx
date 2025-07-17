@@ -4,7 +4,7 @@ import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
-import { ButtonWrapper } from '@/styles/Form.style'
+import { ButtonWrapper } from '@/styles'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
 import { resetPasswordSchema } from '@/helpers'
 import { passwordResetInitialValues } from '@/constants'
@@ -29,7 +29,7 @@ export function PasswordReset() {
 
         setToken(response.token)
 
-        toast.success(`Please enter your new password`, {
+        toast.success('Please enter your new password', {
           id: 'passwordReset',
         })
       } catch (error) {

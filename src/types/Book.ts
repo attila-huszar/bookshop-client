@@ -1,7 +1,7 @@
 export type Book = {
   id: number
   title: string
-  author: number
+  author: string
   genre: string
   imgUrl: string
   description: string
@@ -10,6 +10,12 @@ export type Book = {
   price: number
   discount: number
   discountPrice: number
-  topSellers?: boolean
-  newRelease?: boolean
+  topSellers: boolean
+  newRelease: boolean
+}
+
+export type BookResponse = Omit<Book, 'author'> & { authorId: number }
+
+export type BookFormValues = Omit<Book, 'id' | 'author'> & {
+  authorId: number
 }

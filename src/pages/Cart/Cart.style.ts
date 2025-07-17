@@ -38,7 +38,7 @@ export const Book = styled.div`
 
     &:hover {
       border-radius: 5px;
-      background-color: var(--whitesmoke);
+      background-color: var(--secondary-hover);
     }
   }
 

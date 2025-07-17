@@ -3,20 +3,24 @@ import { StyledInfoDialog } from './InfoDialog.style'
 
 export function InfoDialog({
   dialogRef,
-  text,
+  message,
   error,
   reloadButton,
   backButton,
 }: {
-  dialogRef: React.RefObject<HTMLDialogElement | null>
-  text: string
+  dialogRef?: React.RefObject<HTMLDialogElement | null>
+  message: string
   error?: string | null
   reloadButton?: boolean
   backButton?: boolean
 }) {
   return (
     <StyledInfoDialog ref={dialogRef}>
-      {error ? <Error text={text} error={error} /> : <Loading text={text} />}
+      {error ? (
+        <Error message={message} error={error} />
+      ) : (
+        <Loading message={message} />
+      )}
       {reloadButton && (
         <Button onClick={() => window.location.reload()}>Reload Page</Button>
       )}

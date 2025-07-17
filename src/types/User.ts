@@ -2,13 +2,29 @@ import type { Address } from '@stripe/stripe-js'
 
 export type User = {
   uuid: string
+  role: UserRole
   firstName: string
   lastName: string
   email: string
   phone?: string | null
-  address?: Address
+  address?: Partial<Address>
   avatar?: string
-  role?: 'user' | 'admin'
+}
+
+export type UserResponse = User & {
+  id: number
+  verified: boolean
+  verificationToken: string | null
+  verificationExpires: string | null
+  passwordResetToken: string | null
+  passwordResetExpires: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const enum UserRole {
+  User = 'user',
+  Admin = 'admin',
 }
 
 export type RegisterRequest = {

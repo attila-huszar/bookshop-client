@@ -6,7 +6,7 @@ export const StyledReleases = styled.section`
   justify-content: space-between;
   gap: 2.5rem;
   width: 100%;
-  max-width: 90rem;
+  max-width: var(--max-width);
   padding: 3rem 6.25rem 2.5rem;
   overflow-x: clip;
 `

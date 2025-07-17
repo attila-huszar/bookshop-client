@@ -1,10 +1,12 @@
 import { AddressElement } from '@stripe/react-stripe-js'
+import { Address } from '@stripe/stripe-js'
 import { useAppSelector } from '@/hooks'
 import { userSelector } from '@/store'
 import { googleMapsKey } from '@/constants'
 
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
+  const address: Partial<Address> = userData?.address ?? {}
 
   return (
     <form>
@@ -18,12 +20,12 @@ export function AddressForm() {
             lastName: userData?.lastName,
             phone: userData?.phone,
             address: {
-              line1: userData?.address?.line1,
-              line2: userData?.address?.line2,
-              city: userData?.address?.city,
-              state: userData?.address?.state,
-              postal_code: userData?.address?.postal_code,
-              country: userData?.address?.country ?? 'US',
+              line1: address?.line1,
+              line2: address?.line2,
+              city: address?.city,
+              state: address?.state,
+              postal_code: address?.postal_code,
+              country: address?.country ?? 'US',
             },
           },
           autocomplete: {

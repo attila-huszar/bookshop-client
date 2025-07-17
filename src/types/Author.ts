@@ -7,3 +7,5 @@ export type Author = {
   homeland: string
   biography: string
 }
+
+export type AuthorFormValues = Omit<Author, 'id'>

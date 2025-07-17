@@ -24,7 +24,7 @@ import {
 import { Accordion, AccordionItem, IconButton } from '@/components'
 import { enforceMinMax, generateFilterArray } from '@/helpers'
 import { filterInitialValues, discountOptions } from '@/constants'
-import { sliderStyles } from '@/styles/Global.style'
+import { sliderStyles } from '@/styles'
 import 'rc-slider/assets/index.css'
 import type { FilterProps, InputEvent, DiscountChangeEvent } from '@/types'
 import { StarIcon, StarFilledIcon } from '@/assets/svg'

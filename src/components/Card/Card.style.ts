@@ -7,7 +7,7 @@ export const StyledCard = styled.div`
   transition: background-color 0.3s ease-out;
 
   &:hover {
-    background-color: var(--whitesmoke);
+    background-color: var(--secondary-hover);
   }
 
   a {

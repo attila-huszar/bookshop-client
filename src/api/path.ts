@@ -1,8 +1,10 @@
 const users = 'users'
+const books = 'books'
 const orders = 'orders'
+const cms = 'cms'
 
 export const PATH = {
-  books: 'books',
+  books: books,
   authors: 'authors',
   news: 'news',
   searchOptions: 'search_opts',
@@ -23,4 +25,14 @@ export const PATH = {
     update: `${orders}/update`,
   },
   upload: 'upload',
+  cms: {
+    orders: { all: `${cms}/${orders}/all` },
+    users: { all: `${cms}/${users}/all` },
+    books: {
+      all: `${cms}/${books}/all`,
+      add: `${cms}/${books}/add`,
+      delete: `${cms}/${books}/delete`,
+    },
+    authors: { all: `${cms}/authors/all`, add: `${cms}/authors/add` },
+  },
 } as const

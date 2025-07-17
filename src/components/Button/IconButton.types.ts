@@ -4,8 +4,8 @@ export type StyleTypes = {
   $color?: string
   $outline?: boolean
   $round?: boolean
-  $flipHorizontal?: boolean
-  $flipVertical?: boolean
+  $flipH?: boolean
+  $flipV?: boolean
 }
 
 export type IconButtonTypes = React.DetailedHTMLProps<

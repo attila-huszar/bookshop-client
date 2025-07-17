@@ -6,7 +6,7 @@ import {
   Select,
   ErrorMessage,
   PasswordEye,
-} from '@/styles/Form.style'
+} from '@/styles'
 import type { FormikProps, FormikInput } from '@/types'
 import { EyeIcon, EyeHideIcon } from '@/assets/svg'
 

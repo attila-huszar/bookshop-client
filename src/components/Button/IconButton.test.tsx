@@ -32,7 +32,7 @@ describe('IconButton', () => {
   })
 
   it('should pass additional props to the button element', () => {
-    renderIconButton({ $flipHorizontal: true, $flipVertical: true })
+    renderIconButton({ $flipH: true, $flipV: true })
     expect(screen.getByTitle('icon-button')).toBeInTheDocument()
   })
 

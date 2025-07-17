@@ -1,10 +1,10 @@
 export type StyleTypes = {
+  $color?: 'primary' | 'secondary' | 'danger'
+  $icon?: React.ReactNode
+  $iconPos?: 'left' | 'right'
   $size?: 'xs' | 'sm' | 'smMd' | 'md' | 'lg' | 'wide'
   $textSize?: 'sm' | 'md' | 'lg' | 'xl'
-  $shadowed?: boolean
-  $withCart?: boolean
-  $withCartAdd?: boolean
-  $spinner?: boolean
+  $shadow?: boolean
   $inverted?: boolean
 }
 

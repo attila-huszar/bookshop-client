@@ -30,16 +30,16 @@ export const StyledIconButton = styled.button<StyleTypes>`
   transition: all 0.2s ease-out;
 
   &:hover {
-    color: var(--secondary-color);
-    border-color: var(--secondary-color);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
   }
 
   svg {
     height: ${({ $iconSize = 'md' }) => iconHeight[$iconSize]};
     border-radius: ${({ $round }) => ($round ? '999px' : undefined)};
 
-    ${({ $flipHorizontal }) => $flipHorizontal && 'transform: scaleX(-1);'}
-    ${({ $flipVertical }) => $flipVertical && 'transform: scaleY(-1);'}
+    ${({ $flipH }) => $flipH && 'transform: scaleX(-1);'}
+    ${({ $flipV }) => $flipV && 'transform: scaleY(-1);'}
   }
 
   &:disabled {

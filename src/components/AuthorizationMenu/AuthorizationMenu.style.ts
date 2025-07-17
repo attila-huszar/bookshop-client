@@ -30,7 +30,7 @@ export const FormChangeLinks = styled.div`
   }
 
   a:hover {
-    color: var(--secondary-color);
+    color: var(--primary-color);
   }
 
   a.active {

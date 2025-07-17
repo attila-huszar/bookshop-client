@@ -1,14 +1,14 @@
 import {
-  homeIcon,
-  bookIcon,
+  HomeIcon,
+  BookIcon,
   facebookIcon,
   googleIcon,
   instagramIcon,
 } from '@/assets/svg'
 
 export const menuLinks = [
-  { path: '/', name: 'Home', key: 'home', icon: homeIcon },
-  { path: '/books', name: 'Shop', key: 'shop', icon: bookIcon },
+  { path: '/', name: 'Home', key: 'home', Icon: HomeIcon },
+  { path: '/books', name: 'Shop', key: 'shop', Icon: BookIcon },
 ]
 
 export const navLinks = [

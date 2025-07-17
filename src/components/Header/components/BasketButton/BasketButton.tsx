@@ -4,6 +4,7 @@ import { Button } from '@/components'
 import { useAppSelector, useCart } from '@/hooks'
 import { orderSelector } from '@/store'
 import { ROUTE } from '@/routes'
+import { CartIcon } from '@/assets/svg'
 
 export function BasketButton() {
   const { order } = useAppSelector(orderSelector)
@@ -19,7 +20,7 @@ export function BasketButton() {
       <Button
         onClick={() => void navigateToCart()}
         $size="smMd"
-        $withCart
+        $icon={<CartIcon />}
         title={order ? 'Checkout' : 'Basket'}>
         {order ? 'Checkout' : 'Basket'}
       </Button>

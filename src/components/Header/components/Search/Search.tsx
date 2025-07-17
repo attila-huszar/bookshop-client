@@ -13,17 +13,11 @@ import {
   ClearButton,
 } from './Search.style'
 import { searchSchema } from '@/helpers'
-import {
-  useDebounce,
-  useClickOutside,
-  useAppDispatch,
-  useAppSelector,
-} from '@/hooks'
+import { useDebounce, useClickOutside, useAppDispatch } from '@/hooks'
 import {
   fetchBooksByAuthor,
   fetchBooksBySearch,
   fetchAuthorsBySearch,
-  authorsSelector,
 } from '@/store'
 import { ROUTE } from '@/routes'
 import type { Author, Book } from '@/types'
@@ -34,7 +28,6 @@ export function Search() {
   const [searchResults, setSearchResults] = useState<Book[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
-  const { authorArray } = useAppSelector(authorsSelector)
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
   const initialValues = { search: '' }
@@ -116,18 +109,6 @@ export function Search() {
     }
   }
 
-  const getAuthorName = (
-    authorNameOrId: string | number,
-    authorArray: Author[],
-  ) => {
-    if (typeof authorNameOrId === 'number') {
-      const author = authorArray?.find((author) => author.id === authorNameOrId)
-      return author ? author.name : 'Unknown Author'
-    }
-
-    return authorNameOrId
-  }
-
   return (
     <StyledForm ref={searchRef}>
       <Formik
@@ -174,9 +155,7 @@ export function Search() {
                             <TextBold>{book.title}</TextBold>
                             <p>
                               <i>by </i>
-                              <span>
-                                {getAuthorName(book.author, authorArray)}
-                              </span>
+                              <span>{book.author}</span>
                             </p>
                           </div>
                           <LinkIcon width="16" height="16" />

@@ -13,7 +13,7 @@ import {
   ButtonWrapper,
 } from './Account.style'
 import { Avatar, Button, FormikField, IconButton } from '@/components'
-import { PasswordDialogRef } from './components/PasswordDialog/PasswordDialog'
+import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
@@ -126,7 +126,7 @@ export function Account() {
                   $textSize="sm">
                   Change Password
                 </Button>
-                <PasswordDialogRef ref={passwordDialog} email={email} />
+                <PasswordDialog ref={passwordDialog} email={email} />
               </AvatarPanel>
               <General>
                 <Formik
@@ -211,12 +211,16 @@ export function Account() {
             <Address>
               <Formik
                 initialValues={{
-                  line1: address?.line1 ?? '',
-                  line2: address?.line2 ?? '',
-                  city: address?.city ?? '',
-                  state: address?.state ?? '',
-                  postal_code: address?.postal_code ?? '',
-                  country: address?.country ?? '',
+                  line1: address && 'line1' in address ? address.line1 : '',
+                  line2: address && 'line2' in address ? address.line2 : '',
+                  city: address && 'city' in address ? address.city : '',
+                  state: address && 'state' in address ? address.state : '',
+                  postal_code:
+                    address && 'postal_code' in address
+                      ? address.postal_code
+                      : '',
+                  country:
+                    address && 'country' in address ? address.country : '',
                 }}
                 enableReinitialize
                 validationSchema={accountAddressSchema}

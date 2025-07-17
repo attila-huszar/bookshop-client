@@ -1,8 +1,7 @@
-import { Navigate, Outlet } from 'react-router'
-import { useAppSelector } from '@/hooks'
+import { Navigate, Outlet, useLoaderData } from 'react-router'
 
 export function ProtectedRoute() {
-  const isAuthenticated = useAppSelector((state) => state.user.accessToken)
+  const isAuthenticated = useLoaderData<boolean>()
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
 }

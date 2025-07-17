@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { Button } from './Button'
 import { type ButtonTypes } from './Button.types'
+import { CartIcon } from '@/assets/svg'
 
 describe('Button', () => {
   const defaultProps: ButtonTypes = {
@@ -16,8 +17,8 @@ describe('Button', () => {
     expect(screen.getByText('Click me')).toBeInTheDocument()
   })
 
-  it('should render with icon when $withCart is true', () => {
-    render(<Button {...defaultProps} $withCart />)
+  it('should render with icon', () => {
+    render(<Button {...defaultProps} $icon={<CartIcon />} />)
     expect(screen.getByRole('img')).toBeInTheDocument()
   })
 

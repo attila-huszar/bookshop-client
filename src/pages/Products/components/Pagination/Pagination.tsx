@@ -68,7 +68,7 @@ export function Pagination() {
         icon={<ChevronLeftIcon />}
         title="Next Page"
         $size="sm"
-        $flipHorizontal
+        $flipH
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
       />
       <IconButton
@@ -81,7 +81,7 @@ export function Pagination() {
         icon={<ChevronLeftEndIcon />}
         title="Last Page"
         $size="sm"
-        $flipHorizontal
+        $flipH
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
       />
     </StyledPagination>

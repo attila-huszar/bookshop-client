@@ -1,0 +1,6 @@
+export { Tabs, type TabValue } from './Tabs/Tabs'
+export { Users } from './Users/Users'
+export { Books } from './Books/Books'
+export { Authors } from './Authors/Authors'
+export { Orders } from './Orders/Orders'
+export { Details } from './Details/Details'

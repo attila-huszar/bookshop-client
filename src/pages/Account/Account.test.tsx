@@ -7,18 +7,25 @@ import { Providers } from '@/setupTests'
 
 vi.mock('@/services', () => ({
   uploadImage: vi.fn(),
-  cloudinaryConfig: {
-    cloudName: 'mockedCloudName',
-  },
 }))
 
 vi.mock('@/store', () => ({
   userSelector: vi.fn(),
   updateUser: vi.fn(),
+  updateAvatar: vi.fn(),
 }))
 
+vi.mock(import('react-hot-toast'), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+  }
+})
+
 describe('Account page', () => {
-  const mockDispatch = vi.fn()
+  const mockDispatch = vi.fn(() =>
+    Promise.resolve({ url: 'mock-avatar-url', meta: {} }),
+  ) as unknown as ReturnType<typeof useAppDispatch>
 
   beforeEach(() => {
     vi.mocked(useAppSelector).mockReturnValue({
