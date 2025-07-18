@@ -5,20 +5,25 @@ import {
   fetchAllOrders,
   fetchAllUsers,
 } from '@/store'
+import { type TabValue } from '@/pages/CMS/components'
 
-export const cmsLoader = () => {
-  const cmsState = store.getState().cms
+export const cmsLoader = (tab: TabValue) => {
+  switch (tab) {
+    case 'orders':
+      void store.dispatch(fetchAllOrders())
+      break
+    case 'books':
+      void store.dispatch(fetchAllBooks())
 
-  if (cmsState.books.length === 0) {
-    void store.dispatch(fetchAllBooks())
-  }
-  if (cmsState.orders.length === 0) {
-    void store.dispatch(fetchAllOrders())
-  }
-  if (cmsState.authors.length === 0) {
-    void store.dispatch(fetchAllAuthors())
-  }
-  if (cmsState.users.length === 0) {
-    void store.dispatch(fetchAllUsers())
+      if (store.getState().cms.authors.length === 0) {
+        void store.dispatch(fetchAllAuthors())
+      }
+      break
+    case 'authors':
+      void store.dispatch(fetchAllAuthors())
+      break
+    case 'users':
+      void store.dispatch(fetchAllUsers())
+      break
   }
 }

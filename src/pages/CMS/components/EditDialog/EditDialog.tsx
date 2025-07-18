@@ -1,29 +1,47 @@
-import { FC } from 'react'
-import { useLocation } from 'react-router'
+import { FC, useEffect } from 'react'
 import { Form, Formik, FormikHelpers, FormikState } from 'formik'
 import { toast } from 'react-hot-toast'
 import {
   FormButtons,
   TitleRow,
   DefaultRow,
-  StyledDetails,
+  StyledEditDialog,
   CheckboxRow,
-} from './Details.style'
+} from './EditDialog.style'
 import { Button, FormikField } from '@/components'
 import { addAuthor, addBook } from '@/store'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { AuthorFormValues, BookFormValues } from '@/types'
+import { bookSchema } from '@/validation'
 import { SpinnerIcon } from '@/assets/svg'
+import { AuthorFormValues, BookFormValues } from '@/types'
 import { initialAuthorValues, initialBookValues } from './initialValues'
 import { CMSContext } from '../../CMS.types'
 
-type Props = { setIsDetailsOpen: (isOpen: boolean) => void }
+type Props = {
+  ref: React.RefObject<HTMLDialogElement | null>
+  isDialogOpen: boolean
+  setIsDialogOpen: (isOpen: boolean) => void
+  activeTab: keyof CMSContext
+}
 
-export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
+export const EditDialog: FC<Props> = ({
+  ref,
+  isDialogOpen,
+  setIsDialogOpen,
+  activeTab,
+}) => {
   const dispatch = useAppDispatch()
-  const location = useLocation()
   const { authors } = useAppSelector((state) => state.cms)
-  const activeTab = location.pathname.split('/').pop() as keyof CMSContext
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      ref.current?.showModal()
+    } else {
+      ref.current?.close()
+    }
+  }, [isDialogOpen, ref])
+
+  if (!isDialogOpen) return null
 
   const actionMap = {
     books: {
@@ -60,6 +78,7 @@ export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
     if (result.meta.requestStatus === 'fulfilled') {
       actions.resetForm()
       toast.success(config.success)
+      setIsDialogOpen(false)
     } else {
       toast.error(config.error)
     }
@@ -69,7 +88,7 @@ export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
     <FormButtons>
       <Button
         type="reset"
-        onClick={() => setIsDetailsOpen(false)}
+        onClick={() => setIsDialogOpen(false)}
         $size="sm"
         $inverted>
         Cancel
@@ -82,11 +101,19 @@ export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
 
   const renderForm = () => {
     switch (activeTab) {
+      case 'orders':
+        return (
+          <div>
+            <p>WIP</p>
+            {renderButtons({ isSubmitting: false })}
+          </div>
+        )
       case 'books':
         return (
           <Formik
             key={activeTab}
             initialValues={initialBookValues}
+            validationSchema={bookSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
@@ -250,14 +277,18 @@ export const Details: FC<Props> = ({ setIsDetailsOpen }) => {
           </Formik>
         )
       case 'users':
-      case 'orders':
         return (
           <div>
             <p>WIP</p>
+            {renderButtons({ isSubmitting: false })}
           </div>
         )
     }
   }
 
-  return <StyledDetails>{renderForm()}</StyledDetails>
+  return (
+    <StyledEditDialog ref={ref} onCancel={() => setIsDialogOpen(false)}>
+      {renderForm()}
+    </StyledEditDialog>
+  )
 }

@@ -5,8 +5,8 @@ import { Button } from '../Button/Button'
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
   isDialogOpen: boolean
+  setIsDialogOpen: (isOpen: boolean) => void
   handleConfirm: () => void
-  handleCancel: () => void
   message: string
   buttonText?: string
   buttonColor?: 'primary' | 'secondary' | 'danger'
@@ -15,8 +15,8 @@ type Props = {
 export const ConfirmDialog: FC<Props> = ({
   ref,
   isDialogOpen,
+  setIsDialogOpen,
   handleConfirm,
-  handleCancel,
   message,
   buttonText = 'OK',
   buttonColor = 'primary',
@@ -32,10 +32,13 @@ export const ConfirmDialog: FC<Props> = ({
   if (!isDialogOpen) return null
 
   return (
-    <StyledConfirmDialog ref={ref} onCancel={handleCancel}>
+    <StyledConfirmDialog ref={ref} onCancel={() => setIsDialogOpen(false)}>
       <p>{message}</p>
       <div>
-        <Button onClick={handleCancel} $color={buttonColor} $inverted>
+        <Button
+          onClick={() => setIsDialogOpen(false)}
+          $color={buttonColor}
+          $inverted>
           Cancel
         </Button>
         <Button onClick={handleConfirm} $color={buttonColor}>

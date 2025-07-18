@@ -31,16 +31,5 @@ export const RightSection = styled.section`
 
 export const BottomSection = styled.section`
   grid-area: 2 / 1 / 3 / 3;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   border-top: 1px #0d08421a solid;
-`
-
-export const NavList = styled.ul`
-  display: flex;
-  flex-wrap: wrap;
-  min-width: 14rem;
-  gap: 2rem;
-  list-style-type: none;
 `

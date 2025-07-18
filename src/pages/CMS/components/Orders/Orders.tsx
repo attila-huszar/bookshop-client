@@ -16,6 +16,10 @@ export const Orders = () => {
     return <Error message="Error loading orders" error={ordersError} />
   }
 
+  if (orders.length === 0) {
+    return <Error message="No orders found" />
+  }
+
   const allSelected =
     orders.length > 0 && selectedItems.orders.length === orders.length
 

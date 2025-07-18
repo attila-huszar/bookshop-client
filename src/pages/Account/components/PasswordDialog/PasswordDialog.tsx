@@ -8,7 +8,7 @@ import { useAppDispatch } from '@/hooks'
 import { updateUser } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { passwordChangeInitialValues } from '@/constants'
-import { accountPasswordSchema } from '@/helpers'
+import { accountPasswordSchema } from '@/validation'
 import { BackIcon } from '@/assets/svg'
 
 type PasswordDialogHandle = {
