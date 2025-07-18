@@ -1,10 +1,10 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error } from '@/components'
+import { Error, IconButton } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { CMSContext } from '../../CMS.types'
-import { imagePlaceholder } from '@/assets/svg'
+import { EditIcon, imagePlaceholder } from '@/assets/svg'
 
 export const Books = () => {
   const { books, booksError } = useAppSelector(cmsBooksSelector)
@@ -55,6 +55,7 @@ export const Books = () => {
             <th>Price</th>
             <th>-%</th>
             <th>Total</th>
+            <th style={{ width: 40, padding: 0 }}></th>
           </tr>
         </thead>
         <tbody>
@@ -112,6 +113,13 @@ export const Books = () => {
                 <td>{book.price}</td>
                 <td>{book.discount}</td>
                 <td>{book.discountPrice}</td>
+                <td style={{ padding: 0 }}>
+                  <IconButton
+                    onClick={() => undefined}
+                    icon={<EditIcon />}
+                    $iconSize="sm"
+                  />
+                </td>
               </tr>
             )
           })}

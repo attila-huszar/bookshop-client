@@ -1,11 +1,15 @@
 import styled from 'styled-components'
 
-export const StyledDetails = styled.div`
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--light-grey);
+export const StyledEditDialog = styled.dialog`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1.125rem 1.5rem;
+  border: none;
   border-radius: 10px;
+  background: var(--white);
+  box-shadow: var(--shadow);
 `
 
 export const FormRow = styled.div`

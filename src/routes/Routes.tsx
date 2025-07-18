@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react'
 import {
+  Navigate,
   RouterProvider,
   createBrowserRouter,
   type RouteObject,
@@ -109,6 +110,10 @@ const routes: RouteObject[] = [
             path: 'users',
             element: <Users />,
             loader: () => cmsLoader('users'),
+          },
+          {
+            path: '*',
+            element: <Navigate to={'/cms/orders'} replace />,
           },
         ],
       },

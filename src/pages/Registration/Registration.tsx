@@ -11,7 +11,7 @@ import {
 } from '@/components'
 import { register } from '@/store'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { registrationSchema } from '@/helpers'
+import { registrationSchema } from '@/validation'
 import { registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'

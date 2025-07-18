@@ -6,7 +6,7 @@ import { StyledPasswordReset } from './PasswordReset.style'
 import { FormikField, Button } from '@/components'
 import { ButtonWrapper } from '@/styles'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
-import { resetPasswordSchema } from '@/helpers'
+import { resetPasswordSchema } from '@/validation'
 import { passwordResetInitialValues } from '@/constants'
 import { handleError } from '@/errors'
 
