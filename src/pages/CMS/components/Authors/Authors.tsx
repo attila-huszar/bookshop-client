@@ -16,6 +16,10 @@ export const Authors = () => {
     return <Error message="Error loading authors" error={authorsError} />
   }
 
+  if (authors.length === 0) {
+    return <Error message="No authors found" />
+  }
+
   const allSelected =
     authors.length > 0 && selectedItems.authors.length === authors.length
 

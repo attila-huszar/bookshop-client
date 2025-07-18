@@ -16,6 +16,10 @@ export const Users = () => {
     return <Error message="Error loading users" error={usersError} />
   }
 
+  if (users.length === 0) {
+    return <Error message="No users found" />
+  }
+
   const allSelected =
     users.length > 0 && selectedItems.users.length === users.length
 
@@ -92,12 +96,14 @@ export const Users = () => {
                 <td>
                   {user.address && Object.values(user.address).join(', ')}
                 </td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   {user.avatar && (
                     <img src={user.avatar} alt="User avatar" height={32} />
                   )}
                 </td>
-                <td>{user.verified ? '✔️' : '❌'}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {user.verified ? '✔️' : '❌'}
+                </td>
                 <td>
                   {new Date(user.createdAt).toLocaleString('hu-HU', {
                     year: '2-digit',

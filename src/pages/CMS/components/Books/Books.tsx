@@ -18,6 +18,10 @@ export const Books = () => {
     return <Error message="Error loading books" error={booksError} />
   }
 
+  if (books.length === 0) {
+    return <Error message="No books found" />
+  }
+
   const allSelected =
     books.length > 0 && selectedItems.books.length === books.length
 
