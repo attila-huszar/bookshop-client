@@ -15,7 +15,7 @@ export const CMS = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const { userData } = useAppSelector((state) => state.user)
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState<boolean>(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
   const [selectedItems, setSelectedItems] = useState<CMSContext>({
     orders: [],
@@ -23,7 +23,7 @@ export const CMS = () => {
     authors: [],
     users: [],
   })
-  const detailsRef = useRef<HTMLDialogElement>(null)
+  const editRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
   const getActiveTab = (pathname: string): keyof CMSContext => {
@@ -55,13 +55,9 @@ export const CMS = () => {
     users: null,
   }
 
-  const checkBeforeDelete = () => {
-    if (selectedItems[activeTab].length === 0) {
-      toast.error('No items selected for deletion')
-      return false
-    }
-    return true
-  }
+  const hasSelectedItems = selectedItems[activeTab].length
+    ? true
+    : (toast.error('No items selected'), false)
 
   const handleConfirmDelete = async () => {
     const action = actionMap[activeTab]
@@ -89,7 +85,7 @@ export const CMS = () => {
       <MainContainer>
         <MenuButtons>
           <Button
-            onClick={() => setIsDetailsDialogOpen((prev) => !prev)}
+            onClick={() => setIsEditDialogOpen(true)}
             $size="smMd"
             $color="secondary"
             type="button">
@@ -97,7 +93,7 @@ export const CMS = () => {
           </Button>
           <Button
             onClick={() => {
-              if (checkBeforeDelete()) setConfirmDialogOpen(true)
+              if (hasSelectedItems) setConfirmDialogOpen(true)
             }}
             $size="smMd"
             $color="danger"
@@ -119,9 +115,9 @@ export const CMS = () => {
         <Outlet context={{ selectedItems, setSelectedItems }} />
       </MainContainer>
       <EditDialog
-        ref={detailsRef}
-        isDialogOpen={isDetailsDialogOpen}
-        setIsDialogOpen={setIsDetailsDialogOpen}
+        ref={editRef}
+        isDialogOpen={isEditDialogOpen}
+        setIsDialogOpen={setIsEditDialogOpen}
         activeTab={activeTab}
       />
       <ConfirmDialog
