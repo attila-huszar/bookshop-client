@@ -11,7 +11,7 @@ import {
 import { Button, FormikField } from '@/components'
 import { addAuthor, addBook } from '@/store'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { bookSchema } from '@/validation'
+import { authorSchema, bookSchema } from '@/validation'
 import { SpinnerIcon } from '@/assets/svg'
 import { AuthorFormValues, BookFormValues } from '@/types'
 import { initialAuthorValues, initialBookValues } from './initialValues'
@@ -218,6 +218,7 @@ export const EditDialog: FC<Props> = ({
           <Formik
             key={activeTab}
             initialValues={initialAuthorValues}
+            validationSchema={authorSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
