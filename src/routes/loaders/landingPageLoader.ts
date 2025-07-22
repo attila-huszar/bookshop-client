@@ -1,13 +1,19 @@
-import {
-  store,
-  fetchBooksByProperty,
-  fetchRecommendedBooks,
-  fetchNews,
-} from '@/store'
+import { store, fetchBooksByProperty, fetchNews } from '@/store'
 
 export const landingPageLoader = () => {
-  void store.dispatch(fetchBooksByProperty('newRelease'))
-  void store.dispatch(fetchBooksByProperty('topSellers'))
-  void store.dispatch(fetchRecommendedBooks(4))
-  void store.dispatch(fetchNews())
+  if (!store.getState().books.booksReleases.length) {
+    void store.dispatch(fetchBooksByProperty('newRelease'))
+  }
+
+  if (!store.getState().books.booksTopSellers.length) {
+    void store.dispatch(fetchBooksByProperty('topSellers'))
+  }
+
+  if (!store.getState().books.booksRecommended.length) {
+    void store.dispatch(fetchBooksByProperty('recommended'))
+  }
+
+  if (!store.getState().news.newsItems.length) {
+    void store.dispatch(fetchNews())
+  }
 }

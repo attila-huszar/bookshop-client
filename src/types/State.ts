@@ -12,13 +12,12 @@ import type {
 } from './'
 
 export type BookState = {
-  booksInShop: Book[]
-  booksViewed: Book[]
+  books: Book[]
   booksTotal: number
   booksCurrentPage: number
   booksPerPage: number
+  booksOnCurrentPage: Book[]
   bookIsLoading: boolean
-  booksAreLoading: boolean
   booksError: string | null
   booksRecommended: Book[]
   booksTopSellers: Book[]
@@ -36,7 +35,7 @@ export type AuthorState = {
 }
 
 export type NewsState = {
-  newsArray: News[]
+  newsItems: News[]
   newsIsLoading: boolean
   newsError: string | null
 }
@@ -53,7 +52,7 @@ export type UserState = {
 }
 
 export type CartState = {
-  cartArray: Cart[]
+  cartItems: Cart[]
   cartIsLoading: boolean
   cartError: string | null
 }

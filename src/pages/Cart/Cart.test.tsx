@@ -19,7 +19,7 @@ vi.mock('@/store', () => ({
 describe('Cart component', () => {
   const mockNavigate = vi.fn()
   const mockDispatch = vi.fn()
-  const mockCartArray = [
+  const mockCartItems = [
     {
       id: 1,
       title: 'Book 1',
@@ -32,7 +32,7 @@ describe('Cart component', () => {
 
   beforeEach(() => {
     vi.mocked(useCart).mockReturnValue({
-      cartArray: mockCartArray,
+      cartItems: mockCartItems,
       addQuantity: vi.fn(),
       removeQuantity: vi.fn(),
     } as unknown as ReturnType<typeof useCart>)
@@ -65,7 +65,7 @@ describe('Cart component', () => {
 
   it('should display empty cart message when cart is empty', async () => {
     vi.mocked(useCart).mockReturnValueOnce({
-      cartArray: [] as CartType[],
+      cartItems: [] as CartType[],
     } as ReturnType<typeof useCart>)
 
     render(<Cart />, { wrapper: Providers })
@@ -95,10 +95,10 @@ describe('Cart component', () => {
     const removeButton = screen.getByTitle('Remove quantity')
 
     await userEvent.click(addButton)
-    expect(addQuantity).toHaveBeenCalledWith(mockCartArray[0])
+    expect(addQuantity).toHaveBeenCalledWith(mockCartItems[0])
 
     await userEvent.click(removeButton)
-    expect(removeQuantity).toHaveBeenCalledWith(mockCartArray[0])
+    expect(removeQuantity).toHaveBeenCalledWith(mockCartItems[0])
   })
 
   it('should handle checkout and dispatch order creation', async () => {

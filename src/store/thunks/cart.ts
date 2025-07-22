@@ -1,12 +1,17 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getBookById } from '@/api'
-import type { Book, CartLocalStorage } from '@/types'
+import { RootState } from '../store'
+import { fetchBookById } from './books'
+import type { CartLocalStorage } from '@/types'
 
 export const fetchCartItems = createAsyncThunk(
   'cart/fetchCartItems',
-  async (cartArray: CartLocalStorage[]) => {
-    const promises = cartArray.map(async (item) => {
-      const book: Book = await getBookById(item.id)
+  async (cartItems: CartLocalStorage[], listenerApi) => {
+    const state = listenerApi.getState() as RootState
+
+    const promises = cartItems.map(async (item) => {
+      const book =
+        state.books.books.find((book) => book.id === item.id) ??
+        (await listenerApi.dispatch(fetchBookById(item.id)).unwrap())
 
       const {
         author,

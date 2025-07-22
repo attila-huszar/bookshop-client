@@ -14,7 +14,7 @@ describe('BasketButton', () => {
     })
 
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [
+      cartItems: [
         {
           id: 1,
           title: 'Book 1',
@@ -57,7 +57,7 @@ describe('BasketButton', () => {
 
   it('should not display item count if the cart is empty', () => {
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [],
+      cartItems: [],
       addToCart: vi.fn(),
       removeFromCart: vi.fn(),
       addQuantity: vi.fn(),

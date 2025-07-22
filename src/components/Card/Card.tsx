@@ -8,8 +8,8 @@ import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Card({ book }: { book: Book }) {
   const navigate = useNavigate()
-  const { cartArray, addToCart } = useCart()
-  const isBookInCart = cartArray.some((item) => item.id === book.id)
+  const { cartItems, addToCart } = useCart()
+  const isBookInCart = cartItems.some((item) => item.id === book.id)
 
   const handleCartAction = async () => {
     if (isBookInCart) {

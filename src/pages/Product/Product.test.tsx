@@ -38,7 +38,7 @@ describe('Product Page', () => {
     vi.mocked(useParams).mockReturnValue({ id: '1' })
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [],
+      cartItems: [],
     } as unknown as ReturnType<typeof useCart>)
   })
 

@@ -55,9 +55,13 @@ export const CMS = () => {
     users: null,
   }
 
-  const hasSelectedItems = selectedItems[activeTab].length
-    ? true
-    : (toast.error('No items selected'), false)
+  const handleDeleteClick = () => {
+    if (!selectedItems[activeTab].length) {
+      toast.error('No items selected')
+      return
+    }
+    setConfirmDialogOpen(true)
+  }
 
   const handleConfirmDelete = async () => {
     const action = actionMap[activeTab]
@@ -92,9 +96,7 @@ export const CMS = () => {
             Add
           </Button>
           <Button
-            onClick={() => {
-              if (hasSelectedItems) setConfirmDialogOpen(true)
-            }}
+            onClick={handleDeleteClick}
             $size="smMd"
             $color="danger"
             type="button">

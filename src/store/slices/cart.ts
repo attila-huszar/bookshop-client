@@ -3,7 +3,7 @@ import { fetchCartItems } from '../thunks/cart'
 import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
-  cartArray: [],
+  cartItems: [],
   cartIsLoading: false,
   cartError: null,
 }
@@ -23,47 +23,47 @@ const cartSlice = createSlice({
         imgUrl,
       }
 
-      const existingItemIdx = state.cartArray.findIndex(
+      const existingItemIdx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
       if (existingItemIdx === -1) {
-        state.cartArray = [...state.cartArray, cartItem]
+        state.cartItems = [...state.cartItems, cartItem]
       }
     },
     cartClear: (state) => {
-      state.cartArray = []
+      state.cartItems = []
       state.cartIsLoading = false
       state.cartError = null
     },
     cartRemove: (state, action: PayloadAction<Cart>) => {
-      state.cartArray = state.cartArray.filter(
+      state.cartItems = state.cartItems.filter(
         (item) => item.id !== action.payload.id,
       )
     },
     cartQuantityAdd: (state, action: PayloadAction<Cart>) => {
-      const itemIdx = state.cartArray.findIndex(
+      const itemIdx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartArray[itemIdx].quantity < 50) {
-        state.cartArray[itemIdx].quantity++
+      if (itemIdx !== -1 && state.cartItems[itemIdx].quantity < 50) {
+        state.cartItems[itemIdx].quantity++
       }
     },
     cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
-      const itemIdx = state.cartArray.findIndex(
+      const itemIdx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartArray[itemIdx].quantity > 1) {
-        state.cartArray[itemIdx].quantity--
+      if (itemIdx !== -1 && state.cartItems[itemIdx].quantity > 1) {
+        state.cartItems[itemIdx].quantity--
       }
     },
     cartQuantitySet: (
       state,
       action: PayloadAction<{ cartItem: Cart; newQuantity: number }>,
     ) => {
-      const itemIdx = state.cartArray.findIndex(
+      const itemIdx = state.cartItems.findIndex(
         (item) => item.id === action.payload.cartItem.id,
       )
 
@@ -72,7 +72,7 @@ const cartSlice = createSlice({
         action.payload.newQuantity >= 1 &&
         action.payload.newQuantity <= 50
       ) {
-        state.cartArray[itemIdx].quantity = action.payload.newQuantity
+        state.cartItems[itemIdx].quantity = action.payload.newQuantity
       }
     },
   },
@@ -82,7 +82,7 @@ const cartSlice = createSlice({
         state.cartIsLoading = true
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
-        state.cartArray = action.payload
+        state.cartItems = action.payload
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {

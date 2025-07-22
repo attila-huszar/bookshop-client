@@ -74,21 +74,36 @@ export const fetchBooksByAuthor = createAsyncThunk(
 
 export const fetchBooksByProperty = createAsyncThunk(
   'books/fetchBooksByProperty',
-  getBooksByProperty,
+  async (
+    property: 'newRelease' | 'topSellers' | 'recommended',
+    listenerApi,
+  ) => {
+    if (property === 'recommended') {
+      const result = await listenerApi
+        .dispatch(fetchRecommendedBooks(4))
+        .unwrap()
+      return result
+    }
+
+    return getBooksByProperty(property)
+  },
 )
 
-export const fetchRecommendedBooks = createAsyncThunk(
+const fetchRecommendedBooks = createAsyncThunk(
   'books/fetchRecommendedBooks',
-  async (count: number, { getState }) => {
-    const state = getState() as RootState
-    const totalBooks: number = state.books.booksTotal
+  async (count: number, listenerApi) => {
+    const state = listenerApi.getState() as RootState
+    const totalBooks = state.books.booksTotal
     const randomBooks: Book[] = []
     const randomIdxs = generateUniqueRndNums(count, totalBooks)
 
     for (const idx of randomIdxs) {
-      const book = await getBookById(idx)
-      if (book) {
-        randomBooks.push(book)
+      const existingBook = state.books.books.find((book) => book.id === idx)
+      if (existingBook) {
+        randomBooks.push(existingBook)
+      } else {
+        const book = await getBookById(idx)
+        if (book) randomBooks.push(book)
       }
     }
     return randomBooks

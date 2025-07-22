@@ -21,7 +21,7 @@ describe('Card', () => {
 
   it('should render book details correctly', () => {
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [],
+      cartItems: [],
       addToCart: mockAddToCart,
     } as unknown as ReturnType<typeof useCart>)
 
@@ -38,7 +38,7 @@ describe('Card', () => {
 
   it('should call addToCart when the book is not in the cart', async () => {
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [],
+      cartItems: [],
       addToCart: mockAddToCart,
     } as unknown as ReturnType<typeof useCart>)
 
@@ -58,7 +58,7 @@ describe('Card', () => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
 
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [mockBook],
+      cartItems: [mockBook],
       addToCart: mockAddToCart,
     } as unknown as ReturnType<typeof useCart>)
 

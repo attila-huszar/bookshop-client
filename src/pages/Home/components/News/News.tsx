@@ -5,13 +5,13 @@ import { newsSelector } from '@/store'
 import { SwiperComponent } from '@/components'
 
 export function News() {
-  const { newsArray } = useAppSelector(newsSelector)
+  const { newsItems } = useAppSelector(newsSelector)
 
   return (
     <StyledNews>
       <h2>News</h2>
       <SwiperComponent>
-        {newsArray.map((newsItem) => (
+        {newsItems.map((newsItem) => (
           <NewsCard key={newsItem.id} {...newsItem} />
         ))}
       </SwiperComponent>

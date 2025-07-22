@@ -6,18 +6,17 @@ import {
   fetchBooksByProperty,
   fetchBooksBySearch,
   fetchBookSearchOptions,
-  fetchRecommendedBooks,
 } from '../thunks/books'
-import type { Book, BookState, FilterProps } from '@/types'
+import { addBooksToCache } from '../utils'
+import type { BookState, FilterProps } from '@/types'
 
 const initialState: BookState = {
-  booksInShop: [],
-  booksViewed: [],
+  books: [],
   booksTotal: 0,
   booksCurrentPage: 1,
   booksPerPage: 8,
+  booksOnCurrentPage: [],
   bookIsLoading: false,
-  booksAreLoading: false,
   booksError: null,
   booksFilters: {
     initial: {
@@ -101,47 +100,25 @@ const booksSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const handleViewedBooks = (
-      state: BookState,
-      action: PayloadAction<Book[]>,
-    ) => {
-      action.payload.forEach((newBook) => {
-        if (
-          !state.booksViewed.some(
-            (existingBook) => existingBook.id === newBook.id,
-          )
-        ) {
-          state.booksViewed.push(newBook)
-        }
-      })
-    }
-
     builder
       .addCase(fetchBooks.pending, (state) => {
         state.booksError = null
-        state.booksAreLoading = true
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
-        state.booksInShop = action.payload.books
+        addBooksToCache(state, action.payload.books)
+        state.booksOnCurrentPage = action.payload.books
         state.booksTotal = action.payload.total
         state.booksError = null
-        state.booksAreLoading = false
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.booksError = action.error.message ?? 'Failed to fetch books'
-        state.booksAreLoading = false
       })
       .addCase(fetchBookById.pending, (state) => {
         state.booksError = null
         state.bookIsLoading = true
       })
       .addCase(fetchBookById.fulfilled, (state, action) => {
-        const bookExists = state.booksViewed.some(
-          (book) => book.id === action.payload?.id,
-        )
-        if (!bookExists && action.payload) {
-          state.booksViewed.push(action.payload)
-        }
+        addBooksToCache(state, action.payload)
         state.booksError = null
         state.bookIsLoading = false
       })
@@ -150,16 +127,19 @@ const booksSlice = createSlice({
         state.bookIsLoading = false
       })
       .addCase(fetchBooksByProperty.fulfilled, (state, action) => {
-        if (action.meta.arg === 'topSellers') {
+        addBooksToCache(state, action.payload)
+        if (action.meta.arg === 'topSellers')
           state.booksTopSellers = action.payload
-        } else if (action.meta.arg === 'newRelease') {
+        if (action.meta.arg === 'newRelease')
           state.booksReleases = action.payload
-        }
+        if (action.meta.arg === 'recommended')
+          state.booksRecommended = action.payload
       })
-      .addCase(fetchBooksBySearch.fulfilled, handleViewedBooks)
-      .addCase(fetchBooksByAuthor.fulfilled, handleViewedBooks)
-      .addCase(fetchRecommendedBooks.fulfilled, (state, action) => {
-        state.booksRecommended = action.payload
+      .addCase(fetchBooksBySearch.fulfilled, (state, action) => {
+        addBooksToCache(state, action.payload)
+      })
+      .addCase(fetchBooksByAuthor.fulfilled, (state, action) => {
+        addBooksToCache(state, action.payload)
       })
       .addCase(fetchBookSearchOptions.fulfilled, (state, action) => {
         state.booksFilters.initial = {

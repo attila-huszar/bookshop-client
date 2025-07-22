@@ -11,7 +11,7 @@ import type { Book, Cart } from '@/types'
 
 export function useCart() {
   const dispatch = useAppDispatch()
-  const { cartArray } = useAppSelector(cartSelector)
+  const { cartItems } = useAppSelector(cartSelector)
   const addToCart = (payload: Book) => dispatch(cartAdd(payload))
   const removeFromCart = (payload: Cart) => dispatch(cartRemove(payload))
   const addQuantity = (payload: Cart) => dispatch(cartQuantityAdd(payload))
@@ -21,7 +21,7 @@ export function useCart() {
     dispatch(cartQuantitySet(payload))
 
   return {
-    cartArray,
+    cartItems,
     addToCart,
     removeFromCart,
     addQuantity,

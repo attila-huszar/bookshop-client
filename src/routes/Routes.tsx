@@ -29,6 +29,7 @@ import {
   shopLoader,
   cartLoader,
   cmsLoader,
+  productLoader,
 } from './loaders'
 
 const Layout = lazy(() =>
@@ -41,11 +42,7 @@ const routes: RouteObject[] = [
   {
     path: ROUTE.HOME,
     errorElement: <Error fullScreen />,
-    loader: () => {
-      void authLoader()
-      cartLoader()
-    },
-
+    loader: authLoader,
     hydrateFallbackElement: <Loading fullScreen />,
     element: (
       <ErrorBoundary fallback={<Error fullScreen />}>
@@ -57,8 +54,12 @@ const routes: RouteObject[] = [
     children: [
       { index: true, element: <Home />, loader: landingPageLoader },
       { path: ROUTE.BOOKS, element: <Products />, loader: shopLoader },
-      { path: ROUTE.BOOK, element: <Product /> },
-      { path: ROUTE.CART, element: <Cart /> },
+      {
+        path: ROUTE.BOOK,
+        element: <Product />,
+        loader: ({ request }) => productLoader(request),
+      },
+      { path: ROUTE.CART, element: <Cart />, loader: cartLoader },
       { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
       {

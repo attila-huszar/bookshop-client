@@ -10,30 +10,23 @@ import {
   Description,
   ButtonWrapper,
 } from './Product.style'
-import { useAppSelector, useAppDispatch, useCart } from '@/hooks'
-import { fetchBookById, bookByIdSelector } from '@/store'
+import { useAppSelector, useCart } from '@/hooks'
+import { booksSelector } from '@/store'
 import { Button, Error, Price, Recommended } from '@/components'
 import { ROUTE } from '@/routes'
 import type { Book } from '@/types'
 import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Product() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const id = searchParams.get('id')
-  const { cartArray, addToCart } = useCart()
-  const navigate = useNavigate()
-  const dispatch = useAppDispatch()
+  const { cartItems, addToCart } = useCart()
 
-  const book: Book | null = useAppSelector(bookByIdSelector(id))
-  const booksError = useAppSelector((state) => state.books.booksError)
+  const { books, booksError } = useAppSelector(booksSelector)
 
-  const isBookInCart = cartArray.some((item) => item.id === book?.id)
-
-  useEffect(() => {
-    if (!book && id) {
-      void dispatch(fetchBookById(Number(id)))
-    }
-  }, [book, dispatch, id])
+  const book = books.find((book) => book.id === Number(id))
+  const isBookInCart = cartItems.some((item) => item.id === book?.id)
 
   useEffect(() => {
     window.scrollTo(0, 0)
