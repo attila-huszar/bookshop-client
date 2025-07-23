@@ -6,9 +6,9 @@ import type {
   FilterProps,
   User,
   OrderInStore,
-  BookResponse,
-  UserResponse,
-  OrderResponse,
+  BookInDB,
+  UserInDB,
+  OrderInDB,
 } from './'
 
 export type BookState = {
@@ -65,10 +65,10 @@ export type OrderState = {
 }
 
 export type CMSState = {
-  users: UserResponse[]
+  users: UserInDB[]
   usersIsLoading: boolean
   usersError: string | null
-  books: BookResponse[]
+  books: BookInDB[]
   booksIsLoading: boolean
   booksError: string | null
   authors: Author[]
@@ -77,7 +77,7 @@ export type CMSState = {
   news: News[]
   newsIsLoading: boolean
   newsError: string | null
-  orders: OrderResponse[]
+  orders: OrderInDB[]
   ordersIsLoading: boolean
   ordersError: string | null
 }

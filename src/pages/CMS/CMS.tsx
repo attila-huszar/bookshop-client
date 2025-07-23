@@ -6,9 +6,17 @@ import { Button, ConfirmDialog, ExtraSpace } from '@/components'
 import { EditDialog, Tabs } from './components'
 import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { CMSContext } from './CMS.types'
+import { SelectContext } from './CMS.types'
 import { LogoutIcon } from '@/assets/svg'
 import { AppDispatch, delBooks, RootState } from '@/store'
+import { BookInDB, Author, Order, User } from '@/types'
+
+const noneSelected: SelectContext = {
+  orders: [],
+  books: [],
+  authors: [],
+  users: [],
+}
 
 export const CMS = () => {
   const navigate = useNavigate()
@@ -17,16 +25,15 @@ export const CMS = () => {
   const { userData } = useAppSelector((state) => state.user)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
-  const [selectedItems, setSelectedItems] = useState<CMSContext>({
-    orders: [],
-    books: [],
-    authors: [],
-    users: [],
-  })
+  const [selectedItems, setSelectedItems] =
+    useState<SelectContext>(noneSelected)
+  const [editedItem, setEditedItem] = useState<
+    BookInDB | Author | Order | User | null
+  >(null)
   const editRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
-  const getActiveTab = (pathname: string): keyof CMSContext => {
+  const getActiveTab = (pathname: string): keyof SelectContext => {
     const tab = pathname.split('/').pop()
     switch (tab) {
       case 'orders':
@@ -42,7 +49,7 @@ export const CMS = () => {
   const activeTab = getActiveTab(location.pathname)
 
   const actionMap: Record<
-    keyof CMSContext,
+    keyof SelectContext,
     AsyncThunkAction<
       unknown,
       unknown,
@@ -57,7 +64,10 @@ export const CMS = () => {
 
   const handleDeleteClick = () => {
     if (!selectedItems[activeTab].length) {
-      toast.error('No items selected')
+      toast('No items selected', {
+        icon: '⚠️',
+        style: { backgroundColor: 'var(--secondary-hover)' },
+      })
       return
     }
     setConfirmDialogOpen(true)
@@ -114,13 +124,23 @@ export const CMS = () => {
           </Button>
         </MenuButtons>
         <Tabs />
-        <Outlet context={{ selectedItems, setSelectedItems }} />
+        <Outlet
+          context={{
+            selectedItems,
+            setSelectedItems,
+            setIsEditDialogOpen,
+            editedItem,
+            setEditedItem,
+          }}
+        />
       </MainContainer>
       <EditDialog
         ref={editRef}
         isDialogOpen={isEditDialogOpen}
         setIsDialogOpen={setIsEditDialogOpen}
         activeTab={activeTab}
+        editedItem={editedItem}
+        setEditedItem={setEditedItem}
       />
       <ConfirmDialog
         ref={confirmRef}

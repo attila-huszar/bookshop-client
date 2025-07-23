@@ -3,15 +3,25 @@ import { StyledTable } from '../Tabs/Tabs.style'
 import { Error, IconButton } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
-import { CMSContext } from '../../CMS.types'
+import { SelectContext } from '../../CMS.types'
+import { Author, BookInDB, Order, User } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
 
 export const Books = () => {
   const { books, booksError } = useAppSelector(cmsBooksSelector)
   const { authors } = useAppSelector(cmsAuthorsSelector)
-  const { selectedItems, setSelectedItems } = useOutletContext<{
-    selectedItems: CMSContext
-    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  const {
+    selectedItems,
+    setSelectedItems,
+    setIsEditDialogOpen,
+    setEditedItem,
+  } = useOutletContext<{
+    selectedItems: SelectContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
+    setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
+    setEditedItem: React.Dispatch<
+      React.SetStateAction<BookInDB | Author | Order | User | null>
+    >
   }>()
 
   if (booksError) {
@@ -115,7 +125,11 @@ export const Books = () => {
                 <td>{book.discountPrice}</td>
                 <td style={{ padding: 0 }}>
                   <IconButton
-                    onClick={() => undefined}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsEditDialogOpen(true)
+                      setEditedItem(book)
+                    }}
                     icon={<EditIcon />}
                     $iconSize="sm"
                   />

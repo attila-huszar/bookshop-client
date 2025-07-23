@@ -1,15 +1,26 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error } from '@/components'
+import { Error, IconButton } from '@/components'
 import { cmsAuthorsSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
-import { CMSContext } from '../../CMS.types'
+import { SelectContext } from '../../CMS.types'
+import { EditIcon } from '@/assets/svg'
+import { BookInDB, Author, Order, User } from '@/types'
 
 export const Authors = () => {
   const { authors, authorsError } = useAppSelector(cmsAuthorsSelector)
-  const { selectedItems, setSelectedItems } = useOutletContext<{
-    selectedItems: CMSContext
-    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  const {
+    selectedItems,
+    setSelectedItems,
+    setIsEditDialogOpen,
+    setEditedItem,
+  } = useOutletContext<{
+    selectedItems: SelectContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
+    setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
+    setEditedItem: React.Dispatch<
+      React.SetStateAction<BookInDB | Author | Order | User | null>
+    >
   }>()
 
   if (authorsError) {
@@ -51,6 +62,7 @@ export const Authors = () => {
             <th>Death</th>
             <th>Born</th>
             <th>Biography</th>
+            <th style={{ width: 40, padding: 0 }}></th>
           </tr>
         </thead>
         <tbody>
@@ -89,6 +101,17 @@ export const Authors = () => {
               <td>{author.deathYear}</td>
               <td>{author.homeland}</td>
               <td>{author.biography}</td>
+              <td style={{ padding: 0 }}>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsEditDialogOpen(true)
+                    setEditedItem(author)
+                  }}
+                  icon={<EditIcon />}
+                  $iconSize="sm"
+                />
+              </td>
             </tr>
           ))}
         </tbody>

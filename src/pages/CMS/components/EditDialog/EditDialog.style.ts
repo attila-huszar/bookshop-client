@@ -5,6 +5,9 @@ export const StyledEditDialog = styled.dialog`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 80%;
+  min-width: 40rem;
+  max-width: 100rem;
   padding: 1.125rem 1.5rem;
   border: none;
   border-radius: 10px;
@@ -48,6 +51,16 @@ export const TitleRow = styled(FormRow)`
   }
 `
 
+export const ItemRow = styled(FormRow)`
+  > div:not(:first-child) {
+    flex-grow: 1;
+  }
+
+  > div:first-child {
+    width: 5rem;
+  }
+`
+
 export const CheckboxRow = styled(FormRow)`
   > :not(:first-child) {
     align-content: center;
@@ -62,4 +75,31 @@ export const FormButtons = styled.div`
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+`
+
+export const AddressBlock = styled.div`
+  padding: 0.25rem 0.5rem 0;
+  border: 1px solid var(--light-grey);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+
+  > p {
+    margin-bottom: 0.5rem;
+  }
+`
+
+export const ItemBlock = styled.div`
+  padding: 0.25rem 0.5rem 0;
+  border: 1px solid var(--light-grey);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+
+  > p {
+    margin-bottom: 0.5rem;
+  }
+
+  > div:not(:last-child) {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--light-grey);
+  }
 `

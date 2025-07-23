@@ -7,21 +7,47 @@ import {
   DefaultRow,
   StyledEditDialog,
   CheckboxRow,
+  AddressBlock,
+  ItemBlock,
+  ItemRow,
 } from './EditDialog.style'
 import { Button, FormikField } from '@/components'
 import { addAuthor, addBook } from '@/store'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { authorSchema, bookSchema } from '@/validation'
+import { authorSchema, bookSchema, userSchema } from '@/validation'
+import {
+  initialAuthorValues,
+  initialBookValues,
+  initialOrderValues,
+  initialUserValues,
+} from './initialValues'
+import {
+  Author,
+  AuthorFormValues,
+  BookFormValues,
+  BookInDB,
+  Order,
+  OrderFormValues,
+  User,
+  UserFormValues,
+} from '@/types'
+import { SelectContext } from '@/pages/CMS/CMS.types'
 import { SpinnerIcon } from '@/assets/svg'
-import { AuthorFormValues, BookFormValues } from '@/types'
-import { initialAuthorValues, initialBookValues } from './initialValues'
-import { CMSContext } from '../../CMS.types'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
   isDialogOpen: boolean
   setIsDialogOpen: (isOpen: boolean) => void
-  activeTab: keyof CMSContext
+  activeTab: keyof SelectContext
+  editedItem:
+    | BookFormValues
+    | AuthorFormValues
+    | OrderFormValues
+    | UserFormValues
+    | null
+  setEditedItem: React.Dispatch<
+    React.SetStateAction<BookInDB | Author | Order | User | null>
+  >
 }
 
 export const EditDialog: FC<Props> = ({
@@ -29,6 +55,8 @@ export const EditDialog: FC<Props> = ({
   isDialogOpen,
   setIsDialogOpen,
   activeTab,
+  editedItem,
+  setEditedItem,
 }) => {
   const dispatch = useAppDispatch()
   const { authors } = useAppSelector((state) => state.cms)
@@ -45,42 +73,91 @@ export const EditDialog: FC<Props> = ({
 
   const actionMap = {
     books: {
-      action: addBook,
-      success: 'Book added successfully',
-      error: 'Failed to add book',
+      action: editedItem ? null : addBook, //TODO: Implement book edit action
+      success: `Book ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} book`,
     },
     authors: {
-      action: addAuthor,
-      success: 'Author added successfully',
-      error: 'Failed to add author',
+      action: editedItem ? null : addAuthor, //TODO: Implement author edit action
+      success: `Author ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} author`,
+    },
+    orders: {
+      action: null, //TODO: Implement order actions
+      success: 'Order updated successfully',
+      error: 'Failed to update order',
+    },
+    users: {
+      action: null, //TODO: Implement user actions
+      success: 'User updated successfully',
+      error: 'Failed to update user',
     },
   }
 
-  const handleSubmit = async <T extends BookFormValues | AuthorFormValues>(
-    values: T,
-    actions: FormikHelpers<T>,
+  const initialValuesMap = {
+    books: editedItem ?? initialBookValues,
+    authors: editedItem ?? initialAuthorValues,
+    orders: editedItem ?? initialOrderValues,
+    users: editedItem ?? initialUserValues,
+  }
+
+  const handleSubmit = async (
+    values:
+      | BookFormValues
+      | AuthorFormValues
+      | OrderFormValues
+      | UserFormValues,
+    actions: FormikHelpers<
+      BookFormValues | AuthorFormValues | OrderFormValues | UserFormValues
+    >,
   ) => {
-    const config = actionMap[activeTab as keyof typeof actionMap]
-    if (!config) return
+    try {
+      let result
+      const config = actionMap[activeTab]
 
-    let submitValues = values
-
-    if ('authorId' in values) {
-      submitValues = {
-        ...values,
-        authorId: Number(values.authorId),
+      if (!config.action) {
+        toast('Action not implemented yet', {
+          icon: '🥺',
+          style: { backgroundColor: 'var(--secondary-hover)' },
+        })
+        return
       }
-    }
 
-    //@ts-expect-error Redux thunk expects a specific type
-    const result = await dispatch(config.action(submitValues))
+      switch (activeTab) {
+        case 'books': {
+          const bookValues = values as BookFormValues
+          const submitValues = {
+            ...bookValues,
+            authorId: Number(bookValues.authorId),
+          }
+          //@ts-expect-error Union type handling
+          result = await dispatch(config.action(submitValues))
+          break
+        }
+        case 'authors': {
+          const authorValues = values as AuthorFormValues
+          //@ts-expect-error Union type handling
+          result = await dispatch(config.action(authorValues))
+          break
+        }
+        case 'orders':
+        case 'users':
+        default:
+          return
+      }
 
-    if (result.meta.requestStatus === 'fulfilled') {
-      actions.resetForm()
-      toast.success(config.success)
-      setIsDialogOpen(false)
-    } else {
-      toast.error(config.error)
+      if (result?.meta?.requestStatus === 'fulfilled') {
+        actions.resetForm()
+        toast.success(config.success)
+        setIsDialogOpen(false)
+        setEditedItem(null)
+      } else {
+        toast.error(config.error)
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      )
     }
   }
 
@@ -88,7 +165,10 @@ export const EditDialog: FC<Props> = ({
     <FormButtons>
       <Button
         type="reset"
-        onClick={() => setIsDialogOpen(false)}
+        onClick={() => {
+          setIsDialogOpen(false)
+          setEditedItem(null)
+        }}
         $size="sm"
         $inverted>
         Cancel
@@ -99,20 +179,217 @@ export const EditDialog: FC<Props> = ({
     </FormButtons>
   )
 
+  const renderAddressBlock = () => (
+    <AddressBlock>
+      <p>Address</p>
+      <DefaultRow>
+        <div>
+          <p>Line 1</p>
+          <FormikField name="address.line1" placeholder="Line 1" type="text" />
+        </div>
+        <div>
+          <p>Line 2</p>
+          <FormikField name="address.line2" placeholder="Line 2" type="text" />
+        </div>
+      </DefaultRow>
+      <DefaultRow>
+        <div>
+          <p>City</p>
+          <FormikField name="address.city" placeholder="City" type="text" />
+        </div>
+        <div>
+          <p>State</p>
+          <FormikField name="address.state" placeholder="State" type="text" />
+        </div>
+      </DefaultRow>
+      <DefaultRow>
+        <div>
+          <p>Postal Code</p>
+          <FormikField
+            name="address.postal_code"
+            placeholder="Postal Code"
+            type="text"
+          />
+        </div>
+        <div>
+          <p>Country</p>
+          <FormikField
+            name="address.country"
+            placeholder="Country"
+            type="text"
+          />
+        </div>
+      </DefaultRow>
+    </AddressBlock>
+  )
+
+  const renderItemBlock = () => {
+    if (!editedItem || !('items' in editedItem)) {
+      return null
+    }
+
+    return (
+      <ItemBlock>
+        <p>Items</p>
+        {editedItem.items.map((item, idx) => (
+          <div key={item.id}>
+            <ItemRow>
+              <div>
+                <p>ID</p>
+                <FormikField
+                  name={`items.${idx}.id`}
+                  placeholder="ID"
+                  type="number"
+                />
+              </div>
+              <div>
+                <p>Author</p>
+                <FormikField
+                  name={`items.${idx}.author`}
+                  placeholder="Author"
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>Title</p>
+                <FormikField
+                  name={`items.${idx}.title`}
+                  placeholder="Title"
+                  type="text"
+                />
+              </div>
+            </ItemRow>
+            <DefaultRow>
+              <div>
+                <p>Price</p>
+                <FormikField
+                  name={`items.${idx}.price`}
+                  placeholder="Price"
+                  type="number"
+                />
+              </div>
+              <div>
+                <p>Discount</p>
+                <FormikField
+                  name={`items.${idx}.discount`}
+                  placeholder="Discount"
+                  type="number"
+                />
+              </div>
+              <div>
+                <p>Quantity</p>
+                <FormikField
+                  name={`items.${idx}.quantity`}
+                  placeholder="Quantity"
+                  type="number"
+                />
+              </div>
+            </DefaultRow>
+          </div>
+        ))}
+      </ItemBlock>
+    )
+  }
+
   const renderForm = () => {
     switch (activeTab) {
       case 'orders':
         return (
-          <div>
-            <p>WIP</p>
-            {renderButtons({ isSubmitting: false })}
-          </div>
+          <Formik
+            key={activeTab}
+            initialValues={initialValuesMap[activeTab]}
+            //validationSchema={orderSchema}
+            onSubmit={handleSubmit}>
+            {({ isSubmitting }) => (
+              <Form>
+                <DefaultRow>
+                  <div>
+                    <p>Payment ID</p>
+                    <FormikField
+                      name="paymentId"
+                      placeholder="Payment ID"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Payment Status</p>
+                    <FormikField
+                      name="paymentIntentStatus"
+                      placeholder="Payment Status"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Order Status</p>
+                    <FormikField
+                      name="orderStatus"
+                      placeholder="Order Status"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                <DefaultRow>
+                  <div>
+                    <p>First Name</p>
+                    <FormikField
+                      name="firstName"
+                      placeholder="First Name"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Last Name</p>
+                    <FormikField
+                      name="lastName"
+                      placeholder="Last Name"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                <DefaultRow>
+                  <div>
+                    <p>Email</p>
+                    <FormikField
+                      name="email"
+                      placeholder="Email"
+                      type="email"
+                    />
+                  </div>
+                  <div>
+                    <p>Phone</p>
+                    <FormikField name="phone" placeholder="Phone" type="text" />
+                  </div>
+                </DefaultRow>
+                {renderAddressBlock()}
+                {renderItemBlock()}
+                <DefaultRow>
+                  <div>
+                    <p>Total</p>
+                    <FormikField
+                      name="total"
+                      placeholder="Total"
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <p>Currency</p>
+                    <FormikField
+                      name="currency"
+                      placeholder="Currency"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                {renderButtons({ isSubmitting })}
+              </Form>
+            )}
+          </Formik>
         )
       case 'books':
         return (
           <Formik
             key={activeTab}
-            initialValues={initialBookValues}
+            initialValues={initialValuesMap[activeTab]}
             validationSchema={bookSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
@@ -204,9 +481,9 @@ export const EditDialog: FC<Props> = ({
                     />
                   </div>
                   <p>Top Sellers</p>
-                  <FormikField name="topSellers" type="checkbox" />
+                  <FormikField type="checkbox" name="topSellers" />
                   <p>New Release</p>
-                  <FormikField name="newRelease" type="checkbox" />
+                  <FormikField type="checkbox" name="newRelease" />
                 </CheckboxRow>
                 {renderButtons({ isSubmitting })}
               </Form>
@@ -217,7 +494,7 @@ export const EditDialog: FC<Props> = ({
         return (
           <Formik
             key={activeTab}
-            initialValues={initialAuthorValues}
+            initialValues={initialValuesMap[activeTab]}
             validationSchema={authorSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
@@ -279,10 +556,64 @@ export const EditDialog: FC<Props> = ({
         )
       case 'users':
         return (
-          <div>
-            <p>WIP</p>
-            {renderButtons({ isSubmitting: false })}
-          </div>
+          <Formik
+            key={activeTab}
+            initialValues={initialValuesMap[activeTab]}
+            validationSchema={userSchema}
+            onSubmit={handleSubmit}>
+            {({ isSubmitting }) => (
+              <Form>
+                <DefaultRow>
+                  <div>
+                    <p>First Name</p>
+                    <FormikField
+                      name="firstName"
+                      placeholder="First Name"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Last Name</p>
+                    <FormikField
+                      name="lastName"
+                      placeholder="Last Name"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                <DefaultRow>
+                  <div>
+                    <p>Email</p>
+                    <FormikField
+                      name="email"
+                      placeholder="Email"
+                      type="email"
+                    />
+                  </div>
+                  <div>
+                    <p>Role</p>
+                    <FormikField name="role" placeholder="Role" type="text" />
+                  </div>
+                </DefaultRow>
+                <DefaultRow>
+                  <div>
+                    <p>Phone</p>
+                    <FormikField name="phone" placeholder="Phone" type="text" />
+                  </div>
+                  <div>
+                    <p>Avatar URL</p>
+                    <FormikField
+                      name="avatar"
+                      placeholder="Avatar URL"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                {renderAddressBlock()}
+                {renderButtons({ isSubmitting })}
+              </Form>
+            )}
+          </Formik>
         )
     }
   }

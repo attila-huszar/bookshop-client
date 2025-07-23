@@ -91,6 +91,10 @@ export function FormikField({
     )
   }
 
+  if (type === 'checkbox') {
+    return <Field type="checkbox" name={name} />
+  }
+
   return (
     <Field name={name} value={value} onChange={onChange}>
       {({ field, form, meta }: FormikProps) => {
