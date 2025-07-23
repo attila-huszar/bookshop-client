@@ -1,13 +1,7 @@
 import { authRequest, PATH } from './'
-import {
-  Author,
-  BookFormValues,
-  BookResponse,
-  OrderResponse,
-  UserResponse,
-} from '@/types'
+import { Author, BookFormValues, BookInDB, OrderInDB, UserInDB } from '@/types'
 
-export const getAllBooks = async (): Promise<BookResponse[]> => {
+export const getAllBooks = async (): Promise<BookInDB[]> => {
   const response = await authRequest.get(PATH.cms.books.all)
   return await response.json()
 }
@@ -17,17 +11,17 @@ export const getAllAuthors = async (): Promise<Author[]> => {
   return await response.json()
 }
 
-export const getAllUsers = async (): Promise<UserResponse[]> => {
+export const getAllUsers = async (): Promise<UserInDB[]> => {
   const response = await authRequest.get(PATH.cms.users.all)
   return await response.json()
 }
 
-export const getAllOrders = async (): Promise<OrderResponse[]> => {
+export const getAllOrders = async (): Promise<OrderInDB[]> => {
   const response = await authRequest.get(PATH.cms.orders.all)
   return await response.json()
 }
 
-export const postBook = async (book: BookFormValues): Promise<BookResponse> => {
+export const postBook = async (book: BookFormValues): Promise<BookInDB> => {
   const response = await authRequest.post(PATH.cms.books.add, {
     json: book,
   })
@@ -41,7 +35,7 @@ export const postBook = async (book: BookFormValues): Promise<BookResponse> => {
 
 export const deleteBooks = async (
   bookIds: number[],
-): Promise<BookResponse['id'][]> => {
+): Promise<BookInDB['id'][]> => {
   const response = await authRequest.delete(PATH.cms.books.delete, {
     json: { bookIds },
   })

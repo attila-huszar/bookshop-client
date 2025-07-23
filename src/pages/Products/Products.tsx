@@ -5,24 +5,25 @@ import { Card } from '@/components'
 import { Filter, EmptyFilterResults, Pagination } from './components'
 
 export function Products() {
-  const { booksInShop, booksAreLoading } = useAppSelector(booksSelector)
+  const { booksOnCurrentPage } = useAppSelector(booksSelector)
+
+  const renderBooks = () =>
+    booksOnCurrentPage.length ? (
+      <>
+        <div>
+          {booksOnCurrentPage.map((book) => (
+            <Card key={book.id} book={book} />
+          ))}
+        </div>
+        <Pagination />
+      </>
+    ) : (
+      <EmptyFilterResults />
+    )
 
   return (
     <StyledProducts>
-      <section>
-        {booksInShop.length ? (
-          <>
-            <div>
-              {booksInShop.map((book) => (
-                <Card key={book.id} book={book} />
-              ))}
-            </div>
-            <Pagination />
-          </>
-        ) : (
-          !booksAreLoading && <EmptyFilterResults />
-        )}
-      </section>
+      <section>{renderBooks()}</section>
       <Filter />
     </StyledProducts>
   )

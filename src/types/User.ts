@@ -11,7 +11,7 @@ export type User = {
   avatar?: string
 }
 
-export type UserResponse = User & {
+export type UserInDB = User & {
   id: number
   verified: boolean
   verificationToken: string | null
@@ -50,3 +50,5 @@ export type LoginResponse = {
 }
 
 export type UserUpdate = Partial<User> & { password?: string }
+
+export type UserFormValues = Omit<User, 'id' | 'uuid'>

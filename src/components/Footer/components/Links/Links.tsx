@@ -1,10 +1,9 @@
-import { NavList } from '../../Footer.style'
-import { SocialLinks } from './Links.style'
+import { NavList, SocialsList, StyledLinks } from './Links.style'
 import { legalLinks, socialLinks } from '@/constants'
 
 export function Links() {
   return (
-    <>
+    <StyledLinks>
       <NavList>
         {legalLinks.map((link) => (
           <li key={link.key}>
@@ -12,13 +11,13 @@ export function Links() {
           </li>
         ))}
       </NavList>
-      <SocialLinks>
+      <SocialsList>
         {socialLinks.map((link) => (
           <a href={link.path} key={link.key}>
             <img src={link.icon} alt={link.name} height={24} />
           </a>
         ))}
-      </SocialLinks>
-    </>
+      </SocialsList>
+    </StyledLinks>
   )
 }

@@ -12,7 +12,7 @@ import {
   NoResults,
   ClearButton,
 } from './Search.style'
-import { searchSchema } from '@/helpers'
+import { searchSchema } from '@/validation'
 import { useDebounce, useClickOutside, useAppDispatch } from '@/hooks'
 import {
   fetchBooksByAuthor,

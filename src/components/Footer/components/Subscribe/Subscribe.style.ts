@@ -12,12 +12,16 @@ export const SubscribeForm = styled.form`
   overflow: hidden;
 
   input {
-    flex-grow: 2;
-    padding: 0.5rem 2rem;
+    flex-grow: 1;
+    padding: 0.5rem 1rem;
     border: none;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 600;
     color: #6c6c6c;
+
+    &:focus-visible {
+      outline: none;
+    }
   }
 
   button {

@@ -6,7 +6,7 @@ export function Subscribe() {
   const [email, setEmail] = useState('')
 
   const handleSubscribe = () => {
-    toast('Subscription feature not yet implemented.', {
+    toast('Subscription feature not yet implemented', {
       icon: '💌',
     })
     setEmail('')

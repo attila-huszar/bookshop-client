@@ -8,7 +8,7 @@ import {
   deleteBooks,
   postAuthor,
 } from '@/api'
-import { Author, Book, BookFormValues, BookResponse } from '@/types'
+import { Author, Book, BookFormValues, BookInDB } from '@/types'
 
 export const fetchAllBooks = createAsyncThunk(
   'books/fetchAllBooks',
@@ -38,7 +38,7 @@ export const fetchAllOrders = createAsyncThunk(
   },
 )
 
-export const addBook = createAsyncThunk<BookResponse, BookFormValues>(
+export const addBook = createAsyncThunk<BookInDB, BookFormValues>(
   'books/addBook',
   async (book) => postBook(book),
 )

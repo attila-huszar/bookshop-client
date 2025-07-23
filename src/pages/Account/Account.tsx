@@ -17,7 +17,7 @@ import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
-import { accountBasicSchema, accountAddressSchema } from '@/helpers'
+import { accountBasicSchema, accountAddressSchema } from '@/validation'
 import type { User } from '@/types'
 import { EditIcon } from '@/assets/svg'
 

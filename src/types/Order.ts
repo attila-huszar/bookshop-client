@@ -21,7 +21,7 @@ export type Order = {
   address?: Partial<Address>
 }
 
-export type OrderResponse = Order & {
+export type OrderInDB = Order & {
   id: number
   createdAt: string
   updatedAt: string
@@ -61,3 +61,5 @@ export type GetPaymentIntent = {
   currency: string
   status: PaymentIntent.Status
 }
+
+export type OrderFormValues = Omit<Order, 'id'>

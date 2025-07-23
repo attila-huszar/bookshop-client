@@ -3,7 +3,7 @@ import { fetchNews } from '../thunks/news'
 import type { NewsState } from '@/types'
 
 const initialState: NewsState = {
-  newsArray: [],
+  newsItems: [],
   newsIsLoading: false,
   newsError: null,
 }
@@ -19,7 +19,7 @@ const newsSlice = createSlice({
       })
       .addCase(fetchNews.fulfilled, (state, action) => {
         state.newsIsLoading = false
-        state.newsArray = action.payload
+        state.newsItems = action.payload
       })
       .addCase(fetchNews.rejected, (state, action) => {
         state.newsIsLoading = false

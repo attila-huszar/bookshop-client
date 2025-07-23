@@ -10,7 +10,7 @@ import {
   IconButton,
 } from '@/components'
 import { ForgotPassword } from './components/ForgotPassword/ForgotPassword'
-import { loginSchema } from '@/helpers'
+import { loginSchema } from '@/validation'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { fetchUserProfile, login, userSelector } from '@/store'
 import { loginInitialValues } from '@/constants'

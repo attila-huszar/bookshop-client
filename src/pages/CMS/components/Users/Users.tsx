@@ -1,19 +1,34 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error } from '@/components'
+import { Error, IconButton } from '@/components'
 import { cmsUsersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
-import { CMSContext } from '../../CMS.types'
+import { SelectContext } from '../../CMS.types'
+import { EditIcon } from '@/assets/svg'
+import { BookInDB, Author, Order, User } from '@/types'
 
 export const Users = () => {
   const { users, usersError } = useAppSelector(cmsUsersSelector)
-  const { selectedItems, setSelectedItems } = useOutletContext<{
-    selectedItems: CMSContext
-    setSelectedItems: React.Dispatch<React.SetStateAction<CMSContext>>
+  const {
+    selectedItems,
+    setSelectedItems,
+    setIsEditDialogOpen,
+    setEditedItem,
+  } = useOutletContext<{
+    selectedItems: SelectContext
+    setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
+    setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
+    setEditedItem: React.Dispatch<
+      React.SetStateAction<BookInDB | Author | Order | User | null>
+    >
   }>()
 
   if (usersError) {
     return <Error message="Error loading users" error={usersError} />
+  }
+
+  if (users.length === 0) {
+    return <Error message="No users found" />
   }
 
   const allSelected =
@@ -51,6 +66,7 @@ export const Users = () => {
             <th>Verified</th>
             <th>Created</th>
             <th>Updated</th>
+            <th style={{ width: 40, padding: 0 }}></th>
           </tr>
         </thead>
         <tbody>
@@ -92,12 +108,14 @@ export const Users = () => {
                 <td>
                   {user.address && Object.values(user.address).join(', ')}
                 </td>
-                <td>
+                <td style={{ textAlign: 'center' }}>
                   {user.avatar && (
                     <img src={user.avatar} alt="User avatar" height={32} />
                   )}
                 </td>
-                <td>{user.verified ? '✔️' : '❌'}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {user.verified ? '✔️' : '❌'}
+                </td>
                 <td>
                   {new Date(user.createdAt).toLocaleString('hu-HU', {
                     year: '2-digit',
@@ -115,6 +133,17 @@ export const Users = () => {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
+                </td>
+                <td style={{ padding: 0 }}>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsEditDialogOpen(true)
+                      setEditedItem(user)
+                    }}
+                    icon={<EditIcon />}
+                    $iconSize="sm"
+                  />
                 </td>
               </tr>
             )

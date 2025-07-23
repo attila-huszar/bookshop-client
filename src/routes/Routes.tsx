@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react'
 import {
+  Navigate,
   RouterProvider,
   createBrowserRouter,
   type RouteObject,
@@ -28,6 +29,7 @@ import {
   shopLoader,
   cartLoader,
   cmsLoader,
+  productLoader,
 } from './loaders'
 
 const Layout = lazy(() =>
@@ -40,11 +42,7 @@ const routes: RouteObject[] = [
   {
     path: ROUTE.HOME,
     errorElement: <Error fullScreen />,
-    loader: () => {
-      void authLoader()
-      cartLoader()
-    },
-
+    loader: authLoader,
     hydrateFallbackElement: <Loading fullScreen />,
     element: (
       <ErrorBoundary fallback={<Error fullScreen />}>
@@ -56,8 +54,12 @@ const routes: RouteObject[] = [
     children: [
       { index: true, element: <Home />, loader: landingPageLoader },
       { path: ROUTE.BOOKS, element: <Products />, loader: shopLoader },
-      { path: ROUTE.BOOK, element: <Product /> },
-      { path: ROUTE.CART, element: <Cart /> },
+      {
+        path: ROUTE.BOOK,
+        element: <Product />,
+        loader: ({ request }) => productLoader(request),
+      },
+      { path: ROUTE.CART, element: <Cart />, loader: cartLoader },
       { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
       {
@@ -83,22 +85,37 @@ const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute />,
-    loader: async () => {
-      const isAuthenticated = await authLoader({ adminRequired: true })
-      cmsLoader()
-      return isAuthenticated
-    },
+    loader: () => authLoader({ adminRequired: true }),
     hydrateFallbackElement: <Loading fullScreen />,
     children: [
       {
         path: `${ROUTE.CMS}/*`,
         element: <CMS />,
         children: [
-          { path: 'orders', element: <Orders /> },
-          { path: 'books', element: <Books /> },
-          { path: 'authors', element: <Authors /> },
-          { path: 'users', element: <Users /> },
-          { path: '*', element: <NotFound /> },
+          {
+            path: 'orders',
+            element: <Orders />,
+            loader: () => cmsLoader('orders'),
+          },
+          {
+            path: 'books',
+            element: <Books />,
+            loader: () => cmsLoader('books'),
+          },
+          {
+            path: 'authors',
+            element: <Authors />,
+            loader: () => cmsLoader('authors'),
+          },
+          {
+            path: 'users',
+            element: <Users />,
+            loader: () => cmsLoader('users'),
+          },
+          {
+            path: '*',
+            element: <Navigate to={'/cms/orders'} replace />,
+          },
         ],
       },
     ],

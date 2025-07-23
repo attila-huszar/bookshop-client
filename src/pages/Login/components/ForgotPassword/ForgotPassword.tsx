@@ -5,7 +5,7 @@ import { StyledForgotPassword } from './ForgotPassword.style'
 import { Button, FormikField, IconButton } from '@/components'
 import { ButtonWrapper } from '@/styles'
 import { postPasswordReset } from '@/api'
-import { forgotPasswordSchema } from '@/helpers'
+import { forgotPasswordSchema } from '@/validation'
 import { handleError } from '@/errors'
 import { BackIcon } from '@/assets/svg'
 
@@ -57,9 +57,8 @@ export function ForgotPassword({ ref }: Props) {
     <StyledForgotPassword ref={forgotPassRef}>
       <h2>Forgotten Password</h2>
       <p>
-        {
-          "Enter your email address and we'll send you a link to reset your password."
-        }
+        Enter your email address and we'll send you a link to reset your
+        password.
       </p>
       <Formik
         initialValues={{ email: '' }}

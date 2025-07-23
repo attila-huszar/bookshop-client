@@ -1,34 +1,55 @@
 import { useRef, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router'
 import { AsyncThunkAction } from '@reduxjs/toolkit'
+import { toast } from 'react-hot-toast'
 import { Button, ConfirmDialog, ExtraSpace } from '@/components'
-import { Details, Tabs } from './components'
+import { EditDialog, Tabs } from './components'
 import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { CMSContext } from './CMS.types'
+import { SelectContext } from './CMS.types'
 import { LogoutIcon } from '@/assets/svg'
 import { AppDispatch, delBooks, RootState } from '@/store'
-import toast from 'react-hot-toast'
+import { BookInDB, Author, Order, User } from '@/types'
+
+const noneSelected: SelectContext = {
+  orders: [],
+  books: [],
+  authors: [],
+  users: [],
+}
 
 export const CMS = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
   const { userData } = useAppSelector((state) => state.user)
-  const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false)
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
-  const [selectedItems, setSelectedItems] = useState<CMSContext>({
-    orders: [],
-    books: [],
-    authors: [],
-    users: [],
-  })
-  const ref = useRef<HTMLDialogElement>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
+  const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
+  const [selectedItems, setSelectedItems] =
+    useState<SelectContext>(noneSelected)
+  const [editedItem, setEditedItem] = useState<
+    BookInDB | Author | Order | User | null
+  >(null)
+  const editRef = useRef<HTMLDialogElement>(null)
+  const confirmRef = useRef<HTMLDialogElement>(null)
 
-  const activeTab = location.pathname.split('/').pop() as keyof typeof actionMap
+  const getActiveTab = (pathname: string): keyof SelectContext => {
+    const tab = pathname.split('/').pop()
+    switch (tab) {
+      case 'orders':
+      case 'books':
+      case 'authors':
+      case 'users':
+        return tab
+      default:
+        return 'orders'
+    }
+  }
+
+  const activeTab = getActiveTab(location.pathname)
 
   const actionMap: Record<
-    keyof CMSContext,
+    keyof SelectContext,
     AsyncThunkAction<
       unknown,
       unknown,
@@ -41,9 +62,20 @@ export const CMS = () => {
     users: null,
   }
 
-  const handleConfirm = async () => {
+  const handleDeleteClick = () => {
+    if (!selectedItems[activeTab].length) {
+      toast('No items selected', {
+        icon: '⚠️',
+        style: { backgroundColor: 'var(--secondary-hover)' },
+      })
+      return
+    }
+    setConfirmDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
     const action = actionMap[activeTab]
-    if (!action) return
+    if (!action || selectedItems[activeTab].length === 0) return
     const result = await dispatch(action)
 
     if (result.meta.requestStatus === 'fulfilled') {
@@ -58,11 +90,7 @@ export const CMS = () => {
       toast.error(`Failed to delete selected ${activeTab}`)
     }
 
-    setIsDialogOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsDialogOpen(false)
+    setConfirmDialogOpen(false)
   }
 
   return (
@@ -71,14 +99,14 @@ export const CMS = () => {
       <MainContainer>
         <MenuButtons>
           <Button
-            onClick={() => setIsDetailsOpen((prev) => !prev)}
+            onClick={() => setIsEditDialogOpen(true)}
             $size="smMd"
             $color="secondary"
             type="button">
             Add
           </Button>
           <Button
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleDeleteClick}
             $size="smMd"
             $color="danger"
             type="button">
@@ -96,14 +124,29 @@ export const CMS = () => {
           </Button>
         </MenuButtons>
         <Tabs />
-        {isDetailsOpen && <Details setIsDetailsOpen={setIsDetailsOpen} />}
-        <Outlet context={{ selectedItems, setSelectedItems }} />
+        <Outlet
+          context={{
+            selectedItems,
+            setSelectedItems,
+            setIsEditDialogOpen,
+            editedItem,
+            setEditedItem,
+          }}
+        />
       </MainContainer>
+      <EditDialog
+        ref={editRef}
+        isDialogOpen={isEditDialogOpen}
+        setIsDialogOpen={setIsEditDialogOpen}
+        activeTab={activeTab}
+        editedItem={editedItem}
+        setEditedItem={setEditedItem}
+      />
       <ConfirmDialog
-        ref={ref}
-        isDialogOpen={isDialogOpen}
-        handleConfirm={() => void handleConfirm()}
-        handleCancel={handleCancel}
+        ref={confirmRef}
+        isDialogOpen={isConfirmDialogOpen}
+        setIsDialogOpen={setConfirmDialogOpen}
+        handleConfirm={() => void handleConfirmDelete()}
         message={`Are you sure you want to delete selected ${activeTab}?`}
         buttonText="Delete"
         buttonColor="danger"

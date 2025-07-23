@@ -1,4 +1,4 @@
-export type CMSContext = {
+export type SelectContext = {
   books: number[]
   authors: number[]
   orders: number[]

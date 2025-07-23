@@ -6,19 +6,18 @@ import type {
   FilterProps,
   User,
   OrderInStore,
-  BookResponse,
-  UserResponse,
-  OrderResponse,
+  BookInDB,
+  UserInDB,
+  OrderInDB,
 } from './'
 
 export type BookState = {
-  booksInShop: Book[]
-  booksViewed: Book[]
+  books: Book[]
   booksTotal: number
   booksCurrentPage: number
   booksPerPage: number
+  booksOnCurrentPage: Book[]
   bookIsLoading: boolean
-  booksAreLoading: boolean
   booksError: string | null
   booksRecommended: Book[]
   booksTopSellers: Book[]
@@ -36,7 +35,7 @@ export type AuthorState = {
 }
 
 export type NewsState = {
-  newsArray: News[]
+  newsItems: News[]
   newsIsLoading: boolean
   newsError: string | null
 }
@@ -53,7 +52,7 @@ export type UserState = {
 }
 
 export type CartState = {
-  cartArray: Cart[]
+  cartItems: Cart[]
   cartIsLoading: boolean
   cartError: string | null
 }
@@ -66,10 +65,10 @@ export type OrderState = {
 }
 
 export type CMSState = {
-  users: UserResponse[]
+  users: UserInDB[]
   usersIsLoading: boolean
   usersError: string | null
-  books: BookResponse[]
+  books: BookInDB[]
   booksIsLoading: boolean
   booksError: string | null
   authors: Author[]
@@ -78,7 +77,7 @@ export type CMSState = {
   news: News[]
   newsIsLoading: boolean
   newsError: string | null
-  orders: OrderResponse[]
+  orders: OrderInDB[]
   ordersIsLoading: boolean
   ordersError: string | null
 }

@@ -13,7 +13,7 @@ vi.mock('./components', () => ({
 describe('Products Page', () => {
   beforeEach(() => {
     vi.mocked(useCart).mockReturnValue({
-      cartArray: [],
+      cartItems: [],
     } as unknown as ReturnType<typeof useCart>)
   })
 

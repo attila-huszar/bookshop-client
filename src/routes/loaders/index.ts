@@ -1,5 +1,6 @@
 export { authLoader } from './authLoader'
 export { landingPageLoader } from './landingPageLoader'
 export { shopLoader } from './shopLoader'
+export { productLoader } from './productLoader'
 export { cartLoader } from './cartLoader'
 export { cmsLoader } from './cmsLoader'

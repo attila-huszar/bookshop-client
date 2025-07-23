@@ -41,8 +41,8 @@ import {
   SpinnerIcon,
 } from '@/assets/svg'
 
-const calculateTotalAmount = (cartArray: Cart[]): number => {
-  return cartArray.reduce(
+const calculateTotalAmount = (cartItems: Cart[]): number => {
+  return cartItems.reduce(
     (total, item) =>
       total + (item.price - (item.price * item.discount) / 100) * item.quantity,
     0,
@@ -63,7 +63,7 @@ const createStripeIntent = (
 export function Cart() {
   const navigate = useNavigate()
   const {
-    cartArray,
+    cartItems,
     removeFromCart,
     addQuantity,
     removeQuantity,
@@ -106,8 +106,8 @@ export function Cart() {
     window.scrollTo(0, 0)
   }, [])
 
-  const subtotal = calcSubtotalOrDiscount(cartArray, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cartArray, 'discount')
+  const subtotal = calcSubtotalOrDiscount(cartItems, 'subtotal')
+  const discount = calcSubtotalOrDiscount(cartItems, 'discount')
 
   const handleRemoveQuantity = (item: Cart) => {
     if (item.quantity > 0) {
@@ -130,8 +130,8 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartArray.length) {
-      const total = calculateTotalAmount(cartArray)
+    if (cartItems.length) {
+      const total = calculateTotalAmount(cartItems)
       const orderToStripe = createStripeIntent(total)
       const { firstName, lastName, email, phone, address } = { ...userData }
 
@@ -141,7 +141,7 @@ export function Cart() {
         orderStatus: OrderStatus.Pending,
         total: Number(total.toFixed(2)),
         currency: currencyOptions.usd,
-        items: cartArray,
+        items: cartItems,
         firstName,
         lastName,
         email,
@@ -166,7 +166,7 @@ export function Cart() {
     return <Loading message="Loading Cart" />
   }
 
-  if (cartArray.length) {
+  if (cartItems.length) {
     return (
       <StyledCart>
         <h2>Cart</h2>
@@ -175,7 +175,7 @@ export function Cart() {
           <LabelQuantity>Quantity</LabelQuantity>
           <LabelPrice>Price</LabelPrice>
           <LabelPrice>Total</LabelPrice>
-          {cartArray.map((item: Cart) => (
+          {cartItems.map((item: Cart) => (
             <Fragment key={item.id}>
               <Book>
                 <Link to={`/${ROUTE.BOOK}?id=${item.id}`}>

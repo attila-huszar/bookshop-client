@@ -1,24 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from './store'
-import type { Book } from '@/types'
 
 export const booksSelector = (state: RootState) => state.books
-
-export const bookByIdSelector = (id: string | null) => (state: RootState) => {
-  if (!id) return null
-
-  const bookId = Number(id)
-  const findBook = (books: Book[]) => books.find((book) => book.id === bookId)
-
-  return (
-    findBook(state.books.booksInShop) ??
-    findBook(state.books.booksViewed) ??
-    findBook(state.books.booksRecommended) ??
-    findBook(state.books.booksTopSellers) ??
-    findBook(state.books.booksReleases) ??
-    null
-  )
-}
 
 export const authorsSelector = (state: RootState) => state.authors
 
