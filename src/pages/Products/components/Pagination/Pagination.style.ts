@@ -21,13 +21,11 @@ export const PageSelectButton = styled.button`
   &:hover {
     color: var(--primary-color);
     border-color: var(--primary-color);
-    scale: 1.1;
   }
 
   &:disabled {
     color: var(--white);
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    scale: 1.1;
   }
 `
