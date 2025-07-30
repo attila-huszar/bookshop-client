@@ -1,32 +1,6 @@
 import * as Yup from 'yup'
+import { imageSchema } from './fileSchemas'
 import { UserRole } from '@/types'
-
-const MAX_FILE_SIZE = 512000
-const validFileExtensions = {
-  image: ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'],
-}
-
-function isValidFileType(
-  file: File,
-  fileType: keyof typeof validFileExtensions,
-) {
-  if (file instanceof File) {
-    const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    return fileExtension
-      ? validFileExtensions[fileType].includes(fileExtension)
-      : false
-  } else {
-    return true
-  }
-}
-
-function isValidFileSize(file: File, fileSize: number) {
-  if (file instanceof File) {
-    return file.size <= fileSize
-  } else {
-    return true
-  }
-}
 
 export const emailSchema = Yup.string()
   .email('Invalid Email')
@@ -58,14 +32,7 @@ export const phoneSchema = Yup.string()
   )
   .nullable()
 
-export const avatarSchema = Yup.mixed()
-  .test('is-valid-type', 'Invalid image type', (file) =>
-    isValidFileType(file as File, 'image'),
-  )
-  .test('is-valid-size', 'Max size is 500KB', (file) =>
-    isValidFileSize(file as File, MAX_FILE_SIZE),
-  )
-  .nullable()
+export const avatarSchema = Yup.string().url('Invalid URL').nullable()
 
 export const registrationSchema = Yup.object().shape({
   firstName: nameSchema,
@@ -73,7 +40,7 @@ export const registrationSchema = Yup.object().shape({
   email: emailSchema,
   password: passwordSchema,
   passwordConfirmation: passwordConfirmSchema,
-  avatar: avatarSchema,
+  avatar: imageSchema,
 })
 
 export const loginSchema = Yup.object().shape({
@@ -120,6 +87,7 @@ export const userSchema = Yup.object().shape({
     'Invalid role',
   ),
   phone: phoneSchema,
+  avatar: avatarSchema,
   address: Yup.object().shape({
     line1: Yup.string(),
     line2: Yup.string(),
@@ -128,5 +96,4 @@ export const userSchema = Yup.object().shape({
     postal_code: Yup.string(),
     country: Yup.string(),
   }),
-  avatar: Yup.string().url('Invalid URL').optional(),
 })

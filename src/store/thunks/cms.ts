@@ -7,6 +7,7 @@ import {
   postBook,
   deleteBooks,
   postAuthor,
+  deleteAuthors,
 } from '@/api'
 import { Author, Book, BookFormValues, BookInDB } from '@/types'
 
@@ -51,4 +52,9 @@ export const delBooks = createAsyncThunk<Book['id'][], number[]>(
 export const addAuthor = createAsyncThunk(
   'authors/addAuthor',
   async (author: Omit<Author, 'id'>) => postAuthor(author),
+)
+
+export const delAuthors = createAsyncThunk<Author['id'][], number[]>(
+  'authors/deleteAuthors',
+  async (authorIds) => deleteAuthors(authorIds),
 )
