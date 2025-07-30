@@ -8,54 +8,21 @@ import {
   getBooksBySearch,
   getBookSearchOptions,
 } from '@/api'
+import { getFilteredResults } from '../utils'
 import { generateUniqueRndNums } from '@/helpers'
-import type { Book, FilterProps, FilterActive } from '@/types'
+import type { Book, FilterProps } from '@/types'
 
-export const fetchBooks = createAsyncThunk(
-  'books/fetchBooks',
-  (optionalFilters: FilterProps | undefined, { getState }) => {
-    const {
-      books: {
-        booksCurrentPage: currentPage,
-        booksPerPage: itemsPerPage,
-        booksFilters: { active, initial },
-      },
-    } = getState() as RootState
+export const fetchBooks = createAsyncThunk<
+  { books: Book[]; total: number },
+  FilterProps | undefined,
+  { state: RootState }
+>('books/fetchBooks', (optionalFilters, { getState }) => {
+  const currentPage = getState().books.booksCurrentPage
+  const itemsPerPage = getState().books.booksPerPage
+  const criteria = getFilteredResults(optionalFilters)
 
-    const isFilterActive: { [key in keyof FilterActive]: boolean } = {
-      genre: active.genre.length > 0,
-      priceMin: active.price[0] !== initial.price[0],
-      priceMax: active.price[1] !== initial.price[1],
-      discount: active.discount !== initial.discount,
-      publishYearMin: active.publishYear[0] !== initial.publishYear[0],
-      publishYearMax: active.publishYear[1] !== initial.publishYear[1],
-      rating: active.rating !== initial.rating,
-    }
-
-    const hasAnyFilter = Object.values(isFilterActive).some(Boolean)
-
-    const criteria: FilterActive | undefined =
-      optionalFilters && hasAnyFilter
-        ? {
-            genre: isFilterActive.genre ? optionalFilters.genre : [],
-            priceMin: isFilterActive.priceMin ? optionalFilters.price[0] : null,
-            priceMax: isFilterActive.priceMax ? optionalFilters.price[1] : null,
-            discount: isFilterActive.discount
-              ? optionalFilters.discount
-              : 'allBooks',
-            publishYearMin: isFilterActive.publishYearMin
-              ? optionalFilters.publishYear[0]
-              : null,
-            publishYearMax: isFilterActive.publishYearMax
-              ? optionalFilters.publishYear[1]
-              : null,
-            rating: isFilterActive.rating ? optionalFilters.rating : 0.5,
-          }
-        : undefined
-
-    return getBooks({ currentPage, itemsPerPage, criteria })
-  },
-)
+  return getBooks({ currentPage, itemsPerPage, criteria })
+})
 
 export const fetchBookById = createAsyncThunk(
   'books/fetchBookById',
@@ -76,13 +43,10 @@ export const fetchBooksByProperty = createAsyncThunk(
   'books/fetchBooksByProperty',
   async (
     property: 'newRelease' | 'topSellers' | 'recommended',
-    listenerApi,
+    { dispatch },
   ) => {
     if (property === 'recommended') {
-      const result = await listenerApi
-        .dispatch(fetchRecommendedBooks(4))
-        .unwrap()
-      return result
+      return await dispatch(fetchRecommendedBooks(4)).unwrap()
     }
 
     return getBooksByProperty(property)
