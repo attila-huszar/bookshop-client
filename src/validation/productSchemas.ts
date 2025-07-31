@@ -17,7 +17,21 @@ export const bookSchema = Yup.object().shape({
     .required('Required'),
   imgUrl: Yup.string().url('Invalid URL').required('Required'),
   price: Yup.number().positive('+').required('Required'),
-  rating: Yup.number().min(1, 'Min 1').max(5, 'Max 5').required('Required'),
+  discount: Yup.number()
+    .integer('No fraction')
+    .min(0, 'Min 0%')
+    .max(100, 'Max 100%')
+    .default(0),
+  discountPrice: Yup.number().positive('+').required('Required'),
+  rating: Yup.number()
+    .min(1, 'Min 1')
+    .max(5, 'Max 5')
+    .test(
+      'max-1-decimal',
+      'Max 1 decimal',
+      (value) => value === undefined || Number.isInteger(value * 10),
+    )
+    .required('Required'),
 })
 
 export const authorSchema = Yup.object().shape({

@@ -7,25 +7,15 @@ export type FormikProps = {
 }
 
 export type FormikInput = {
-  name: string
-  value?: string
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
-  placeholder?: string
-  type?: React.HTMLInputTypeAttribute | undefined
-  inputMode?:
-    | 'text'
-    | 'search'
-    | 'email'
-    | 'tel'
-    | 'url'
-    | 'none'
-    | 'numeric'
-    | 'decimal'
-    | undefined
-  focus?: boolean
-  readOnly?: boolean
-  autoComplete?: string
-  children?: React.ReactNode
   showPassword?: boolean
   setShowPassword?: React.Dispatch<React.SetStateAction<boolean>>
-}
+  focus?: boolean
+} & React.PropsWithChildren &
+  React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  > &
+  React.DetailedHTMLProps<
+    React.TextareaHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  >

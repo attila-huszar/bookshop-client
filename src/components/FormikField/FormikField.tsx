@@ -6,23 +6,17 @@ import {
   Select,
   ErrorMessage,
   PasswordEye,
+  Textarea,
 } from '@/styles'
 import type { FormikProps, FormikInput } from '@/types'
 import { EyeIcon, EyeHideIcon } from '@/assets/svg'
 
 export function FormikField({
-  name,
-  value,
-  onChange,
-  placeholder,
-  type,
-  inputMode,
   focus,
-  readOnly,
-  autoComplete,
   children,
   showPassword,
   setShowPassword,
+  ...props
 }: FormikInput) {
   const formikRef = useRef<HTMLInputElement>(null)
   const formikContext = useFormikContext()
@@ -43,19 +37,18 @@ export function FormikField({
     void formikContext.validateField('avatar')
   }
 
-  if (type === 'file') {
-    const fileMeta = formikContext.getFieldMeta(name)
+  if (props.type === 'file' && props.name) {
+    const fileMeta = formikContext.getFieldMeta(props.name)
     const shouldShowError = fileMeta.touched && formikContext.submitCount > 0
 
     return (
       <InputWrapper>
         <Input
-          name={name}
-          aria-label={name}
+          aria-label={props.name}
           onChange={handleImgChange}
           type="file"
           accept="image/*"
-          readOnly={readOnly}
+          {...props}
           $valid={shouldShowError && !fileMeta.error}
           $error={shouldShowError && fileMeta.error}
         />
@@ -66,19 +59,20 @@ export function FormikField({
     )
   }
 
-  if (type === 'select') {
+  if (props.type === 'select') {
     return (
-      <Field name={name} value={value} onChange={onChange}>
+      <Field {...props}>
         {({ field, form, meta }: FormikProps) => {
           const shouldShowError = meta.touched && form.submitCount > 0
 
           return (
             <InputWrapper>
               <Select
-                disabled={readOnly}
+                disabled={props.readOnly}
                 $valid={shouldShowError && !meta.error}
                 $error={shouldShowError && meta.error}
-                {...field}>
+                {...field}
+                {...props}>
                 {children}
               </Select>
               {shouldShowError && meta.error && (
@@ -91,12 +85,38 @@ export function FormikField({
     )
   }
 
-  if (type === 'checkbox') {
-    return <Field type="checkbox" name={name} />
+  if (props.type === 'checkbox') {
+    return <Field type="checkbox" {...props} />
+  }
+
+  if (props.type === 'textarea') {
+    return (
+      <Field {...props}>
+        {({ field, form, meta }: FormikProps) => {
+          const shouldShowError = meta.touched && form.submitCount > 0
+
+          return (
+            <InputWrapper>
+              <Textarea
+                disabled={props.readOnly}
+                $valid={shouldShowError && !meta.error}
+                $error={shouldShowError && meta.error}
+                {...field}
+                {...props}>
+                {children}
+              </Textarea>
+              {shouldShowError && meta.error && (
+                <ErrorMessage>{meta.error}</ErrorMessage>
+              )}
+            </InputWrapper>
+          )
+        }}
+      </Field>
+    )
   }
 
   return (
-    <Field name={name} value={value} onChange={onChange}>
+    <Field {...props}>
       {({ field, form, meta }: FormikProps) => {
         const shouldShowError = meta.touched && form.submitCount > 0
 
@@ -105,15 +125,11 @@ export function FormikField({
             <Input
               $valid={shouldShowError && !meta.error}
               $error={shouldShowError && meta.error}
-              placeholder={placeholder}
-              type={type}
-              inputMode={inputMode}
               ref={formikRef}
-              readOnly={readOnly}
-              autoComplete={autoComplete}
               {...field}
+              {...props}
             />
-            {/password/i.test(name) && (
+            {!!props.name && /password/i.test(props.name) && (
               <PasswordEye
                 type="button"
                 onClick={() => setShowPassword?.((prev) => !prev)}>
@@ -121,7 +137,8 @@ export function FormikField({
               </PasswordEye>
             )}
             {shouldShowError && meta.error && (
-              <ErrorMessage $passwordError={/password/i.test(name)}>
+              <ErrorMessage
+                $passwordError={!!props.name && /password/i.test(props.name)}>
                 {meta.error}
               </ErrorMessage>
             )}

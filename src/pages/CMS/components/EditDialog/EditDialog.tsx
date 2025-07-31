@@ -392,7 +392,7 @@ export const EditDialog: FC<Props> = ({
             initialValues={initialValuesMap[activeTab]}
             validationSchema={bookSchema}
             onSubmit={handleSubmit}>
-            {({ isSubmitting }) => (
+            {({ values, isSubmitting }) => (
               <Form>
                 <TitleRow>
                   <div>
@@ -427,7 +427,8 @@ export const EditDialog: FC<Props> = ({
                     <FormikField
                       name="description"
                       placeholder="Description"
-                      type="text"
+                      type="textarea"
+                      rows={4}
                     />
                   </div>
                 </DefaultRow>
@@ -455,7 +456,7 @@ export const EditDialog: FC<Props> = ({
                     />
                   </div>
                   <div>
-                    <p>Discount</p>
+                    <p>Discount %</p>
                     <FormikField
                       name="discount"
                       placeholder="Discount"
@@ -464,11 +465,25 @@ export const EditDialog: FC<Props> = ({
                   </div>
                   <div>
                     <p>Discount Price</p>
-                    <FormikField
-                      name="discountPrice"
-                      placeholder="Discount Price"
-                      type="number"
-                    />
+                    {(() => {
+                      const bookValues = values as BookFormValues
+                      const price = Number(bookValues.price) || 0
+                      const discount = Number(bookValues.discount) || 0
+                      const discountPrice = (
+                        price *
+                        (1 - discount / 100)
+                      ).toFixed(2)
+
+                      return (
+                        <FormikField
+                          value={discountPrice}
+                          readOnly
+                          name="discountPrice"
+                          placeholder="Discount Price"
+                          type="number"
+                        />
+                      )
+                    })()}
                   </div>
                 </DefaultRow>
                 <CheckboxRow>
@@ -545,7 +560,8 @@ export const EditDialog: FC<Props> = ({
                     <FormikField
                       name="biography"
                       placeholder="Biography"
-                      type="text"
+                      type="textarea"
+                      rows={4}
                     />
                   </div>
                 </DefaultRow>

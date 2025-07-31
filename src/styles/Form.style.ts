@@ -71,6 +71,12 @@ export const Select = styled.select<FormTypes>`
   }
 `
 
+export const Textarea = styled.textarea<FormTypes>`
+  ${baseInputStyles}
+
+  resize: vertical;
+`
+
 export const ErrorMessage = styled.div<{
   $passwordError?: boolean
 }>`
