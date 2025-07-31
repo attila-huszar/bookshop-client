@@ -8,7 +8,8 @@ import { EditIcon } from '@/assets/svg'
 import { BookInDB, Author, Order, User } from '@/types'
 
 export const Orders = () => {
-  const { orders, ordersError } = useAppSelector(cmsOrdersSelector)
+  const { orders, ordersLoading, ordersError } =
+    useAppSelector(cmsOrdersSelector)
   const {
     selectedItems,
     setSelectedItems,
@@ -27,12 +28,17 @@ export const Orders = () => {
     return <Error message="Error loading orders" error={ordersError} />
   }
 
-  if (orders.length === 0) {
+  if (!ordersLoading && orders.length === 0) {
     return <Error message="No orders found" />
   }
 
   const allSelected =
     orders.length > 0 && selectedItems.orders.length === orders.length
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (a.id === undefined || b.id === undefined) return 0
+    return a.id - b.id
+  })
 
   return (
     <StyledTable>
@@ -70,7 +76,7 @@ export const Orders = () => {
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => {
+          {sortedOrders.map((order) => {
             return (
               <tr
                 key={order.id}

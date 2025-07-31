@@ -8,7 +8,7 @@ import { Author, BookInDB, Order, User } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
 
 export const Books = () => {
-  const { books, booksError } = useAppSelector(cmsBooksSelector)
+  const { books, booksLoading, booksError } = useAppSelector(cmsBooksSelector)
   const { authors } = useAppSelector(cmsAuthorsSelector)
   const {
     selectedItems,
@@ -28,12 +28,17 @@ export const Books = () => {
     return <Error message="Error loading books" error={booksError} />
   }
 
-  if (books.length === 0) {
+  if (!booksLoading && books.length === 0) {
     return <Error message="No books found" />
   }
 
   const allSelected =
     books.length > 0 && selectedItems.books.length === books.length
+
+  const sortedBooks = [...books].sort((a, b) => {
+    if (a.id === undefined || b.id === undefined) return 0
+    return a.id - b.id
+  })
 
   return (
     <StyledTable>
@@ -69,7 +74,7 @@ export const Books = () => {
           </tr>
         </thead>
         <tbody>
-          {books.map((book) => {
+          {sortedBooks.map((book) => {
             const author =
               authors.find((author) => author.id === book.authorId)?.name ??
               'Unknown Author'

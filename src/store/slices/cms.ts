@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { CMSState } from '@/types'
 import {
+  addAuthor,
   addBook,
   delBooks,
   fetchAllAuthors,
@@ -11,19 +12,19 @@ import {
 
 const initialState: CMSState = {
   users: [],
-  usersIsLoading: false,
+  usersLoading: false,
   usersError: null,
   books: [],
-  booksIsLoading: false,
+  booksLoading: false,
   booksError: null,
   authors: [],
-  authorsIsLoading: false,
+  authorsLoading: false,
   authorsError: null,
   news: [],
-  newsIsLoading: false,
+  newsLoading: false,
   newsError: null,
   orders: [],
-  ordersIsLoading: false,
+  ordersLoading: false,
   ordersError: null,
 }
 
@@ -34,83 +35,96 @@ const cmsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllBooks.pending, (state) => {
-        state.booksIsLoading = true
+        state.booksLoading = true
         state.booksError = null
       })
       .addCase(fetchAllBooks.fulfilled, (state, action) => {
         state.books = action.payload
-        state.booksIsLoading = false
+        state.booksLoading = false
       })
       .addCase(fetchAllBooks.rejected, (state, action) => {
-        state.booksIsLoading = false
+        state.booksLoading = false
         state.booksError = action.error.message ?? 'Failed to fetch books'
       })
 
       .addCase(fetchAllAuthors.pending, (state) => {
-        state.authorsIsLoading = true
+        state.authorsLoading = true
         state.authorsError = null
       })
       .addCase(fetchAllAuthors.fulfilled, (state, action) => {
         state.authors = action.payload
-        state.authorsIsLoading = false
+        state.authorsLoading = false
       })
       .addCase(fetchAllAuthors.rejected, (state, action) => {
-        state.authorsIsLoading = false
+        state.authorsLoading = false
         state.authorsError = action.error.message ?? 'Failed to fetch authors'
       })
 
       .addCase(fetchAllUsers.pending, (state) => {
-        state.usersIsLoading = true
+        state.usersLoading = true
         state.usersError = null
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
         state.users = action.payload
-        state.usersIsLoading = false
+        state.usersLoading = false
       })
       .addCase(fetchAllUsers.rejected, (state, action) => {
-        state.usersIsLoading = false
+        state.usersLoading = false
         state.usersError = action.error.message ?? 'Failed to fetch users'
       })
 
       .addCase(fetchAllOrders.pending, (state) => {
-        state.ordersIsLoading = true
+        state.ordersLoading = true
         state.ordersError = null
       })
       .addCase(fetchAllOrders.fulfilled, (state, action) => {
         state.orders = action.payload
-        state.ordersIsLoading = false
+        state.ordersLoading = false
       })
       .addCase(fetchAllOrders.rejected, (state, action) => {
-        state.ordersIsLoading = false
+        state.ordersLoading = false
         state.ordersError = action.error.message ?? 'Failed to fetch orders'
       })
 
       .addCase(addBook.pending, (state) => {
-        state.booksIsLoading = true
+        state.booksLoading = true
         state.booksError = null
       })
       .addCase(addBook.fulfilled, (state, action) => {
         state.books.push(action.payload)
-        state.booksIsLoading = false
+        state.booksLoading = false
       })
       .addCase(addBook.rejected, (state, action) => {
-        state.booksIsLoading = false
+        state.booksLoading = false
         state.booksError = action.error.message ?? 'Failed to add book'
       })
 
       .addCase(delBooks.pending, (state) => {
-        state.booksIsLoading = true
+        state.booksLoading = true
         state.booksError = null
       })
       .addCase(delBooks.fulfilled, (state, action) => {
         state.books = state.books.filter(
           (book) => !action.payload.includes(book.id),
         )
-        state.booksIsLoading = false
+        state.booksLoading = false
       })
       .addCase(delBooks.rejected, (state, action) => {
-        state.booksIsLoading = false
+        state.booksLoading = false
         state.booksError = action.error.message ?? 'Failed to delete books'
+      })
+
+      .addCase(addAuthor.pending, (state) => {
+        state.authorsLoading = true
+        state.authorsError = null
+      })
+      .addCase(addAuthor.fulfilled, (state, action) => {
+        state.authors.push(action.payload)
+        state.authorsLoading = false
+      })
+      .addCase(addAuthor.rejected, (state, action) => {
+        state.authorsLoading = false
+        state.authorsError = action.error.message ?? 'Failed to add author'
       })
   },
 })

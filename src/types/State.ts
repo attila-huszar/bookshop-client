@@ -66,18 +66,18 @@ export type OrderState = {
 
 export type CMSState = {
   users: UserInDB[]
-  usersIsLoading: boolean
+  usersLoading: boolean
   usersError: string | null
   books: BookInDB[]
-  booksIsLoading: boolean
+  booksLoading: boolean
   booksError: string | null
   authors: Author[]
-  authorsIsLoading: boolean
+  authorsLoading: boolean
   authorsError: string | null
   news: News[]
-  newsIsLoading: boolean
+  newsLoading: boolean
   newsError: string | null
   orders: OrderInDB[]
-  ordersIsLoading: boolean
+  ordersLoading: boolean
   ordersError: string | null
 }

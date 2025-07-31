@@ -8,7 +8,7 @@ import { EditIcon } from '@/assets/svg'
 import { BookInDB, Author, Order, User } from '@/types'
 
 export const Users = () => {
-  const { users, usersError } = useAppSelector(cmsUsersSelector)
+  const { users, usersLoading, usersError } = useAppSelector(cmsUsersSelector)
   const {
     selectedItems,
     setSelectedItems,
@@ -27,12 +27,17 @@ export const Users = () => {
     return <Error message="Error loading users" error={usersError} />
   }
 
-  if (users.length === 0) {
+  if (!usersLoading && users.length === 0) {
     return <Error message="No users found" />
   }
 
   const allSelected =
     users.length > 0 && selectedItems.users.length === users.length
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a.id === undefined || b.id === undefined) return 0
+    return a.id - b.id
+  })
 
   return (
     <StyledTable>
@@ -70,7 +75,7 @@ export const Users = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => {
+          {sortedUsers.map((user) => {
             return (
               <tr
                 key={user.id}

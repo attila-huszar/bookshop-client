@@ -8,7 +8,8 @@ import { EditIcon } from '@/assets/svg'
 import { BookInDB, Author, Order, User } from '@/types'
 
 export const Authors = () => {
-  const { authors, authorsError } = useAppSelector(cmsAuthorsSelector)
+  const { authors, authorsLoading, authorsError } =
+    useAppSelector(cmsAuthorsSelector)
   const {
     selectedItems,
     setSelectedItems,
@@ -27,12 +28,17 @@ export const Authors = () => {
     return <Error message="Error loading authors" error={authorsError} />
   }
 
-  if (authors.length === 0) {
+  if (!authorsLoading && authors.length === 0) {
     return <Error message="No authors found" />
   }
 
   const allSelected =
     authors.length > 0 && selectedItems.authors.length === authors.length
+
+  const sortedAuthors = [...authors].sort((a, b) => {
+    if (a.id === undefined || b.id === undefined) return 0
+    return a.id - b.id
+  })
 
   return (
     <StyledTable>
@@ -66,7 +72,7 @@ export const Authors = () => {
           </tr>
         </thead>
         <tbody>
-          {authors.map((author) => (
+          {sortedAuthors.map((author) => (
             <tr
               key={author.id}
               onClick={() => {

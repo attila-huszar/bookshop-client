@@ -23,12 +23,12 @@ export const orderSelector = (state: RootState) => state.order
 export const cmsBooksSelector = createSelector(
   [
     (state: RootState) => state.cms.books,
-    (state: RootState) => state.cms.booksIsLoading,
+    (state: RootState) => state.cms.booksLoading,
     (state: RootState) => state.cms.booksError,
   ],
-  (books, booksIsLoading, booksError) => ({
+  (books, booksLoading, booksError) => ({
     books,
-    booksIsLoading,
+    booksLoading,
     booksError,
   }),
 )
@@ -36,12 +36,12 @@ export const cmsBooksSelector = createSelector(
 export const cmsAuthorsSelector = createSelector(
   [
     (state: RootState) => state.cms.authors,
-    (state: RootState) => state.cms.authorsIsLoading,
+    (state: RootState) => state.cms.authorsLoading,
     (state: RootState) => state.cms.authorsError,
   ],
-  (authors, authorsIsLoading, authorsError) => ({
+  (authors, authorsLoading, authorsError) => ({
     authors,
-    authorsIsLoading,
+    authorsLoading,
     authorsError,
   }),
 )
@@ -49,12 +49,12 @@ export const cmsAuthorsSelector = createSelector(
 export const cmsUsersSelector = createSelector(
   [
     (state: RootState) => state.cms.users,
-    (state: RootState) => state.cms.usersIsLoading,
+    (state: RootState) => state.cms.usersLoading,
     (state: RootState) => state.cms.usersError,
   ],
-  (users, usersIsLoading, usersError) => ({
+  (users, usersLoading, usersError) => ({
     users,
-    usersIsLoading,
+    usersLoading,
     usersError,
   }),
 )
@@ -62,12 +62,12 @@ export const cmsUsersSelector = createSelector(
 export const cmsOrdersSelector = createSelector(
   [
     (state: RootState) => state.cms.orders,
-    (state: RootState) => state.cms.ordersIsLoading,
+    (state: RootState) => state.cms.ordersLoading,
     (state: RootState) => state.cms.ordersError,
   ],
-  (orders, ordersIsLoading, ordersError) => ({
+  (orders, ordersLoading, ordersError) => ({
     orders,
-    ordersIsLoading,
+    ordersLoading,
     ordersError,
   }),
 )
@@ -75,7 +75,7 @@ export const cmsOrdersSelector = createSelector(
 export const cmsNewsSelector = createSelector(
   [
     (state: RootState) => state.cms.news,
-    (state: RootState) => state.cms.newsIsLoading,
+    (state: RootState) => state.cms.newsLoading,
     (state: RootState) => state.cms.newsError,
   ],
   (news, newsIsLoading, newsError) => ({
