@@ -51,6 +51,16 @@ export const TitleRow = styled(FormRow)`
   }
 `
 
+export const GenreRow = styled(FormRow)`
+  > div:first-child {
+    flex-grow: 1;
+  }
+
+  input[name='rating'] {
+    width: 5rem;
+  }
+`
+
 export const ItemRow = styled(FormRow)`
   > div:not(:first-child) {
     flex-grow: 1;
@@ -61,13 +71,26 @@ export const ItemRow = styled(FormRow)`
   }
 `
 
-export const CheckboxRow = styled(FormRow)`
-  > :not(:first-child) {
-    align-content: center;
+export const SettingsRow = styled(FormRow)`
+  > div:first-child {
+    flex-grow: 1;
   }
 
-  > p {
-    margin-left: 2rem;
+  > div:nth-child(2) {
+    justify-items: center;
+
+    button {
+      transform: translateY(1.75rem);
+    }
+  }
+
+  > div:nth-child(3),
+  > div:nth-child(4) {
+    text-align: center;
+
+    input {
+      transform: translateY(0.75rem) scale(1.5);
+    }
   }
 `
 

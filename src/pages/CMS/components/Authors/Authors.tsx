@@ -106,7 +106,17 @@ export const Authors = () => {
               <td>{author.birthYear}</td>
               <td>{author.deathYear}</td>
               <td>{author.homeland}</td>
-              <td>{author.biography}</td>
+              <td
+                style={{
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  whiteSpace: 'normal',
+                  textOverflow: 'ellipsis',
+                }}>
+                {author.biography}
+              </td>
               <td style={{ padding: 0 }}>
                 <IconButton
                   onClick={(e) => {

@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { Form, Formik, FormikHelpers, FormikState } from 'formik'
 import { toast } from 'react-hot-toast'
 import {
@@ -6,14 +6,15 @@ import {
   TitleRow,
   DefaultRow,
   StyledEditDialog,
-  CheckboxRow,
+  SettingsRow,
   AddressBlock,
   ItemBlock,
   ItemRow,
+  GenreRow,
 } from './EditDialog.style'
-import { Button, FormikField } from '@/components'
+import { Button, FormikField, IconButton } from '@/components'
 import { addAuthor, addBook } from '@/store'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import { authorSchema, bookSchema, userSchema } from '@/validation'
 import {
   initialAuthorValues,
@@ -32,7 +33,7 @@ import {
   UserFormValues,
 } from '@/types'
 import { SelectContext } from '@/pages/CMS/CMS.types'
-import { SpinnerIcon } from '@/assets/svg'
+import { SpinnerIcon, UploadIcon } from '@/assets/svg'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
@@ -60,6 +61,8 @@ export const EditDialog: FC<Props> = ({
 }) => {
   const dispatch = useAppDispatch()
   const { authors } = useAppSelector((state) => state.cms)
+  const [showBookCover, setShowBookCover] = useState<boolean>(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -68,6 +71,19 @@ export const EditDialog: FC<Props> = ({
       ref.current?.close()
     }
   }, [isDialogOpen, ref])
+
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLInputElement, MouseEvent>,
+  ) => {
+    const target = e.target as HTMLInputElement
+    const rect = target.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: rect.height,
+    })
+  }
+
+  const debouncedMouseMove = useDebounce(handleMouseMove, 10)
 
   if (!isDialogOpen) return null
 
@@ -432,20 +448,20 @@ export const EditDialog: FC<Props> = ({
                     />
                   </div>
                 </DefaultRow>
-                <DefaultRow>
+                <GenreRow>
                   <div>
                     <p>Genre</p>
                     <FormikField name="genre" placeholder="Genre" type="text" />
                   </div>
                   <div>
-                    <p>Image URL</p>
+                    <p>Rating</p>
                     <FormikField
-                      name="imgUrl"
-                      placeholder="Image URL"
-                      type="text"
+                      name="rating"
+                      placeholder="Rating"
+                      type="number"
                     />
                   </div>
-                </DefaultRow>
+                </GenreRow>
                 <DefaultRow>
                   <div>
                     <p>Price</p>
@@ -486,20 +502,53 @@ export const EditDialog: FC<Props> = ({
                     })()}
                   </div>
                 </DefaultRow>
-                <CheckboxRow>
-                  <div>
-                    <p>Rating</p>
+                <SettingsRow>
+                  <div style={{ position: 'relative' }}>
+                    <p>Image URL</p>
                     <FormikField
-                      name="rating"
-                      placeholder="Rating"
-                      type="number"
+                      name="imgUrl"
+                      placeholder="Image URL"
+                      type="text"
+                      onMouseEnter={() => setShowBookCover(true)}
+                      onMouseMove={debouncedMouseMove}
+                      onMouseLeave={() => setShowBookCover(false)}
+                    />
+                    {showBookCover && (
+                      <img
+                        src={(values as BookFormValues).imgUrl}
+                        style={{
+                          display: 'block',
+                          position: 'absolute',
+                          top: mousePos.y - 160,
+                          left: mousePos.x + 8,
+                          maxHeight: '10rem',
+                          boxShadow: 'var(--shadow)',
+                          borderRadius: 6,
+                          zIndex: 1000,
+                          pointerEvents: 'none',
+                        }}
+                        alt="Book cover preview"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <IconButton
+                      type="button"
+                      onClick={() => undefined}
+                      title="Upload Image"
+                      icon={<UploadIcon />}
+                      $iconSize="lg"
                     />
                   </div>
-                  <p>Top Sellers</p>
-                  <FormikField type="checkbox" name="topSellers" />
-                  <p>New Release</p>
-                  <FormikField type="checkbox" name="newRelease" />
-                </CheckboxRow>
+                  <div>
+                    <p>Top Sellers</p>
+                    <FormikField name="topSellers" type="checkbox" />
+                  </div>
+                  <div>
+                    <p>New Release</p>
+                    <FormikField name="newRelease" type="checkbox" />
+                  </div>
+                </SettingsRow>
                 {renderButtons({ isSubmitting })}
               </Form>
             )}

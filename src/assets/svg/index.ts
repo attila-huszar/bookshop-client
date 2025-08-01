@@ -33,6 +33,7 @@ export { default as SpinnerIcon } from './spinner.svg?react'
 export { default as ProfileIcon } from './profile.svg?react'
 export { default as CMSIcon } from './cms.svg?react'
 export { default as LogoutIcon } from './logout.svg?react'
+export { default as UploadIcon } from './upload.svg?react'
 
 // Plain SVG exports
 export { default as googleIcon } from './google.svg'
