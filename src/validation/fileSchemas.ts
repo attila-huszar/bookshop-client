@@ -1,37 +1,34 @@
 import * as Yup from 'yup'
 
 const MAX_FILE_SIZE = 512000
-const validFileExtensions = {
-  image: ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'],
+const validFileExtensions = ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp']
+
+export function validateImageFile(file: unknown): {
+  valid: boolean
+  error?: string
+} {
+  if (!(file instanceof File)) {
+    return { valid: false, error: 'Invalid file selected' }
+  }
+  if (!file.type.startsWith('image/')) {
+    return { valid: false, error: 'Please select an image file' }
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!ext || !validFileExtensions.includes(ext)) {
+    return { valid: false, error: 'Unsupported image format' }
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: `Image must be smaller than ${MAX_FILE_SIZE / 1000}KB`,
+    }
+  }
+  return { valid: true }
 }
 
 export const imageSchema = Yup.mixed()
-  .test('is-valid-type', 'Invalid image type', (file) =>
-    isValidFileType(file as File, 'image'),
-  )
-  .test('is-valid-size', 'Max size is 500KB', (file) =>
-    isValidFileSize(file as File, MAX_FILE_SIZE),
-  )
+  .test('is-valid-image', 'Invalid image file', (file) => {
+    if (!file) return true
+    return validateImageFile(file).valid
+  })
   .nullable()
-
-function isValidFileType(
-  file: File,
-  fileType: keyof typeof validFileExtensions,
-) {
-  if (file instanceof File) {
-    const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    return fileExtension
-      ? validFileExtensions[fileType].includes(fileExtension)
-      : false
-  } else {
-    return true
-  }
-}
-
-function isValidFileSize(file: File, fileSize: number) {
-  if (file instanceof File) {
-    return file.size <= fileSize
-  } else {
-    return true
-  }
-}

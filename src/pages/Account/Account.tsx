@@ -17,9 +17,13 @@ import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser, updateAvatar } from '@/store'
 import { countryList } from '@/constants'
-import { accountBasicSchema, accountAddressSchema } from '@/validation'
-import type { User } from '@/types'
+import {
+  accountBasicSchema,
+  accountAddressSchema,
+  validateImageFile,
+} from '@/validation'
 import { EditIcon } from '@/assets/svg'
+import type { User } from '@/types'
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)
@@ -48,21 +52,10 @@ export function Account() {
     if (!files || files.length === 0) return
 
     const file = files[0]
+    const { valid, error } = validateImageFile(file)
 
-    if (!(file instanceof File)) {
-      toast.error('Invalid file selected', { id: 'upload-error-type' })
-      return
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file', { id: 'upload-error-format' })
-      return
-    }
-
-    if (file.size > 512 * 1024) {
-      toast.error('Image must be smaller than 512KB', {
-        id: 'upload-error-size',
-      })
+    if (!valid && error) {
+      toast.error(error, { id: 'upload-error' })
       return
     }
 
