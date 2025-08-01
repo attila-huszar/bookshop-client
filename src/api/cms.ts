@@ -33,7 +33,7 @@ export const postBook = async (book: BookFormValues): Promise<BookInDB> => {
   return await response.json()
 }
 
-export const deleteBooks = async (
+export const delBooks = async (
   bookIds: number[],
 ): Promise<BookInDB['id'][]> => {
   const response = await authRequest.delete(PATH.cms.books.delete, {
@@ -61,7 +61,7 @@ export const postAuthor = async (
   return await response.json()
 }
 
-export const deleteAuthors = async (
+export const delAuthors = async (
   authorIds: number[],
 ): Promise<Author['id'][]> => {
   const response = await authRequest.delete(PATH.cms.authors.delete, {

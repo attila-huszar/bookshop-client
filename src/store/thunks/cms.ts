@@ -5,48 +5,36 @@ import {
   getAllOrders,
   getAllUsers,
   postBook,
-  deleteBooks,
+  delBooks,
   postAuthor,
-  deleteAuthors,
+  delAuthors,
 } from '@/api'
 import { Author, Book, BookFormValues, BookInDB } from '@/types'
 
-export const fetchAllBooks = createAsyncThunk(
-  'books/fetchAllBooks',
-  async () => {
-    return await getAllBooks()
-  },
-)
+export const listBooks = createAsyncThunk('books/listBooks', async () => {
+  return await getAllBooks()
+})
 
-export const fetchAllAuthors = createAsyncThunk(
-  'authors/fetchAllAuthors',
-  async () => {
-    return await getAllAuthors()
-  },
-)
+export const listAuthors = createAsyncThunk('authors/listAuthors', async () => {
+  return await getAllAuthors()
+})
 
-export const fetchAllUsers = createAsyncThunk(
-  'user/fetchAllUsers',
-  async () => {
-    return await getAllUsers()
-  },
-)
+export const listUsers = createAsyncThunk('user/listUsers', async () => {
+  return await getAllUsers()
+})
 
-export const fetchAllOrders = createAsyncThunk(
-  'order/fetchAllOrders',
-  async () => {
-    return await getAllOrders()
-  },
-)
+export const listOrders = createAsyncThunk('order/listOrders', async () => {
+  return await getAllOrders()
+})
 
 export const addBook = createAsyncThunk<BookInDB, BookFormValues>(
   'books/addBook',
   async (book) => postBook(book),
 )
 
-export const delBooks = createAsyncThunk<Book['id'][], number[]>(
+export const deleteBooks = createAsyncThunk<Book['id'][], number[]>(
   'books/deleteBooks',
-  async (bookIds) => deleteBooks(bookIds),
+  async (bookIds) => delBooks(bookIds),
 )
 
 export const addAuthor = createAsyncThunk(
@@ -54,7 +42,7 @@ export const addAuthor = createAsyncThunk(
   async (author: Omit<Author, 'id'>) => postAuthor(author),
 )
 
-export const delAuthors = createAsyncThunk<Author['id'][], number[]>(
+export const deleteAuthors = createAsyncThunk<Author['id'][], number[]>(
   'authors/deleteAuthors',
-  async (authorIds) => deleteAuthors(authorIds),
+  async (authorIds) => delAuthors(authorIds),
 )
