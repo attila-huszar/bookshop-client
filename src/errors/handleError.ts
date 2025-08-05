@@ -1,5 +1,5 @@
 import { HTTPError } from 'ky'
-import { log } from '@/helpers'
+import { log } from '@/libs'
 
 type ErrorResponse = {
   error?: string

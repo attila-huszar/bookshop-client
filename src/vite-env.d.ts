@@ -3,6 +3,6 @@
 
 interface ImportMetaEnv {
   readonly VITE_SERVER_URL: string
-  readonly VITE_LOGTAIL_SOURCE_TOKEN: string
-  readonly VITE_LOGTAIL_INGESTING_HOST: string
+  readonly VITE_SEQ_URL: string
+  readonly VITE_SEQ_API_KEY: string
 }

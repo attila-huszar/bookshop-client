@@ -1,5 +1,5 @@
 import { store, fetchCartItems, orderRetrieve } from '@/store'
-import { log } from '@/helpers'
+import { log } from '@/libs'
 import type { CartLocalStorage } from '@/types'
 
 export const cartLoader = () => {
