@@ -15,10 +15,9 @@
     "test:real:": "vitest run"
   },
   "dependencies": {
-    "@logtail/browser": "^0.5.4",
     "@reduxjs/toolkit": "^2.8.2",
-    "@stripe/react-stripe-js": "^3.8.1",
-    "@stripe/stripe-js": "^7.7.0",
+    "@stripe/react-stripe-js": "^3.9.0",
+    "@stripe/stripe-js": "^7.8.0",
     "formik": "^2.4.6",
     "ky": "^1.8.2",
     "rc-slider": "^11.1.8",
@@ -28,9 +27,10 @@
     "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
     "react-router": "^7.7.1",
+    "seq-logging": "^3.0.0",
     "styled-components": "^6.1.19",
     "swiper": "^11.2.10",
-    "yup": "^1.6.1"
+    "yup": "^1.7.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
@@ -39,7 +39,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/eslint": "^9.6.1",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.2.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.7.0",
@@ -58,8 +58,8 @@
     "jsdom": "^26.1.0",
     "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "^6.0.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0",
     "vite": "^7.0.6",
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.2.4"

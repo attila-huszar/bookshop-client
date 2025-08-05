@@ -1,4 +1,4 @@
-import { log } from '@/helpers'
+import { log } from '@/libs'
 
 function getEnvVar(key: string, defaultValue?: string | null): string {
   const importEnv = import.meta.env as Record<string, string>
