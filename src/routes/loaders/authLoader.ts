@@ -11,21 +11,18 @@ export const authLoader = async (options?: AuthLoaderOptions) => {
 
   if (!accessToken) {
     const result = await store.dispatch(fetchAuthTokens())
-    if (result.meta.requestStatus === 'rejected') {
-      return false
-    }
+    if (result.meta.requestStatus === 'rejected') return false
     accessToken = store.getState().user.accessToken
+    if (!accessToken) return false
   }
 
   if (!userData) {
     const result = await store.dispatch(fetchUserProfile())
-    if (result.meta.requestStatus === 'rejected') {
-      return false
-    }
+    if (result.meta.requestStatus === 'rejected') return false
     userData = store.getState().user.userData
   }
 
-  if (!accessToken) return false
   if (adminRequired && userData?.role !== UserRole.Admin) return false
+
   return true
 }
