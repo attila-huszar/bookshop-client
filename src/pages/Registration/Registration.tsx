@@ -10,14 +10,13 @@ import {
   IconButton,
 } from '@/components'
 import { register } from '@/store'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'
 import { registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Registration() {
-  const registerError = useAppSelector((state) => state.user.registerError)
   const dispatch = useAppDispatch()
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -27,15 +26,18 @@ export function Registration() {
   }, [])
 
   const handleSubmit = async (values: RegisterRequest) => {
-    const result = await dispatch(register(values))
-
-    if (result.meta.requestStatus === 'fulfilled') {
+    try {
+      const { email } = await dispatch(register(values)).unwrap()
       toast.success(
-        `${values.email} registered successfully, please verify your email address`,
+        `${email} registered successfully, please verify your email address`,
       )
       await navigate('/', { replace: true })
-    } else {
-      toast.error(registerError ?? 'Registration failed. Please try again.')
+    } catch (error) {
+      const errorMessage =
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error.message as string)
+          : 'Registration failed, please try again later'
+      toast.error(errorMessage)
     }
   }
 

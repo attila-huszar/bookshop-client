@@ -11,14 +11,13 @@ import {
 } from '@/components'
 import { ForgotPassword } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/validation'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { fetchUserProfile, login, userSelector } from '@/store'
+import { useAppDispatch } from '@/hooks'
+import { fetchUserProfile, login } from '@/store'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
 import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Login() {
-  const { userIsLoading, loginError } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
@@ -29,14 +28,17 @@ export function Login() {
   }, [])
 
   const handleSubmit = async (values: LoginRequest) => {
-    const result = await dispatch(login(values))
-
-    if (result.meta.requestStatus === 'fulfilled') {
-      const user = await dispatch(fetchUserProfile()).unwrap()
-      toast.success(`Welcome back, ${user.firstName}!`)
+    try {
+      await dispatch(login(values)).unwrap()
+      const { firstName } = await dispatch(fetchUserProfile()).unwrap()
+      toast.success(`Welcome back, ${firstName}!`)
       await navigate('/', { replace: true })
-    } else {
-      toast.error(loginError ?? 'Login failed. Please try again.')
+    } catch (error) {
+      const errorMessage =
+        typeof error === 'object' && error !== null && 'message' in error
+          ? (error.message as string)
+          : 'Login failed, please try again later'
+      toast.error(errorMessage)
     }
   }
 
@@ -51,50 +53,52 @@ export function Login() {
         validationSchema={loginSchema}
         validateOnBlur={false}
         onSubmit={handleSubmit}>
-        <Form noValidate>
-          <p>Email</p>
-          <FormikField
-            name="email"
-            placeholder="Email"
-            type="email"
-            inputMode="email"
-            autoComplete="username"
-            focus
-          />
-          <p>Password</p>
-          <FormikField
-            name="password"
-            placeholder="Password"
-            type={showPassword ? 'text' : 'password'}
-            inputMode="text"
-            autoComplete="current-password"
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-          />
-          <ButtonWrapper>
-            <IconButton
-              icon={<BackIcon />}
-              $iconSize="lg"
-              $color="var(--mid-grey)"
-              type="reset"
-              title="Back"
-              disabled={userIsLoading}
-              onClick={() => void navigate('/')}
+        {({ isSubmitting }) => (
+          <Form noValidate>
+            <p>Email</p>
+            <FormikField
+              name="email"
+              placeholder="Email"
+              type="email"
+              inputMode="email"
+              autoComplete="username"
+              focus
             />
-            <Button type="submit" disabled={userIsLoading}>
-              {userIsLoading ? <SpinnerIcon height={28} /> : 'Login'}
-            </Button>
-            <IconButton
-              icon={<QuestionIcon />}
-              $iconSize="lg"
-              $color="var(--mid-grey)"
-              type="button"
-              title="Forgot Password?"
-              disabled={userIsLoading}
-              onClick={handleDialogOpen}
+            <p>Password</p>
+            <FormikField
+              name="password"
+              placeholder="Password"
+              type={showPassword ? 'text' : 'password'}
+              inputMode="text"
+              autoComplete="current-password"
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
             />
-          </ButtonWrapper>
-        </Form>
+            <ButtonWrapper>
+              <IconButton
+                icon={<BackIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
+                type="reset"
+                title="Back"
+                disabled={isSubmitting}
+                onClick={() => void navigate('/')}
+              />
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <SpinnerIcon height={28} /> : 'Login'}
+              </Button>
+              <IconButton
+                icon={<QuestionIcon />}
+                $iconSize="lg"
+                $color="var(--mid-grey)"
+                type="button"
+                title="Forgot Password?"
+                disabled={isSubmitting}
+                onClick={handleDialogOpen}
+              />
+            </ButtonWrapper>
+          </Form>
+        )}
       </Formik>
       <ForgotPassword ref={forgotPasswordDialog} />
     </AuthorizationMenu>

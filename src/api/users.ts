@@ -69,11 +69,13 @@ export const postUserRegister = async (
   }
 }
 
-export const postUserLogout = async (): Promise<{ message: string }> => {
+export const postUserLogout = async () => {
   try {
-    const response = await authRequest.post<{ message: string }>(
+    const response = await authRequest.post<{ success: boolean }>(
       PATH.users.logout,
-      { credentials: 'include' },
+      {
+        credentials: 'include',
+      },
     )
     return await response.json()
   } catch (error) {

@@ -57,7 +57,7 @@ const userSlice = createSlice({
       })
 
       .addCase(fetchAuthTokens.fulfilled, (state, action) => {
-        state.accessToken = action.payload
+        state.accessToken = action.payload.accessToken
         state.tokenError = null
       })
       .addCase(fetchAuthTokens.rejected, (state, action) => {
