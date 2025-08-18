@@ -12,10 +12,11 @@ import {
 } from './Product.style'
 import { useAppSelector, useCart } from '@/hooks'
 import { booksSelector } from '@/store'
-import { Button, Alert, Price, Recommended } from '@/components'
+import { Button, Alert, Price } from '@/components'
+import { Recommended } from '@/components/Recommended/Recommended'
 import { ROUTE } from '@/routes'
-import type { Book } from '@/types'
 import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
+import type { Book } from '@/types'
 
 export function Product() {
   const navigate = useNavigate()

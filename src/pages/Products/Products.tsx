@@ -1,7 +1,7 @@
 import { StyledProducts } from './Products.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
-import { Card } from '@/components'
+import { Card } from '@/components/Card/Card'
 import { Filter, EmptyFilterResults, Pagination } from './components'
 
 export function Products() {

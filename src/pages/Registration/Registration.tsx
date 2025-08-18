@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { ButtonWrapper } from '@/styles'
-import {
-  AuthorizationMenu,
-  FormikField,
-  Button,
-  IconButton,
-} from '@/components'
+import { FormikField, Button, IconButton } from '@/components'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
 import { register } from '@/store'
 import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'

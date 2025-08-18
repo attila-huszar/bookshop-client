@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { ButtonWrapper } from '@/styles'
-import {
-  AuthorizationMenu,
-  FormikField,
-  Button,
-  IconButton,
-} from '@/components'
+import { FormikField, Button, IconButton } from '@/components'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
 import { ForgotPassword } from './components/ForgotPassword/ForgotPassword'
 import { loginSchema } from '@/validation'
 import { useAppDispatch } from '@/hooks'
 import { fetchUserProfile, login } from '@/store'
 import { loginInitialValues } from '@/constants'
-import type { LoginRequest } from '@/types'
 import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
+import type { LoginRequest } from '@/types'
 
 export function Login() {
   const dispatch = useAppDispatch()

@@ -1,7 +1,8 @@
 import { StyledTopSellers } from './TopSellers.style'
 import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
-import { Card, SwiperComponent } from '@/components'
+import { SwiperComponent } from '@/components'
+import { Card } from '@/components/Card/Card'
 
 export function TopSellers() {
   const { booksTopSellers } = useAppSelector(booksSelector)

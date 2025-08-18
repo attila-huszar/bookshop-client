@@ -10,7 +10,6 @@ import {
   orderSelector,
   userSelector,
 } from '@/store'
-import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import {
   StyledCart,
   CartGrid,
@@ -26,6 +25,8 @@ import {
   LabelPrice,
   EmptyCart,
 } from './Cart.style'
+import { Button, IconButton, Loading, Price } from '@/components'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
 import { currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'

@@ -8,7 +8,7 @@ import { StyledCheckout } from './Checkout.style'
 import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
-import { InfoDialog } from '@/components'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 
 export function Checkout() {
   const { order, orderIsLoading, orderRetrieveError } =

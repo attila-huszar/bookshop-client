@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Recommended, InfoDialog } from '@/components'
+import { Recommended } from '@/components/Recommended/Recommended'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { Releases } from './components/Releases/Releases'
 import { TopSellers } from './components/TopSellers/TopSellers'
 import { News } from './components/News/News'
