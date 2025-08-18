@@ -12,7 +12,7 @@ import {
 } from './Product.style'
 import { useAppSelector, useCart } from '@/hooks'
 import { booksSelector } from '@/store'
-import { Button, Error, Price, Recommended } from '@/components'
+import { Button, Alert, Price, Recommended } from '@/components'
 import { ROUTE } from '@/routes'
 import type { Book } from '@/types'
 import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
@@ -89,7 +89,7 @@ export function Product() {
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          booksError && <Error message="Book not found" backButton />
+          booksError && <Alert message="Book not found" backButton />
         )}
       </StyledProduct>
       <Recommended />

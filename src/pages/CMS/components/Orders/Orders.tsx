@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error, IconButton } from '@/components'
+import { Alert, IconButton } from '@/components'
 import { cmsOrdersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { SelectContext } from '../../CMS.types'
@@ -25,11 +25,11 @@ export const Orders = () => {
   }>()
 
   if (ordersError) {
-    return <Error message="Error loading orders" error={ordersError} />
+    return <Alert message="Error loading orders" error={ordersError} />
   }
 
   if (!ordersLoading && orders.length === 0) {
-    return <Error message="No orders found" />
+    return <Alert message="No orders found" />
   }
 
   const allSelected =

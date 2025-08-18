@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router'
 import { Button } from '../Button/Button'
-import { StyledError } from './Error.style'
+import { StyledAlert } from './Alert.style'
 import { WarningIcon } from '@/assets/svg'
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   backButton?: boolean
 }
 
-export function Error({
+export function Alert({
   message = 'Something went wrong. Please try again later.',
   error,
   fullScreen,
@@ -28,7 +28,7 @@ export function Error({
   }
 
   return (
-    <StyledError $fullScreen={fullScreen}>
+    <StyledAlert $fullScreen={fullScreen}>
       <WarningIcon />
       <div>
         <p>{message}</p>
@@ -39,6 +39,6 @@ export function Error({
           Go Back
         </Button>
       )}
-    </StyledError>
+    </StyledAlert>
   )
 }

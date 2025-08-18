@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error, IconButton } from '@/components'
+import { Alert, IconButton } from '@/components'
 import { cmsAuthorsSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { SelectContext } from '../../CMS.types'
@@ -25,11 +25,11 @@ export const Authors = () => {
   }>()
 
   if (authorsError) {
-    return <Error message="Error loading authors" error={authorsError} />
+    return <Alert message="Error loading authors" error={authorsError} />
   }
 
   if (!authorsLoading && authors.length === 0) {
-    return <Error message="No authors found" />
+    return <Alert message="No authors found" />
   }
 
   const allSelected =

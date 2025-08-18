@@ -1,6 +1,6 @@
 import { styled } from 'styled-components'
 
-export const StyledError = styled.div<{ $fullScreen?: boolean }>`
+export const StyledAlert = styled.div<{ $fullScreen?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;

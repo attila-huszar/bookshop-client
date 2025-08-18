@@ -1,4 +1,4 @@
-import { Button, Error, Loading } from '@/components'
+import { Button, Alert, Loading } from '@/components'
 import { StyledInfoDialog } from './InfoDialog.style'
 
 export function InfoDialog({
@@ -17,7 +17,7 @@ export function InfoDialog({
   return (
     <StyledInfoDialog ref={dialogRef}>
       {error ? (
-        <Error message={message} error={error} />
+        <Alert message={message} error={error} />
       ) : (
         <Loading message={message} />
       )}

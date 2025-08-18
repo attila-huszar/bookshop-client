@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error, IconButton } from '@/components'
+import { Alert, IconButton } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { SelectContext } from '../../CMS.types'
@@ -25,11 +25,11 @@ export const Books = () => {
   }>()
 
   if (booksError) {
-    return <Error message="Error loading books" error={booksError} />
+    return <Alert message="Error loading books" error={booksError} />
   }
 
   if (!booksLoading && books.length === 0) {
-    return <Error message="No books found" />
+    return <Alert message="No books found" />
   }
 
   const allSelected =

@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router'
 import { StyledTable } from '../Tabs/Tabs.style'
-import { Error, IconButton } from '@/components'
+import { Alert, IconButton } from '@/components'
 import { cmsUsersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { SelectContext } from '../../CMS.types'
@@ -24,11 +24,11 @@ export const Users = () => {
   }>()
 
   if (usersError) {
-    return <Error message="Error loading users" error={usersError} />
+    return <Alert message="Error loading users" error={usersError} />
   }
 
   if (!usersLoading && users.length === 0) {
-    return <Error message="No users found" />
+    return <Alert message="No users found" />
   }
 
   const allSelected =
