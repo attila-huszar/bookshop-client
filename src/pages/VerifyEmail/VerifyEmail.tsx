@@ -28,7 +28,7 @@ export function VerifyEmail() {
           { id: 'verify' },
         )
 
-        await navigate(`/${ROUTE.LOGIN}`, { replace: true })
+        void navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
         const formattedError = await handleError({
           error,
@@ -37,7 +37,7 @@ export function VerifyEmail() {
 
         toast.error(formattedError.message, { id: 'verify' })
 
-        await navigate('/', { replace: true })
+        void navigate('/', { replace: true })
       }
     }
 

@@ -28,7 +28,7 @@ export function Login() {
       await dispatch(login(values)).unwrap()
       const { firstName } = await dispatch(fetchUserProfile()).unwrap()
       toast.success(`Welcome back, ${firstName}!`)
-      await navigate('/', { replace: true })
+      void navigate('/', { replace: true })
     } catch (error) {
       const errorMessage =
         typeof error === 'object' && error !== null && 'message' in error

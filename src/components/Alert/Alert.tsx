@@ -18,12 +18,12 @@ export function Alert({
 }: Props) {
   const navigate = useNavigate()
 
-  async function handleGoBack() {
+  const handleGoBack = () => {
     const hasPreviousPage = window.history.length > 2
     if (hasPreviousPage) {
-      await navigate(-1)
+      void navigate(-1)
     } else {
-      await navigate('/')
+      void navigate('/')
     }
   }
 
@@ -35,7 +35,7 @@ export function Alert({
         {error && <p>{error}</p>}
       </div>
       {backButton && (
-        <Button type="button" onClick={() => void handleGoBack()}>
+        <Button type="button" onClick={handleGoBack}>
           Go Back
         </Button>
       )}

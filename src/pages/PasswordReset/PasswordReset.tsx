@@ -46,7 +46,7 @@ export function PasswordReset() {
 
         toast.error(formattedError.message)
 
-        await navigate('/', { replace: true })
+        void navigate('/', { replace: true })
       } finally {
         setIsVerifying(false)
       }
@@ -73,7 +73,7 @@ export function PasswordReset() {
       const response = await postPasswordResetSubmit(token, values.newPassword)
       toast.success(response.message)
 
-      await navigate('/', { replace: true })
+      void navigate('/', { replace: true })
     } catch (error) {
       const formattedError = await handleError({
         error,

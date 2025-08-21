@@ -11,9 +11,9 @@ export function Card({ book }: { book: Book }) {
   const { cartItems, addToCart } = useCart()
   const isBookInCart = cartItems.some((item) => item.id === book.id)
 
-  const handleCartAction = async () => {
+  const handleCartAction = () => {
     if (isBookInCart) {
-      await navigate(`/${ROUTE.CART}`)
+      void navigate(`/${ROUTE.CART}`)
     } else {
       addToCart(book)
     }
@@ -35,7 +35,7 @@ export function Card({ book }: { book: Book }) {
           <Button
             onClick={(e) => {
               e.preventDefault()
-              void handleCartAction()
+              handleCartAction()
             }}
             $icon={!isBookInCart && <CartAddIcon />}>
             {isBookInCart ? 'View in Basket' : 'Add to Basket'}

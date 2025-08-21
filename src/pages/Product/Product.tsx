@@ -33,26 +33,26 @@ export function Product() {
     window.scrollTo(0, 0)
   }, [])
 
-  const handleCartAction = async (book: Book) => {
+  const handleCartAction = (book: Book) => {
     if (isBookInCart) {
-      await navigate(`/${ROUTE.CART}`)
+      void navigate(`/${ROUTE.CART}`)
     } else {
       addToCart(book)
     }
   }
 
-  const handleGoBack = async () => {
+  const handleGoBack = () => {
     if (window.history?.length && window.history.length > 2) {
-      await navigate(-1)
+      void navigate(-1)
     } else {
-      await navigate('/')
+      void navigate('/')
     }
   }
 
   return (
     <>
       <StyledProduct>
-        <Breadcrumb onClick={() => void handleGoBack()} title="Go back">
+        <Breadcrumb onClick={handleGoBack} title="Go back">
           <CaretLeftIcon height={18} />
           Book Details
         </Breadcrumb>
@@ -81,7 +81,7 @@ export function Product() {
             </Description>
             <ButtonWrapper>
               <Button
-                onClick={() => void handleCartAction(book)}
+                onClick={() => handleCartAction(book)}
                 $icon={!isBookInCart && <CartAddIcon />}
                 $size="lg"
                 $textSize="lg">

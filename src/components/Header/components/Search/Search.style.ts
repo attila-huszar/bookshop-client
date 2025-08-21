@@ -2,19 +2,22 @@ import { styled } from 'styled-components'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
+  flex-shrink: 1;
+  width: 20rem;
   margin-right: auto;
 
   form {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
   }
 `
 
 export const SearchField = styled.input`
   height: 36px;
-  width: 20rem;
-  padding: 0 12px 0 40px;
+  width: 100%;
+  padding: 0 40px;
   border: none;
   border-radius: 10px;
   outline: none;
@@ -26,7 +29,7 @@ export const Dropdown = styled.div<SearchTypes>`
   top: 1.75rem;
   left: 0;
   display: none;
-  width: 20rem;
+  width: 100%;
   padding: 0.125rem 0.5rem 0.5rem;
   border-radius: 0 0 10px 10px;
   background-color: var(--light-grey);
@@ -35,7 +38,10 @@ export const Dropdown = styled.div<SearchTypes>`
 `
 
 export const SearchButton = styled.button`
-  margin-left: -19.25rem;
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
   height: 1rem;
   width: 1rem;
   padding: 0;
@@ -46,7 +52,10 @@ export const SearchButton = styled.button`
 `
 
 export const ClearButton = styled.button`
-  margin-left: 16.5rem;
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
   height: 1rem;
   width: 1rem;
   padding: 0;

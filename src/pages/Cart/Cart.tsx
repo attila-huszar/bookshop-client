@@ -78,13 +78,9 @@ export function Cart() {
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const redirectToCheckout = async () => {
-      if (order?.clientSecret) {
-        await navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
-      }
+    if (order?.clientSecret) {
+      void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-
-    void redirectToCheckout()
   }, [order?.clientSecret, navigate])
 
   useEffect(() => {
@@ -159,8 +155,8 @@ export function Cart() {
     dispatch(orderClear())
   }
 
-  const navigateToBooks = async () => {
-    await navigate(`/${ROUTE.BOOKS}`)
+  const navigateToBooks = () => {
+    void navigate(`/${ROUTE.BOOKS}`)
   }
 
   if (cartIsLoading) {
@@ -265,7 +261,7 @@ export function Cart() {
         </TotalPrice>
         <ButtonWrapper>
           <Button
-            onClick={() => void navigateToBooks()}
+            onClick={navigateToBooks}
             disabled={orderIsLoading}
             $size="lg"
             $textSize="lg"
@@ -302,10 +298,7 @@ export function Cart() {
       <EmptyCart>
         <CartEmptyIcon />
         <p>Your cart is empty</p>
-        <Button
-          type="button"
-          onClick={() => void navigateToBooks()}
-          $icon={<CartIcon />}>
+        <Button type="button" onClick={navigateToBooks} $icon={<CartIcon />}>
           Go Shopping
         </Button>
       </EmptyCart>

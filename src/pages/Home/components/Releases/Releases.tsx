@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import {
   StyledReleases,
   Welcome,
@@ -13,10 +13,7 @@ import { ROUTE } from '@/routes'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)
-
-  const scrollToBottom = () => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-  }
+  const navigate = useNavigate()
 
   return (
     <StyledReleases>
@@ -28,8 +25,12 @@ export function Releases() {
           to captivating memoirs, this week's new releases offer something for
           everyone.
         </p>
-        <Button onClick={scrollToBottom} $shadow $size="wide" $textSize="lg">
-          Subscribe
+        <Button
+          onClick={() => void navigate(ROUTE.BOOKS)}
+          $shadow
+          $size="wide"
+          $textSize="lg">
+          Find Your Next Read
         </Button>
       </Welcome>
       <ImageWrapper>

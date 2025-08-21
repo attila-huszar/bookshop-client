@@ -13,6 +13,7 @@ export const StyledReleases = styled.section`
 
 export const Welcome = styled.div`
   width: 50%;
+  z-index: 1;
 
   h2 {
     margin-bottom: 2rem;

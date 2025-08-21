@@ -7,7 +7,7 @@ import {
   DropdownList,
   MenuItem,
 } from '../Menu/Menu.style'
-import { Avatar, IconButton } from '@/components'
+import { Avatar, Button } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { userSelector, logout } from '@/store'
 import { ROUTE } from '@/routes'
@@ -46,57 +46,56 @@ export function AccountMenu() {
       })
   }
 
-  const navigateToLogin = async () => {
-    await navigate(ROUTE.LOGIN)
+  if (!userData) {
+    return (
+      <Button
+        onClick={() => void navigate(ROUTE.LOGIN)}
+        title="Login/Register"
+        $icon={<AccountIcon />}
+        $size="smMd"
+        $inverted>
+        Log In
+      </Button>
+    )
   }
 
   return (
     <StyledMenu ref={menuRef}>
-      {userData ? (
-        <>
-          <Avatar
-            imgUrl={userData.avatar}
-            onClick={toggleMenu}
-            title={userData.firstName}
-          />
-          <Dropdown $show={menuOpen}>
-            <DropdownList>
-              <li>
-                <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
-                  <MenuItem>
-                    <ProfileIcon height="1.5rem" />
-                    <span>{userData.firstName}</span>
-                  </MenuItem>
-                </Link>
-              </li>
-              {isAdmin && (
-                <li>
-                  <Link to={`/${ROUTE.CMS}/orders`} onClick={toggleMenu}>
-                    <MenuItem>
-                      <CMSIcon height="1.5rem" />
-                      <span>CMS</span>
-                    </MenuItem>
-                  </Link>
-                </li>
-              )}
-              <li>
-                <Link to={'/'} onClick={handleLogout}>
-                  <MenuItem>
-                    <LogoutIcon height="1.5rem" />
-                    <span>Logout</span>
-                  </MenuItem>
-                </Link>
-              </li>
-            </DropdownList>
-          </Dropdown>
-        </>
-      ) : (
-        <IconButton
-          onClick={() => void navigateToLogin()}
-          icon={<AccountIcon />}
-          title={'Login/Register'}
-        />
-      )}
+      <Avatar
+        imgUrl={userData.avatar}
+        onClick={toggleMenu}
+        title={userData.firstName}
+      />
+      <Dropdown $show={menuOpen}>
+        <DropdownList>
+          <li>
+            <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
+              <MenuItem>
+                <ProfileIcon height="1.5rem" />
+                <span>{userData.firstName}</span>
+              </MenuItem>
+            </Link>
+          </li>
+          {isAdmin && (
+            <li>
+              <Link to={`/${ROUTE.CMS}/orders`} onClick={toggleMenu}>
+                <MenuItem>
+                  <CMSIcon height="1.5rem" />
+                  <span>CMS</span>
+                </MenuItem>
+              </Link>
+            </li>
+          )}
+          <li>
+            <Link to={'/'} onClick={handleLogout}>
+              <MenuItem>
+                <LogoutIcon height="1.5rem" />
+                <span>Logout</span>
+              </MenuItem>
+            </Link>
+          </li>
+        </DropdownList>
+      </Dropdown>
     </StyledMenu>
   )
 }

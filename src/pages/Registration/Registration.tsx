@@ -27,7 +27,7 @@ export function Registration() {
       toast.success(
         `${email} registered successfully, please verify your email address`,
       )
-      await navigate('/', { replace: true })
+      void navigate('/', { replace: true })
     } catch (error) {
       const errorMessage =
         typeof error === 'object' && error !== null && 'message' in error

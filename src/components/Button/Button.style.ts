@@ -112,7 +112,7 @@ export const StyledButton = styled.button<StyleTypes>`
   border: none;
   border-radius: 10px;
   outline: ${({ $color, $inverted }) => getTheme($color, $inverted).outline};
-  outline-offset: -3px;
+  outline-offset: -2px;
   cursor: pointer;
   transition: all 0.2s ease-out;
 
