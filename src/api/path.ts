@@ -5,7 +5,6 @@ const enum P {
   searchOptions = 'search_opts',
   users = 'users',
   orders = 'orders',
-  upload = 'upload',
   cms = 'cms',
 }
 
@@ -19,6 +18,7 @@ const createUserEndpoints = (base: string) => ({
   passwordResetSubmit: `${base}/password-reset-submit`,
   profile: `${base}/profile`,
   refresh: `${base}/refresh`,
+  avatar: `${base}/avatar`,
 })
 
 const createOrderEndpoints = (base: string) => ({
@@ -41,11 +41,11 @@ export const PATH = {
   searchOptions: P.searchOptions,
   users: createUserEndpoints(P.users),
   orders: createOrderEndpoints(P.orders),
-  upload: P.upload,
   cms: {
     orders: createCmsEndpoints(`${P.cms}/${P.orders}`),
     users: createCmsEndpoints(`${P.cms}/${P.users}`),
     books: createCmsEndpoints(`${P.cms}/${P.books}`),
     authors: createCmsEndpoints(`${P.cms}/${P.authors}`),
+    productImage: `${P.cms}/product-image`,
   },
 } as const

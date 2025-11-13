@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState, useRef, ChangeEvent } from 'react'
 import { Form, Formik, FormikHelpers, FormikState } from 'formik'
 import { toast } from 'react-hot-toast'
 import {
@@ -15,7 +15,13 @@ import {
 import { Button, FormikField, IconButton } from '@/components'
 import { addAuthor, addBook } from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
-import { authorSchema, bookSchema, userSchema } from '@/validation'
+import {
+  authorSchema,
+  bookSchema,
+  userSchema,
+  validateImageFile,
+} from '@/validation'
+import { uploadProductImage } from '@/api'
 import {
   initialAuthorValues,
   initialBookValues,
@@ -34,6 +40,7 @@ import {
 } from '@/types'
 import { SelectContext } from '@/pages/CMS/CMS.types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
+import { log } from '@/libs'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
@@ -63,6 +70,7 @@ export const EditDialog: FC<Props> = ({
   const { authors } = useAppSelector((state) => state.cms)
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const productImageInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -84,6 +92,49 @@ export const EditDialog: FC<Props> = ({
   }
 
   const debouncedMouseMove = useDebounce(handleMouseMove, 10)
+
+  const handleProductImageClick = () => {
+    productImageInputRef.current?.click()
+  }
+
+  const handleProductImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target
+    const files = fileInput.files
+
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    const { valid, error } = validateImageFile(file)
+
+    if (!valid && error) {
+      toast.error(error, { id: 'product-image-upload-error' })
+      fileInput.value = ''
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    toast.loading('Uploading image...', { id: 'product-image-upload' })
+
+    try {
+      const result = await uploadProductImage(formData)
+
+      toast.success('Image uploaded successfully', {
+        id: 'product-image-upload',
+      })
+      return result.url
+    } catch (error) {
+      log.error('Image upload failed:', { error })
+
+      toast.error('Failed to upload image, please try again later', {
+        id: 'product-image-upload',
+      })
+      throw error
+    } finally {
+      fileInput.value = ''
+    }
+  }
 
   if (!isDialogOpen) return null
 
@@ -408,7 +459,7 @@ export const EditDialog: FC<Props> = ({
             initialValues={initialValuesMap[activeTab]}
             validationSchema={bookSchema}
             onSubmit={handleSubmit}>
-            {({ values, isSubmitting }) => (
+            {({ values, isSubmitting, setFieldValue }) => (
               <Form>
                 <TitleRow>
                   <div>
@@ -534,10 +585,23 @@ export const EditDialog: FC<Props> = ({
                   <div>
                     <IconButton
                       type="button"
-                      onClick={() => undefined}
+                      onClick={handleProductImageClick}
                       title="Upload Image"
                       icon={<UploadIcon />}
                       $iconSize="lg"
+                    />
+                    <input
+                      type="file"
+                      name="productImageInput"
+                      aria-label="Upload Product Image"
+                      onChange={(e) => {
+                        handleProductImageChange(e)
+                          .then((url) => setFieldValue('imgUrl', url))
+                          .catch(() => setFieldValue('imgUrl', ''))
+                      }}
+                      accept="image/*"
+                      ref={productImageInputRef}
+                      style={{ display: 'none' }}
                     />
                   </div>
                   <div>

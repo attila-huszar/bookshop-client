@@ -136,7 +136,7 @@ export const postPasswordResetSubmit = async (
 }
 
 export const uploadAvatar = async (formData: FormData): Promise<User> => {
-  const response = await authRequest.post<User>(PATH.upload, {
+  const response = await authRequest.post<User>(PATH.users.avatar, {
     body: formData,
   })
   return await response.json()

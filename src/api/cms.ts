@@ -74,3 +74,15 @@ export const delAuthors = async (
 
   return await response.json()
 }
+
+export const uploadProductImage = async (
+  formData: FormData,
+): Promise<{ url: string }> => {
+  const response = await authRequest.post<{ url: string }>(
+    PATH.cms.productImage,
+    {
+      body: formData,
+    },
+  )
+  return await response.json()
+}
