@@ -22,7 +22,6 @@ export const bookSchema = Yup.object().shape({
     .min(0, 'Min 0%')
     .max(100, 'Max 100%')
     .default(0),
-  discountPrice: Yup.number().positive('+').required('Required'),
   rating: Yup.number()
     .min(1, 'Min 1')
     .max(5, 'Max 5')
