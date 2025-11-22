@@ -11,6 +11,7 @@ export const registrationInitialValues = {
   email: '',
   password: '',
   passwordConfirmation: '',
+  country: 'hu', // Default to Hungary
   avatar: undefined,
 }
 

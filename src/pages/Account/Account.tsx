@@ -12,11 +12,16 @@ import {
   AddressLine,
   ButtonWrapper,
 } from './Account.style'
-import { Avatar, Button, FormikField, IconButton } from '@/components'
+import {
+  Avatar,
+  Button,
+  FormikField,
+  CountrySelect,
+  IconButton,
+} from '@/components'
 import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { userSelector, updateUser, updateAvatar } from '@/store'
-import { countryList } from '@/constants'
 import {
   accountBasicSchema,
   accountAddressSchema,
@@ -85,7 +90,8 @@ export function Account() {
   }
 
   if (userData) {
-    const { email, firstName, lastName, phone, address, avatar } = userData
+    const { email, firstName, lastName, phone, address, avatar, country } =
+      userData
 
     return (
       <StyledAccount>
@@ -272,19 +278,11 @@ export function Account() {
                   <AddressLine>
                     <div>
                       <p>Country</p>
-                      <FormikField
+                      <CountrySelect
                         name="country"
-                        type="select"
-                        readOnly={!editingAddressInfo}>
-                        <option value="" hidden>
-                          Please select a country...
-                        </option>
-                        {countryList.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {`${country.flag} ${country.name}`}
-                          </option>
-                        ))}
-                      </FormikField>
+                        defaultCountry={country}
+                        readOnly={!editingAddressInfo}
+                      />
                     </div>
                   </AddressLine>
                   {editingAddressInfo && (
