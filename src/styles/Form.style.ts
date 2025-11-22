@@ -64,6 +64,7 @@ export const Input = styled.input<FormTypes>`
 
 export const Select = styled.select<FormTypes>`
   ${baseInputStyles}
+  padding-right: 3rem;
 
   &:disabled {
     color: var(--black);

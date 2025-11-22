@@ -1,5 +1,6 @@
 import { baseRequest, authRequest, PATH } from './'
 import type {
+  CountryData,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -51,6 +52,7 @@ export const postUserRegister = async (
     formData.append('lastName', user.lastName)
     formData.append('email', user.email)
     formData.append('password', user.password)
+    formData.append('country', user.country)
     if (user.avatar instanceof File) {
       formData.append('avatar', user.avatar)
     }
@@ -139,5 +141,25 @@ export const uploadAvatar = async (formData: FormData): Promise<User> => {
   const response = await authRequest.post<User>(PATH.users.avatar, {
     body: formData,
   })
+  return await response.json()
+}
+
+export const getUserCountry = async (): Promise<{
+  country: string
+}> => {
+  try {
+    const response = await baseRequest.get<{ country: string | undefined }>(
+      PATH.users.country,
+    )
+    const data = await response.json()
+
+    return { country: data.country ?? 'hu' }
+  } catch {
+    return { country: 'hu' }
+  }
+}
+
+export const getCountryCodes = async (): Promise<CountryData> => {
+  const response = await baseRequest.get<CountryData>(PATH.users.countryCodes)
   return await response.json()
 }

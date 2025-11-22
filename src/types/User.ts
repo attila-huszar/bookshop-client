@@ -6,6 +6,7 @@ export type User = {
   firstName: string
   lastName: string
   email: string
+  country: string
   phone?: string | null
   address?: Partial<Address>
   avatar?: string
@@ -32,6 +33,7 @@ export type RegisterRequest = {
   lastName: string
   email: string
   password: string
+  country: string
   avatar?: File
 }
 
@@ -52,3 +54,5 @@ export type LoginResponse = {
 export type UserUpdate = Partial<User> & { password?: string }
 
 export type UserFormValues = Omit<User, 'id' | 'uuid'>
+
+export type CountryData = Record<string, string>

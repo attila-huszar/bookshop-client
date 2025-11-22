@@ -9,4 +9,3 @@ export {
   discountOptions,
 } from './defaultValues'
 export { currencyOptions } from './currencyOptions'
-export { countryList } from './countryList'

@@ -19,6 +19,8 @@ const createUserEndpoints = (base: string) => ({
   profile: `${base}/profile`,
   refresh: `${base}/refresh`,
   avatar: `${base}/avatar`,
+  country: `${base}/country`,
+  countryCodes: `${base}/country-codes`,
 })
 
 const createOrderEndpoints = (base: string) => ({

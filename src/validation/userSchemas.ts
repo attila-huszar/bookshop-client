@@ -25,6 +25,11 @@ export const nameSchema = Yup.string()
   )
   .required('Required')
 
+export const countrySchema = Yup.string()
+  .length(2, 'Country code must be 2 characters')
+  .matches(/^[a-z]{2}$/, 'Invalid country code')
+  .required('Country is required')
+
 export const phoneSchema = Yup.string()
   .matches(
     /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,
@@ -40,6 +45,7 @@ export const registrationSchema = Yup.object().shape({
   email: emailSchema,
   password: passwordSchema,
   passwordConfirmation: passwordConfirmSchema,
+  country: countrySchema,
   avatar: imageSchema,
 })
 
@@ -54,6 +60,7 @@ export const accountBasicSchema = Yup.object().shape({
   firstName: nameSchema,
   lastName: nameSchema,
   phone: phoneSchema,
+  country: countrySchema,
 })
 
 export const accountAddressSchema = Yup.object().shape({
