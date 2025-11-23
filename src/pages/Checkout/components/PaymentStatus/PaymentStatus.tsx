@@ -27,17 +27,11 @@ export function PaymentStatus() {
   useEffect(() => {
     if (effectRan.current) return
 
+    if (!stripe) return
+
     const clientSecret = new URLSearchParams(window.location.search).get(
       'payment_intent_client_secret',
     )
-
-    if (!stripe) {
-      setStatus({
-        intent: 'stripe_error',
-        message: 'Payment system is not available. Please try again later.',
-      })
-      return
-    }
 
     if (!clientSecret) {
       setStatus({
@@ -99,7 +93,6 @@ export function PaymentStatus() {
               dispatch(cartClear())
               dispatch(orderClear())
             } catch (updateError) {
-              // Payment succeeded but order update failed - log but don't block user
               const formattedError = await handleError({
                 error: updateError,
                 message: 'Payment succeeded but order update failed',
@@ -109,7 +102,7 @@ export function PaymentStatus() {
                 { id: 'order-update-error', duration: 10000 },
               )
               console.error('Order update failed:', formattedError)
-              // Still clear cart and order since payment succeeded
+
               dispatch(cartClear())
               dispatch(orderClear())
             }
@@ -122,7 +115,7 @@ export function PaymentStatus() {
               message:
                 "Payment processing. We'll update you when payment is received.",
             })
-            // Retry after delay for processing status
+
             if (attempt < MAX_RETRIES) {
               setTimeout(() => {
                 setRetryCount(attempt)
@@ -174,7 +167,6 @@ export function PaymentStatus() {
           }
         }
       } catch (error) {
-        // Retry on error if we haven't exceeded max retries
         if (attempt < MAX_RETRIES) {
           setStatus({
             intent: 'retrying',
@@ -216,38 +208,14 @@ export function PaymentStatus() {
               <div className="icon-circle"></div>
               <div className="icon-fix"></div>
             </div>
+            <p>You will receive a confirmation email shortly.</p>
           </div>
         )}
       </Status>
       <p>{status.message}</p>
-      {status.intent === 'succeeded' && (
-        <p
-          style={{
-            fontSize: '0.9rem',
-            color: 'var(--grey)',
-            marginTop: '0.5rem',
-          }}>
-          You will receive a confirmation email shortly.
-        </p>
-      )}
-      {(status.intent === 'succeeded' ||
-        status.intent === 'canceled' ||
-        status.intent === 'requires_payment_method' ||
-        status.intent === 'retrieve_error' ||
-        status.intent === 'missing_secret' ||
-        status.intent === 'stripe_error') && (
-        <button
-          onClick={() => {
-            try {
-              void navigate('/', { replace: true })
-            } catch {
-              window.location.href = '/'
-            }
-          }}
-          type="button">
-          Back to home
-        </button>
-      )}
+      <button onClick={() => void navigate('/')} type="button">
+        Back to home
+      </button>
     </StyledPaymentStatus>
   )
 }

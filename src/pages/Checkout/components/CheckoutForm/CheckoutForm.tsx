@@ -29,7 +29,9 @@ export function CheckoutForm() {
     event.preventDefault()
 
     if (!stripe || !elements) {
-      setMessage('Payment system is not ready. Please wait a moment and try again.')
+      setMessage(
+        'Payment system is not ready. Please wait a moment and try again.',
+      )
       return
     }
 
@@ -38,21 +40,14 @@ export function CheckoutForm() {
       return
     }
 
-    // Validate email
-    const email = emailInput || userData?.email
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMessage('Please enter a valid email address.')
-      return
-    }
-
     setIsLoading(true)
     setMessage(undefined)
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          receipt_email: email,
+          receipt_email: userData?.email ?? emailInput,
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
         },
         redirect: 'if_required',
@@ -60,17 +55,22 @@ export function CheckoutForm() {
 
       if (error) {
         if (error.type === 'card_error' || error.type === 'validation_error') {
-          setMessage(error.message || 'Payment validation failed.')
+          setMessage(error.message ?? 'Payment validation failed.')
         } else if (error.type === 'rate_limit_error') {
           setMessage('Too many requests. Please try again in a moment.')
         } else {
           setMessage(
-            error.message || 'An unexpected error occurred. Please try again.',
+            error.message ?? 'An unexpected error occurred. Please try again.',
           )
         }
-      } else {
-        // Payment succeeded, will redirect via return_url
+      } else if (paymentIntent?.status === 'succeeded') {
         setMessage('Payment successful! Redirecting...')
+        void navigate(
+          `/${ROUTE.CHECKOUT}?payment_intent_client_secret=${paymentIntent.client_secret}&redirect_status=succeeded`,
+          { replace: true },
+        )
+      } else {
+        setMessage('Something went wrong. Please try again.')
       }
     } catch (error) {
       const formattedError = await handleError({
@@ -92,11 +92,10 @@ export function CheckoutForm() {
 
     try {
       const result = await dispatch(orderCancel(order.paymentId))
-      
+
       if (orderCancel.rejected.match(result)) {
-        const errorMessage = result.error?.message || 'Failed to cancel order'
+        const errorMessage = result.error?.message ?? 'Failed to cancel order'
         toast.error(errorMessage, { id: 'cancel-error' })
-        // Still clear and navigate even if cancel fails on server
       }
     } catch (error) {
       const formattedError = await handleError({
@@ -106,12 +105,7 @@ export function CheckoutForm() {
       toast.error(formattedError.message, { id: 'cancel-error' })
     } finally {
       dispatch(orderClear())
-      try {
-        await navigate(`/${ROUTE.CART}`, { replace: true })
-      } catch (navError) {
-        // Fallback if navigation fails
-        window.location.href = `/${ROUTE.CART}`
-      }
+      void navigate(`/${ROUTE.CART}`, { replace: true })
     }
   }
 
@@ -156,13 +150,10 @@ export function CheckoutForm() {
         </span>
       </div>
       <LinkAuthenticationElement
-        options={{ defaultValues: { email: userData?.email ?? '' } }}
+        options={{ defaultValues: { email: userData?.email ?? emailInput } }}
         onChange={(e) => setEmailInput(e.value.email)}
       />
-      <PaymentElement
-        id="payment-element"
-        options={paymentElementOptions}
-      />
+      <PaymentElement id="payment-element" options={paymentElementOptions} />
       <button
         type="submit"
         disabled={isLoading || !stripe || !elements}

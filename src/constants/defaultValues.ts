@@ -1,5 +1,7 @@
 import type { FilterProps } from '@/types'
 
+export const defaultCountry = 'hu'
+
 export const loginInitialValues = {
   email: '',
   password: '',
@@ -11,6 +13,7 @@ export const registrationInitialValues = {
   email: '',
   password: '',
   passwordConfirmation: '',
+  country: '',
   avatar: undefined,
 }
 

@@ -57,6 +57,7 @@ export const initialUserValues: UserFormValues = {
   email: '',
   firstName: '',
   lastName: '',
+  country: '',
   role: UserRole.User,
   avatar: '',
   phone: '',
