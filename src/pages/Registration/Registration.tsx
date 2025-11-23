@@ -9,20 +9,20 @@ import { getUserCountry } from '@/api'
 import { register } from '@/store'
 import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'
-import { registrationInitialValues } from '@/constants'
+import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Registration() {
   const dispatch = useAppDispatch()
+  const [country, setCountry] = useState(defaultCountry)
   const [showPassword, setShowPassword] = useState(false)
-  const [defaultCountry, setDefaultCountry] = useState('hu')
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchCountry = async () => {
       const data = await getUserCountry()
-      setDefaultCountry(data.country)
+      setCountry(data.country)
     }
     void fetchCountry()
   }, [])
@@ -87,7 +87,7 @@ export function Registration() {
               autoComplete="new-password"
             />
             <p>Country</p>
-            <CountrySelect name="country" defaultCountry={defaultCountry} />
+            <CountrySelect defaultCountry={country} />
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>

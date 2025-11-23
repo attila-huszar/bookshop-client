@@ -119,7 +119,12 @@ export const AddressLine = styled.div`
   }
 
   &:nth-child(3) {
+    width: 50%;
     margin-bottom: 0;
+
+    > div {
+      width: calc(100% - 1.5rem);
+    }
   }
 `
 

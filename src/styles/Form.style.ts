@@ -4,7 +4,7 @@ export const InputWrapper = styled.div`
   position: relative;
 `
 
-const baseInputStyles = css<FormTypes>`
+export const baseInputStyles = css<FormTypes>`
   width: 100%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
@@ -52,6 +52,14 @@ const baseInputStyles = css<FormTypes>`
         outline: none;
       }
     `}
+
+    ${({ disabled }) =>
+    disabled &&
+    `
+        background-color: var(--whitesmoke);
+        cursor: not-allowed;
+        color: var(--black);
+      `}
 `
 
 export const Input = styled.input<FormTypes>`
@@ -128,10 +136,11 @@ export const PasswordEye = styled.button`
   }
 `
 
-type FormTypes = React.DetailedHTMLProps<
+export type FormTypes = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 > & {
   $valid: boolean
   $error: boolean | string | undefined
+  disabled?: boolean
 }

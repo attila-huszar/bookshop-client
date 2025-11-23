@@ -1,113 +1,88 @@
 import styled from 'styled-components'
+import { baseInputStyles, FormTypes } from '@/styles'
 
-export const CustomSelectButton = styled.button<{
-  $valid: boolean
-  $error: boolean | string | undefined
-  $disabled?: boolean
-}>`
-  width: 100%;
-  padding: 0.75rem 0.75rem;
-  padding-right: ${({ $disabled }) => ($disabled ? '0.75rem' : '3.5rem')};
-  font-size: 1rem;
-  border: 1px solid lightgrey;
-  border-radius: 5px;
-  background-color: #fff;
-  text-align: left;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+interface OptionItemProps {
+  $selected?: boolean
+}
+
+export const SelectedOption = styled.div<FormTypes>`
+  ${baseInputStyles}
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  position: relative;
 
-  &:focus,
-  &:active {
-    border: 1px solid rgb(26, 33, 43);
-    box-shadow:
-      rgb(210, 213, 217) 0px 0px 2px 1px,
-      rgb(227, 230, 232) 0px 0px 0px 3px;
-    outline: none;
+  & > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
   }
 
-  ${({ $valid }) =>
-    $valid &&
-    `
-    border: 1px solid rgb(0, 156, 38);
-    outline: none;
-    
-    &:focus,
-    &:active {
-      border: 1px solid rgb(0, 156, 38);
-      box-shadow:
-        rgb(106, 237, 97) 0px 0px 2px 1px,
-        rgb(177, 247, 160) 0px 0px 0px 3px;
-      outline: none;
-    }
-  `}
-
-  ${({ $error }) =>
-    $error &&
-    `
-    border: 1px solid rgb(191, 49, 12);
-    outline: none;
-
-    &:focus,
-    &:active {
-      border: 1px solid rgb(191, 49, 12);
-      box-shadow:
-        rgb(244, 129, 116) 0px 0px 2px 1px,
-        rgb(251, 178, 174) 0px 0px 0px 3px;
-      outline: none;
-    }
-  `}
-
-  ${({ $disabled }) =>
-    $disabled &&
-    `
-    color: var(--black);
-    background-color: var(--whitesmoke);
-  `}
+  & > svg {
+    height: 1rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    color: var(--grey);
+    flex-shrink: 0;
+  }
 `
 
-export const DropdownList = styled.ul<{ $isOpen: boolean }>`
+export const DropdownList = styled.div`
   position: absolute;
-  top: calc(100% + 4px);
+  top: 100%;
   left: 0;
   right: 0;
-  max-height: 300px;
-  overflow-y: auto;
   background-color: #fff;
   border: 1px solid lightgrey;
   border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  list-style: none;
-  margin: 0;
+  margin-top: 4px;
   padding: 0;
-  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 `
 
-export const DropdownItem = styled.li`
+export const SearchInput = styled.input`
+  width: 100%;
   padding: 0.75rem;
-  cursor: pointer;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  outline: none;
+  font-size: 1rem;
+
+  &:focus {
+    background-color: #f9f9f9;
+  }
+`
+
+export const OptionsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+`
+
+export const OptionItem = styled.li<OptionItemProps>`
+  padding: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
+  cursor: pointer;
   transition: background-color 0.2s;
+  background-color: ${({ $selected }) =>
+    $selected ? '#e6f7ff' : 'transparent'};
+  font-weight: ${({ $selected }) => ($selected ? '600' : 'normal')};
 
   &:hover {
-    background-color: #f5f5f5;
-  }
-
-  &:first-child {
-    border-radius: 5px 5px 0 0;
-  }
-
-  &:last-child {
-    border-radius: 0 0 5px 5px;
+    background-color: ${({ $selected }) => ($selected ? '#e6f7ff' : '#f5f5f5')};
   }
 `
 
-export const FlagImage = styled.img`
+export const CountryFlag = styled.img`
   width: 24px;
   height: 18px;
   object-fit: cover;
@@ -116,18 +91,8 @@ export const FlagImage = styled.img`
   flex-shrink: 0;
 `
 
-export const SelectedFlag = styled(FlagImage)`
-  flex-shrink: 0;
-`
-
-export const ChevronIcon = styled.span<{ $isOpen: boolean }>`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%)
-    ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
-  transition: transform 0.2s;
-  pointer-events: none;
-  font-size: 0.75rem;
-  color: var(--grey);
+export const CountryName = styled.span`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `

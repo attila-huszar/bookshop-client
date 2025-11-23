@@ -1,4 +1,5 @@
 import { baseRequest, authRequest, PATH } from './'
+import { defaultCountry } from '@/constants'
 import type {
   CountryData,
   LoginRequest,
@@ -153,9 +154,9 @@ export const getUserCountry = async (): Promise<{
     )
     const data = await response.json()
 
-    return { country: data.country ?? 'hu' }
+    return { country: data.country ?? defaultCountry }
   } catch {
-    return { country: 'hu' }
+    return { country: defaultCountry }
   }
 }
 

@@ -3,7 +3,7 @@ import { AddressElement } from '@stripe/react-stripe-js'
 import { useAppSelector } from '@/hooks'
 import { userSelector } from '@/store'
 import { getUserCountry } from '@/api'
-import { googleMapsKey } from '@/constants'
+import { defaultCountry, googleMapsKey } from '@/constants'
 
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
@@ -15,7 +15,7 @@ export function AddressForm() {
     country,
   } = userData ?? {}
   const { line1, line2, city, state, postal_code } = userAddress ?? {}
-  const [fallbackCountry, setFallbackCountry] = useState<string>('hu')
+  const [fallbackCountry, setFallbackCountry] = useState<string>(defaultCountry)
 
   useEffect(() => {
     if (!country) {

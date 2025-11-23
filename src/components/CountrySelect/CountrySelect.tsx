@@ -1,35 +1,59 @@
 import { useEffect, useRef, useState } from 'react'
-import { Field, useFormikContext } from 'formik'
+import { useFormikContext } from 'formik'
 import { getCountryCodes } from '@/api'
-import { InputWrapper, ErrorMessage } from '@/styles'
 import { useClickOutside } from '@/hooks'
+import { InputWrapper, ErrorMessage } from '@/styles'
+import { CaretDownIcon } from '@/assets/svg'
 import {
-  CustomSelectButton,
-  SelectedFlag,
-  ChevronIcon,
+  SelectedOption,
   DropdownList,
-  DropdownItem,
-  FlagImage,
+  SearchInput,
+  OptionsList,
+  OptionItem,
+  CountryFlag,
+  CountryName,
 } from './CountrySelect.style'
-import type { CountryData, FormikProps } from '@/types'
+import type { CountryData } from '@/types'
 
 interface CountrySelectProps {
-  name: string
   defaultCountry: string
   readOnly?: boolean
 }
 
 export function CountrySelect({
-  name,
   defaultCountry,
   readOnly,
 }: CountrySelectProps) {
-  const formikContext = useFormikContext<Record<string, string>>()
+  const { values, setFieldValue, getFieldMeta, submitCount } =
+    useFormikContext<Record<string, string>>()
   const [countries, setCountries] = useState<CountryData>({})
   const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  const currentCountryCode = values.country || defaultCountry
+  const currentCountryName = countries[currentCountryCode]
 
   useClickOutside({ ref: dropdownRef, state: isOpen, setter: setIsOpen })
+
+  useEffect(() => {
+    if (isOpen && listRef.current) {
+      const selectedItem = listRef.current.querySelector(
+        '[aria-selected="true"]',
+      )
+      if (selectedItem) {
+        selectedItem.scrollIntoView({ block: 'nearest' })
+      }
+      if (searchInputRef.current) {
+        searchInputRef.current.focus()
+      }
+    } else if (!isOpen) {
+      const timeoutId = setTimeout(() => setSearchQuery(''), 200)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -39,69 +63,84 @@ export function CountrySelect({
     void fetchCountries()
   }, [])
 
-  useEffect(() => {
-    const currentValue = formikContext.values[name]
-    if (!currentValue) {
-      void formikContext.setFieldValue(name, defaultCountry)
-    }
-  }, [defaultCountry, name, formikContext])
-
-  const countryEntries = Object.entries(countries)
+  const countryList = Object.entries(countries).filter(([, name]) => {
+    if (!searchQuery) return true
+    return name.toLowerCase().includes(searchQuery.toLowerCase())
+  })
 
   const getFlagUrl = (code: string) => {
     return `https://flagcdn.com/${code.toLowerCase()}.svg`
   }
 
+  const onInputClick = () => {
+    if (readOnly) return
+    setIsOpen((prev) => !prev)
+  }
+
+  const onSelect = (code: string) => {
+    if (readOnly) return
+    void setFieldValue('country', code)
+    setIsOpen(false)
+  }
+
+  const meta = getFieldMeta('country')
+  const shouldShowError = meta.touched && submitCount > 0
+  const errorMessage = meta.error
+
   return (
-    <Field name={name}>
-      {({ field, form, meta }: FormikProps) => {
-        const shouldShowError = meta.touched && form.submitCount > 0
-        const selectedCountry = countries[field.value]
-
-        const handleSelect = (code: string) => {
-          void formikContext.setFieldValue(name, code)
-          void formikContext.setFieldTouched(name, true)
-          setIsOpen(false)
-        }
-
-        return (
-          <InputWrapper ref={dropdownRef}>
-            <CustomSelectButton
-              type="button"
-              $valid={shouldShowError && !meta.error}
-              $error={shouldShowError && meta.error}
-              $disabled={readOnly}
-              onClick={() => !readOnly && setIsOpen(!isOpen)}>
-              <SelectedFlag
-                src={getFlagUrl(field.value)}
-                alt={`${selectedCountry} flag`}
-                loading="lazy"
-              />
-              <span>{selectedCountry}</span>
-              <ChevronIcon $isOpen={isOpen}>▼</ChevronIcon>
-            </CustomSelectButton>
-            {shouldShowError && meta.error && (
-              <ErrorMessage>{meta.error}</ErrorMessage>
-            )}
-            <DropdownList $isOpen={isOpen}>
-              {countryEntries.map(([code, countryName]) => (
-                <DropdownItem
+    <InputWrapper ref={dropdownRef}>
+      <SelectedOption
+        onClick={onInputClick}
+        $valid={shouldShowError && !errorMessage}
+        $error={shouldShowError && errorMessage}
+        disabled={readOnly}>
+        <div>
+          <CountryFlag
+            src={getFlagUrl(currentCountryCode)}
+            alt={`${currentCountryName} flag`}
+            loading="lazy"
+          />
+          <CountryName>{currentCountryName}</CountryName>
+        </div>
+        <CaretDownIcon />
+      </SelectedOption>
+      {isOpen && !readOnly && (
+        <DropdownList>
+          <SearchInput
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search country..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <OptionsList ref={listRef}>
+            {countryList.length > 0 ? (
+              countryList.map(([code, countryName]) => (
+                <OptionItem
                   key={code}
-                  onClick={() => handleSelect(code)}
-                  role="option"
-                  aria-selected={field.value === code}>
-                  <FlagImage
+                  onClick={() => onSelect(code)}
+                  $selected={code === currentCountryCode}
+                  aria-selected={code === currentCountryCode}>
+                  <CountryFlag
                     src={getFlagUrl(code)}
                     alt={`${countryName} flag`}
                     loading="lazy"
                   />
-                  <span>{countryName}</span>
-                </DropdownItem>
-              ))}
-            </DropdownList>
-          </InputWrapper>
-        )
-      }}
-    </Field>
+                  <CountryName>{countryName}</CountryName>
+                </OptionItem>
+              ))
+            ) : (
+              <OptionItem as="div" style={{ cursor: 'default' }}>
+                No countries found
+              </OptionItem>
+            )}
+          </OptionsList>
+        </DropdownList>
+      )}
+      {shouldShowError && errorMessage && (
+        <ErrorMessage>{errorMessage}</ErrorMessage>
+      )}
+    </InputWrapper>
   )
 }

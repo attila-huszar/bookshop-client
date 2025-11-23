@@ -93,6 +93,9 @@ export function Account() {
     const { email, firstName, lastName, phone, address, avatar, country } =
       userData
 
+    const defaultCountry =
+      address && 'country' in address ? address.country! : country
+
     return (
       <StyledAccount>
         <h2>
@@ -279,8 +282,7 @@ export function Account() {
                     <div>
                       <p>Country</p>
                       <CountrySelect
-                        name="country"
-                        defaultCountry={country}
+                        defaultCountry={defaultCountry}
                         readOnly={!editingAddressInfo}
                       />
                     </div>
