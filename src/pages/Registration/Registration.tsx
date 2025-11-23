@@ -3,19 +3,29 @@ import { useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
 import { ButtonWrapper } from '@/styles'
-import { FormikField, Button, IconButton } from '@/components'
+import { FormikField, CountrySelect, Button, IconButton } from '@/components'
 import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
+import { getUserCountry } from '@/api'
 import { register } from '@/store'
 import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'
-import { registrationInitialValues } from '@/constants'
+import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
 
 export function Registration() {
   const dispatch = useAppDispatch()
+  const [country, setCountry] = useState(defaultCountry)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      const data = await getUserCountry()
+      setCountry(data.country)
+    }
+    void fetchCountry()
+  }, [])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -76,6 +86,8 @@ export function Registration() {
               setShowPassword={setShowPassword}
               autoComplete="new-password"
             />
+            <p>Country</p>
+            <CountrySelect defaultCountry={country} />
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>

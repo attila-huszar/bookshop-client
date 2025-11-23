@@ -1,39 +1,65 @@
+import { useEffect, useState } from 'react'
 import { AddressElement } from '@stripe/react-stripe-js'
-import { Address } from '@stripe/stripe-js'
 import { useAppSelector } from '@/hooks'
 import { userSelector } from '@/store'
-import { googleMapsKey } from '@/constants'
+import { getUserCountry } from '@/api'
+import { defaultCountry, googleMapsKey } from '@/constants'
 
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
-  const address: Partial<Address> = userData?.address ?? {}
+  const {
+    firstName,
+    lastName,
+    phone,
+    address: userAddress,
+    country,
+  } = userData ?? {}
+  const { line1, line2, city, state, postal_code } = userAddress ?? {}
+  const [fallbackCountry, setFallbackCountry] = useState<string>(defaultCountry)
+
+  useEffect(() => {
+    if (!country) {
+      void getUserCountry().then((data) => {
+        setFallbackCountry(data.country)
+      })
+    }
+  }, [country])
+
+  const userCountry = country ?? fallbackCountry
+
+  const addressOptions: Parameters<typeof AddressElement>[0]['options'] = {
+    mode: 'shipping',
+    display: { name: 'split' },
+    fields: { phone: 'always' },
+    defaultValues: {
+      firstName,
+      lastName,
+      phone,
+      address: {
+        line1,
+        line2,
+        city,
+        state,
+        postal_code,
+        country: userCountry,
+      },
+    },
+  }
+
+  if (googleMapsKey) {
+    addressOptions.autocomplete = {
+      mode: 'google_maps_api',
+      apiKey: googleMapsKey,
+    }
+  } else {
+    addressOptions.autocomplete = {
+      mode: 'automatic',
+    }
+  }
 
   return (
     <form>
-      <AddressElement
-        options={{
-          mode: 'shipping',
-          display: { name: 'split' },
-          fields: { phone: 'always' },
-          defaultValues: {
-            firstName: userData?.firstName,
-            lastName: userData?.lastName,
-            phone: userData?.phone,
-            address: {
-              line1: address?.line1,
-              line2: address?.line2,
-              city: address?.city,
-              state: address?.state,
-              postal_code: address?.postal_code,
-              country: address?.country ?? 'US',
-            },
-          },
-          autocomplete: {
-            mode: 'google_maps_api',
-            apiKey: googleMapsKey,
-          },
-        }}
-      />
+      <AddressElement options={addressOptions} />
     </form>
   )
 }
