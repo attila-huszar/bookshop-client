@@ -19,7 +19,6 @@ export const orderCreate = createAsyncThunk(
     clientSecret: string
     paymentId: string
     amount: number
-    currency: string
   }> => {
     let stripePaymentId: string | null = null
 
@@ -58,7 +57,6 @@ export const orderCreate = createAsyncThunk(
         clientSecret,
         paymentId: orderResponse.paymentId,
         amount: order.orderToStripe.amount,
-        currency: order.orderToStripe.currency,
       }
     } catch (serverError) {
       if (stripePaymentId) {
@@ -105,14 +103,9 @@ export const orderRetrieve = createAsyncThunk(
       throw new Error('Invalid payment amount in response')
     }
 
-    if (!stripeResponse.currency) {
-      throw new Error('Invalid currency in response')
-    }
-
     return {
       clientSecret: stripeResponse.client_secret,
       amount: stripeResponse.amount,
-      currency: stripeResponse.currency,
       status: stripeResponse.status || 'unknown',
     }
   },

@@ -84,24 +84,21 @@ cartToLocalStorageTyped({
   },
 })
 
-export const paymentIdToLocalStorage = createListenerMiddleware()
+export const clientSecretToLocalStorage = createListenerMiddleware()
 
-const paymentIdToLocalStorageTyped =
-  paymentIdToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
+const clientSecretToLocalStorageTyped =
+  clientSecretToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
 
-paymentIdToLocalStorageTyped({
+clientSecretToLocalStorageTyped({
   actionCreator: orderCreate.fulfilled,
   effect: (action) => {
-    localStorage.setItem(
-      'paymentId',
-      action.payload.clientSecret.split('_secret_')[0],
-    )
+    localStorage.setItem('clientSecret', action.payload.clientSecret)
   },
 })
 
-paymentIdToLocalStorageTyped({
+clientSecretToLocalStorageTyped({
   actionCreator: orderClear,
   effect: () => {
-    localStorage.removeItem('paymentId')
+    localStorage.removeItem('clientSecret')
   },
 })

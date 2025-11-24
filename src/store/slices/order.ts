@@ -30,10 +30,8 @@ const orderSlice = createSlice({
         state.order = {
           intent: 'processing',
           status: OrderStatus.Pending,
-          paymentId: action.payload.paymentId,
           clientSecret: action.payload.clientSecret,
           amount: action.payload.amount,
-          currency: action.payload.currency,
         }
         state.orderIsLoading = false
         state.orderCreateError = null
@@ -52,10 +50,8 @@ const orderSlice = createSlice({
         state.order = {
           intent: 'processing',
           status: OrderStatus.Pending,
-          paymentId: action.payload.clientSecret.split('_secret_')[0],
           clientSecret: action.payload.clientSecret,
           amount: action.payload.amount,
-          currency: action.payload.currency,
         }
         state.orderIsLoading = false
         state.orderRetrieveError = null

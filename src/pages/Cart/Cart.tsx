@@ -28,10 +28,14 @@ import {
 import { Button, IconButton, Loading, Price } from '@/components'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
-import { currencyOptions } from '@/constants'
-import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
+import {
+  enforceMinMax,
+  calcSubtotalOrDiscount,
+  calculateTotalAmount,
+  createStripeIntent,
+} from '@/helpers'
 import { OrderStatus } from '@/types'
-import type { Cart, PostPaymentIntent, Order } from '@/types'
+import type { Cart, Order } from '@/types'
 import {
   MinusIcon,
   PlusIcon,
@@ -41,25 +45,6 @@ import {
   CartIcon,
   SpinnerIcon,
 } from '@/assets/svg'
-
-const calculateTotalAmount = (cartItems: Cart[]): number => {
-  return cartItems.reduce(
-    (total, item) =>
-      total + (item.price - (item.price * item.discount) / 100) * item.quantity,
-    0,
-  )
-}
-
-const createStripeIntent = (
-  amount: number,
-  currency: string = currencyOptions.usd,
-): PostPaymentIntent => {
-  return {
-    amount: Math.round(amount * 100),
-    currency,
-    description: 'Book Shop Order',
-  }
-}
 
 export function Cart() {
   const navigate = useNavigate()
@@ -137,7 +122,6 @@ export function Cart() {
         paymentIntentStatus: 'processing',
         orderStatus: OrderStatus.Pending,
         total: Number(total.toFixed(2)),
-        currency: currencyOptions.usd,
         items: cartItems,
         firstName,
         lastName,

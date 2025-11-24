@@ -15,6 +15,7 @@
     "test:real:": "vitest run"
   },
   "dependencies": {
+    "@lottiefiles/dotlottie-react": "^0.17.8",
     "@reduxjs/toolkit": "^2.10.1",
     "@stripe/react-stripe-js": "^5.4.0",
     "@stripe/stripe-js": "^8.5.2",

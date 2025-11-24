@@ -1,88 +1,45 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useLocation } from 'react-router'
+import { ErrorBoundary } from 'react-error-boundary'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import { stripeKey } from '@/constants'
-import { useAppSelector } from '@/hooks'
+import { useAppSelector, useLocalStorage } from '@/hooks'
 import { orderSelector } from '@/store'
 import { StyledCheckout } from './Checkout.style'
 import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
-import { handleError } from '@/errors'
 
 const stripePromise = loadStripe(stripeKey)
 
 export function Checkout() {
+  const location = useLocation()
   const { order, orderIsLoading, orderRetrieveError } =
     useAppSelector(orderSelector)
+  const { getFromLocalStorage } = useLocalStorage()
   const ref = useRef<HTMLDialogElement>(null)
-  const [stripeLoadError, setStripeLoadError] = useState<string | null>(null)
 
-  useEffect(() => {
-    stripePromise.catch(async (error) => {
-      const formattedError = await handleError({
-        error,
-        message: 'Failed to load payment system. Please try again later.',
-      })
-      setStripeLoadError(formattedError.message)
-    })
-  }, [])
-
-  const redirectStatus = new URLSearchParams(window.location.search).get(
+  const redirectStatus = new URLSearchParams(location.search).get(
     'redirect_status',
   )
 
-  const clientSecret = order?.clientSecret
+  const clientSecret =
+    order?.clientSecret ?? getFromLocalStorage('clientSecret') ?? ''
 
   useEffect(() => {
-    if (
-      orderIsLoading ||
-      orderRetrieveError ||
-      stripeLoadError ||
-      !clientSecret
-    ) {
+    if (orderIsLoading || orderRetrieveError) {
       ref.current?.showModal()
     } else {
       ref.current?.close()
     }
-  }, [orderIsLoading, orderRetrieveError, stripeLoadError, clientSecret])
+  }, [orderIsLoading, orderRetrieveError, clientSecret])
 
   const options: StripeElementsOptions = {
     clientSecret,
     appearance: { theme: 'flat', variables: {} },
     loader: 'auto',
-  }
-
-  if (stripeLoadError) {
-    return (
-      <StyledCheckout>
-        <InfoDialog
-          dialogRef={ref}
-          message="Payment system error"
-          error={stripeLoadError}
-          reloadButton
-          backButton
-        />
-      </StyledCheckout>
-    )
-  }
-
-  if (clientSecret && options) {
-    return (
-      <StyledCheckout>
-        <Elements stripe={stripePromise} options={options}>
-          {redirectStatus === 'succeeded' ? (
-            <PaymentStatus />
-          ) : (
-            <>
-              <AddressForm />
-              <CheckoutForm />
-            </>
-          )}
-        </Elements>
-      </StyledCheckout>
-    )
   }
 
   if (orderIsLoading) {
@@ -109,12 +66,23 @@ export function Checkout() {
 
   return (
     <StyledCheckout>
-      <InfoDialog
-        dialogRef={ref}
-        message="No checkout in progress"
-        error={orderRetrieveError}
-        backButton
-      />
+      <ErrorBoundary
+        fallbackRender={() => (
+          <div>
+            <p>Something went wrong. Please try again later.</p>
+          </div>
+        )}>
+        <Elements stripe={stripePromise} options={options}>
+          {redirectStatus === 'succeeded' ? (
+            <PaymentStatus />
+          ) : (
+            <>
+              <AddressForm />
+              <CheckoutForm />
+            </>
+          )}
+        </Elements>
+      </ErrorBoundary>
     </StyledCheckout>
   )
 }

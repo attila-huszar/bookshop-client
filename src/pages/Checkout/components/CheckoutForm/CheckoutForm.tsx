@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import {
   PaymentElement,
   useStripe,
@@ -6,24 +7,29 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useNavigate } from 'react-router'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { toast } from 'react-hot-toast'
+import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
 import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
 import { ROUTE } from '@/routes'
-import { baseURL } from '@/constants'
+import { getPaymentId } from '@/helpers'
+import { baseURL, defaultCurrency } from '@/constants'
 import { handleError } from '@/errors'
-import { toast } from 'react-hot-toast'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
   const { order } = useAppSelector(orderSelector)
+  const { getFromLocalStorage } = useLocalStorage()
   const [message, setMessage] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [emailInput, setEmailInput] = useState('')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+
+  const paymentId =
+    getPaymentId(order?.clientSecret ?? '') ??
+    getFromLocalStorage('clientSecret')
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -35,7 +41,7 @@ export function CheckoutForm() {
       return
     }
 
-    if (!order?.paymentId) {
+    if (!paymentId) {
       setMessage('Order information is missing. Please start checkout again.')
       return
     }
@@ -84,14 +90,14 @@ export function CheckoutForm() {
   }
 
   const handleCancel = async () => {
-    if (!order?.paymentId) {
+    if (!paymentId) {
       dispatch(orderClear())
       void navigate(`/${ROUTE.CART}`, { replace: true })
       return
     }
 
     try {
-      const result = await dispatch(orderCancel(order.paymentId))
+      const result = await dispatch(orderCancel(paymentId))
 
       if (orderCancel.rejected.match(result)) {
         const errorMessage = result.error?.message ?? 'Failed to cancel order'
@@ -122,9 +128,8 @@ export function CheckoutForm() {
   }
 
   const orderForm = order && {
-    num: order.paymentId.slice(-6).toUpperCase(),
+    num: paymentId?.slice(-6).toUpperCase(),
     amount: (order.amount / 100).toFixed(2),
-    currency: order.currency.toUpperCase(),
   }
 
   if (!orderForm) {
@@ -146,7 +151,7 @@ export function CheckoutForm() {
       <div>
         <p>Order #{orderForm.num}</p>
         <span>
-          {orderForm.amount} {orderForm.currency}
+          {orderForm.amount} {defaultCurrency}
         </span>
       </div>
       <LinkAuthenticationElement
@@ -162,7 +167,7 @@ export function CheckoutForm() {
           {isLoading ? (
             <div className="spinner" id="spinner"></div>
           ) : (
-            `Pay ${orderForm.amount} ${orderForm.currency}`
+            `Pay ${orderForm.amount} ${defaultCurrency}`
           )}
         </span>
       </button>
@@ -175,12 +180,7 @@ export function CheckoutForm() {
         <span>Cancel Checkout</span>
       </button>
       {message && (
-        <div
-          id="payment-message"
-          style={{
-            color: message.includes('successful') ? 'green' : 'red',
-            marginTop: '1rem',
-          }}>
+        <div id="payment-message" style={{ marginTop: '1rem' }}>
           {message}
         </div>
       )}

@@ -1,6 +1,8 @@
 import type { FilterProps } from '@/types'
 
 export const defaultCountry = 'hu'
+export const defaultCurrency = 'USD'
+export const defaultCurrencySymbol = '$'
 
 export const loginInitialValues = {
   email: '',

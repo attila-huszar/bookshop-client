@@ -11,7 +11,6 @@ export type Order = {
   paymentIntentStatus: PaymentIntent.Status
   orderStatus: OrderStatus
   total: number
-  currency: string
   items: OrderItem[]
   name?: string | null
   firstName?: string
@@ -36,12 +35,10 @@ export type OrderItem = {
 }
 
 export type OrderInStore = {
+  clientSecret: string
+  amount: number
   intent: PaymentIntent.Status
   status: OrderStatus
-  paymentId: string
-  clientSecret?: string
-  amount: number
-  currency: string
 }
 
 export type OrderUpdate = {
@@ -51,14 +48,12 @@ export type OrderUpdate = {
 
 export type PostPaymentIntent = {
   amount: number
-  currency: string
   description: string
 }
 
 export type GetPaymentIntent = {
   client_secret: string
   amount: number
-  currency: string
   status: PaymentIntent.Status
 }
 

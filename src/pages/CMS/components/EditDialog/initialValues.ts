@@ -36,7 +36,6 @@ export const initialOrderValues: OrderFormValues = {
   paymentIntentStatus: 'processing',
   orderStatus: OrderStatus.Pending,
   total: 0,
-  currency: 'USD',
   items: [],
   name: '',
   firstName: '',

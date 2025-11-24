@@ -1,4 +1,5 @@
 import { baseRequest, PATH } from './'
+import { defaultCurrency } from '@/constants'
 import type {
   Order,
   OrderUpdate,
@@ -8,12 +9,11 @@ import type {
 
 export const postPaymentIntent = async ({
   amount,
-  currency,
   description,
 }: PostPaymentIntent): Promise<{ clientSecret: string }> => {
   const response = await baseRequest.post<{ clientSecret: string }>(
     PATH.orders.paymentIntent,
-    { json: { amount, currency, description } },
+    { json: { amount, currency: defaultCurrency, description } },
   )
   return await response.json()
 }

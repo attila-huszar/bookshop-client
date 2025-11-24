@@ -121,7 +121,6 @@ export const Orders = () => {
                 </td>
                 <td>{order.items.map((item) => item.title).join(', ')}</td>
                 <td>{order.total}</td>
-                <td>{order.currency}</td>
                 <td style={{ padding: 0 }}>
                   <IconButton
                     onClick={(e) => {

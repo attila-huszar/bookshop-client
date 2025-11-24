@@ -438,14 +438,6 @@ export const EditDialog: FC<Props> = ({
                       type="number"
                     />
                   </div>
-                  <div>
-                    <p>Currency</p>
-                    <FormikField
-                      name="currency"
-                      placeholder="Currency"
-                      type="text"
-                    />
-                  </div>
                 </DefaultRow>
                 {renderButtons({ isSubmitting })}
               </Form>
