@@ -3,6 +3,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
 import { usePaymentStatus } from '../../hooks/usePaymentStatus'
 import logo from '@/assets/image/logo.png'
+import checkmarkAnim from '@/assets/lottie/checkmark.lottie'
 
 export function PaymentStatus() {
   const location = useLocation()
@@ -21,7 +22,7 @@ export function PaymentStatus() {
       </Logo>
       {status.intent === 'succeeded' && (
         <LottieWrapper>
-          <DotLottieReact src="/lottie/checkmark.lottie" autoplay />
+          <DotLottieReact src={checkmarkAnim} autoplay />
         </LottieWrapper>
       )}
       <p>{status.message}</p>
