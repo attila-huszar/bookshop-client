@@ -1,82 +1,31 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { PaymentIntent } from '@stripe/stripe-js'
 import {
-  postCreateOrder,
+  postCreateOrderWithPayment,
   getPaymentIntent,
   deletePaymentIntent,
-  postPaymentIntent,
   updateOrder,
 } from '@/api'
 import { log } from '@/libs'
-import { OrderStatus, PostPaymentIntent, Order } from '@/types'
+import { OrderStatus, OrderCreateRequest } from '@/types'
 
 export const orderCreate = createAsyncThunk(
   'order/orderCreate',
-  async (order: {
-    orderToStripe: PostPaymentIntent
-    orderToServer: Order
-  }): Promise<{
-    clientSecret: string
-    paymentId: string
-    amount: number
-  }> => {
-    let stripePaymentId: string | null = null
-
-    const stripeResponse = await postPaymentIntent(order.orderToStripe)
-
-    if (!stripeResponse?.clientSecret) {
-      throw new Error(
-        'Invalid response from payment service: missing client secret',
-      )
-    }
-
-    const clientSecret = stripeResponse.clientSecret
-    const paymentIdMatch = /^pi_[^_]+/.exec(clientSecret)
-
-    if (!paymentIdMatch) {
-      throw new Error(
-        'Invalid client secret format: unable to extract payment ID',
-      )
-    }
-
-    stripePaymentId = paymentIdMatch[0]
-
-    const orderPayload = {
-      ...order.orderToServer,
-      paymentId: stripePaymentId,
-    }
-
+  async (
+    orderRequest: OrderCreateRequest,
+  ): Promise<{ clientSecret: string; amount: number }> => {
     try {
-      const orderResponse = await postCreateOrder(orderPayload)
+      const { clientSecret, amount } =
+        await postCreateOrderWithPayment(orderRequest)
 
-      if (!orderResponse?.paymentId) {
-        throw new Error('Invalid response from server: missing payment ID')
+      if (!clientSecret) {
+        throw new Error('Invalid response from server: missing clientSecret')
       }
 
-      return {
-        clientSecret,
-        paymentId: orderResponse.paymentId,
-        amount: order.orderToStripe.amount,
-      }
-    } catch (serverError) {
-      if (stripePaymentId) {
-        try {
-          await deletePaymentIntent(stripePaymentId)
-          void log.warn(
-            'Rolled back Stripe payment intent after server order creation failed',
-            {
-              paymentId: stripePaymentId,
-            },
-          )
-        } catch (rollbackError) {
-          void log.error('Failed to rollback Stripe payment intent', {
-            paymentId: stripePaymentId,
-            rollbackError,
-          })
-        }
-      }
-
-      throw serverError
+      return { clientSecret, amount }
+    } catch (error) {
+      void log.error('Order creation failed', { error })
+      throw error
     }
   },
 )
@@ -84,44 +33,34 @@ export const orderCreate = createAsyncThunk(
 export const orderRetrieve = createAsyncThunk(
   'order/orderRetrieve',
   async (paymentId: string) => {
-    if (!paymentId || typeof paymentId !== 'string') {
-      throw new Error('Invalid payment ID provided')
-    }
+    const {
+      client_secret: clientSecret,
+      amount,
+      status,
+    } = await getPaymentIntent(paymentId)
 
-    const stripeResponse = await getPaymentIntent(paymentId)
-
-    if (!stripeResponse?.client_secret) {
+    if (!clientSecret) {
       throw new Error(
         'Invalid response from payment service: missing client secret',
       )
     }
 
-    if (
-      typeof stripeResponse.amount !== 'number' ||
-      stripeResponse.amount <= 0
-    ) {
+    if (typeof amount !== 'number' || amount <= 0) {
       throw new Error('Invalid payment amount in response')
     }
 
-    return {
-      clientSecret: stripeResponse.client_secret,
-      amount: stripeResponse.amount,
-      status: stripeResponse.status || 'unknown',
-    }
+    return { clientSecret, status, amount }
   },
 )
 
 export const orderCancel = createAsyncThunk(
   'order/orderCancel',
   async (paymentId: string) => {
-    if (!paymentId || typeof paymentId !== 'string') {
-      throw new Error('Invalid payment ID provided')
-    }
-
     let stripeStatus: PaymentIntent.Status = 'canceled'
+
     try {
       const stripeDelRes = await deletePaymentIntent(paymentId)
-      stripeStatus = stripeDelRes?.status || 'canceled'
+      stripeStatus = stripeDelRes.status
     } catch (stripeError) {
       void log.warn(
         'Failed to cancel Stripe payment intent, continuing with order cancellation',
@@ -141,7 +80,7 @@ export const orderCancel = createAsyncThunk(
         },
       })
 
-      if (!updateRes?.orderStatus) {
+      if (!updateRes.orderStatus) {
         throw new Error('Invalid response from server: missing order status')
       }
 

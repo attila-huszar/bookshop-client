@@ -3,6 +3,7 @@ import { defaultCurrency } from '@/constants'
 import type {
   Order,
   OrderUpdate,
+  OrderCreateRequest,
   GetPaymentIntent,
   PostPaymentIntent,
 } from '@/types'
@@ -36,13 +37,13 @@ export const deletePaymentIntent = async (
   return await response.json()
 }
 
-export const postCreateOrder = async (
-  orderData: Order,
-): Promise<{ paymentId: string }> => {
-  const response = await baseRequest.post<{ paymentId: string }>(
-    PATH.orders.create,
-    { json: orderData },
-  )
+export const postCreateOrderWithPayment = async (
+  orderRequest: OrderCreateRequest,
+): Promise<{ clientSecret: string; amount: number }> => {
+  const response = await baseRequest.post<{
+    clientSecret: string
+    amount: number
+  }>(PATH.orders.createWithPayment, { json: orderRequest })
   return await response.json()
 }
 

@@ -34,6 +34,20 @@ export type OrderItem = {
   quantity: number
 }
 
+export type OrderItemRequest = {
+  id: number
+  quantity: number
+}
+
+export type OrderCreateRequest = {
+  items: OrderItemRequest[]
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: Partial<Address> | null
+}
+
 export type OrderInStore = {
   clientSecret: string
   amount: number

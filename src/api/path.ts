@@ -25,6 +25,7 @@ const createUserEndpoints = (base: string) => ({
 
 const createOrderEndpoints = (base: string) => ({
   paymentIntent: `${base}/payment-intent`,
+  createWithPayment: `${base}/create-with-payment`,
   create: `${base}/create`,
   update: `${base}/update`,
 })

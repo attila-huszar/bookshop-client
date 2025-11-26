@@ -28,14 +28,8 @@ import {
 import { Button, IconButton, Loading, Price } from '@/components'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
-import {
-  enforceMinMax,
-  calcSubtotalOrDiscount,
-  calculateTotalAmount,
-  createStripeIntent,
-} from '@/helpers'
-import { OrderStatus } from '@/types'
-import type { Cart, Order } from '@/types'
+import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
+import type { Cart } from '@/types'
 import {
   MinusIcon,
   PlusIcon,
@@ -113,16 +107,13 @@ export function Cart() {
 
   const handleCheckout = () => {
     if (cartItems.length) {
-      const total = calculateTotalAmount(cartItems)
-      const orderToStripe = createStripeIntent(total)
       const { firstName, lastName, email, phone, address } = { ...userData }
 
-      const orderToServer: Order = {
-        paymentId: '',
-        paymentIntentStatus: 'processing',
-        orderStatus: OrderStatus.Pending,
-        total: Number(total.toFixed(2)),
-        items: cartItems,
+      const orderRequest = {
+        items: cartItems.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
         firstName,
         lastName,
         email,
@@ -130,7 +121,7 @@ export function Cart() {
         address,
       }
 
-      void dispatch(orderCreate({ orderToStripe, orderToServer }))
+      void dispatch(orderCreate(orderRequest))
     }
   }
 

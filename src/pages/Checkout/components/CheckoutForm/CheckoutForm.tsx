@@ -7,9 +7,15 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { toast } from 'react-hot-toast'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
+import {
+  cartClear,
+  orderCancel,
+  orderClear,
+  orderRetrieve,
+  orderSelector,
+  userSelector,
+} from '@/store'
 import { ROUTE } from '@/routes'
 import { getPaymentId } from '@/helpers'
 import { baseURL, defaultCurrency } from '@/constants'
@@ -27,9 +33,35 @@ export function CheckoutForm() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const paymentId =
-    getPaymentId(order?.clientSecret ?? '') ??
-    getFromLocalStorage('clientSecret')
+  const localStorageClientSecret = getFromLocalStorage<string>('clientSecret')
+
+  if (localStorageClientSecret && !order) {
+    const paymentId = getPaymentId(localStorageClientSecret)
+    const getOrder = async () => await dispatch(orderRetrieve(paymentId))
+    void getOrder()
+  }
+
+  if (!order) {
+    return (
+      <div>
+        <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
+          Order information is missing. Please start checkout again.
+        </p>
+        <button
+          type="button"
+          onClick={() => void navigate(`/${ROUTE.CART}`, { replace: true })}>
+          <span>Back to Cart</span>
+        </button>
+      </div>
+    )
+  }
+
+  const paymentId = getPaymentId(order.clientSecret)
+
+  const orderForm = {
+    num: paymentId?.slice(-6).toUpperCase(),
+    amount: (order.amount / 100).toFixed(2),
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -41,16 +73,11 @@ export function CheckoutForm() {
       return
     }
 
-    if (!paymentId) {
-      setMessage('Order information is missing. Please start checkout again.')
-      return
-    }
-
     setIsLoading(true)
     setMessage(undefined)
 
     try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
+      const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: userData?.email ?? emailInput,
@@ -69,7 +96,11 @@ export function CheckoutForm() {
             error.message ?? 'An unexpected error occurred. Please try again.',
           )
         }
-      } else if (paymentIntent?.status === 'succeeded') {
+        setIsLoading(false)
+        return
+      }
+
+      if (paymentIntent.status === 'succeeded') {
         setMessage('Payment successful! Redirecting...')
         void navigate(
           `/${ROUTE.CHECKOUT}?payment_intent_client_secret=${paymentIntent.client_secret}&redirect_status=succeeded`,
@@ -89,30 +120,11 @@ export function CheckoutForm() {
     }
   }
 
-  const handleCancel = async () => {
-    if (!paymentId) {
-      dispatch(orderClear())
-      void navigate(`/${ROUTE.CART}`, { replace: true })
-      return
-    }
-
-    try {
-      const result = await dispatch(orderCancel(paymentId))
-
-      if (orderCancel.rejected.match(result)) {
-        const errorMessage = result.error?.message ?? 'Failed to cancel order'
-        toast.error(errorMessage, { id: 'cancel-error' })
-      }
-    } catch (error) {
-      const formattedError = await handleError({
-        error,
-        message: 'Error canceling order',
-      })
-      toast.error(formattedError.message, { id: 'cancel-error' })
-    } finally {
-      dispatch(orderClear())
-      void navigate(`/${ROUTE.CART}`, { replace: true })
-    }
+  const handleCancel = () => {
+    void dispatch(orderCancel(paymentId))
+    dispatch(orderClear())
+    dispatch(cartClear())
+    void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -125,25 +137,6 @@ export function CheckoutForm() {
       googlePay: 'auto',
       paypal: 'auto',
     },
-  }
-
-  const orderForm = order && {
-    num: paymentId?.slice(-6).toUpperCase(),
-    amount: (order.amount / 100).toFixed(2),
-  }
-
-  if (!orderForm) {
-    return (
-      <div>
-        <p>Order information is missing. Please start checkout again.</p>
-        <button
-          type="button"
-          onClick={() => void navigate(`/${ROUTE.CART}`, { replace: true })}
-          style={{ backgroundColor: 'var(--grey)' }}>
-          <span>Back to Cart</span>
-        </button>
-      </div>
-    )
   }
 
   return (

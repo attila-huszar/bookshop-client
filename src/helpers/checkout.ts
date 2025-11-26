@@ -2,24 +2,20 @@ import { PaymentIntent } from '@stripe/stripe-js'
 import { updateOrder } from '@/api'
 import { OrderStatus, type Cart, type PostPaymentIntent } from '@/types'
 
-export const getPaymentId = (clientSecret: string): string => {
-  return clientSecret.split('_secret_')[0]
-}
+export const getPaymentId = (clientSecret: string): string =>
+  clientSecret.split('_secret_')[0]
 
-export const calculateTotalAmount = (cartItems: Cart[]): number => {
-  return cartItems.reduce(
+export const calculateTotalAmount = (cartItems: Cart[]): number =>
+  cartItems.reduce(
     (total, item) =>
       total + (item.price - (item.price * item.discount) / 100) * item.quantity,
     0,
   )
-}
 
-export const createStripeIntent = (amount: number): PostPaymentIntent => {
-  return {
-    amount: Math.round(amount * 100),
-    description: 'Book Shop Order',
-  }
-}
+export const createStripeIntent = (amount: number): PostPaymentIntent => ({
+  amount: Math.round(amount * 100),
+  description: 'Book Shop Order',
+})
 
 export const updateOrderStatus = async (
   paymentIntent: PaymentIntent,

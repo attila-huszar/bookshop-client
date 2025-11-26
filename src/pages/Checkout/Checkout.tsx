@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useLocation } from 'react-router'
+import { Navigate, useLocation } from 'react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
@@ -66,12 +66,7 @@ export function Checkout() {
 
   return (
     <StyledCheckout>
-      <ErrorBoundary
-        fallbackRender={() => (
-          <div>
-            <p>Something went wrong. Please try again later.</p>
-          </div>
-        )}>
+      <ErrorBoundary fallbackRender={() => <Navigate to={'/'} replace />}>
         <Elements stripe={stripePromise} options={options}>
           {redirectStatus === 'succeeded' ? (
             <PaymentStatus />
