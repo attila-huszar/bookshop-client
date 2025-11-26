@@ -28,15 +28,16 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: isDevelopment
         ? {
-            '/api': {
-              target: env.VITE_SERVER_URL,
-              rewrite: (path) => path.replace(/^\/api/, ''),
-              changeOrigin: true,
-              secure: false,
-            },
-          }
+          '/api': {
+            target: env.VITE_SERVER_URL,
+            rewrite: (path) => path.replace(/^\/api/, ''),
+            changeOrigin: true,
+            secure: false,
+          },
+        }
         : undefined,
     },
+    assetsInclude: ['**/*.lottie'],
     test: {
       restoreMocks: true,
       globals: true,
