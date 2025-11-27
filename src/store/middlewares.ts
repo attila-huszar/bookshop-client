@@ -92,6 +92,7 @@ const clientSecretToLocalStorageTyped =
 clientSecretToLocalStorageTyped({
   actionCreator: orderCreate.fulfilled,
   effect: (action) => {
+    // codeql-suppress js/clear-text-storage-of-sensitive-information
     localStorage.setItem('clientSecret', action.payload.clientSecret)
   },
 })
