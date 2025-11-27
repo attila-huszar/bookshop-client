@@ -1,7 +1,12 @@
 import { Fragment, ChangeEvent, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useCart,
+  useLocalStorage,
+} from '@/hooks'
 import {
   cartClear,
   cartSelector,
@@ -53,14 +58,18 @@ export function Cart() {
   const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
   const { userData } = useAppSelector(userSelector)
+  const { getFromLocalStorage } = useLocalStorage()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (order?.clientSecret) {
+    const clientSecret =
+      order?.clientSecret ?? getFromLocalStorage<string>('clientSecret')
+
+    if (clientSecret) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.clientSecret, navigate])
+  }, [order?.clientSecret, navigate, getFromLocalStorage])
 
   useEffect(() => {
     if (orderIsLoading) {

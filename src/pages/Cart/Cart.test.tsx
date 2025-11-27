@@ -4,7 +4,12 @@ import { userEvent } from '@testing-library/user-event'
 import { useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { Cart } from './Cart'
-import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
+import {
+  useCart,
+  useAppSelector,
+  useAppDispatch,
+  useLocalStorage,
+} from '@/hooks'
 import { orderCreate } from '@/store'
 import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
@@ -47,6 +52,12 @@ describe('Cart component', () => {
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
 
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
+
+    vi.mocked(useLocalStorage).mockReturnValue({
+      getFromLocalStorage: vi.fn().mockReturnValue(null),
+      setToLocalStorage: vi.fn(),
+      removeFromLocalStorage: vi.fn(),
+    })
   })
 
   afterEach(() => {
@@ -127,6 +138,29 @@ describe('Cart component', () => {
       cartIsLoading: false,
       orderIsLoading: false,
       orderStatus: { clientSecret: 'secret' },
+      orderCreateError: null,
+    })
+
+    render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
+        replace: true,
+      })
+    })
+  })
+
+  it('should navigate to checkout when clientSecret exists in localStorage', async () => {
+    vi.mocked(useLocalStorage).mockReturnValue({
+      getFromLocalStorage: vi.fn().mockReturnValue('secret_from_storage'),
+      setToLocalStorage: vi.fn(),
+      removeFromLocalStorage: vi.fn(),
+    })
+
+    vi.mocked(useAppSelector).mockReturnValue({
+      cartIsLoading: false,
+      orderIsLoading: false,
+      orderStatus: null,
       orderCreateError: null,
     })
 
