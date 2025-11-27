@@ -6,7 +6,6 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import prettier from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
-import jest from 'eslint-plugin-jest'
 import jestDom from 'eslint-plugin-jest-dom'
 
 export default tseslint.config(
@@ -55,7 +54,6 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.test.{ts,tsx}'],
-    ...jest.configs['flat/recommended'],
     ...jestDom.configs['flat/recommended'],
   },
   {
@@ -68,9 +66,6 @@ export default tseslint.config(
   {
     settings: {
       react: {
-        version: 'detect',
-      },
-      jest: {
         version: 'detect',
       },
       'import/parsers': {

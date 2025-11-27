@@ -8,7 +8,7 @@ import { useCart, useAppSelector, useAppDispatch } from '@/hooks'
 import { orderCreate } from '@/store'
 import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
-import type { Cart as CartType, Order, PostPaymentIntent } from '@/types'
+import type { Cart as CartType } from '@/types'
 
 vi.mock('@/store', () => ({
   cartSelector: vi.fn(),
@@ -111,8 +111,12 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
-          orderToStripe: expect.any(Object) as PostPaymentIntent,
-          orderToServer: expect.any(Object) as Order,
+          items: [],
+          firstName: undefined,
+          lastName: undefined,
+          email: undefined,
+          phone: undefined,
+          address: undefined,
         }),
       )
     })
