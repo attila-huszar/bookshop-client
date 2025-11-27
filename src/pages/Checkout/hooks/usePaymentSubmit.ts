@@ -1,0 +1,78 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import { useStripe, useElements } from '@stripe/react-stripe-js'
+import { useMessages } from './useMessages'
+import { ROUTE } from '@/routes'
+import { baseURL } from '@/constants'
+import { handleError } from '@/errors'
+
+type UsePaymentSubmitParams = {
+  receiptEmail: string
+}
+
+type UsePaymentSubmitReturn = {
+  isLoading: boolean
+  message: string | undefined
+  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>
+}
+
+export function usePaymentSubmit({
+  receiptEmail,
+}: UsePaymentSubmitParams): UsePaymentSubmitReturn {
+  const stripe = useStripe()
+  const elements = useElements()
+  const navigate = useNavigate()
+  const { getErrorMessage } = useMessages()
+
+  const [message, setMessage] = useState<string>()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      setMessage(
+        'Payment system is not ready. Please wait a moment and try again.',
+      )
+      return
+    }
+
+    setIsLoading(true)
+    setMessage(undefined)
+
+    try {
+      const { paymentIntent, error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          receipt_email: receiptEmail,
+          return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
+        },
+        redirect: 'if_required',
+      })
+
+      if (error) {
+        setMessage(getErrorMessage(error))
+        return
+      }
+
+      if (paymentIntent) {
+        void navigate(`/${ROUTE.CHECKOUT}`, {
+          replace: true,
+          state: { showPaymentStatus: true },
+        })
+      }
+    } catch (error) {
+      const formattedError = await handleError({
+        error,
+        message: 'Failed to process payment. Please try again.',
+      })
+      setMessage(formattedError.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return { isLoading, message, handleSubmit }
+}

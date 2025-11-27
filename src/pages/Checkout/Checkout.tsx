@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, useLocation } from 'react-router'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
+import toast from 'react-hot-toast'
 import { stripeKey } from '@/constants'
 import { useAppSelector, useLocalStorage } from '@/hooks'
 import { orderSelector } from '@/store'
@@ -11,22 +12,26 @@ import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
 import { AddressForm } from './components/AddressForm/AddressForm'
 import { PaymentStatus } from './components/PaymentStatus/PaymentStatus'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
+import { handleError } from '@/errors'
 
 const stripePromise = loadStripe(stripeKey)
+
+type LocationState = {
+  showPaymentStatus?: boolean
+}
 
 export function Checkout() {
   const location = useLocation()
   const { order, orderIsLoading, orderRetrieveError } =
     useAppSelector(orderSelector)
-  const { getFromLocalStorage } = useLocalStorage()
+  const { getFromLocalStorage, removeFromLocalStorage } = useLocalStorage()
   const ref = useRef<HTMLDialogElement>(null)
 
-  const redirectStatus = new URLSearchParams(location.search).get(
-    'redirect_status',
-  )
+  const state = location.state as LocationState | null
+  const showPaymentStatus = state?.showPaymentStatus ?? false
 
   const clientSecret =
-    order?.clientSecret ?? getFromLocalStorage('clientSecret') ?? ''
+    order?.clientSecret ?? getFromLocalStorage<string>('clientSecret') ?? ''
 
   useEffect(() => {
     if (orderIsLoading || orderRetrieveError) {
@@ -34,7 +39,17 @@ export function Checkout() {
     } else {
       ref.current?.close()
     }
-  }, [orderIsLoading, orderRetrieveError, clientSecret])
+  }, [orderIsLoading, orderRetrieveError])
+
+  const handleStripeError = ({ error }: FallbackProps) => {
+    void handleError({ error })
+    removeFromLocalStorage('clientSecret')
+    toast('No Checkout Session found. Redirecting to home page...', {
+      icon: '🔄',
+      id: 'no-checkout-session',
+    })
+    return <Navigate to={'/'} replace />
+  }
 
   const options: StripeElementsOptions = {
     clientSecret,
@@ -55,7 +70,7 @@ export function Checkout() {
       <StyledCheckout>
         <InfoDialog
           dialogRef={ref}
-          message="Failed to load checkout"
+          message="Failed to load checkout, please try again later."
           error={orderRetrieveError}
           reloadButton
           backButton
@@ -66,9 +81,9 @@ export function Checkout() {
 
   return (
     <StyledCheckout>
-      <ErrorBoundary fallbackRender={() => <Navigate to={'/'} replace />}>
+      <ErrorBoundary fallbackRender={handleStripeError}>
         <Elements stripe={stripePromise} options={options}>
-          {redirectStatus === 'succeeded' ? (
+          {showPaymentStatus ? (
             <PaymentStatus />
           ) : (
             <>

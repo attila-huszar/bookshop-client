@@ -3,6 +3,7 @@ import { PaymentIntent, type Address } from '@stripe/stripe-js'
 export enum OrderStatus {
   Pending = 'PENDING',
   Paid = 'PAID',
+  Captured = 'CAPTURED',
   Canceled = 'CANCELED',
 }
 
