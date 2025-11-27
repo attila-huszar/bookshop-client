@@ -1,8 +1,3 @@
-declare module '*.lottie' {
-  const src: string
-  export default src
-}
-
 declare module 'seq-logging/browser' {
   export type SeqLevel =
     | 'Verbose'

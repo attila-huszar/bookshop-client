@@ -15,12 +15,12 @@
     "test:real:": "vitest run"
   },
   "dependencies": {
-    "@lottiefiles/dotlottie-react": "^0.17.8",
     "@reduxjs/toolkit": "^2.10.1",
     "@stripe/react-stripe-js": "^5.4.0",
     "@stripe/stripe-js": "^8.5.2",
     "formik": "^2.4.9",
     "ky": "^1.14.0",
+    "lottie-react": "^2.4.1",
     "rc-slider": "^11.1.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

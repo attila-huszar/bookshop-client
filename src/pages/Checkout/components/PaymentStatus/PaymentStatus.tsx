@@ -1,15 +1,28 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import Lottie from 'lottie-react'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
 import { cartClear, orderClear, orderSelector } from '@/store'
 import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
 import { usePaymentStatus } from '../../hooks'
 import logo from '@/assets/image/logo.png'
-import checkmarkAnim from '@/assets/lottie/checkmark.lottie'
-import exclamationAnim from '@/assets/lottie/exclamation.lottie'
+import clockAnim from '@/assets/animations/clock_loop.json'
+import checkmarkAnim from '@/assets/animations/checkmark.json'
+import exclamationAnim from '@/assets/animations/exclamation.json'
 
 const successStatuses = ['succeeded', 'requires_capture']
+const warningStatuses = [
+  'requires_payment_method',
+  'requires_confirmation',
+  'requires_action',
+  'canceled',
+]
+
+const getAnimation = (status: string) => {
+  if (successStatuses.includes(status)) return checkmarkAnim
+  if (warningStatuses.includes(status)) return exclamationAnim
+  return clockAnim
+}
 
 export function PaymentStatus() {
   const navigate = useNavigate()
@@ -29,16 +42,6 @@ export function PaymentStatus() {
     }
   }, [dispatch, status.intent])
 
-  const animation = {
-    succeeded: checkmarkAnim,
-    requires_capture: checkmarkAnim,
-    processing: undefined,
-    requires_payment_method: exclamationAnim,
-    requires_confirmation: exclamationAnim,
-    requires_action: exclamationAnim,
-    canceled: exclamationAnim,
-  }[status.intent]
-
   return (
     <StyledPaymentStatus>
       <Logo>
@@ -46,7 +49,7 @@ export function PaymentStatus() {
         <h1>Book Shop</h1>
       </Logo>
       <LottieWrapper>
-        <DotLottieReact src={animation} autoplay />
+        <Lottie animationData={getAnimation(status.intent)} loop={false} />
       </LottieWrapper>
       <p>{status.message}</p>
       <button onClick={() => void navigate('/')} type="button">
