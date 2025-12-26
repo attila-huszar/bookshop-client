@@ -7,6 +7,7 @@ const initialState: OrderState = {
   orderIsLoading: false,
   orderCreateError: null,
   orderRetrieveError: null,
+  orderCancelError: null,
 }
 
 const orderSlice = createSlice({
@@ -18,6 +19,7 @@ const orderSlice = createSlice({
       state.orderIsLoading = false
       state.orderCreateError = null
       state.orderRetrieveError = null
+      state.orderCancelError = null
     },
   },
   extraReducers: (builder) => {
@@ -62,11 +64,21 @@ const orderSlice = createSlice({
         state.orderRetrieveError =
           action.error.message ?? 'Failed to retrieve order'
       })
+      .addCase(orderCancel.pending, (state) => {
+        state.orderIsLoading = true
+        state.orderCancelError = null
+      })
       .addCase(orderCancel.fulfilled, (state) => {
         state.order = null
         state.orderIsLoading = false
         state.orderCreateError = null
         state.orderRetrieveError = null
+        state.orderCancelError = null
+      })
+      .addCase(orderCancel.rejected, (state, action) => {
+        state.orderIsLoading = false
+        state.orderCancelError =
+          action.error.message ?? 'Failed to cancel order'
       })
   },
 })

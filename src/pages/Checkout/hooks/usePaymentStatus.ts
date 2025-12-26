@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
 import { PaymentIntent } from '@stripe/stripe-js'
-import { updateOrderStatus } from '@/helpers'
 import { useMessages } from './useMessages'
-import { handleError } from '@/errors'
+import { updateOrder } from '@/api'
 import { OrderStatus } from '@/types'
+import { splitFullName } from '@/helpers'
+import { log } from '@/libs'
 
 type PaymentStatus = {
   intent: PaymentIntent.Status
@@ -14,8 +15,15 @@ type PaymentStatus = {
 const MAX_RETRIES = 3
 const RETRY_DELAY = 5000
 
+const getUnknownErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message) return error.message
+  return 'Unknown error'
+}
+
 export function usePaymentStatus(clientSecret: string | null) {
   const stripe = useStripe()
+  const isMountedRef = useRef(true)
+  const orderUpdatedRef = useRef(false)
 
   const { getMessage } = useMessages()
 
@@ -25,14 +33,54 @@ export function usePaymentStatus(clientSecret: string | null) {
   })
 
   useEffect(() => {
+    isMountedRef.current = true
+    orderUpdatedRef.current = false
+
     if (!stripe || !clientSecret) return
 
     const timeoutIds: NodeJS.Timeout[] = []
+
+    const safeSetStatus = (newStatus: PaymentStatus) => {
+      if (isMountedRef.current) {
+        setStatus(newStatus)
+      }
+    }
+
+    const updateOrderInDB = async (paymentIntent: PaymentIntent) => {
+      if (orderUpdatedRef.current) return
+      orderUpdatedRef.current = true
+
+      try {
+        const { firstName, lastName } = splitFullName(
+          paymentIntent.shipping?.name ?? '',
+        )
+
+        await updateOrder({
+          paymentId: paymentIntent.id,
+          fields: {
+            paymentIntentStatus: paymentIntent.status,
+            orderStatus: OrderStatus.Paid,
+            firstName: firstName ?? undefined,
+            lastName: lastName ?? undefined,
+            email: paymentIntent.receipt_email ?? undefined,
+            phone: paymentIntent.shipping?.phone ?? undefined,
+            address: paymentIntent.shipping?.address,
+          },
+        })
+      } catch (error) {
+        void log.error('Failed to update order after payment success', {
+          error,
+          paymentId: paymentIntent.id,
+        })
+      }
+    }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       try {
         const { paymentIntent, error: retrieveError } =
           await stripe.retrievePaymentIntent(clientSecret)
+
+        if (!isMountedRef.current) return
 
         if (retrieveError) {
           throw new Error(
@@ -46,7 +94,7 @@ export function usePaymentStatus(clientSecret: string | null) {
 
         switch (paymentIntent.status) {
           case 'processing':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
@@ -60,77 +108,54 @@ export function usePaymentStatus(clientSecret: string | null) {
             break
 
           case 'succeeded':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
-
-            try {
-              await updateOrderStatus(paymentIntent, OrderStatus.Paid)
-            } catch (updateError) {
-              void handleError({
-                error: updateError,
-                message: 'Payment succeeded but order update failed.',
-              })
-            }
+            await updateOrderInDB(paymentIntent)
             break
 
           case 'requires_capture':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
-
-            try {
-              await updateOrderStatus(paymentIntent, OrderStatus.Captured)
-            } catch (updateError) {
-              void handleError({
-                error: updateError,
-                message: 'Payment captured but order update failed.',
-              })
-            }
+            await updateOrderInDB(paymentIntent)
             break
 
           case 'requires_payment_method':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
             break
 
           case 'requires_confirmation':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
             break
 
           case 'requires_action':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
             break
 
           case 'canceled':
-            setStatus({
+            safeSetStatus({
               intent: paymentIntent.status,
               message: getMessage(paymentIntent.status),
             })
-
-            try {
-              await updateOrderStatus(paymentIntent, OrderStatus.Canceled)
-            } catch (updateError) {
-              void handleError({
-                error: updateError,
-                message: 'Payment canceled but order update failed.',
-              })
-            }
             break
         }
       } catch (error) {
+        if (!isMountedRef.current) return
+
         if (attempt < MAX_RETRIES) {
-          setStatus({
+          safeSetStatus({
             intent: 'processing',
             message: `Error retrieving payment status. Retrying... (${attempt}/${MAX_RETRIES})`,
           })
@@ -139,14 +164,9 @@ export function usePaymentStatus(clientSecret: string | null) {
           }, RETRY_DELAY * attempt)
           timeoutIds.push(timeoutId)
         } else {
-          const formattedError = await handleError({
-            error,
-            message: 'Error retrieving payment intent after multiple attempts.',
-          })
-
-          setStatus({
+          safeSetStatus({
             intent: 'requires_payment_method',
-            message: formattedError.message,
+            message: `Error retrieving payment intent after multiple attempts: ${getUnknownErrorMessage(error)}`,
           })
         }
       }
@@ -155,6 +175,7 @@ export function usePaymentStatus(clientSecret: string | null) {
     void retrievePaymentStatus()
 
     return () => {
+      isMountedRef.current = false
       timeoutIds.forEach(clearTimeout)
     }
   }, [clientSecret, stripe, getMessage])

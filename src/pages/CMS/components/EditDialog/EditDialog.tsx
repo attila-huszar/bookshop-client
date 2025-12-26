@@ -13,7 +13,13 @@ import {
   GenreRow,
 } from './EditDialog.style'
 import { Button, FormikField, IconButton } from '@/components'
-import { addAuthor, addBook } from '@/store'
+import {
+  addAuthor,
+  addBook,
+  updateAuthor,
+  updateBook,
+  updateUser,
+} from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import {
   authorSchema,
@@ -21,7 +27,7 @@ import {
   userSchema,
   validateImageFile,
 } from '@/validation'
-import { uploadProductImage } from '@/api'
+import { updateOrder, uploadProductImage } from '@/api'
 import {
   initialAuthorValues,
   initialBookValues,
@@ -33,7 +39,7 @@ import {
   AuthorFormValues,
   BookFormValues,
   BookInDB,
-  Order,
+  OrderInDB,
   OrderFormValues,
   User,
   UserFormValues,
@@ -54,7 +60,7 @@ type Props = {
     | UserFormValues
     | null
   setEditedItem: React.Dispatch<
-    React.SetStateAction<BookInDB | Author | Order | User | null>
+    React.SetStateAction<BookInDB | Author | OrderInDB | User | null>
   >
 }
 
@@ -140,22 +146,22 @@ export const EditDialog: FC<Props> = ({
 
   const actionMap = {
     books: {
-      action: editedItem ? null : addBook, //TODO: Implement book edit action
+      action: editedItem ? updateBook : addBook,
       success: `Book ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} book`,
     },
     authors: {
-      action: editedItem ? null : addAuthor, //TODO: Implement author edit action
+      action: editedItem ? updateAuthor : addAuthor,
       success: `Author ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} author`,
     },
     orders: {
-      action: null, //TODO: Implement order actions
+      action: editedItem ? updateOrder : null,
       success: 'Order updated successfully',
       error: 'Failed to update order',
     },
     users: {
-      action: null, //TODO: Implement user actions
+      action: editedItem ? updateUser : null,
       success: 'User updated successfully',
       error: 'Failed to update user',
     },
@@ -197,18 +203,38 @@ export const EditDialog: FC<Props> = ({
             ...bookValues,
             authorId: Number(bookValues.authorId),
           }
-          //@ts-expect-error Union type handling
+          // @ts-expect-error - Union type handling for dynamic actionMap
           result = await dispatch(config.action(submitValues))
           break
         }
         case 'authors': {
           const authorValues = values as AuthorFormValues
-          //@ts-expect-error Union type handling
+          // @ts-expect-error - Union type handling for dynamic actionMap
           result = await dispatch(config.action(authorValues))
           break
         }
-        case 'orders':
-        case 'users':
+        case 'orders': {
+          const orderValues = values as OrderFormValues
+          const submitValues = {
+            ...orderValues,
+            total: orderValues.total,
+            items: orderValues.items.map((item) => ({
+              ...item,
+              price: item.price,
+              discount: item.discount,
+              quantity: item.quantity,
+            })),
+          }
+          // @ts-expect-error - Union type handling for dynamic actionMap
+          result = await dispatch(config.action(submitValues))
+          break
+        }
+        case 'users': {
+          const userValues = values as UserFormValues
+          // @ts-expect-error - Union type handling for dynamic actionMap
+          result = await dispatch(config.action(userValues))
+          break
+        }
         default:
           return
       }

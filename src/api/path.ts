@@ -24,17 +24,8 @@ const createUserEndpoints = (base: string) => ({
 })
 
 const createOrderEndpoints = (base: string) => ({
-  paymentIntent: `${base}/payment-intent`,
-  createWithPayment: `${base}/create-with-payment`,
-  create: `${base}/create`,
-  update: `${base}/update`,
-})
-
-const createCmsEndpoints = (base: string) => ({
-  list: `${base}/list`,
-  create: `${base}/create`,
-  update: `${base}/update`,
-  delete: `${base}/delete`,
+  base,
+  paymentIntents: `${base}/payment-intents`,
 })
 
 export const PATH = {
@@ -45,10 +36,10 @@ export const PATH = {
   users: createUserEndpoints(P.users),
   orders: createOrderEndpoints(P.orders),
   cms: {
-    orders: createCmsEndpoints(`${P.cms}/${P.orders}`),
-    users: createCmsEndpoints(`${P.cms}/${P.users}`),
-    books: createCmsEndpoints(`${P.cms}/${P.books}`),
-    authors: createCmsEndpoints(`${P.cms}/${P.authors}`),
+    orders: `${P.cms}/${P.orders}`,
+    users: `${P.cms}/${P.users}`,
+    books: `${P.cms}/${P.books}`,
+    authors: `${P.cms}/${P.authors}`,
     productImage: `${P.cms}/product-image`,
   },
 } as const

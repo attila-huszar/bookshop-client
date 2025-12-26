@@ -5,7 +5,7 @@ import { cmsOrdersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { SelectContext } from '../../CMS.types'
 import { EditIcon } from '@/assets/svg'
-import { BookInDB, Author, Order, User } from '@/types'
+import { BookInDB, Author, OrderInDB, User } from '@/types'
 
 export const Orders = () => {
   const { orders, ordersLoading, ordersError } =
@@ -20,7 +20,7 @@ export const Orders = () => {
     setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
     setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
     setEditedItem: React.Dispatch<
-      React.SetStateAction<BookInDB | Author | Order | User | null>
+      React.SetStateAction<BookInDB | Author | OrderInDB | User | null>
     >
   }>()
 
@@ -114,7 +114,9 @@ export const Orders = () => {
                 </td>
                 <td>{order.paymentIntentStatus}</td>
                 <td>{order.orderStatus}</td>
-                <td>{order.name}</td>
+                <td>
+                  {[order.firstName, order.lastName].filter(Boolean).join(' ')}
+                </td>
                 <td>{order.email}</td>
                 <td>
                   {order.address && Object.values(order.address).join(', ')}

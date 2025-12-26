@@ -8,8 +8,18 @@ import {
   delBooks,
   postAuthor,
   delAuthors,
+  delOrders,
+  delUsers,
+  patchBook,
+  patchAuthor,
 } from '@/api'
-import { Author, Book, BookFormValues, BookInDB } from '@/types'
+import type {
+  Author,
+  Book,
+  BookFormValues,
+  BookInDB,
+  AuthorFormValues,
+} from '@/types'
 
 export const listBooks = createAsyncThunk('books/listBooks', async () => {
   return await getAllBooks()
@@ -45,4 +55,26 @@ export const addAuthor = createAsyncThunk(
 export const deleteAuthors = createAsyncThunk<Author['id'][], number[]>(
   'authors/deleteAuthors',
   async (authorIds) => delAuthors(authorIds),
+)
+
+export const deleteUsers = createAsyncThunk<number[], number[]>(
+  'users/deleteUsers',
+  async (userIds) => delUsers(userIds),
+)
+
+export const deleteOrders = createAsyncThunk<number[], number[]>(
+  'orders/deleteOrders',
+  async (orderIds) => delOrders(orderIds),
+)
+
+export const updateBook = createAsyncThunk<
+  BookInDB,
+  { bookId: number; book: Partial<BookFormValues> }
+>('books/updateBook', async ({ bookId, book }) => patchBook(bookId, book))
+
+export const updateAuthor = createAsyncThunk<
+  Author,
+  { authorId: number; author: Partial<AuthorFormValues> }
+>('authors/updateAuthor', async ({ authorId, author }) =>
+  patchAuthor(authorId, author),
 )

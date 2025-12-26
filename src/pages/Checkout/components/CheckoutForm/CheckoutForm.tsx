@@ -65,11 +65,16 @@ export function CheckoutForm() {
     amount: (order.amount / 100).toFixed(2),
   }
 
-  const handleCancel = () => {
-    void dispatch(orderCancel(paymentId))
-    dispatch(orderClear())
-    dispatch(cartClear())
-    void navigate(`/${ROUTE.CART}`, { replace: true })
+  const handleCancel = async () => {
+    try {
+      await dispatch(orderCancel(paymentId)).unwrap()
+    } catch {
+      // Continue with cleanup even if cancel fails - thunk handles partial failures
+    } finally {
+      dispatch(orderClear())
+      dispatch(cartClear())
+      void navigate(`/${ROUTE.CART}`, { replace: true })
+    }
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {

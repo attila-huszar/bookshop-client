@@ -43,11 +43,38 @@ export function usePaymentSubmit({
     setMessage(undefined)
 
     try {
+      const addressElement = elements.getElement('address')
+      const addressData = addressElement
+        ? await addressElement.getValue()
+        : null
+
+      if (addressData && !addressData.complete) {
+        setMessage('Please complete the shipping address form.')
+        setIsLoading(false)
+        return
+      }
+
+      const shippingDetails = addressData?.value
+        ? {
+            name: `${addressData.value.firstName ?? ''} ${addressData.value.lastName ?? ''}`.trim(),
+            phone: addressData.value.phone ?? undefined,
+            address: {
+              line1: addressData.value.address.line1,
+              line2: addressData.value.address.line2 ?? undefined,
+              city: addressData.value.address.city,
+              state: addressData.value.address.state,
+              postal_code: addressData.value.address.postal_code,
+              country: addressData.value.address.country,
+            },
+          }
+        : undefined
+
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: receiptEmail,
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
+          shipping: shippingDetails,
         },
         redirect: 'if_required',
       })

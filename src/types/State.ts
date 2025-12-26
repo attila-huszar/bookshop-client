@@ -62,6 +62,7 @@ export type OrderState = {
   orderIsLoading: boolean
   orderCreateError: string | null
   orderRetrieveError: string | null
+  orderCancelError: string | null
 }
 
 export type CMSState = {

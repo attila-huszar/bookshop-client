@@ -16,12 +16,14 @@ export function AddressForm() {
   } = userData ?? {}
   const { line1, line2, city, state, postal_code } = userAddress ?? {}
   const [fallbackCountry, setFallbackCountry] = useState<string>(defaultCountry)
+  const [isLoadingCountry, setIsLoadingCountry] = useState(!country)
 
   useEffect(() => {
     if (!country) {
-      void getUserCountry().then((data) => {
-        setFallbackCountry(data.country)
-      })
+      getUserCountry()
+        .then((data) => setFallbackCountry(data.country))
+        .catch(() => setFallbackCountry(defaultCountry))
+        .finally(() => setIsLoadingCountry(false))
     }
   }, [country])
 
@@ -55,6 +57,16 @@ export function AddressForm() {
     addressOptions.autocomplete = {
       mode: 'automatic',
     }
+  }
+
+  if (isLoadingCountry) {
+    return (
+      <form>
+        <p style={{ textAlign: 'center', padding: '1rem' }}>
+          Loading address form...
+        </p>
+      </form>
+    )
   }
 
   return (

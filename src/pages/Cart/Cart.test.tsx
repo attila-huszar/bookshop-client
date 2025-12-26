@@ -15,16 +15,43 @@ import { ROUTE } from '@/routes'
 import { Providers } from '@/setupTests'
 import type { Cart as CartType } from '@/types'
 
-vi.mock('@/store', () => ({
-  cartSelector: vi.fn(),
-  orderSelector: vi.fn(),
-  orderCreate: vi.fn(),
-}))
+vi.mock('@/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store')>()
+  return {
+    ...actual,
+    orderCreate: vi.fn(),
+  }
+})
+
+const mockCartState = {
+  cartItems: [] as CartType[],
+  cartIsLoading: false,
+  cartError: null,
+}
+
+const mockOrderState = {
+  order: null as { clientSecret: string } | null,
+  orderIsLoading: false,
+  orderCreateError: null as string | null,
+  orderRetrieveError: null,
+  orderCancelError: null,
+}
+
+const mockUserState = {
+  userData: null,
+  accessToken: null,
+  userIsLoading: false,
+  userIsUpdating: false,
+  tokenError: null,
+  userError: null,
+  loginError: null,
+  registerError: null,
+}
 
 describe('Cart component', () => {
   const mockNavigate = vi.fn()
   const mockDispatch = vi.fn()
-  const mockCartItems = [
+  const mockCartItems: CartType[] = [
     {
       id: 1,
       title: 'Book 1',
@@ -40,13 +67,18 @@ describe('Cart component', () => {
       cartItems: mockCartItems,
       addQuantity: vi.fn(),
       removeQuantity: vi.fn(),
-    } as unknown as ReturnType<typeof useCart>)
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
 
-    vi.mocked(useAppSelector).mockReturnValue({
-      cartIsLoading: false,
-      orderIsLoading: false,
-      orderStatus: null,
-      orderCreateError: null,
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        order: mockOrderState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
     })
 
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
@@ -65,8 +97,13 @@ describe('Cart component', () => {
   })
 
   it('should display loading when cart is loading', () => {
-    vi.mocked(useAppSelector).mockReturnValueOnce({
-      cartIsLoading: true,
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: { ...mockCartState, cartIsLoading: true },
+        order: mockOrderState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
     })
 
     render(<Cart />, { wrapper: Providers })
@@ -75,9 +112,14 @@ describe('Cart component', () => {
   })
 
   it('should display empty cart message when cart is empty', async () => {
-    vi.mocked(useCart).mockReturnValueOnce({
+    vi.mocked(useCart).mockReturnValue({
       cartItems: [] as CartType[],
-    } as ReturnType<typeof useCart>)
+      addQuantity: vi.fn(),
+      removeQuantity: vi.fn(),
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
 
     render(<Cart />, { wrapper: Providers })
 
@@ -98,7 +140,17 @@ describe('Cart component', () => {
   })
 
   it('should handle add and remove quantity actions', async () => {
-    const { addQuantity, removeQuantity } = useCart()
+    const mockAddQuantity = vi.fn()
+    const mockRemoveQuantity = vi.fn()
+
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: mockCartItems,
+      addQuantity: mockAddQuantity,
+      removeQuantity: mockRemoveQuantity,
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
 
     render(<Cart />, { wrapper: Providers })
 
@@ -106,10 +158,10 @@ describe('Cart component', () => {
     const removeButton = screen.getByTitle('Remove quantity')
 
     await userEvent.click(addButton)
-    expect(addQuantity).toHaveBeenCalledWith(mockCartItems[0])
+    expect(mockAddQuantity).toHaveBeenCalledWith(mockCartItems[0])
 
     await userEvent.click(removeButton)
-    expect(removeQuantity).toHaveBeenCalledWith(mockCartItems[0])
+    expect(mockRemoveQuantity).toHaveBeenCalledWith(mockCartItems[0])
   })
 
   it('should handle checkout and dispatch order creation', async () => {
@@ -122,7 +174,7 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
-          items: [],
+          items: [{ id: 1, quantity: 2 }],
           firstName: undefined,
           lastName: undefined,
           email: undefined,
@@ -134,11 +186,13 @@ describe('Cart component', () => {
   })
 
   it('should navigate to checkout on successful order creation', async () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      cartIsLoading: false,
-      orderIsLoading: false,
-      orderStatus: { clientSecret: 'secret' },
-      orderCreateError: null,
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        order: { ...mockOrderState, order: { clientSecret: 'secret' } },
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
     })
 
     render(<Cart />, { wrapper: Providers })
@@ -157,13 +211,6 @@ describe('Cart component', () => {
       removeFromLocalStorage: vi.fn(),
     })
 
-    vi.mocked(useAppSelector).mockReturnValue({
-      cartIsLoading: false,
-      orderIsLoading: false,
-      orderStatus: null,
-      orderCreateError: null,
-    })
-
     render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
@@ -174,11 +221,13 @@ describe('Cart component', () => {
   })
 
   it('should display an error toast on order error', async () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      cartIsLoading: false,
-      orderIsLoading: false,
-      orderStatus: {},
-      orderCreateError: 'Order failed',
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        order: { ...mockOrderState, orderCreateError: 'Order failed' },
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
     })
 
     render(<Cart />, { wrapper: Providers })

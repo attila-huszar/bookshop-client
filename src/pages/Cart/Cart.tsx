@@ -13,7 +13,6 @@ import {
   orderClear,
   orderCreate,
   orderSelector,
-  userSelector,
 } from '@/store'
 import {
   StyledCart,
@@ -57,7 +56,6 @@ export function Cart() {
   const { cartIsLoading } = useAppSelector(cartSelector)
   const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
-  const { userData } = useAppSelector(userSelector)
   const { getFromLocalStorage } = useLocalStorage()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
@@ -115,19 +113,12 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartItems.length) {
-      const { firstName, lastName, email, phone, address } = { ...userData }
-
+    if (cartItems.length && !orderIsLoading) {
       const orderRequest = {
         items: cartItems.map((item) => ({
           id: item.id,
           quantity: item.quantity,
         })),
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
       }
 
       void dispatch(orderCreate(orderRequest))

@@ -8,7 +8,14 @@ import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { SelectContext } from './CMS.types'
 import { LogoutIcon } from '@/assets/svg'
-import { AppDispatch, deleteAuthors, deleteBooks, RootState } from '@/store'
+import {
+  AppDispatch,
+  deleteAuthors,
+  deleteBooks,
+  deleteOrders,
+  deleteUsers,
+  RootState,
+} from '@/store'
 import { BookInDB, Author, Order, User } from '@/types'
 
 const noneSelected: SelectContext = {
@@ -56,10 +63,10 @@ export const CMS = () => {
       { state: RootState; dispatch: AppDispatch }
     > | null
   > = {
-    orders: null,
+    orders: deleteOrders(selectedItems.orders),
     books: deleteBooks(selectedItems.books),
     authors: deleteAuthors(selectedItems.authors),
-    users: null,
+    users: deleteUsers(selectedItems.users),
   }
 
   const handleDeleteClick = () => {
