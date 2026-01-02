@@ -69,7 +69,7 @@ export function CountrySelect({
   })
 
   const getFlagUrl = (code: string) => {
-    return `https://flagcdn.com/${code.toLowerCase()}.svg`
+    return `https://flagcdn.com/${code?.toLowerCase()}.svg`
   }
 
   const onInputClick = () => {

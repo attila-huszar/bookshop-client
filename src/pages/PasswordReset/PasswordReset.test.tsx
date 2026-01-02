@@ -1,104 +1,110 @@
 import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import {
-  MemoryRouter,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
-} from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { PasswordReset } from './PasswordReset'
-import { updateUser } from '@/store'
+import { postVerifyPasswordReset, postPasswordResetSubmit } from '@/api'
 
-vi.mock('@/store', () => ({
-  updateUser: vi.fn(),
-}))
-
-vi.mock('@/hooks', () => ({
-  useAppDispatch: () => vi.fn(),
-}))
+vi.mock('@/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api')>()
+  return {
+    ...actual,
+    postVerifyPasswordReset: vi.fn(),
+    postPasswordResetSubmit: vi.fn(),
+  }
+})
 
 describe('PasswordReset Component', () => {
   const mockNavigate = vi.fn()
 
   beforeEach(() => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
+    vi.clearAllMocks()
   })
 
-  it('should render the form if reset code is valid', async () => {
+  it('should render the form if reset token is valid', async () => {
     vi.mocked(useLocation).mockReturnValue({
-      search: '?code=123',
-    } as unknown as ReturnType<typeof useLocation>)
+      search: '?token=123',
+      pathname: '/password-reset',
+      hash: '',
+      state: null,
+      key: 'default',
+    })
+    vi.mocked(postVerifyPasswordReset).mockResolvedValue({
+      token: 'valid-token',
+    })
 
-    //vi.mocked(passwordReset).mockResolvedValue('mock-uuid')
-
-    render(
-      <MemoryRouter initialEntries={['/password-reset?code=123']}>
-        <Routes>
-          <Route path="/password-reset" element={<PasswordReset />} />
-        </Routes>
-      </MemoryRouter>,
-    )
+    render(<PasswordReset />)
 
     await waitFor(() => {
-      //expect(passwordReset).toHaveBeenCalledWith('123')
-
+      expect(postVerifyPasswordReset).toHaveBeenCalledWith('123')
       expect(screen.getByText(/Password Reset/i)).toBeInTheDocument()
     })
   })
 
-  it('should display an error notification if reset code is invalid and navigate to home', async () => {
+  it('should display an error notification if reset token is missing and navigate to home', async () => {
     vi.mocked(useLocation).mockReturnValue({
-      search: '?code=invalid',
-    } as unknown as ReturnType<typeof useLocation>)
+      search: '',
+      pathname: '/password-reset',
+      hash: '',
+      state: null,
+      key: 'default',
+    })
 
-    // vi.mocked(passwordReset).mockRejectedValue(
-    //   new Error('Invalid reset code'),
-    // )
-
-    render(
-      <MemoryRouter initialEntries={['/password-reset?code=invalid']}>
-        <Routes>
-          <Route path="/" element={<div>Home</div>} />
-          <Route path="/password-reset" element={<PasswordReset />} />
-        </Routes>
-      </MemoryRouter>,
-    )
+    render(<PasswordReset />)
 
     await waitFor(() => {
-      //expect(passwordReset).toHaveBeenCalledWith('invalid')
-
-      expect(toast.error).toHaveBeenCalledWith('Invalid reset code', {
-        id: 'reset-error',
-      })
-
+      expect(toast.error).toHaveBeenCalledWith(
+        'Invalid or missing password reset token',
+      )
       expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
     })
   })
 
-  it('should submit new password and display success notification and navigate to login page if code is valid', async () => {
+  it('should display an error notification if reset token verification fails', async () => {
     vi.mocked(useLocation).mockReturnValue({
-      search: '?code=123',
-    } as unknown as ReturnType<typeof useLocation>)
-
-    //vi.mocked(passwordReset).mockResolvedValue('mock-uuid')
-
-    render(
-      <MemoryRouter initialEntries={['/password-reset?code=123']}>
-        <Routes>
-          <Route path="/password-reset" element={<PasswordReset />} />
-          <Route path="/login" element={<div>Login Page</div>} />
-        </Routes>
-      </MemoryRouter>,
+      search: '?token=invalid',
+      pathname: '/password-reset',
+      hash: '',
+      state: null,
+      key: 'default',
+    })
+    vi.mocked(postVerifyPasswordReset).mockRejectedValue(
+      new Error('Invalid token'),
     )
 
-    // await waitFor(() => {
-    //   expect(passwordReset).toHaveBeenCalledWith('123')
-    // })
+    render(<PasswordReset />)
 
-    const password = 'NewPass123'
+    await waitFor(() => {
+      expect(postVerifyPasswordReset).toHaveBeenCalledWith('invalid')
+      expect(toast.error).toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
+    })
+  })
+
+  it('should submit new password and display success notification and navigate to login page', async () => {
+    vi.mocked(useLocation).mockReturnValue({
+      search: '?token=123',
+      pathname: '/password-reset',
+      hash: '',
+      state: null,
+      key: 'default',
+    })
+    vi.mocked(postVerifyPasswordReset).mockResolvedValue({
+      token: 'valid-token',
+    })
+    vi.mocked(postPasswordResetSubmit).mockResolvedValue({
+      message: 'Password reset successful',
+    })
+
+    render(<PasswordReset />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Password Reset/i)).toBeInTheDocument()
+    })
+
+    const password = 'NewPass123!'
 
     const newPasswordInput = screen.getByPlaceholderText(/^new password$/i)
     const confirmPasswordInput =
@@ -110,18 +116,11 @@ describe('PasswordReset Component', () => {
     await userEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(updateUser).toHaveBeenCalledWith({
-        fields: {
-          password,
-        },
-        uuid: 'mock-uuid',
-      })
-
-      expect(toast.success).toHaveBeenCalledWith(
-        'Password Changed Successfully',
-        { id: 'reset-success' },
+      expect(postPasswordResetSubmit).toHaveBeenCalledWith(
+        'valid-token',
+        password,
       )
-
+      expect(toast.success).toHaveBeenCalled()
       expect(mockNavigate).toHaveBeenCalledWith('/login', { replace: true })
     })
   })

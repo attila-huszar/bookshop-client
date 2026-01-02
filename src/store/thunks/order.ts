@@ -42,6 +42,13 @@ export const orderRetrieve = createAsyncThunk(
       throw new Error('Invalid payment amount in response')
     }
 
+    const invalidStatuses = ['canceled', 'succeeded']
+    if (invalidStatuses.includes(status)) {
+      throw new Error(
+        `Payment session has ${status === 'succeeded' ? 'already been completed' : 'expired'}. Please start a new checkout.`,
+      )
+    }
+
     return { clientSecret, status, amount }
   },
 )

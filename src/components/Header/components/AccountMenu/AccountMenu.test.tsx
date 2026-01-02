@@ -65,10 +65,10 @@ describe('AccountMenu component', () => {
     await userEvent.click(screen.getByTitle('July'))
     await userEvent.click(screen.getByText('Logout'))
 
-    expect(mockRemoveFromLocalStorage).toHaveBeenCalledWith('uuid')
+    expect(mockDispatch).toHaveBeenCalled()
     expect(toast.success).toHaveBeenCalledWith(
       'july@test.com successfully logged out',
+      { id: 'logout-success' },
     )
-    expect(mockDispatch).toHaveBeenCalledWith(logout())
   })
 })

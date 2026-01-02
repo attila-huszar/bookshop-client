@@ -12,8 +12,20 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
     void dispatch(updateUser({ avatar: '' }))
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      props.onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
+    }
+  }
+
   return (
-    <StyledAvatar onClick={props.onClick} $size={$size} {...props}>
+    <StyledAvatar
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      $size={$size}
+      {...props}>
       {props.$hoverControls && (
         <>
           {imgUrl && (

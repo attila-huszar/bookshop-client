@@ -40,6 +40,16 @@ vi.mock('react-hot-toast', () => ({
   toast: {
     error: vi.fn(),
     success: vi.fn(),
+    loading: vi.fn(),
+  },
+}))
+
+vi.mock('@/libs', () => ({
+  log: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }))
 

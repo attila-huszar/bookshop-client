@@ -4,12 +4,16 @@ import { userEvent } from '@testing-library/user-event'
 import { toast } from 'react-hot-toast'
 import { PasswordDialog } from './PasswordDialog'
 import { useAppDispatch } from '@/hooks'
-import { postUserLogin } from '@/api/users'
+import { postUserLogin } from '@/api'
 import { updateUser } from '@/store'
 
-vi.mock('@/api/users', () => ({
-  postUserLogin: vi.fn(),
-}))
+vi.mock('@/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api')>()
+  return {
+    ...actual,
+    postUserLogin: vi.fn(),
+  }
+})
 
 vi.mock('@/store', () => ({
   updateUser: vi.fn(),
@@ -45,7 +49,9 @@ describe('PasswordDialog', () => {
       accessToken: expect.any(String) as string,
       firstName: expect.any(String) as string,
     })
-    mockDispatch.mockResolvedValue(true)
+    mockDispatch.mockResolvedValue({
+      meta: { requestStatus: 'fulfilled' },
+    })
 
     const { container } = render(<PasswordDialog ref={null} email={email} />)
 
@@ -53,17 +59,17 @@ describe('PasswordDialog', () => {
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
-      'oldPassword',
+      'OldPass123!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('New Password'),
-      'newPassword',
+      'NewPass456!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('Confirm New Password'),
-      'newPassword',
+      'NewPass456!',
     )
 
     await userEvent.click(
@@ -71,35 +77,35 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(postUserLogin).toHaveBeenCalledWith(email, 'oldPassword')
+      expect(postUserLogin).toHaveBeenCalledWith({
+        email,
+        password: 'OldPass123!',
+      })
       expect(mockDispatch).toHaveBeenCalledWith(
-        updateUser({ password: expect.any(String) as string }),
+        updateUser({ password: 'NewPass456!' }),
       )
       expect(dialog.open).toBe(false)
     })
   })
 
   it('should show error if current password is invalid', async () => {
-    vi.mocked(postUserLogin).mockResolvedValue({
-      accessToken: expect.any(String) as string,
-      firstName: expect.any(String) as string,
-    })
+    vi.mocked(postUserLogin).mockRejectedValue(new Error('Invalid password'))
 
     render(<PasswordDialog ref={null} email={email} />)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
-      'invalidPassword',
+      'InvalidPass123!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('New Password'),
-      'newPassword',
+      'NewPass456!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('Confirm New Password'),
-      'newPassword',
+      'NewPass456!',
     )
 
     await userEvent.click(
@@ -107,11 +113,13 @@ describe('PasswordDialog', () => {
     )
 
     await waitFor(() => {
-      expect(postUserLogin).toHaveBeenCalledWith(email, 'invalidPassword')
-    })
-
-    expect(toast.error).toHaveBeenCalledWith('Current password invalid', {
-      id: 'password-invalid-error',
+      expect(postUserLogin).toHaveBeenCalledWith({
+        email,
+        password: 'InvalidPass123!',
+      })
+      expect(toast.error).toHaveBeenCalledWith('Current password invalid', {
+        id: 'password-change-fail',
+      })
     })
   })
 
@@ -125,17 +133,17 @@ describe('PasswordDialog', () => {
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
-      'samePassword',
+      'SamePass123!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('New Password'),
-      'samePassword',
+      'SamePass123!',
     )
 
     await userEvent.type(
       screen.getByPlaceholderText('Confirm New Password'),
-      'samePassword',
+      'SamePass123!',
     )
 
     await userEvent.click(
@@ -146,7 +154,7 @@ describe('PasswordDialog', () => {
       expect(toast.error).toHaveBeenCalledWith(
         'Password must be different from current password',
         {
-          id: 'password-same-error',
+          id: 'password-change-fail',
         },
       )
     })

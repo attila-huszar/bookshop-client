@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
@@ -18,12 +18,8 @@ export function PasswordReset() {
   const [isVerifying, setIsVerifying] = useState(true)
   const [token, setToken] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const isEffectRun = useRef(false)
 
   useEffect(() => {
-    if (isEffectRun.current) return
-    isEffectRun.current = true
-
     if (!tokenParam) {
       setIsVerifying(false)
       toast.error('Invalid or missing password reset token')
@@ -31,14 +27,20 @@ export function PasswordReset() {
       return
     }
 
+    const controller = new AbortController()
+
     const verifyToken = async () => {
       try {
         const response = await postVerifyPasswordReset(tokenParam)
+
+        if (controller.signal.aborted) return
 
         setToken(response.token)
 
         toast.success('Please enter your new password')
       } catch (error) {
+        if (controller.signal.aborted) return
+
         const formattedError = await handleError({
           error,
           message: 'Password reset failed, please try again later',
@@ -48,11 +50,17 @@ export function PasswordReset() {
 
         void navigate('/', { replace: true })
       } finally {
-        setIsVerifying(false)
+        if (!controller.signal.aborted) {
+          setIsVerifying(false)
+        }
       }
     }
 
     void verifyToken()
+
+    return () => {
+      controller.abort()
+    }
   }, [tokenParam, navigate])
 
   const handleSubmit = async (values: {
@@ -73,7 +81,7 @@ export function PasswordReset() {
       const response = await postPasswordResetSubmit(token, values.newPassword)
       toast.success(response.message)
 
-      void navigate('/', { replace: true })
+      void navigate('/login', { replace: true })
     } catch (error) {
       const formattedError = await handleError({
         error,

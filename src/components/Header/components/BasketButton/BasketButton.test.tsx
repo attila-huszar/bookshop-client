@@ -3,46 +3,42 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { BasketButton } from './BasketButton'
 import { useNavigate } from 'react-router'
-import { useAppSelector, useCart } from '@/hooks'
+import { useAppSelector } from '@/hooks'
 
 describe('BasketButton', () => {
   const mockNavigate = vi.fn()
 
   beforeEach(() => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      orderStatus: null,
-    })
-
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: [
-        {
-          id: 1,
-          title: 'Book 1',
-          price: 10,
-          discount: 10,
-          imgUrl: 'test1.jpg',
-          quantity: 1,
+    vi.mocked(useNavigate).mockReturnValue(mockNavigate)
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: {
+          cartItems: [
+            {
+              id: 1,
+              title: 'Book 1',
+              price: 10,
+              discount: 10,
+              imgUrl: 'test1.jpg',
+              quantity: 1,
+            },
+            {
+              id: 2,
+              title: 'Book 2',
+              price: 20,
+              discount: 20,
+              imgUrl: 'test2.jpg',
+              quantity: 2,
+            },
+          ],
         },
-        {
-          id: 2,
-          title: 'Book 2',
-          price: 20,
-          discount: 20,
-          imgUrl: 'test2.jpg',
-          quantity: 2,
-        },
-      ],
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
+        order: { order: null },
+      }
+      return selector(mockState as never)
     })
   })
 
   it('should navigate to the cart page when the button is clicked', async () => {
-    vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-
     render(<BasketButton />)
 
     await userEvent.click(screen.getByRole('button', { name: /basket/i }))
@@ -56,13 +52,12 @@ describe('BasketButton', () => {
   })
 
   it('should not display item count if the cart is empty', () => {
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: [],
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: { cartItems: [] },
+        order: { order: null },
+      }
+      return selector(mockState as never)
     })
 
     render(<BasketButton />)
@@ -70,15 +65,17 @@ describe('BasketButton', () => {
     expect(screen.queryByText('0')).not.toBeInTheDocument()
   })
 
-  it('should display Checkout if there is one in progress', () => {
-    vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    vi.mocked(useAppSelector).mockReturnValue({
-      orderStatus: { clientSecret: 'test' },
+  it('should display Checkout if there is an order in progress', () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: { cartItems: [] },
+        order: { order: { clientSecret: 'test' } },
+      }
+      return selector(mockState as never)
     })
 
     render(<BasketButton />)
 
-    const button = screen.getByRole('button', { name: /checkout/i })
-    expect(button).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /checkout/i })).toBeInTheDocument()
   })
 })

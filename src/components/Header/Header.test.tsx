@@ -6,7 +6,6 @@ import { Providers } from '@/setupTests'
 vi.mock('./components', () => ({
   Menu: () => <div>Shop</div>,
   Search: () => <div>Search</div>,
-  Favorite: () => <div>Favorite</div>,
   AccountMenu: () => <div>Login</div>,
   BasketButton: () => <div>Basket</div>,
 }))
@@ -17,7 +16,6 @@ describe('Header Component', () => {
 
     expect(screen.getByText(/shop/i)).toBeInTheDocument()
     expect(screen.getByText(/search/i)).toBeInTheDocument()
-    expect(screen.getByText(/favorite/i)).toBeInTheDocument()
     expect(screen.getByText(/login/i)).toBeInTheDocument()
     expect(screen.getByText(/basket/i)).toBeInTheDocument()
   })

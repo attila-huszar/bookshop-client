@@ -2,46 +2,44 @@ import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { Avatar } from './Avatar'
-
-vi.mock('@cloudinary/react', () => ({
-  AdvancedImage: ({ imgUrl }: { imgUrl: string }) => (
-    <img src={imgUrl} alt="avatar" data-testid="advanced-image" />
-  ),
-}))
+import { Providers } from '@/setupTests'
 
 describe('Avatar', () => {
   const imgUrl = 'sample.jpg'
   const size = 40
 
   it('should render default icon when imgUrl is not provided', () => {
-    render(<Avatar imgUrl="" />)
-    expect(screen.getByRole('button')).toContainHTML('<svg xmlns')
-    expect(screen.queryByTestId('advanced-image')).not.toBeInTheDocument()
+    const { container } = render(<Avatar imgUrl="" />, { wrapper: Providers })
+    expect(container.querySelector('svg')).toBeInTheDocument()
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
-  it('should render cloudinary image when imgUrl is provided', () => {
-    render(<Avatar imgUrl={imgUrl} />)
+  it('should render image when imgUrl is provided', () => {
+    render(<Avatar imgUrl={imgUrl} title="Avatar" />, { wrapper: Providers })
 
-    const advancedImage = screen.getByTestId('advanced-image')
-    expect(advancedImage).toBeInTheDocument()
-    expect(advancedImage).toHaveAttribute('alt', 'avatar')
+    const avatarImage = screen.getByRole('img')
+    expect(avatarImage).toBeInTheDocument()
+    expect(avatarImage).toHaveAttribute('alt', 'Avatar')
   })
 
   it('should call onClick when avatar is clicked', async () => {
     const onClick = vi.fn()
-    render(<Avatar imgUrl={imgUrl} onClick={onClick} />)
+    render(<Avatar imgUrl={imgUrl} onClick={onClick} title="Avatar" />, {
+      wrapper: Providers,
+    })
 
-    const avatar = screen.getByRole('img', { hidden: true })
+    const avatar = screen.getByRole('button', { name: 'Avatar' })
     await userEvent.click(avatar)
 
     expect(onClick).toHaveBeenCalledTimes(1)
   })
 
   it('should apply title and custom size correctly', () => {
-    render(<Avatar imgUrl={imgUrl} title="User Avatar" $size={size} />)
+    render(<Avatar imgUrl={imgUrl} title="User Avatar" $size={size} />, {
+      wrapper: Providers,
+    })
 
-    const avatarContainer = screen.getByRole('img').closest('button')
-    expect(avatarContainer).toHaveAttribute('title', 'User Avatar')
+    const avatarContainer = screen.getByTitle('User Avatar')
     expect(avatarContainer).toHaveStyle({
       width: `${size}px`,
       height: `${size}px`,

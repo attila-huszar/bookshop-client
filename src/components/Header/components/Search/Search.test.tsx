@@ -45,6 +45,6 @@ describe('Search', () => {
     const searchResult = screen.getByText('Test Title')
     await userEvent.click(searchResult)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/books/1')
+    expect(mockNavigate).toHaveBeenCalledWith('/book?id=1')
   })
 })
