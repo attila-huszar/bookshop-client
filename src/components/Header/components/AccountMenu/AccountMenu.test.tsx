@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { AccountMenu } from './AccountMenu'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { logout } from '@/store'
 import { Providers } from '@/setupTests'
 
 describe('AccountMenu component', () => {

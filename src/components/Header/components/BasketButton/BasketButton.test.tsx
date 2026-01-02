@@ -76,6 +76,8 @@ describe('BasketButton', () => {
 
     render(<BasketButton />)
 
-    expect(screen.getByRole('button', { name: /checkout/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /checkout/i }),
+    ).toBeInTheDocument()
   })
 })

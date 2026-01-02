@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { orderCreate, orderRetrieve, orderCancel } from '../thunks/order'
-import { OrderState, OrderStatus } from '@/types'
+import { OrderState } from '@/types'
 
 const initialState: OrderState = {
   order: null,
@@ -30,8 +30,6 @@ const orderSlice = createSlice({
       })
       .addCase(orderCreate.fulfilled, (state, action) => {
         state.order = {
-          intent: 'processing',
-          status: OrderStatus.Pending,
           clientSecret: action.payload.clientSecret,
           amount: action.payload.amount,
         }
@@ -50,8 +48,6 @@ const orderSlice = createSlice({
       })
       .addCase(orderRetrieve.fulfilled, (state, action) => {
         state.order = {
-          intent: 'processing',
-          status: OrderStatus.Pending,
           clientSecret: action.payload.clientSecret,
           amount: action.payload.amount,
         }

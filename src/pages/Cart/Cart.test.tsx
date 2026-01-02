@@ -175,11 +175,6 @@ describe('Cart component', () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         orderCreate({
           items: [{ id: 1, quantity: 2 }],
-          firstName: undefined,
-          lastName: undefined,
-          email: undefined,
-          phone: undefined,
-          address: undefined,
         }),
       )
     })

@@ -16,7 +16,7 @@ import {
   deleteUsers,
   RootState,
 } from '@/store'
-import { BookInDB, Author, Order, User } from '@/types'
+import { BookInDB, Author, OrderInDB, User } from '@/types'
 
 const noneSelected: SelectContext = {
   orders: [],
@@ -35,7 +35,7 @@ export const CMS = () => {
   const [selectedItems, setSelectedItems] =
     useState<SelectContext>(noneSelected)
   const [editedItem, setEditedItem] = useState<
-    BookInDB | Author | Order | User | null
+    BookInDB | Author | OrderInDB | User | null
   >(null)
   const editRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
