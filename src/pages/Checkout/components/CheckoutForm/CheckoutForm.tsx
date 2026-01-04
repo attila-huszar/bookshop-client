@@ -27,12 +27,12 @@ export function CheckoutForm() {
   const { userData } = useAppSelector(userSelector)
   const { order } = useAppSelector(orderSelector)
   const { getFromLocalStorage } = useLocalStorage()
-  const [emailInput, setEmailInput] = useState('')
+  const [emailInput, setEmailInput] = useState(userData?.email ?? '')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const { isLoading, message, handleSubmit } = usePaymentSubmit({
-    receiptEmail: userData?.email ?? emailInput,
+    receiptEmail: (emailInput || userData?.email) ?? '',
   })
 
   useEffect(() => {

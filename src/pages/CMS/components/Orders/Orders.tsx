@@ -119,7 +119,10 @@ export const Orders = () => {
                 </td>
                 <td>{order.email}</td>
                 <td>
-                  {order.address && Object.values(order.address).join(', ')}
+                  {order.shipping?.address &&
+                    Object.values(order.shipping.address)
+                      .filter(Boolean)
+                      .join(', ')}
                 </td>
                 <td>{order.items.map((item) => item.title).join(', ')}</td>
                 <td>{order.total}</td>

@@ -60,11 +60,10 @@ export function usePaymentStatus(clientSecret: string | null) {
           fields: {
             paymentIntentStatus: paymentIntent.status,
             orderStatus: OrderStatus.Paid,
-            firstName: firstName ?? undefined,
-            lastName: lastName ?? undefined,
-            email: paymentIntent.receipt_email ?? undefined,
-            phone: paymentIntent.shipping?.phone ?? undefined,
-            address: paymentIntent.shipping?.address,
+            firstName,
+            lastName,
+            email: paymentIntent.receipt_email,
+            shipping: paymentIntent.shipping,
           },
         })
       } catch (error) {

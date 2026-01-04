@@ -41,13 +41,13 @@ export const postOrder = async (
   return await response.json()
 }
 
-export const updateOrder = async ({
-  paymentId,
-  fields,
-}: OrderUpdate): Promise<Order> => {
+export const updateOrder = async (
+  paymentId: string,
+  fields: OrderUpdate,
+): Promise<Order> => {
   const response = await baseRequest.patch<Order>(
     `${PATH.orders.base}/${paymentId}`,
-    { json: { fields } },
+    { json: fields },
   )
   return await response.json()
 }
