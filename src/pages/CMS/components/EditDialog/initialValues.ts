@@ -41,14 +41,17 @@ export const initialOrderValues: OrderFormValues = {
   firstName: '',
   lastName: '',
   email: '',
-  phone: '',
-  address: {
-    city: '',
-    line1: '',
-    line2: '',
-    postal_code: '',
-    state: '',
-    country: '',
+  shipping: {
+    name: '',
+    phone: '',
+    address: {
+      city: '',
+      line1: '',
+      line2: '',
+      postal_code: '',
+      state: '',
+      country: '',
+    },
   },
 }
 

@@ -55,16 +55,13 @@ export function usePaymentStatus(clientSecret: string | null) {
           paymentIntent.shipping?.name ?? '',
         )
 
-        await updateOrder({
-          paymentId: paymentIntent.id,
-          fields: {
-            paymentIntentStatus: paymentIntent.status,
-            orderStatus: OrderStatus.Paid,
-            firstName,
-            lastName,
-            email: paymentIntent.receipt_email,
-            shipping: paymentIntent.shipping,
-          },
+        await updateOrder(paymentIntent.id, {
+          paymentIntentStatus: paymentIntent.status,
+          orderStatus: OrderStatus.Paid,
+          firstName,
+          lastName,
+          email: paymentIntent.receipt_email,
+          shipping: paymentIntent.shipping,
         })
       } catch (error) {
         void log.error('Failed to update order after payment success', {
