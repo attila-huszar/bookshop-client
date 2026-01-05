@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
@@ -18,6 +18,7 @@ export function PasswordReset() {
   const [isVerifying, setIsVerifying] = useState(true)
   const [token, setToken] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const hasVerified = useRef(false)
 
   useEffect(() => {
     if (!tokenParam) {
@@ -27,20 +28,18 @@ export function PasswordReset() {
       return
     }
 
-    const controller = new AbortController()
+    if (hasVerified.current) return
+
+    hasVerified.current = true
 
     const verifyToken = async () => {
       try {
         const response = await postVerifyPasswordReset(tokenParam)
 
-        if (controller.signal.aborted) return
-
         setToken(response.token)
 
         toast.success('Please enter your new password')
       } catch (error) {
-        if (controller.signal.aborted) return
-
         const formattedError = await handleError({
           error,
           message: 'Password reset failed, please try again later',
@@ -50,17 +49,11 @@ export function PasswordReset() {
 
         void navigate('/', { replace: true })
       } finally {
-        if (!controller.signal.aborted) {
-          setIsVerifying(false)
-        }
+        setIsVerifying(false)
       }
     }
 
     void verifyToken()
-
-    return () => {
-      controller.abort()
-    }
   }, [tokenParam, navigate])
 
   const handleSubmit = async (values: {

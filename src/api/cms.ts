@@ -3,12 +3,12 @@ import {
   Author,
   AuthorFormValues,
   BookFormValues,
-  BookInDB,
-  OrderInDB,
-  UserInDB,
+  BookWithAuthorId,
+  Order,
+  UserWithMetadata,
 } from '@/types'
 
-export const getAllBooks = async (): Promise<BookInDB[]> => {
+export const getAllBooks = async (): Promise<BookWithAuthorId[]> => {
   const response = await authRequest.get(PATH.cms.books)
   return await response.json()
 }
@@ -18,17 +18,19 @@ export const getAllAuthors = async (): Promise<Author[]> => {
   return await response.json()
 }
 
-export const getAllUsers = async (): Promise<UserInDB[]> => {
+export const getAllUsers = async (): Promise<UserWithMetadata[]> => {
   const response = await authRequest.get(PATH.cms.users)
   return await response.json()
 }
 
-export const getAllOrders = async (): Promise<OrderInDB[]> => {
+export const getAllOrders = async (): Promise<Order[]> => {
   const response = await authRequest.get(PATH.cms.orders)
   return await response.json()
 }
 
-export const postBook = async (book: BookFormValues): Promise<BookInDB> => {
+export const postBook = async (
+  book: BookFormValues,
+): Promise<BookWithAuthorId> => {
   const response = await authRequest.post(PATH.cms.books, { json: book })
 
   if (!response.ok) {
@@ -41,7 +43,7 @@ export const postBook = async (book: BookFormValues): Promise<BookInDB> => {
 export const patchBook = async (
   bookId: number,
   book: Partial<BookFormValues>,
-): Promise<BookInDB> => {
+): Promise<BookWithAuthorId> => {
   const response = await authRequest.patch(PATH.cms.books, {
     json: { id: bookId, ...book },
   })
@@ -53,9 +55,7 @@ export const patchBook = async (
   return await response.json()
 }
 
-export const delOrders = async (
-  orderIds: number[],
-): Promise<OrderInDB['id'][]> => {
+export const delOrders = async (orderIds: number[]): Promise<Order['id'][]> => {
   const response = await authRequest.delete(PATH.cms.orders, {
     json: { orderIds },
   })
@@ -69,7 +69,7 @@ export const delOrders = async (
 
 export const delBooks = async (
   bookIds: number[],
-): Promise<BookInDB['id'][]> => {
+): Promise<BookWithAuthorId['id'][]> => {
   const response = await authRequest.delete(PATH.cms.books, {
     json: { bookIds },
   })
@@ -97,7 +97,7 @@ export const delAuthors = async (
 
 export const delUsers = async (
   userIds: number[],
-): Promise<UserInDB['id'][]> => {
+): Promise<UserWithMetadata['id'][]> => {
   const response = await authRequest.delete(PATH.cms.users, {
     json: { userIds },
   })

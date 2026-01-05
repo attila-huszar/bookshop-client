@@ -199,11 +199,15 @@ describe('Cart component', () => {
     })
   })
 
-  it('should navigate to checkout when clientSecret exists in localStorage', async () => {
-    vi.mocked(useLocalStorage).mockReturnValue({
-      getFromLocalStorage: vi.fn().mockReturnValue('secret_from_storage'),
-      setToLocalStorage: vi.fn(),
-      removeFromLocalStorage: vi.fn(),
+  it('should navigate to checkout when paymentSession exists in sessionStorage', async () => {
+    const mockSessionStorage = {
+      getItem: vi.fn().mockReturnValue('secret_from_storage'),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    }
+    Object.defineProperty(window, 'sessionStorage', {
+      value: mockSessionStorage,
+      writable: true,
     })
 
     render(<Cart />, { wrapper: Providers })

@@ -13,7 +13,7 @@ type Props = {
 export function Alert({
   message = 'Something went wrong. Please try again later.',
   error,
-  fullScreen,
+  fullScreen = false,
   backButton,
 }: Props) {
   const navigate = useNavigate()

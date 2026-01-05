@@ -10,7 +10,7 @@ type Props = {
 export function Loading({
   message = 'Loading',
   color = 'var(--black)',
-  fullScreen,
+  fullScreen = false,
 }: Props) {
   return (
     <StyledLoading $fullScreen={fullScreen}>

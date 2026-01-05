@@ -6,22 +6,26 @@ type AuthLoaderOptions = {
 }
 
 export const authLoader = async (options?: AuthLoaderOptions) => {
-  let { accessToken, userData } = store.getState().user
+  const { accessToken, userData } = store.getState().user
   const adminRequired = options?.adminRequired ?? false
+
+  if (accessToken && userData) {
+    return adminRequired ? userData.role === UserRole.Admin : true
+  }
 
   if (!accessToken) {
     await store.dispatch(fetchAuthTokens())
-    accessToken = store.getState().user.accessToken
-    if (!accessToken) return false
+    const newAccessToken = store.getState().user.accessToken
+    if (!newAccessToken) return false
   }
 
   if (!userData) {
     await store.dispatch(fetchUserProfile())
-    userData = store.getState().user.userData
-    if (!userData) return false
-  }
+    const newUserData = store.getState().user.userData
+    if (!newUserData) return false
 
-  if (adminRequired && userData?.role !== UserRole.Admin) return false
+    if (adminRequired && newUserData.role !== UserRole.Admin) return false
+  }
 
   return true
 }

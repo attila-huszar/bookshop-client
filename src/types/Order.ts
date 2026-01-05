@@ -9,6 +9,7 @@ export enum OrderStatus {
 }
 
 export type Order = {
+  id: number
   paymentId: string
   paymentIntentStatus: PaymentIntent.Status
   orderStatus: OrderStatus
@@ -19,12 +20,6 @@ export type Order = {
   lastName: string | null
   email: string | null
   shipping: PaymentIntent.Shipping | null
-}
-
-export type OrderInDB = Order & {
-  id: number
-  createdAt: string
-  updatedAt: string
 }
 
 export type OrderItem = {
@@ -44,16 +39,14 @@ export type OrderInStore = {
   amount: number
 }
 
-export type OrderUpdate = Partial<
-  Pick<
-    Order,
-    | 'paymentIntentStatus'
-    | 'orderStatus'
-    | 'firstName'
-    | 'lastName'
-    | 'email'
-    | 'shipping'
-  >
+export type OrderUpdate = Pick<
+  Order,
+  | 'paymentIntentStatus'
+  | 'orderStatus'
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'shipping'
 >
 
 export type PaymentIntentResponse = {
@@ -62,4 +55,4 @@ export type PaymentIntentResponse = {
   status: PaymentIntent.Status
 }
 
-export type OrderFormValues = Omit<OrderInDB, 'id' | 'createdAt' | 'updatedAt'>
+export type OrderFormValues = Omit<Order, 'id'>

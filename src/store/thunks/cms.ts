@@ -17,7 +17,7 @@ import type {
   Author,
   Book,
   BookFormValues,
-  BookInDB,
+  BookWithAuthorId,
   AuthorFormValues,
 } from '@/types'
 
@@ -37,7 +37,7 @@ export const listOrders = createAsyncThunk('order/listOrders', async () => {
   return await getAllOrders()
 })
 
-export const addBook = createAsyncThunk<BookInDB, BookFormValues>(
+export const addBook = createAsyncThunk<BookWithAuthorId, BookFormValues>(
   'books/addBook',
   async (book) => postBook(book),
 )
@@ -68,7 +68,7 @@ export const deleteOrders = createAsyncThunk<number[], number[]>(
 )
 
 export const updateBook = createAsyncThunk<
-  BookInDB,
+  BookWithAuthorId,
   { bookId: number; book: Partial<BookFormValues> }
 >('books/updateBook', async ({ bookId, book }) => patchBook(bookId, book))
 

@@ -4,8 +4,8 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import toast from 'react-hot-toast'
-import { stripeKey } from '@/constants'
-import { useAppSelector, useLocalStorage } from '@/hooks'
+import { paymentSession, stripeKey } from '@/constants'
+import { useAppSelector } from '@/hooks'
 import { orderSelector } from '@/store'
 import { StyledCheckout } from './Checkout.style'
 import { CheckoutForm } from './components/CheckoutForm/CheckoutForm'
@@ -24,14 +24,13 @@ export function Checkout() {
   const location = useLocation()
   const { order, orderIsLoading, orderRetrieveError } =
     useAppSelector(orderSelector)
-  const { getFromLocalStorage, removeFromLocalStorage } = useLocalStorage()
   const ref = useRef<HTMLDialogElement>(null)
 
   const state = location.state as LocationState | null
   const showPaymentStatus = state?.showPaymentStatus ?? false
 
   const clientSecret =
-    order?.clientSecret ?? getFromLocalStorage<string>('clientSecret') ?? ''
+    order?.clientSecret ?? sessionStorage.getItem(paymentSession) ?? ''
 
   useEffect(() => {
     if (orderIsLoading || orderRetrieveError) {
@@ -43,7 +42,7 @@ export function Checkout() {
 
   const handleStripeError = ({ error }: FallbackProps) => {
     void handleError({ error })
-    removeFromLocalStorage('clientSecret')
+    sessionStorage.removeItem(paymentSession)
     toast('No Checkout Session found. Redirecting to home page...', {
       icon: '🔄',
       id: 'no-checkout-session',

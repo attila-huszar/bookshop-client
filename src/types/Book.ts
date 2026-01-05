@@ -14,8 +14,6 @@ export type Book = {
   newRelease: boolean
 }
 
-export type BookInDB = Omit<Book, 'author'> & { authorId: number }
+export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }
 
-export type BookFormValues = Omit<Book, 'id' | 'author'> & {
-  authorId: number | ''
-}
+export type BookFormValues = Omit<BookWithAuthorId, 'id'>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { postVerifyEmail } from '@/api'
@@ -11,19 +11,18 @@ export function VerifyEmail() {
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const token = queryParams.get('token')
+  const hasVerified = useRef(false)
 
   useEffect(() => {
-    if (!token) return
+    if (!token || hasVerified.current) return
 
-    const controller = new AbortController()
+    hasVerified.current = true
 
     const verifyEmailToken = async () => {
       try {
         toast.loading('Verifying email...', { id: 'verify' })
 
         const response = await postVerifyEmail(token)
-
-        if (controller.signal.aborted) return
 
         toast.success(
           `${response.email} successfully verified, you can now log in.`,
@@ -32,8 +31,6 @@ export function VerifyEmail() {
 
         void navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
-        if (controller.signal.aborted) return
-
         const formattedError = await handleError({
           error,
           message: 'Verification failed, please try again later.',
@@ -46,10 +43,6 @@ export function VerifyEmail() {
     }
 
     void verifyEmailToken()
-
-    return () => {
-      controller.abort()
-    }
   }, [navigate, token])
 
   return <Loading message="Verifying" />

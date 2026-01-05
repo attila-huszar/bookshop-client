@@ -1,7 +1,7 @@
 import { type Cart } from '@/types'
 
-export const getPaymentId = (clientSecret: string): string =>
-  clientSecret.split('_secret_')[0]
+export const getPaymentId = (clientSecret: string | undefined): string =>
+  clientSecret?.split('_secret_')[0] ?? ''
 
 export const calculateTotalAmount = (cartItems: Cart[]): number =>
   cartItems.reduce(

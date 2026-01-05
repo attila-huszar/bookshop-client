@@ -1,12 +1,7 @@
 import { Fragment, ChangeEvent, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useCart,
-  useLocalStorage,
-} from '@/hooks'
+import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import {
   cartClear,
   cartSelector,
@@ -33,6 +28,7 @@ import { Button, IconButton, Loading, Price } from '@/components'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
+import { paymentSession } from '@/constants'
 import type { Cart } from '@/types'
 import {
   MinusIcon,
@@ -56,18 +52,17 @@ export function Cart() {
   const { cartIsLoading } = useAppSelector(cartSelector)
   const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
-  const { getFromLocalStorage } = useLocalStorage()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     const clientSecret =
-      order?.clientSecret ?? getFromLocalStorage<string>('clientSecret')
+      order?.clientSecret ?? sessionStorage.getItem(paymentSession)
 
     if (clientSecret) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.clientSecret, navigate, getFromLocalStorage])
+  }, [order?.clientSecret, navigate])
 
   useEffect(() => {
     if (orderIsLoading) {
@@ -114,14 +109,20 @@ export function Cart() {
 
   const handleCheckout = () => {
     if (cartItems.length && !orderIsLoading) {
-      const orderRequest = {
-        items: cartItems.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-        })),
-      }
+      const existingSession = sessionStorage.getItem(paymentSession)
 
-      void dispatch(orderCreate(orderRequest))
+      if (existingSession) {
+        void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+      } else {
+        const orderRequest = {
+          items: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+        }
+
+        void dispatch(orderCreate(orderRequest))
+      }
     }
   }
 

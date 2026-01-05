@@ -16,7 +16,7 @@ export const registrationInitialValues = {
   password: '',
   passwordConfirmation: '',
   country: '',
-  avatar: undefined,
+  avatar: null,
 }
 
 export const passwordChangeInitialValues = {
@@ -42,7 +42,7 @@ export const discountOptions: {
 export const filterInitialValues: FilterProps = {
   genre: [],
   price: [],
-  discount: discountOptions[0].value,
+  discount: 'allBooks',
   publishYear: [],
   rating: 0.5,
 }

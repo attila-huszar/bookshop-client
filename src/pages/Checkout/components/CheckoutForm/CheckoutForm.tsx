@@ -7,7 +7,7 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
   cartClear,
   orderCancel,
@@ -18,7 +18,7 @@ import {
 } from '@/store'
 import { ROUTE } from '@/routes'
 import { getPaymentId } from '@/helpers'
-import { defaultCurrency } from '@/constants'
+import { defaultCurrency, paymentSession } from '@/constants'
 import { usePaymentSubmit } from '../../hooks'
 
 export function CheckoutForm() {
@@ -26,22 +26,21 @@ export function CheckoutForm() {
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
   const { order } = useAppSelector(orderSelector)
-  const { getFromLocalStorage } = useLocalStorage()
-  const [emailInput, setEmailInput] = useState(userData?.email ?? '')
+  const [receiptEmail, setReceiptEmail] = useState(userData?.email ?? '')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const { isLoading, message, handleSubmit } = usePaymentSubmit({
-    receiptEmail: (emailInput || userData?.email) ?? '',
+    receiptEmail,
   })
 
   useEffect(() => {
-    const localStorageClientSecret = getFromLocalStorage<string>('clientSecret')
-    if (localStorageClientSecret && !order) {
-      const paymentId = getPaymentId(localStorageClientSecret)
+    const sessionClientSecret = sessionStorage.getItem(paymentSession)
+    if (sessionClientSecret && !order) {
+      const paymentId = getPaymentId(sessionClientSecret)
       void dispatch(orderRetrieve(paymentId))
     }
-  }, [order, dispatch, getFromLocalStorage])
+  }, [order, dispatch])
 
   if (!order) {
     return (
@@ -66,15 +65,10 @@ export function CheckoutForm() {
   }
 
   const handleCancel = async () => {
-    try {
-      await dispatch(orderCancel(paymentId)).unwrap()
-    } catch {
-      // Continue with cleanup even if cancel fails - thunk handles partial failures
-    } finally {
-      dispatch(orderClear())
-      dispatch(cartClear())
-      void navigate(`/${ROUTE.CART}`, { replace: true })
-    }
+    await dispatch(orderCancel(paymentId))
+    dispatch(orderClear())
+    dispatch(cartClear())
+    void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -90,17 +84,19 @@ export function CheckoutForm() {
   }
 
   return (
-    <form id="payment-form" onSubmit={(event) => void handleSubmit(event)}>
+    <form id="payment-form" onSubmit={(e) => void handleSubmit(e)}>
       <div>
         <p>Order #{orderForm.num}</p>
         <span>
           {orderForm.amount} {defaultCurrency}
         </span>
       </div>
-      <LinkAuthenticationElement
-        options={{ defaultValues: { email: userData?.email ?? emailInput } }}
-        onChange={(e) => setEmailInput(e.value.email)}
-      />
+      {!userData?.email && (
+        <LinkAuthenticationElement
+          options={{ defaultValues: { email: receiptEmail } }}
+          onChange={(e) => setReceiptEmail(e.value.email)}
+        />
+      )}
       <PaymentElement id="payment-element" options={paymentElementOptions} />
       <button
         type="submit"

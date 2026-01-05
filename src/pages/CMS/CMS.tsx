@@ -6,7 +6,7 @@ import { Button, ConfirmDialog, ExtraSpace } from '@/components'
 import { EditDialog, Tabs } from './components'
 import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { SelectContext } from './CMS.types'
+import { SelectContext } from '@/types'
 import { LogoutIcon } from '@/assets/svg'
 import {
   AppDispatch,
@@ -16,14 +16,7 @@ import {
   deleteUsers,
   RootState,
 } from '@/store'
-import { BookInDB, Author, OrderInDB, User } from '@/types'
-
-const noneSelected: SelectContext = {
-  orders: [],
-  books: [],
-  authors: [],
-  users: [],
-}
+import { BookWithAuthorId, Author, Order, User } from '@/types'
 
 export const CMS = () => {
   const navigate = useNavigate()
@@ -32,10 +25,14 @@ export const CMS = () => {
   const { userData } = useAppSelector((state) => state.user)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
-  const [selectedItems, setSelectedItems] =
-    useState<SelectContext>(noneSelected)
+  const [selectedItems, setSelectedItems] = useState<SelectContext>({
+    orders: [],
+    books: [],
+    authors: [],
+    users: [],
+  })
   const [editedItem, setEditedItem] = useState<
-    BookInDB | Author | OrderInDB | User | null
+    BookWithAuthorId | Author | Order | User | null
   >(null)
   const editRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)

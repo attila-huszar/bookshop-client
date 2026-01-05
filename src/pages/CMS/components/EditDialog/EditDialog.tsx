@@ -24,6 +24,7 @@ import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import {
   authorSchema,
   bookSchema,
+  orderSchema,
   userSchema,
   validateImageFile,
 } from '@/validation'
@@ -34,19 +35,19 @@ import {
   initialOrderValues,
   initialUserValues,
 } from './initialValues'
+import { log } from '@/libs'
 import {
   Author,
   AuthorFormValues,
   BookFormValues,
-  BookInDB,
-  OrderInDB,
+  BookWithAuthorId,
+  Order,
   OrderFormValues,
   User,
   UserFormValues,
+  SelectContext,
 } from '@/types'
-import { SelectContext } from '@/pages/CMS/CMS.types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
-import { log } from '@/libs'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
@@ -60,7 +61,7 @@ type Props = {
     | UserFormValues
     | null
   setEditedItem: React.Dispatch<
-    React.SetStateAction<BookInDB | Author | OrderInDB | User | null>
+    React.SetStateAction<BookWithAuthorId | Author | Order | User | null>
   >
 }
 
@@ -109,7 +110,7 @@ export const EditDialog: FC<Props> = ({
 
     if (!files || files.length === 0) return
 
-    const file = files[0]
+    const file = files[0]!
     const { valid, error } = validateImageFile(file)
 
     if (!valid && error) {
@@ -199,39 +200,25 @@ export const EditDialog: FC<Props> = ({
       switch (activeTab) {
         case 'books': {
           const bookValues = values as BookFormValues
-          const submitValues = {
-            ...bookValues,
-            authorId: Number(bookValues.authorId),
-          }
-          // @ts-expect-error - Union type handling for dynamic actionMap
-          result = await dispatch(config.action(submitValues))
+          //@ts-expect-error Union type handling
+          result = await dispatch(config.action(bookValues))
           break
         }
         case 'authors': {
           const authorValues = values as AuthorFormValues
-          // @ts-expect-error - Union type handling for dynamic actionMap
+          //@ts-expect-error Union type handling
           result = await dispatch(config.action(authorValues))
           break
         }
         case 'orders': {
           const orderValues = values as OrderFormValues
-          const submitValues = {
-            ...orderValues,
-            total: orderValues.total,
-            items: orderValues.items.map((item) => ({
-              ...item,
-              price: item.price,
-              discount: item.discount,
-              quantity: item.quantity,
-            })),
-          }
-          // @ts-expect-error - Union type handling for dynamic actionMap
-          result = await dispatch(config.action(submitValues))
+          //@ts-expect-error Union type handling
+          result = await dispatch(config.action(orderValues))
           break
         }
         case 'users': {
           const userValues = values as UserFormValues
-          // @ts-expect-error - Union type handling for dynamic actionMap
+          //@ts-expect-error Union type handling
           result = await dispatch(config.action(userValues))
           break
         }
@@ -391,7 +378,7 @@ export const EditDialog: FC<Props> = ({
           <Formik
             key={activeTab}
             initialValues={initialValuesMap[activeTab]}
-            //validationSchema={orderSchema}
+            validationSchema={orderSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>

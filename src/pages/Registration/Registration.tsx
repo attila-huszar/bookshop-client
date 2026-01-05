@@ -20,15 +20,15 @@ export function Registration() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchCountry = async () => {
-      const data = await getUserCountry()
-      setCountry(data.country)
-    }
-    void fetchCountry()
+    window.scrollTo(0, 0)
   }, [])
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    const fetchCountry = async () => {
+      const data = await getUserCountry()
+      setCountry(data.country || defaultCountry)
+    }
+    void fetchCountry()
   }, [])
 
   const handleSubmit = async (values: RegisterRequest) => {
@@ -50,7 +50,8 @@ export function Registration() {
   return (
     <AuthorizationMenu>
       <Formik
-        initialValues={registrationInitialValues}
+        initialValues={{ ...registrationInitialValues, country }}
+        enableReinitialize
         validationSchema={registrationSchema}
         validateOnBlur={false}
         onSubmit={handleSubmit}>

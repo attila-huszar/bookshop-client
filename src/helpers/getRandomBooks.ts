@@ -8,7 +8,7 @@ export function getRandomBooks(booksArray: Book[], count: number) {
     if (bookCopy.length) {
       const randomIdx = Math.floor(Math.random() * bookCopy.length)
       const [removedBook] = bookCopy.splice(randomIdx, 1)
-      randomBooks.push(removedBook)
+      if (removedBook) randomBooks.push(removedBook)
     }
   }
   return randomBooks

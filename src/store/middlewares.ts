@@ -10,6 +10,7 @@ import {
 } from './slices/cart'
 import { orderClear } from './slices/order'
 import { orderCreate } from './thunks/order'
+import { paymentSession } from '@/constants'
 import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
@@ -92,14 +93,13 @@ const clientSecretToLocalStorageTyped =
 clientSecretToLocalStorageTyped({
   actionCreator: orderCreate.fulfilled,
   effect: (action) => {
-    // codeql-suppress js/clear-text-storage-of-sensitive-information
-    localStorage.setItem('clientSecret', action.payload.clientSecret)
+    sessionStorage.setItem(paymentSession, action.payload.clientSecret)
   },
 })
 
 clientSecretToLocalStorageTyped({
   actionCreator: orderClear,
   effect: () => {
-    localStorage.removeItem('clientSecret')
+    sessionStorage.removeItem(paymentSession)
   },
 })

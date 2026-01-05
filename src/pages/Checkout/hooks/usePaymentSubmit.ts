@@ -54,27 +54,27 @@ export function usePaymentSubmit({
         return
       }
 
-      const shippingDetails = addressData?.value
+      const shipping = addressData?.value
         ? {
             name: `${addressData.value.firstName ?? ''} ${addressData.value.lastName ?? ''}`.trim(),
-            phone: addressData.value.phone ?? undefined,
+            phone: addressData.value.phone ?? '',
             address: {
               line1: addressData.value.address.line1,
-              line2: addressData.value.address.line2 ?? undefined,
+              line2: addressData.value.address.line2 ?? '',
               city: addressData.value.address.city,
               state: addressData.value.address.state,
               postal_code: addressData.value.address.postal_code,
               country: addressData.value.address.country,
             },
           }
-        : undefined
+        : null
 
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: receiptEmail,
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
-          shipping: shippingDetails,
+          shipping,
         },
         redirect: 'if_required',
       })

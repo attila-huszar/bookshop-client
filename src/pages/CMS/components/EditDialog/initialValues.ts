@@ -9,7 +9,7 @@ import {
 
 export const initialBookValues: BookFormValues = {
   title: '',
-  authorId: '',
+  authorId: 0,
   genre: '',
   imgUrl: '',
   description: '',
@@ -63,5 +63,12 @@ export const initialUserValues: UserFormValues = {
   role: UserRole.User,
   avatar: '',
   phone: '',
-  address: {},
+  address: {
+    city: '',
+    country: '',
+    line1: '',
+    line2: '',
+    postal_code: '',
+    state: '',
+  },
 }

@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { cartClear, orderClear, orderSelector } from '@/store'
 import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
 import { usePaymentStatus } from '../../hooks'
+import { paymentSession } from '@/constants'
 import logo from '@/assets/image/logo.png'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
@@ -28,10 +29,9 @@ export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { order } = useAppSelector(orderSelector)
-  const { getFromLocalStorage } = useLocalStorage()
 
   const clientSecret =
-    order?.clientSecret ?? getFromLocalStorage<string>('clientSecret')
+    order?.clientSecret ?? sessionStorage.getItem(paymentSession)
 
   const { status } = usePaymentStatus(clientSecret)
 

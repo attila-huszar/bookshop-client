@@ -3,9 +3,8 @@ import { StyledTable } from '../Tabs/Tabs.style'
 import { Alert, IconButton } from '@/components'
 import { cmsUsersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
-import { SelectContext } from '../../CMS.types'
+import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { BookInDB, Author, Order, User } from '@/types'
 
 export const Users = () => {
   const { users, usersLoading, usersError } = useAppSelector(cmsUsersSelector)
@@ -14,14 +13,7 @@ export const Users = () => {
     setSelectedItems,
     setIsEditDialogOpen,
     setEditedItem,
-  } = useOutletContext<{
-    selectedItems: SelectContext
-    setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
-    setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-    setEditedItem: React.Dispatch<
-      React.SetStateAction<BookInDB | Author | Order | User | null>
-    >
-  }>()
+  } = useOutletContext<CMSOutletContext>()
 
   if (usersError) {
     return <Alert message="Error loading users" error={usersError} />

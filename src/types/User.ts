@@ -1,19 +1,19 @@
 import type { Address } from '@stripe/stripe-js'
 
 export type User = {
+  id: number
   uuid: string
   role: UserRole
   firstName: string
   lastName: string
   email: string
   country: string
-  phone?: string | null
-  address?: Partial<Address>
-  avatar?: string
+  phone: string
+  address: Address
+  avatar: string
 }
 
-export type UserInDB = User & {
-  id: number
+export type UserWithMetadata = User & {
   verified: boolean
   verificationToken: string | null
   verificationExpires: string | null
@@ -23,7 +23,7 @@ export type UserInDB = User & {
   updatedAt: string
 }
 
-export const enum UserRole {
+export enum UserRole {
   User = 'user',
   Admin = 'admin',
 }
@@ -34,7 +34,7 @@ export type RegisterRequest = {
   email: string
   password: string
   country: string
-  avatar?: File
+  avatar: File | null
 }
 
 export type RegisterResponse = {

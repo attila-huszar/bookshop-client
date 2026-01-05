@@ -75,6 +75,7 @@ describe('Filter', () => {
     await userEvent.click(fictionCheckbox)
 
     const starButton = screen.getAllByRole('button', { name: /rating/i })[2]
+    if (!starButton) throw new Error('Star button not found')
     await userEvent.click(starButton)
 
     const submitButton = screen.getByRole('button', { name: /submit/i })

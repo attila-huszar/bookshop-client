@@ -6,7 +6,7 @@ type UseMessagesReturn = {
 }
 
 export function useMessages(): UseMessagesReturn {
-  // TODO: Add i18n support here (e.g., useTranslation hook)
+  // TODO: Add i18n
 
   const getErrorMessage = (error: StripeError): string => {
     switch (error.type) {

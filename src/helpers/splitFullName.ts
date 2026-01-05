@@ -15,8 +15,5 @@ export function splitFullName(fullName: string): {
   const firstName = parts[0] ?? null
   const lastName = parts.length > 1 ? parts.slice(1).join(' ') : null
 
-  return {
-    firstName: firstName && firstName.length >= 2 ? firstName : null,
-    lastName: lastName && lastName.length >= 2 ? lastName : null,
-  }
+  return { firstName, lastName }
 }

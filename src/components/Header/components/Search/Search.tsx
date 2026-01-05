@@ -105,7 +105,8 @@ export function Search() {
 
   const handleSubmit = () => {
     if (searchResults.length) {
-      void navigate(`/${ROUTE.BOOK}?id=${searchResults[0].id}`)
+      const firstBookId = searchResults[0]?.id ?? 1
+      void navigate(`/${ROUTE.BOOK}?id=${firstBookId}`)
     }
   }
 

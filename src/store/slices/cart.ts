@@ -23,11 +23,11 @@ const cartSlice = createSlice({
         imgUrl,
       }
 
-      const existingItemIdx = state.cartItems.findIndex(
+      const existingIdx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (existingItemIdx === -1) {
+      if (existingIdx === -1) {
         state.cartItems = [...state.cartItems, cartItem]
       }
     },
@@ -42,37 +42,40 @@ const cartSlice = createSlice({
       )
     },
     cartQuantityAdd: (state, action: PayloadAction<Cart>) => {
-      const itemIdx = state.cartItems.findIndex(
+      const idx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartItems[itemIdx].quantity < 50) {
-        state.cartItems[itemIdx].quantity++
+      if (idx !== -1) {
+        const item = state.cartItems[idx]
+        if (item && item.quantity < 50) item.quantity++
       }
     },
     cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
-      const itemIdx = state.cartItems.findIndex(
+      const idx = state.cartItems.findIndex(
         (item) => item.id === action.payload.id,
       )
 
-      if (itemIdx !== -1 && state.cartItems[itemIdx].quantity > 1) {
-        state.cartItems[itemIdx].quantity--
+      if (idx !== -1) {
+        const item = state.cartItems[idx]
+        if (item && item.quantity > 1) item.quantity--
       }
     },
     cartQuantitySet: (
       state,
       action: PayloadAction<{ cartItem: Cart; newQuantity: number }>,
     ) => {
-      const itemIdx = state.cartItems.findIndex(
+      const idx = state.cartItems.findIndex(
         (item) => item.id === action.payload.cartItem.id,
       )
 
       if (
-        itemIdx !== -1 &&
+        idx !== -1 &&
         action.payload.newQuantity >= 1 &&
         action.payload.newQuantity <= 50
       ) {
-        state.cartItems[itemIdx].quantity = action.payload.newQuantity
+        const item = state.cartItems[idx]
+        if (item) item.quantity = action.payload.newQuantity
       }
     },
   },
