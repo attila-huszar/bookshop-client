@@ -33,9 +33,9 @@ export const getOrder = async (paymentId: string): Promise<Order> => {
 
 export const postOrder = async (
   order: OrderCreate,
-): Promise<{ clientSecret: string; amount: number }> => {
+): Promise<{ paymentSession: string; amount: number }> => {
   const response = await baseRequest.post<{
-    clientSecret: string
+    paymentSession: string
     amount: number
   }>(PATH.orders.base, { json: order })
   return await response.json()

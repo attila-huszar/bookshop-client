@@ -69,7 +69,7 @@ describe('BasketButton', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: { cartItems: [] },
-        order: { order: { clientSecret: 'test' } },
+        order: { order: { paymentSession: 'test' } },
       }
       return selector(mockState as never)
     })

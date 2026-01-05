@@ -28,7 +28,7 @@ import { Button, IconButton, Loading, Price } from '@/components'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
-import { paymentSession } from '@/constants'
+import { paymentSessionKey } from '@/constants'
 import type { Cart } from '@/types'
 import {
   MinusIcon,
@@ -56,13 +56,13 @@ export function Cart() {
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const clientSecret =
-      order?.clientSecret ?? sessionStorage.getItem(paymentSession)
+    const paymentSession =
+      order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
 
-    if (clientSecret) {
+    if (paymentSession) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.clientSecret, navigate])
+  }, [order?.paymentSession, navigate])
 
   useEffect(() => {
     if (orderIsLoading) {
@@ -109,7 +109,7 @@ export function Cart() {
 
   const handleCheckout = () => {
     if (cartItems.length && !orderIsLoading) {
-      const existingSession = sessionStorage.getItem(paymentSession)
+      const existingSession = sessionStorage.getItem(paymentSessionKey)
 
       if (existingSession) {
         void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })

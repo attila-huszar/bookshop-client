@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks'
 import { cartClear, orderClear, orderSelector } from '@/store'
 import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
 import { usePaymentStatus } from '../../hooks'
-import { paymentSession } from '@/constants'
+import { paymentSessionKey } from '@/constants'
 import logo from '@/assets/image/logo.png'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
@@ -30,10 +30,10 @@ export function PaymentStatus() {
   const dispatch = useAppDispatch()
   const { order } = useAppSelector(orderSelector)
 
-  const clientSecret =
-    order?.clientSecret ?? sessionStorage.getItem(paymentSession)
+  const paymentSession =
+    order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
 
-  const { status } = usePaymentStatus(clientSecret)
+  const { status } = usePaymentStatus(paymentSession)
 
   useEffect(() => {
     if (successStatuses.includes(status.intent)) {

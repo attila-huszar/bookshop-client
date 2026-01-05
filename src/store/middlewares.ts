@@ -10,7 +10,7 @@ import {
 } from './slices/cart'
 import { orderClear } from './slices/order'
 import { orderCreate } from './thunks/order'
-import { paymentSession } from '@/constants'
+import { paymentSessionKey } from '@/constants'
 import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
@@ -93,13 +93,13 @@ const clientSecretToLocalStorageTyped =
 clientSecretToLocalStorageTyped({
   actionCreator: orderCreate.fulfilled,
   effect: (action) => {
-    sessionStorage.setItem(paymentSession, action.payload.clientSecret)
+    sessionStorage.setItem(paymentSessionKey, action.payload.paymentSession)
   },
 })
 
 clientSecretToLocalStorageTyped({
   actionCreator: orderClear,
   effect: () => {
-    sessionStorage.removeItem(paymentSession)
+    sessionStorage.removeItem(paymentSessionKey)
   },
 })

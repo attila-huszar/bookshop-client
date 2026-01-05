@@ -30,7 +30,7 @@ const orderSlice = createSlice({
       })
       .addCase(orderCreate.fulfilled, (state, action) => {
         state.order = {
-          clientSecret: action.payload.clientSecret,
+          paymentSession: action.payload.paymentSession,
           amount: action.payload.amount,
         }
         state.orderIsLoading = false
@@ -48,7 +48,7 @@ const orderSlice = createSlice({
       })
       .addCase(orderRetrieve.fulfilled, (state, action) => {
         state.order = {
-          clientSecret: action.payload.clientSecret,
+          paymentSession: action.payload.paymentSession,
           amount: action.payload.amount,
         }
         state.orderIsLoading = false

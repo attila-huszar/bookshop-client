@@ -1,1 +1,1 @@
-export const paymentSession = 'paymentSession'
+export const paymentSessionKey = 'paymentSession'

@@ -7,15 +7,15 @@ export const orderCreate = createAsyncThunk(
   'order/orderCreate',
   async (
     order: OrderCreate,
-  ): Promise<{ clientSecret: string; amount: number }> => {
+  ): Promise<{ paymentSession: string; amount: number }> => {
     try {
-      const { clientSecret, amount } = await postOrder(order)
+      const { paymentSession, amount } = await postOrder(order)
 
-      if (!clientSecret) {
-        throw new Error('Invalid response from server: missing clientSecret')
+      if (!paymentSession) {
+        throw new Error('Invalid response from server: missing paymentSession')
       }
 
-      return { clientSecret, amount }
+      return { paymentSession, amount }
     } catch (error) {
       void log.error('Order creation failed', { error })
       throw error
@@ -27,12 +27,12 @@ export const orderRetrieve = createAsyncThunk(
   'order/orderRetrieve',
   async (paymentId: string) => {
     const {
-      client_secret: clientSecret,
+      client_secret: paymentSession,
       amount,
       status,
     } = await getPaymentIntent(paymentId)
 
-    if (!clientSecret) {
+    if (!paymentSession) {
       throw new Error(
         'Invalid response from payment service: missing client secret',
       )
@@ -49,7 +49,7 @@ export const orderRetrieve = createAsyncThunk(
       )
     }
 
-    return { clientSecret, status, amount }
+    return { paymentSession, status, amount }
   },
 )
 

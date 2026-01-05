@@ -20,7 +20,7 @@ const getUnknownErrorMessage = (error: unknown): string => {
   return 'Unknown error'
 }
 
-export function usePaymentStatus(clientSecret: string | null) {
+export function usePaymentStatus(paymentSession: string | null) {
   const stripe = useStripe()
   const isMountedRef = useRef(true)
   const orderUpdatedRef = useRef(false)
@@ -36,7 +36,7 @@ export function usePaymentStatus(clientSecret: string | null) {
     isMountedRef.current = true
     orderUpdatedRef.current = false
 
-    if (!stripe || !clientSecret) return
+    if (!stripe || !paymentSession) return
 
     const timeoutIds: NodeJS.Timeout[] = []
 
@@ -74,7 +74,7 @@ export function usePaymentStatus(clientSecret: string | null) {
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       try {
         const { paymentIntent, error: retrieveError } =
-          await stripe.retrievePaymentIntent(clientSecret)
+          await stripe.retrievePaymentIntent(paymentSession)
 
         if (!isMountedRef.current) return
 
@@ -174,7 +174,7 @@ export function usePaymentStatus(clientSecret: string | null) {
       isMountedRef.current = false
       timeoutIds.forEach(clearTimeout)
     }
-  }, [clientSecret, stripe, getMessage])
+  }, [paymentSession, stripe, getMessage])
 
   return { status }
 }

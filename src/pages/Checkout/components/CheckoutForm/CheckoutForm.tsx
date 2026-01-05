@@ -18,7 +18,7 @@ import {
 } from '@/store'
 import { ROUTE } from '@/routes'
 import { getPaymentId } from '@/helpers'
-import { defaultCurrency, paymentSession } from '@/constants'
+import { defaultCurrency, paymentSessionKey } from '@/constants'
 import { usePaymentSubmit } from '../../hooks'
 
 export function CheckoutForm() {
@@ -35,9 +35,9 @@ export function CheckoutForm() {
   })
 
   useEffect(() => {
-    const sessionClientSecret = sessionStorage.getItem(paymentSession)
-    if (sessionClientSecret && !order) {
-      const paymentId = getPaymentId(sessionClientSecret)
+    const paymentSession = sessionStorage.getItem(paymentSessionKey)
+    if (paymentSession && !order) {
+      const paymentId = getPaymentId(paymentSession)
       void dispatch(orderRetrieve(paymentId))
     }
   }, [order, dispatch])
@@ -57,7 +57,7 @@ export function CheckoutForm() {
     )
   }
 
-  const paymentId = getPaymentId(order.clientSecret)
+  const paymentId = getPaymentId(order.paymentSession)
 
   const orderForm = {
     num: paymentId?.slice(-6).toUpperCase(),

@@ -35,7 +35,7 @@ export type OrderCreate = {
 }
 
 export type OrderInStore = {
-  clientSecret: string
+  paymentSession: string
   amount: number
 }
 

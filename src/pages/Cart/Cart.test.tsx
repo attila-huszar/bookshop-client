@@ -30,9 +30,9 @@ const mockCartState = {
 }
 
 const mockOrderState = {
-  order: null as { clientSecret: string } | null,
+  order: null,
   orderIsLoading: false,
-  orderCreateError: null as string | null,
+  orderCreateError: null,
   orderRetrieveError: null,
   orderCancelError: null,
 }
@@ -184,7 +184,10 @@ describe('Cart component', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: mockCartState,
-        order: { ...mockOrderState, order: { clientSecret: 'secret' } },
+        order: {
+          ...mockOrderState,
+          order: { paymentSession: 'paymentSession' },
+        },
         user: mockUserState,
       }
       return selector(mockState as Parameters<typeof selector>[0])
