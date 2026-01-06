@@ -1,7 +1,7 @@
 import { RemoveAvatar, IconOverlay, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 import { useAppDispatch } from '@/hooks'
-import { updateUser } from '@/store'
+import { updateUserProfile } from '@/store'
 import { AccountDefaultIcon, BinIcon, CameraIcon } from '@/assets/svg'
 
 export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
@@ -9,7 +9,7 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
 
   const handleRemoveAvatar = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
-    void dispatch(updateUser({ avatar: '' }))
+    void dispatch(updateUserProfile({ avatar: '' }))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {

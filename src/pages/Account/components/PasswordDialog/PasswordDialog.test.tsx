@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast'
 import { PasswordDialog } from './PasswordDialog'
 import { useAppDispatch } from '@/hooks'
 import { postUserLogin } from '@/api'
-import { updateUser } from '@/store'
+import { updateUserProfile } from '@/store'
 
 vi.mock('@/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api')>()
@@ -16,7 +16,7 @@ vi.mock('@/api', async (importOriginal) => {
 })
 
 vi.mock('@/store', () => ({
-  updateUser: vi.fn(),
+  updateUserProfile: vi.fn(),
 }))
 
 describe('PasswordDialog', () => {
@@ -82,7 +82,7 @@ describe('PasswordDialog', () => {
         password: 'OldPass123!',
       })
       expect(mockDispatch).toHaveBeenCalledWith(
-        updateUser({ password: 'NewPass456!' }),
+        updateUserProfile({ password: 'NewPass456!' }),
       )
       expect(dialog.open).toBe(false)
     })
