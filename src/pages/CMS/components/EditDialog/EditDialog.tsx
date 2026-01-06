@@ -16,8 +16,11 @@ import { Button, FormikField, IconButton } from '@/components'
 import {
   addAuthor,
   addBook,
+  addOrder,
+  addUser,
   updateAuthor,
   updateBook,
+  updateOrder,
   updateUser,
 } from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
@@ -28,7 +31,7 @@ import {
   userSchema,
   validateImageFile,
 } from '@/validation'
-import { updateOrder, uploadProductImage } from '@/api'
+import { uploadProductImage } from '@/api'
 import {
   initialAuthorValues,
   initialBookValues,
@@ -46,6 +49,7 @@ import {
   User,
   UserFormValues,
   SelectContext,
+  UserWithMetadata,
 } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
 
@@ -157,14 +161,14 @@ export const EditDialog: FC<Props> = ({
       error: `Failed to ${editedItem ? 'update' : 'add'} author`,
     },
     orders: {
-      action: editedItem ? updateOrder : null,
-      success: 'Order updated successfully',
-      error: 'Failed to update order',
+      action: editedItem ? updateOrder : addOrder,
+      success: `Order ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} order`,
     },
     users: {
-      action: editedItem ? updateUser : null,
-      success: 'User updated successfully',
-      error: 'Failed to update user',
+      action: editedItem ? updateUser : addUser,
+      success: `User ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} user`,
     },
   }
 
@@ -199,27 +203,27 @@ export const EditDialog: FC<Props> = ({
 
       switch (activeTab) {
         case 'books': {
-          const bookValues = values as BookFormValues
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(bookValues))
+          result = await dispatch(
+            (config.action as typeof addBook)(values as BookFormValues),
+          )
           break
         }
         case 'authors': {
-          const authorValues = values as AuthorFormValues
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(authorValues))
+          result = await dispatch(
+            (config.action as typeof addAuthor)(values as AuthorFormValues),
+          )
           break
         }
         case 'orders': {
-          const orderValues = values as OrderFormValues
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(orderValues))
+          result = await dispatch(
+            (config.action as typeof addOrder)(values as OrderFormValues),
+          )
           break
         }
         case 'users': {
-          const userValues = values as UserFormValues
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(userValues))
+          result = await dispatch(
+            (config.action as typeof addUser)(values as UserWithMetadata),
+          )
           break
         }
         default:

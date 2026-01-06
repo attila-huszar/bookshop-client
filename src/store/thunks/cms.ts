@@ -1,17 +1,21 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
-  getAllAuthors,
-  getAllBooks,
-  getAllOrders,
-  getAllUsers,
-  postBook,
-  delBooks,
-  postAuthor,
-  delAuthors,
-  delOrders,
-  delUsers,
-  patchBook,
-  patchAuthor,
+  getAuthorsCMS,
+  getBooksCMS,
+  getOrdersCMS,
+  getUsersCMS,
+  deleteAuthorsCMS,
+  deleteBooksCMS,
+  deleteOrdersCMS,
+  deleteUsersCMS,
+  patchAuthorCMS,
+  patchBookCMS,
+  patchOrderCMS,
+  patchUserCMS,
+  postAuthorCMS,
+  postBookCMS,
+  postOrderCMS,
+  postUserCMS,
 } from '@/api'
 import type {
   Author,
@@ -19,62 +23,90 @@ import type {
   BookFormValues,
   BookWithAuthorId,
   AuthorFormValues,
+  OrderUpdate,
+  Order,
+  UserWithMetadata,
 } from '@/types'
 
 export const listBooks = createAsyncThunk('books/listBooks', async () => {
-  return await getAllBooks()
+  return await getBooksCMS()
 })
 
 export const listAuthors = createAsyncThunk('authors/listAuthors', async () => {
-  return await getAllAuthors()
-})
-
-export const listUsers = createAsyncThunk('user/listUsers', async () => {
-  return await getAllUsers()
+  return await getAuthorsCMS()
 })
 
 export const listOrders = createAsyncThunk('order/listOrders', async () => {
-  return await getAllOrders()
+  return await getOrdersCMS()
+})
+
+export const listUsers = createAsyncThunk('user/listUsers', async () => {
+  return await getUsersCMS()
 })
 
 export const addBook = createAsyncThunk<BookWithAuthorId, BookFormValues>(
   'books/addBook',
-  async (book) => postBook(book),
+  async (book) => postBookCMS(book),
 )
 
-export const deleteBooks = createAsyncThunk<Book['id'][], number[]>(
-  'books/deleteBooks',
-  async (bookIds) => delBooks(bookIds),
-)
-
-export const addAuthor = createAsyncThunk(
+export const addAuthor = createAsyncThunk<Author, Omit<Author, 'id'>>(
   'authors/addAuthor',
-  async (author: Omit<Author, 'id'>) => postAuthor(author),
+  async (author) => postAuthorCMS(author),
 )
 
-export const deleteAuthors = createAsyncThunk<Author['id'][], number[]>(
-  'authors/deleteAuthors',
-  async (authorIds) => delAuthors(authorIds),
+export const addOrder = createAsyncThunk<Order, Omit<Order, 'id'>>(
+  'orders/addOrder',
+  async (order) => await postOrderCMS(order),
 )
 
-export const deleteUsers = createAsyncThunk<number[], number[]>(
-  'users/deleteUsers',
-  async (userIds) => delUsers(userIds),
-)
-
-export const deleteOrders = createAsyncThunk<number[], number[]>(
-  'orders/deleteOrders',
-  async (orderIds) => delOrders(orderIds),
-)
+export const addUser = createAsyncThunk<
+  UserWithMetadata,
+  Omit<UserWithMetadata, 'id'>
+>('users/addUser', async (user) => await postUserCMS(user))
 
 export const updateBook = createAsyncThunk<
   BookWithAuthorId,
   { bookId: number; book: Partial<BookFormValues> }
->('books/updateBook', async ({ bookId, book }) => patchBook(bookId, book))
+>('books/updateBook', async ({ bookId, book }) => patchBookCMS(bookId, book))
 
 export const updateAuthor = createAsyncThunk<
   Author,
   { authorId: number; author: Partial<AuthorFormValues> }
 >('authors/updateAuthor', async ({ authorId, author }) =>
-  patchAuthor(authorId, author),
+  patchAuthorCMS(authorId, author),
+)
+
+export const updateOrder = createAsyncThunk<
+  Order,
+  { paymentId: string; order: OrderUpdate }
+>('orders/updateOrder', async ({ paymentId, order }) =>
+  patchOrderCMS(paymentId, order),
+)
+
+export const updateUser = createAsyncThunk<
+  UserWithMetadata,
+  { userId: number; user: Partial<UserWithMetadata> }
+>(
+  'users/updateUser',
+  async ({ userId, user }) => await patchUserCMS(userId, user),
+)
+
+export const deleteBooks = createAsyncThunk<Book['id'][], number[]>(
+  'books/deleteBooks',
+  async (bookIds) => deleteBooksCMS(bookIds),
+)
+
+export const deleteAuthors = createAsyncThunk<Author['id'][], number[]>(
+  'authors/deleteAuthors',
+  async (authorIds) => deleteAuthorsCMS(authorIds),
+)
+
+export const deleteOrders = createAsyncThunk<number[], number[]>(
+  'orders/deleteOrders',
+  async (orderIds) => deleteOrdersCMS(orderIds),
+)
+
+export const deleteUsers = createAsyncThunk<number[], number[]>(
+  'users/deleteUsers',
+  async (userIds) => deleteUsersCMS(userIds),
 )
