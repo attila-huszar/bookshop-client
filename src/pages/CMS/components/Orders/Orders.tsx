@@ -3,9 +3,8 @@ import { StyledTable } from '../Tabs/Tabs.style'
 import { Alert, IconButton } from '@/components'
 import { cmsOrdersSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
-import { SelectContext } from '../../CMS.types'
+import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { BookInDB, Author, Order, User } from '@/types'
 
 export const Orders = () => {
   const { orders, ordersLoading, ordersError } =
@@ -15,14 +14,7 @@ export const Orders = () => {
     setSelectedItems,
     setIsEditDialogOpen,
     setEditedItem,
-  } = useOutletContext<{
-    selectedItems: SelectContext
-    setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
-    setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-    setEditedItem: React.Dispatch<
-      React.SetStateAction<BookInDB | Author | Order | User | null>
-    >
-  }>()
+  } = useOutletContext<CMSOutletContext>()
 
   if (ordersError) {
     return <Alert message="Error loading orders" error={ordersError} />
@@ -114,14 +106,18 @@ export const Orders = () => {
                 </td>
                 <td>{order.paymentIntentStatus}</td>
                 <td>{order.orderStatus}</td>
-                <td>{order.name}</td>
+                <td>
+                  {[order.firstName, order.lastName].filter(Boolean).join(' ')}
+                </td>
                 <td>{order.email}</td>
                 <td>
-                  {order.address && Object.values(order.address).join(', ')}
+                  {order.shipping?.address &&
+                    Object.values(order.shipping.address)
+                      .filter(Boolean)
+                      .join(', ')}
                 </td>
                 <td>{order.items.map((item) => item.title).join(', ')}</td>
                 <td>{order.total}</td>
-                <td>{order.currency}</td>
                 <td style={{ padding: 0 }}>
                   <IconButton
                     onClick={(e) => {

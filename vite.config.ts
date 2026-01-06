@@ -45,6 +45,11 @@ export default defineConfig(({ mode }) => {
       exclude: ['node_modules', 'dist'],
       setupFiles: './src/setupTests.tsx',
       reporters: 'dot',
+      env: {
+        VITE_BASE_URL: 'http://localhost:5173',
+        VITE_SERVER_URL: 'http://localhost:5000',
+        VITE_STRIPE_PUBLIC_KEY: 'pk_test_mock_stripe_key',
+      },
       coverage: {
         provider: 'istanbul',
         reportsDirectory: 'coverage',

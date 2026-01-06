@@ -13,11 +13,21 @@ import {
   GenreRow,
 } from './EditDialog.style'
 import { Button, FormikField, IconButton } from '@/components'
-import { addAuthor, addBook } from '@/store'
+import {
+  addAuthor,
+  addBook,
+  addOrder,
+  addUser,
+  updateAuthor,
+  updateBook,
+  updateOrder,
+  updateUser,
+} from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import {
   authorSchema,
   bookSchema,
+  orderSchema,
   userSchema,
   validateImageFile,
 } from '@/validation'
@@ -28,19 +38,20 @@ import {
   initialOrderValues,
   initialUserValues,
 } from './initialValues'
+import { log } from '@/libs'
 import {
   Author,
   AuthorFormValues,
   BookFormValues,
-  BookInDB,
+  BookWithAuthorId,
   Order,
   OrderFormValues,
   User,
   UserFormValues,
+  SelectContext,
+  UserWithMetadata,
 } from '@/types'
-import { SelectContext } from '@/pages/CMS/CMS.types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
-import { log } from '@/libs'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>
@@ -54,7 +65,7 @@ type Props = {
     | UserFormValues
     | null
   setEditedItem: React.Dispatch<
-    React.SetStateAction<BookInDB | Author | Order | User | null>
+    React.SetStateAction<BookWithAuthorId | Author | Order | User | null>
   >
 }
 
@@ -103,7 +114,7 @@ export const EditDialog: FC<Props> = ({
 
     if (!files || files.length === 0) return
 
-    const file = files[0]
+    const file = files[0]!
     const { valid, error } = validateImageFile(file)
 
     if (!valid && error) {
@@ -140,24 +151,24 @@ export const EditDialog: FC<Props> = ({
 
   const actionMap = {
     books: {
-      action: editedItem ? null : addBook, //TODO: Implement book edit action
+      action: editedItem ? updateBook : addBook,
       success: `Book ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} book`,
     },
     authors: {
-      action: editedItem ? null : addAuthor, //TODO: Implement author edit action
+      action: editedItem ? updateAuthor : addAuthor,
       success: `Author ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} author`,
     },
     orders: {
-      action: null, //TODO: Implement order actions
-      success: 'Order updated successfully',
-      error: 'Failed to update order',
+      action: editedItem ? updateOrder : addOrder,
+      success: `Order ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} order`,
     },
     users: {
-      action: null, //TODO: Implement user actions
-      success: 'User updated successfully',
-      error: 'Failed to update user',
+      action: editedItem ? updateUser : addUser,
+      success: `User ${editedItem ? 'updated' : 'added'} successfully`,
+      error: `Failed to ${editedItem ? 'update' : 'add'} user`,
     },
   }
 
@@ -192,23 +203,29 @@ export const EditDialog: FC<Props> = ({
 
       switch (activeTab) {
         case 'books': {
-          const bookValues = values as BookFormValues
-          const submitValues = {
-            ...bookValues,
-            authorId: Number(bookValues.authorId),
-          }
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(submitValues))
+          result = await dispatch(
+            (config.action as typeof addBook)(values as BookFormValues),
+          )
           break
         }
         case 'authors': {
-          const authorValues = values as AuthorFormValues
-          //@ts-expect-error Union type handling
-          result = await dispatch(config.action(authorValues))
+          result = await dispatch(
+            (config.action as typeof addAuthor)(values as AuthorFormValues),
+          )
           break
         }
-        case 'orders':
-        case 'users':
+        case 'orders': {
+          result = await dispatch(
+            (config.action as typeof addOrder)(values as OrderFormValues),
+          )
+          break
+        }
+        case 'users': {
+          result = await dispatch(
+            (config.action as typeof addUser)(values as UserWithMetadata),
+          )
+          break
+        }
         default:
           return
       }
@@ -365,7 +382,7 @@ export const EditDialog: FC<Props> = ({
           <Formik
             key={activeTab}
             initialValues={initialValuesMap[activeTab]}
-            //validationSchema={orderSchema}
+            validationSchema={orderSchema}
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
@@ -436,14 +453,6 @@ export const EditDialog: FC<Props> = ({
                       name="total"
                       placeholder="Total"
                       type="number"
-                    />
-                  </div>
-                  <div>
-                    <p>Currency</p>
-                    <FormikField
-                      name="currency"
-                      placeholder="Currency"
-                      type="text"
                     />
                   </div>
                 </DefaultRow>

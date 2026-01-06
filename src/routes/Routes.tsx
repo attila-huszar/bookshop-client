@@ -120,7 +120,6 @@ const routes: RouteObject[] = [
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
       {
         element: <PublicRoute />,
-        loader: authLoader,
         children: [
           {
             path: ROUTE.REGISTER,

@@ -6,7 +6,7 @@ import { userReducer } from './slices/user'
 import { cartReducer } from './slices/cart'
 import { orderReducer } from './slices/order'
 import { cmsReducer } from './slices/cms'
-import { cartToLocalStorage, paymentIdToLocalStorage } from './middlewares'
+import { cartToLocalStorage, clientSecretToLocalStorage } from './middlewares'
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +21,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) => {
     const middlewares = [
       cartToLocalStorage.middleware,
-      paymentIdToLocalStorage.middleware,
+      clientSecretToLocalStorage.middleware,
     ]
 
     return getDefaultMiddleware().concat(middlewares)

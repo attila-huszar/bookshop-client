@@ -1,57 +1,37 @@
 import { baseRequest, PATH } from './'
-import type {
-  Order,
-  OrderUpdate,
-  GetPaymentIntent,
-  PostPaymentIntent,
-} from '@/types'
-
-export const postPaymentIntent = async ({
-  amount,
-  currency,
-  description,
-}: PostPaymentIntent): Promise<{ clientSecret: string }> => {
-  const response = await baseRequest.post<{ clientSecret: string }>(
-    PATH.orders.paymentIntent,
-    { json: { amount, currency, description } },
-  )
-  return await response.json()
-}
+import type { Order, OrderCreate, PaymentIntentResponse } from '@/types'
 
 export const getPaymentIntent = async (
   paymentId: string,
-): Promise<GetPaymentIntent> => {
-  const response = await baseRequest.get<GetPaymentIntent>(
-    `${PATH.orders.paymentIntent}/${paymentId}`,
+): Promise<PaymentIntentResponse> => {
+  const response = await baseRequest.get<PaymentIntentResponse>(
+    `${PATH.orders.paymentIntents}/${paymentId}`,
   )
   return await response.json()
 }
 
 export const deletePaymentIntent = async (
   paymentId: string,
-): Promise<GetPaymentIntent> => {
-  const response = await baseRequest.delete<GetPaymentIntent>(
-    `${PATH.orders.paymentIntent}/${paymentId}`,
+): Promise<PaymentIntentResponse> => {
+  const response = await baseRequest.delete<PaymentIntentResponse>(
+    `${PATH.orders.paymentIntents}/${paymentId}`,
   )
   return await response.json()
 }
 
-export const postCreateOrder = async (
-  orderData: Order,
-): Promise<{ paymentId: string }> => {
-  const response = await baseRequest.post<{ paymentId: string }>(
-    PATH.orders.create,
-    { json: orderData },
+export const getOrder = async (paymentId: string): Promise<Order> => {
+  const response = await baseRequest.get<Order>(
+    `${PATH.orders.base}/${paymentId}`,
   )
   return await response.json()
 }
 
-export const updateOrder = async ({
-  paymentId,
-  fields,
-}: OrderUpdate): Promise<Order> => {
-  const response = await baseRequest.patch<Order>(PATH.orders.update, {
-    json: { paymentId, fields },
-  })
+export const postOrder = async (
+  order: OrderCreate,
+): Promise<{ paymentSession: string; amount: number }> => {
+  const response = await baseRequest.post<{
+    paymentSession: string
+    amount: number
+  }>(PATH.orders.base, { json: order })
   return await response.json()
 }

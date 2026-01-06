@@ -1,12 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { orderCreate, orderRetrieve, orderCancel } from '../thunks/order'
-import { OrderState, OrderStatus } from '@/types'
+import { OrderState } from '@/types'
 
 const initialState: OrderState = {
   order: null,
   orderIsLoading: false,
   orderCreateError: null,
   orderRetrieveError: null,
+  orderCancelError: null,
 }
 
 const orderSlice = createSlice({
@@ -18,6 +19,7 @@ const orderSlice = createSlice({
       state.orderIsLoading = false
       state.orderCreateError = null
       state.orderRetrieveError = null
+      state.orderCancelError = null
     },
   },
   extraReducers: (builder) => {
@@ -28,12 +30,8 @@ const orderSlice = createSlice({
       })
       .addCase(orderCreate.fulfilled, (state, action) => {
         state.order = {
-          intent: 'processing',
-          status: OrderStatus.Pending,
-          paymentId: action.payload.paymentId,
-          clientSecret: action.payload.clientSecret,
+          paymentSession: action.payload.paymentSession,
           amount: action.payload.amount,
-          currency: action.payload.currency,
         }
         state.orderIsLoading = false
         state.orderCreateError = null
@@ -50,12 +48,8 @@ const orderSlice = createSlice({
       })
       .addCase(orderRetrieve.fulfilled, (state, action) => {
         state.order = {
-          intent: 'processing',
-          status: OrderStatus.Pending,
-          paymentId: action.payload.clientSecret.split('_secret_')[0],
-          clientSecret: action.payload.clientSecret,
+          paymentSession: action.payload.paymentSession,
           amount: action.payload.amount,
-          currency: action.payload.currency,
         }
         state.orderIsLoading = false
         state.orderRetrieveError = null
@@ -66,11 +60,21 @@ const orderSlice = createSlice({
         state.orderRetrieveError =
           action.error.message ?? 'Failed to retrieve order'
       })
+      .addCase(orderCancel.pending, (state) => {
+        state.orderIsLoading = true
+        state.orderCancelError = null
+      })
       .addCase(orderCancel.fulfilled, (state) => {
         state.order = null
         state.orderIsLoading = false
         state.orderCreateError = null
         state.orderRetrieveError = null
+        state.orderCancelError = null
+      })
+      .addCase(orderCancel.rejected, (state, action) => {
+        state.orderIsLoading = false
+        state.orderCancelError =
+          action.error.message ?? 'Failed to cancel order'
       })
   },
 })

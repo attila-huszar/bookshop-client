@@ -1,29 +1,26 @@
 import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { useParams } from 'react-router'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { Product } from './Product'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { authorsSelector, booksSelector, fetchBookById } from '@/store'
-import { Providers } from '@/setupTests'
+import { useAppSelector, useCart } from '@/hooks'
 
-vi.mock('@/store', () => ({
-  booksSelector: vi.fn(),
-  bookByIdSelector: vi.fn(),
-  authorsSelector: vi.fn(),
-  authorByIdSelector: vi.fn(),
-  fetchBookById: vi.fn(),
-}))
+vi.mock('@/components', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components')>()
+  return {
+    ...actual,
+    Price: () => <div>Price</div>,
+    Button: ({ children }: { children: React.ReactNode }) => (
+      <button>{children}</button>
+    ),
+    Alert: () => <div>Error Alert</div>,
+  }
+})
 
-vi.mock('@/components', () => ({
-  Price: () => <div>Price</div>,
-  Button: () => <button>Button</button>,
+vi.mock('@/components/Recommended/Recommended', () => ({
   Recommended: () => <div>Recommended</div>,
-  Error: () => <div>Error</div>,
 }))
 
 describe('Product Page', () => {
-  const mockDispatch = vi.fn()
-
   const mockBook = {
     id: 1,
     title: 'Test Book',
@@ -31,40 +28,48 @@ describe('Product Page', () => {
     price: 10,
     discount: 0,
     description: 'Test description',
-    author: 1,
+    author: 'Test Author',
   }
 
   beforeEach(() => {
-    vi.mocked(useParams).mockReturnValue({ id: '1' })
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
     vi.mocked(useCart).mockReturnValue({
       cartItems: [],
+      addToCart: vi.fn(),
     } as unknown as ReturnType<typeof useCart>)
   })
 
   it('should render book details', () => {
-    vi.mocked(useAppSelector).mockReturnValue(mockBook)
+    vi.mocked(useAppSelector).mockReturnValue({
+      books: [mockBook],
+      booksError: null,
+    })
 
-    render(<Product />, { wrapper: Providers })
+    render(
+      <MemoryRouter initialEntries={['/book?id=1']}>
+        <Routes>
+          <Route path="/book" element={<Product />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
     expect(screen.getByText('Test Book')).toBeInTheDocument()
     expect(screen.getByText('Test description')).toBeInTheDocument()
   })
 
-  it('should call fetchBookById on mount if no book is found', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      switch (selector) {
-        case booksSelector:
-          return { booksError: 'Error' }
-        case authorsSelector:
-          return { authorError: 'Error' }
-        default:
-          return null
-      }
+  it('should render error alert when book is not found', () => {
+    vi.mocked(useAppSelector).mockReturnValue({
+      books: [],
+      booksError: 'Book not found',
     })
 
-    render(<Product />, { wrapper: Providers })
+    render(
+      <MemoryRouter initialEntries={['/book?id=999']}>
+        <Routes>
+          <Route path="/book" element={<Product />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
-    expect(mockDispatch).toHaveBeenCalledWith(fetchBookById(1))
+    expect(screen.getByText('Error Alert')).toBeInTheDocument()
   })
 })

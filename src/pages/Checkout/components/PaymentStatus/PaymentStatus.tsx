@@ -1,109 +1,46 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { useStripe } from '@stripe/react-stripe-js'
-import { updateOrder } from '@/api'
-import { Logo, Status, StyledPaymentStatus } from './PaymentStatus.style'
-import { useAppDispatch } from '@/hooks'
-import { cartClear, orderClear } from '@/store'
-import { handleError } from '@/errors'
-import { OrderStatus } from '@/types'
+import Lottie from 'lottie-react'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { cartClear, orderClear, orderSelector } from '@/store'
+import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
+import { usePaymentStatus } from '../../hooks'
+import { paymentSessionKey } from '@/constants'
 import logo from '@/assets/image/logo.png'
+import clockAnim from '@/assets/animations/clock_loop.json'
+import checkmarkAnim from '@/assets/animations/checkmark.json'
+import exclamationAnim from '@/assets/animations/exclamation.json'
+
+const successStatuses = ['succeeded', 'requires_capture']
+const warningStatuses = [
+  'requires_payment_method',
+  'requires_confirmation',
+  'requires_action',
+  'canceled',
+]
+
+const getAnimation = (status: string) => {
+  if (successStatuses.includes(status)) return checkmarkAnim
+  if (warningStatuses.includes(status)) return exclamationAnim
+  return clockAnim
+}
 
 export function PaymentStatus() {
-  const stripe = useStripe()
   const navigate = useNavigate()
-  const [status, setStatus] = useState({
-    intent: '',
-    message: 'Retrieving payment status...',
-  })
   const dispatch = useAppDispatch()
-  const effectRan = useRef(false)
+  const { order } = useAppSelector(orderSelector)
+
+  const paymentSession =
+    order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
+
+  const { status } = usePaymentStatus(paymentSession)
 
   useEffect(() => {
-    if (effectRan.current) return
-
-    const clientSecret = new URLSearchParams(window.location.search).get(
-      'payment_intent_client_secret',
-    )
-
-    if (!stripe || !clientSecret) return
-
-    effectRan.current = true
-
-    const retrievePaymentStatus = async () => {
-      try {
-        const { paymentIntent } =
-          await stripe.retrievePaymentIntent(clientSecret)
-
-        switch (paymentIntent?.status) {
-          case 'succeeded': {
-            setStatus({
-              intent: paymentIntent.status,
-              message: 'Success! Payment received.',
-            })
-
-            const fullName = paymentIntent.shipping?.name?.trim() ?? ''
-            const [firstName, ...rest] = fullName.split(/\s+/)
-            const lastName = rest.join(' ')
-
-            await updateOrder({
-              paymentId: paymentIntent.id,
-              fields: {
-                paymentIntentStatus: paymentIntent.status,
-                orderStatus: OrderStatus.Paid,
-                firstName,
-                lastName,
-                email: paymentIntent.receipt_email,
-                phone: paymentIntent.shipping?.phone,
-                address: paymentIntent.shipping?.address,
-              },
-            })
-
-            dispatch(cartClear())
-            dispatch(orderClear())
-            break
-          }
-
-          case 'processing': {
-            setStatus({
-              intent: paymentIntent.status,
-              message:
-                "Payment processing. We'll update you when payment is received.",
-            })
-            break
-          }
-
-          case 'requires_payment_method': {
-            setStatus({
-              intent: paymentIntent.status,
-              message: 'Payment failed. Please try another payment method.',
-            })
-            break
-          }
-
-          default: {
-            setStatus({
-              intent: 'unknown_error',
-              message: 'Something went wrong.',
-            })
-            break
-          }
-        }
-      } catch (error) {
-        const formattedError = await handleError({
-          error,
-          message: 'Error retrieving payment intent.',
-        })
-
-        setStatus({
-          intent: 'retrieve_error',
-          message: formattedError.message,
-        })
-      }
+    if (successStatuses.includes(status.intent)) {
+      dispatch(cartClear())
+      dispatch(orderClear())
     }
-
-    void retrievePaymentStatus()
-  }, [dispatch, stripe])
+  }, [dispatch, status.intent])
 
   return (
     <StyledPaymentStatus>
@@ -111,21 +48,12 @@ export function PaymentStatus() {
         <img src={logo} alt="logo" />
         <h1>Book Shop</h1>
       </Logo>
-      <Status>
-        {status.intent === 'succeeded' && (
-          <div className="success-checkmark">
-            <div className="check-icon">
-              <span className="icon-line line-tip"></span>
-              <span className="icon-line line-long"></span>
-              <div className="icon-circle"></div>
-              <div className="icon-fix"></div>
-            </div>
-          </div>
-        )}
-      </Status>
+      <LottieWrapper>
+        <Lottie animationData={getAnimation(status.intent)} loop={false} />
+      </LottieWrapper>
       <p>{status.message}</p>
       <button onClick={() => void navigate('/')} type="button">
-        Back to home
+        Back to Shop
       </button>
     </StyledPaymentStatus>
   )

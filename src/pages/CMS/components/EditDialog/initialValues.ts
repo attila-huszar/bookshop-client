@@ -9,7 +9,7 @@ import {
 
 export const initialBookValues: BookFormValues = {
   title: '',
-  authorId: '',
+  authorId: 0,
   genre: '',
   imgUrl: '',
   description: '',
@@ -36,20 +36,22 @@ export const initialOrderValues: OrderFormValues = {
   paymentIntentStatus: 'processing',
   orderStatus: OrderStatus.Pending,
   total: 0,
-  currency: 'USD',
+  currency: 'EUR',
   items: [],
-  name: '',
   firstName: '',
   lastName: '',
   email: '',
-  phone: '',
-  address: {
-    city: '',
-    line1: '',
-    line2: '',
-    postal_code: '',
-    state: '',
-    country: '',
+  shipping: {
+    name: '',
+    phone: '',
+    address: {
+      city: '',
+      line1: '',
+      line2: '',
+      postal_code: '',
+      state: '',
+      country: '',
+    },
   },
 }
 
@@ -61,5 +63,12 @@ export const initialUserValues: UserFormValues = {
   role: UserRole.User,
   avatar: '',
   phone: '',
-  address: {},
+  address: {
+    city: '',
+    country: '',
+    line1: '',
+    line2: '',
+    postal_code: '',
+    state: '',
+  },
 }

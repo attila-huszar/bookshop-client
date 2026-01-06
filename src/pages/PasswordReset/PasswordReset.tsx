@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
@@ -18,18 +18,19 @@ export function PasswordReset() {
   const [isVerifying, setIsVerifying] = useState(true)
   const [token, setToken] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const isEffectRun = useRef(false)
+  const hasVerified = useRef(false)
 
   useEffect(() => {
-    if (isEffectRun.current) return
-    isEffectRun.current = true
-
     if (!tokenParam) {
       setIsVerifying(false)
       toast.error('Invalid or missing password reset token')
       void navigate('/', { replace: true })
       return
     }
+
+    if (hasVerified.current) return
+
+    hasVerified.current = true
 
     const verifyToken = async () => {
       try {
@@ -73,7 +74,7 @@ export function PasswordReset() {
       const response = await postPasswordResetSubmit(token, values.newPassword)
       toast.success(response.message)
 
-      void navigate('/', { replace: true })
+      void navigate('/login', { replace: true })
     } catch (error) {
       const formattedError = await handleError({
         error,

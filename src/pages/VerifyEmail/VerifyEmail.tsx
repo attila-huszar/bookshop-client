@@ -11,11 +11,12 @@ export function VerifyEmail() {
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const token = queryParams.get('token')
-  const isEffectRun = useRef(false)
+  const hasVerified = useRef(false)
 
   useEffect(() => {
-    if (isEffectRun.current || !token) return
-    isEffectRun.current = true
+    if (!token || hasVerified.current) return
+
+    hasVerified.current = true
 
     const verifyEmailToken = async () => {
       try {

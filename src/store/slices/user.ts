@@ -5,7 +5,7 @@ import {
   logout,
   fetchUserProfile,
   fetchAuthTokens,
-  updateUser,
+  updateUserProfile,
   updateAvatar,
 } from '../thunks/user'
 import type { UserState } from '@/types'
@@ -80,16 +80,16 @@ const userSlice = createSlice({
         state.userError = action.error.message ?? 'Failed to fetch user profile'
       })
 
-      .addCase(updateUser.pending, (state) => {
+      .addCase(updateUserProfile.pending, (state) => {
         state.userIsUpdating = true
         state.userError = null
       })
-      .addCase(updateUser.fulfilled, (state, action) => {
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.userIsUpdating = false
         state.userData = action.payload
         state.userError = null
       })
-      .addCase(updateUser.rejected, (state, action) => {
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.userIsUpdating = false
         state.userError =
           action.error.message ?? 'Failed to update user profile'

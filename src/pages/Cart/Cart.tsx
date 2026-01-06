@@ -8,7 +8,6 @@ import {
   orderClear,
   orderCreate,
   orderSelector,
-  userSelector,
 } from '@/store'
 import {
   StyledCart,
@@ -28,10 +27,9 @@ import {
 import { Button, IconButton, Loading, Price } from '@/components'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { ROUTE } from '@/routes'
-import { currencyOptions } from '@/constants'
 import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
-import { OrderStatus } from '@/types'
-import type { Cart, PostPaymentIntent, Order } from '@/types'
+import { paymentSessionKey } from '@/constants'
+import type { Cart } from '@/types'
 import {
   MinusIcon,
   PlusIcon,
@@ -41,25 +39,6 @@ import {
   CartIcon,
   SpinnerIcon,
 } from '@/assets/svg'
-
-const calculateTotalAmount = (cartItems: Cart[]): number => {
-  return cartItems.reduce(
-    (total, item) =>
-      total + (item.price - (item.price * item.discount) / 100) * item.quantity,
-    0,
-  )
-}
-
-const createStripeIntent = (
-  amount: number,
-  currency: string = currencyOptions.usd,
-): PostPaymentIntent => {
-  return {
-    amount: Math.round(amount * 100),
-    currency,
-    description: 'Book Shop Order',
-  }
-}
 
 export function Cart() {
   const navigate = useNavigate()
@@ -73,15 +52,17 @@ export function Cart() {
   const { cartIsLoading } = useAppSelector(cartSelector)
   const { order, orderIsLoading, orderCreateError } =
     useAppSelector(orderSelector)
-  const { userData } = useAppSelector(userSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (order?.clientSecret) {
+    const paymentSession =
+      order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
+
+    if (paymentSession) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.clientSecret, navigate])
+  }, [order?.paymentSession, navigate])
 
   useEffect(() => {
     if (orderIsLoading) {
@@ -127,26 +108,21 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartItems.length) {
-      const total = calculateTotalAmount(cartItems)
-      const orderToStripe = createStripeIntent(total)
-      const { firstName, lastName, email, phone, address } = { ...userData }
+    if (cartItems.length && !orderIsLoading) {
+      const existingSession = sessionStorage.getItem(paymentSessionKey)
 
-      const orderToServer: Order = {
-        paymentId: '',
-        paymentIntentStatus: 'processing',
-        orderStatus: OrderStatus.Pending,
-        total: Number(total.toFixed(2)),
-        currency: currencyOptions.usd,
-        items: cartItems,
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
+      if (existingSession) {
+        void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+      } else {
+        const orderRequest = {
+          items: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+        }
+
+        void dispatch(orderCreate(orderRequest))
       }
-
-      void dispatch(orderCreate({ orderToStripe, orderToServer }))
     }
   }
 

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import {
   PaymentElement,
   useStripe,
@@ -6,55 +7,67 @@ import {
   LinkAuthenticationElement,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useNavigate } from 'react-router'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { orderCancel, orderClear, orderSelector, userSelector } from '@/store'
+import {
+  cartClear,
+  orderCancel,
+  orderClear,
+  orderRetrieve,
+  orderSelector,
+  userSelector,
+} from '@/store'
 import { ROUTE } from '@/routes'
-import { baseURL } from '@/constants'
+import { getPaymentId } from '@/helpers'
+import { defaultCurrency, paymentSessionKey } from '@/constants'
+import { usePaymentSubmit } from '../../hooks'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
   const { order } = useAppSelector(orderSelector)
-  const [message, setMessage] = useState<string>()
-  const [isLoading, setIsLoading] = useState(false)
-  const [emailInput, setEmailInput] = useState('')
+  const [receiptEmail, setReceiptEmail] = useState(userData?.email ?? '')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const { isLoading, message, handleSubmit } = usePaymentSubmit({
+    receiptEmail,
+  })
 
-    if (!stripe || !elements) {
-      return
+  useEffect(() => {
+    const paymentSession = sessionStorage.getItem(paymentSessionKey)
+    if (paymentSession && !order) {
+      const paymentId = getPaymentId(paymentSession)
+      void dispatch(orderRetrieve(paymentId))
     }
+  }, [order, dispatch])
 
-    setIsLoading(true)
+  if (!order) {
+    return (
+      <div>
+        <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
+          Order information is missing. Please start checkout again.
+        </p>
+        <button
+          type="button"
+          onClick={() => void navigate(`/${ROUTE.CART}`, { replace: true })}>
+          <span>Back to Cart</span>
+        </button>
+      </div>
+    )
+  }
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        receipt_email: emailInput || userData?.email,
-        return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
-      },
-    })
+  const paymentId = getPaymentId(order.paymentSession)
 
-    if (error.type === 'card_error' || error.type === 'validation_error') {
-      setMessage(error.message)
-    } else {
-      setMessage('An unexpected error occurred.')
-    }
-
-    setIsLoading(false)
+  const orderForm = {
+    num: paymentId?.slice(-6).toUpperCase(),
+    amount: (order.amount / 100).toFixed(2),
   }
 
   const handleCancel = async () => {
-    if (order) {
-      await dispatch(orderCancel(order.paymentId))
-    }
-
+    await dispatch(orderCancel(paymentId))
     dispatch(orderClear())
+    dispatch(cartClear())
     void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
@@ -70,52 +83,46 @@ export function CheckoutForm() {
     },
   }
 
-  const orderForm = order && {
-    num: order.paymentId.slice(-6).toUpperCase(),
-    amount: (order.amount / 100).toFixed(2),
-    currency: order.currency.toUpperCase(),
-  }
-
   return (
-    <form id="payment-form" onSubmit={(event) => void handleSubmit(event)}>
-      {orderForm && (
-        <>
-          <div>
-            <p>Order #{orderForm.num}</p>
-            <span>
-              {orderForm.amount} {orderForm.currency}
-            </span>
-          </div>
-          <LinkAuthenticationElement
-            options={{ defaultValues: { email: userData?.email ?? '' } }}
-            onChange={(e) => setEmailInput(e.value.email)}
-          />
-          <PaymentElement
-            id="payment-element"
-            options={paymentElementOptions}
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !stripe || !elements}
-            id="submit">
-            <span>
-              {isLoading ? (
-                <div className="spinner" id="spinner"></div>
-              ) : (
-                `Pay ${orderForm.amount} ${orderForm.currency}`
-              )}
-            </span>
-          </button>
-          <div style={{ marginBottom: '1rem' }}></div>
-        </>
+    <form id="payment-form" onSubmit={(e) => void handleSubmit(e)}>
+      <div>
+        <p>Order #{orderForm.num}</p>
+        <span>
+          {orderForm.amount} {defaultCurrency}
+        </span>
+      </div>
+      {!userData?.email && (
+        <LinkAuthenticationElement
+          options={{ defaultValues: { email: receiptEmail } }}
+          onChange={(e) => setReceiptEmail(e.value.email)}
+        />
       )}
+      <PaymentElement id="payment-element" options={paymentElementOptions} />
+      <button
+        type="submit"
+        disabled={isLoading || !stripe || !elements}
+        id="submit">
+        <span>
+          {isLoading ? (
+            <div className="spinner" id="spinner"></div>
+          ) : (
+            `Pay ${orderForm.amount} ${defaultCurrency}`
+          )}
+        </span>
+      </button>
+      <div style={{ marginBottom: '1rem' }}></div>
       <button
         type="button"
         onClick={() => void handleCancel()}
+        disabled={isLoading}
         style={{ backgroundColor: 'var(--grey)' }}>
         <span>Cancel Checkout</span>
       </button>
-      {message && <div id="payment-message">{message}</div>}
+      {message && (
+        <div id="payment-message" style={{ marginTop: '1rem' }}>
+          {message}
+        </div>
+      )}
     </form>
   )
 }

@@ -31,7 +31,7 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
   })
 
-  it('should navigate to home when user is not logged in', () => {
+  it('should navigate to login when user is not logged in', () => {
     const mockUseLoaderData = useLoaderData as MockedFunction<
       typeof useLoaderData
     >
@@ -40,7 +40,7 @@ describe('ProtectedRoute', () => {
     render(
       <MemoryRouter initialEntries={['/protected']}>
         <Routes>
-          <Route path="/" element={<div>Home Page</div>} />
+          <Route path="/login" element={<div>Login Page</div>} />
           <Route path="/protected" element={<ProtectedRoute />}>
             <Route path="" element={<div>Protected Content</div>} />
           </Route>
@@ -48,7 +48,7 @@ describe('ProtectedRoute', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Home Page')).toBeInTheDocument()
+    expect(screen.getByText('Login Page')).toBeInTheDocument()
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
   })
 })

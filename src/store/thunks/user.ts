@@ -42,8 +42,8 @@ export const logout = createAsyncThunk<{ success: boolean }, void>(
   () => postUserLogout(),
 )
 
-export const updateUser = createAsyncThunk<User, UserUpdate>(
-  'user/updateUser',
+export const updateUserProfile = createAsyncThunk<User, UserUpdate>(
+  'user/updateUserProfile',
   (fields: UserUpdate) => patchUserProfile(fields),
 )
 

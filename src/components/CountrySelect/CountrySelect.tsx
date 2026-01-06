@@ -22,7 +22,7 @@ interface CountrySelectProps {
 
 export function CountrySelect({
   defaultCountry,
-  readOnly,
+  readOnly = false,
 }: CountrySelectProps) {
   const { values, setFieldValue, getFieldMeta, submitCount } =
     useFormikContext<Record<string, string>>()
@@ -33,7 +33,7 @@ export function CountrySelect({
   const listRef = useRef<HTMLUListElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const currentCountryCode = values.country || defaultCountry
+  const currentCountryCode = values.country ?? defaultCountry
   const currentCountryName = countries[currentCountryCode]
 
   useClickOutside({ ref: dropdownRef, state: isOpen, setter: setIsOpen })
@@ -69,7 +69,7 @@ export function CountrySelect({
   })
 
   const getFlagUrl = (code: string) => {
-    return `https://flagcdn.com/${code.toLowerCase()}.svg`
+    return `https://flagcdn.com/${code?.toLowerCase()}.svg`
   }
 
   const onInputClick = () => {

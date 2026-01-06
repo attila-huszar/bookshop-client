@@ -21,7 +21,7 @@ export const fetchBooks = createAsyncThunk<
   const itemsPerPage = getState().books.booksPerPage
   const criteria = getFilteredResults(optionalFilters)
 
-  return getBooks({ currentPage, itemsPerPage, criteria })
+  return getBooks({ currentPage, itemsPerPage, ...(criteria && { criteria }) })
 })
 
 export const fetchBookById = createAsyncThunk(

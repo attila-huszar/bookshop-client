@@ -5,10 +5,14 @@ import {
   addBook,
   deleteAuthors,
   deleteBooks,
+  deleteOrders,
+  deleteUsers,
   listAuthors,
   listBooks,
   listOrders,
   listUsers,
+  updateAuthor,
+  updateBook,
 } from '../thunks/cms'
 
 const initialState: CMSState = {
@@ -141,6 +145,72 @@ const cmsSlice = createSlice({
       .addCase(deleteAuthors.rejected, (state, action) => {
         state.authorsLoading = false
         state.authorsError = action.error.message ?? 'Failed to delete authors'
+      })
+
+      .addCase(deleteUsers.pending, (state) => {
+        state.usersLoading = true
+        state.usersError = null
+      })
+      .addCase(deleteUsers.fulfilled, (state, action) => {
+        state.users = state.users.filter(
+          (user) => !action.payload.includes(user.id),
+        )
+        state.usersLoading = false
+      })
+      .addCase(deleteUsers.rejected, (state, action) => {
+        state.usersLoading = false
+        state.usersError = action.error.message ?? 'Failed to delete users'
+      })
+
+      .addCase(deleteOrders.pending, (state) => {
+        state.ordersLoading = true
+        state.ordersError = null
+      })
+      .addCase(deleteOrders.fulfilled, (state, action) => {
+        state.orders = state.orders.filter(
+          (order) => !action.payload.includes(order.id),
+        )
+        state.ordersLoading = false
+      })
+      .addCase(deleteOrders.rejected, (state, action) => {
+        state.ordersLoading = false
+        state.ordersError = action.error.message ?? 'Failed to delete orders'
+      })
+
+      .addCase(updateBook.pending, (state) => {
+        state.booksLoading = true
+        state.booksError = null
+      })
+      .addCase(updateBook.fulfilled, (state, action) => {
+        const index = state.books.findIndex(
+          (book) => book.id === action.payload.id,
+        )
+        if (index !== -1) {
+          state.books[index] = action.payload
+        }
+        state.booksLoading = false
+      })
+      .addCase(updateBook.rejected, (state, action) => {
+        state.booksLoading = false
+        state.booksError = action.error.message ?? 'Failed to update book'
+      })
+
+      .addCase(updateAuthor.pending, (state) => {
+        state.authorsLoading = true
+        state.authorsError = null
+      })
+      .addCase(updateAuthor.fulfilled, (state, action) => {
+        const index = state.authors.findIndex(
+          (author) => author.id === action.payload.id,
+        )
+        if (index !== -1) {
+          state.authors[index] = action.payload
+        }
+        state.authorsLoading = false
+      })
+      .addCase(updateAuthor.rejected, (state, action) => {
+        state.authorsLoading = false
+        state.authorsError = action.error.message ?? 'Failed to update author'
       })
   },
 })

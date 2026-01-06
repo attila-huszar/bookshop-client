@@ -49,6 +49,7 @@ export function FormikField({
           type="file"
           accept="image/*"
           {...props}
+          disabled={props.disabled ?? props.readOnly ?? false}
           $valid={shouldShowError && !fileMeta.error}
           $error={shouldShowError && fileMeta.error}
         />
@@ -68,11 +69,11 @@ export function FormikField({
           return (
             <InputWrapper>
               <Select
-                disabled={props.readOnly}
-                $valid={shouldShowError && !meta.error}
-                $error={shouldShowError && meta.error}
                 {...field}
-                {...props}>
+                {...props}
+                disabled={props.disabled ?? props.readOnly ?? false}
+                $valid={shouldShowError && !meta.error}
+                $error={shouldShowError && meta.error}>
                 {children}
               </Select>
               {shouldShowError && meta.error && (
@@ -98,11 +99,11 @@ export function FormikField({
           return (
             <InputWrapper>
               <Textarea
-                disabled={props.readOnly}
-                $valid={shouldShowError && !meta.error}
-                $error={shouldShowError && meta.error}
                 {...field}
-                {...props}>
+                {...props}
+                disabled={props.disabled ?? props.readOnly ?? false}
+                $valid={shouldShowError && !meta.error}
+                $error={shouldShowError && meta.error}>
                 {children}
               </Textarea>
               {shouldShowError && meta.error && (
@@ -123,11 +124,12 @@ export function FormikField({
         return (
           <InputWrapper>
             <Input
-              $valid={shouldShowError && !meta.error}
-              $error={shouldShowError && meta.error}
               ref={formikRef}
               {...field}
               {...props}
+              disabled={props.disabled ?? props.readOnly ?? false}
+              $valid={shouldShowError && !meta.error}
+              $error={shouldShowError && meta.error}
             />
             {!!props.name && /password/i.test(props.name) && (
               <PasswordEye

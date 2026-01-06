@@ -14,12 +14,6 @@ vi.mock(import('react-router'), async (importOriginal) => {
   }
 })
 
-vi.mock('@/services', () => ({
-  cloudinaryConfig: {
-    cloudName: 'mockedCloudName',
-  },
-}))
-
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
@@ -40,6 +34,16 @@ vi.mock('react-hot-toast', () => ({
   toast: {
     error: vi.fn(),
     success: vi.fn(),
+    loading: vi.fn(),
+  },
+}))
+
+vi.mock('@/libs', () => ({
+  log: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }))
 

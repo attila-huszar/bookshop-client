@@ -5,13 +5,14 @@ import {
   Currency,
   Strikethrough,
 } from './Price.style'
+import { defaultCurrencySymbol } from '@/constants'
 import type { PriceProps } from '@/types'
 
 export function Price({
   component,
   price,
   discount,
-  currency = '$',
+  currency = defaultCurrencySymbol,
 }: PriceProps) {
   const componentMap = {
     card: StyledPriceCard,

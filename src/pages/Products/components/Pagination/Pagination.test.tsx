@@ -53,6 +53,7 @@ describe('Pagination', () => {
     render(<Pagination />)
 
     const firstPageButton = screen.getAllByRole('button')[2]
+    if (!firstPageButton) throw new Error('First page button not found')
     await userEvent.click(firstPageButton)
 
     await waitFor(() => {
@@ -102,6 +103,7 @@ describe('Pagination', () => {
 
     const lastPageButton =
       screen.getAllByRole('button')[screen.getAllByRole('button').length - 1]
+    if (!lastPageButton) throw new Error('Last page button not found')
     await userEvent.click(lastPageButton)
 
     await waitFor(() => {

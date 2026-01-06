@@ -2,13 +2,18 @@ import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Recommended } from './Recommended'
 import { useAppSelector } from '@/hooks'
+import { Providers } from '@/setupTests'
 
-vi.mock('@/components', () => ({
-  Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
-  SwiperComponent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-}))
+vi.mock('@/components', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components')>()
+  return {
+    ...actual,
+    Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
+    SwiperComponent: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+  }
+})
 
 describe('Recommended Component', () => {
   it('should render recommended books', () => {
@@ -21,7 +26,7 @@ describe('Recommended Component', () => {
       booksRecommended: mockBooks,
     })
 
-    render(<Recommended />)
+    render(<Recommended />, { wrapper: Providers })
 
     expect(screen.getByText(/recommended for you/i)).toBeInTheDocument()
     expect(screen.getByText('Book One')).toBeInTheDocument()
@@ -31,7 +36,7 @@ describe('Recommended Component', () => {
   it('should render nothing if there are no recommended books', () => {
     vi.mocked(useAppSelector).mockReturnValue({ booksRecommended: [] })
 
-    render(<Recommended />)
+    render(<Recommended />, { wrapper: Providers })
 
     expect(screen.getByText(/recommended for you/i)).toBeInTheDocument()
     expect(screen.queryByText('Book One')).not.toBeInTheDocument()

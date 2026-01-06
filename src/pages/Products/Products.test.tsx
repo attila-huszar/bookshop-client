@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Products } from './Products'
-import { useAppSelector, useCart } from '@/hooks'
+import { useAppSelector } from '@/hooks'
 import { Providers } from '@/setupTests'
 
 vi.mock('./components', () => ({
@@ -11,20 +11,13 @@ vi.mock('./components', () => ({
 }))
 
 describe('Products Page', () => {
-  beforeEach(() => {
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: [],
-    } as unknown as ReturnType<typeof useCart>)
-  })
-
   it('should render books and pagination when books are present', async () => {
-    const booksInShop = [
+    const booksOnCurrentPage = [
       { id: 1, title: 'Test Book 1' },
       { id: 2, title: 'Test Book 2' },
     ]
-    const booksAreLoading = false
 
-    vi.mocked(useAppSelector).mockReturnValue({ booksInShop, booksAreLoading })
+    vi.mocked(useAppSelector).mockReturnValue({ booksOnCurrentPage })
 
     render(<Products />, { wrapper: Providers })
 
@@ -33,10 +26,9 @@ describe('Products Page', () => {
     expect(screen.getByText('Pagination component')).toBeInTheDocument()
   })
 
-  it('should show EmptyFilterResults when no books are found and loading is false', () => {
+  it('should show EmptyFilterResults when no books are found', () => {
     vi.mocked(useAppSelector).mockReturnValue({
-      booksInShop: [],
-      booksAreLoading: false,
+      booksOnCurrentPage: [],
     })
 
     render(<Products />)
@@ -44,21 +36,9 @@ describe('Products Page', () => {
     expect(screen.getByText('No books found')).toBeInTheDocument()
   })
 
-  it('should not render EmptyFilterResults if loading is true', () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      booksInShop: [],
-      booksAreLoading: true,
-    })
-
-    render(<Products />)
-
-    expect(screen.queryByText('No books found')).not.toBeInTheDocument()
-  })
-
   it('should render the Filter component', () => {
     vi.mocked(useAppSelector).mockReturnValue({
-      booksInShop: [],
-      booksAreLoading: false,
+      booksOnCurrentPage: [],
     })
 
     render(<Products />)

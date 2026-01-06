@@ -5,7 +5,7 @@ import { StyledPasswordDialog } from './PasswordDialog.style'
 import { ButtonWrapper } from '@/styles'
 import { postUserLogin } from '@/api'
 import { useAppDispatch } from '@/hooks'
-import { updateUser } from '@/store'
+import { updateUserProfile } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { passwordChangeInitialValues } from '@/constants'
 import { accountPasswordSchema } from '@/validation'
@@ -54,7 +54,7 @@ export function PasswordDialog({ email, ref }: Props) {
       }
 
       const result = await dispatch(
-        updateUser({ password: values.newPassword }),
+        updateUserProfile({ password: values.newPassword }),
       )
 
       if (result.meta.requestStatus === 'fulfilled') {

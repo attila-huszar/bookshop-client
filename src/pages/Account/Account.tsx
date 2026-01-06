@@ -21,10 +21,10 @@ import {
 } from '@/components'
 import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { userSelector, updateUser, updateAvatar } from '@/store'
+import { userSelector, updateUserProfile, updateAvatar } from '@/store'
 import {
   accountBasicSchema,
-  accountAddressSchema,
+  addressSchema,
   validateImageFile,
 } from '@/validation'
 import { EditIcon } from '@/assets/svg'
@@ -39,11 +39,11 @@ export function Account() {
   const dispatch = useAppDispatch()
 
   const handleBasicInfoSubmit = (values: Partial<User>) => {
-    void dispatch(updateUser({ ...values }))
+    void dispatch(updateUserProfile({ ...values }))
   }
 
   const handleAddressInfoSubmit = (values: User['address']) => {
-    void dispatch(updateUser({ address: values }))
+    void dispatch(updateUserProfile({ address: values }))
   }
 
   const handleBasicInfoReset = () => setEditingBasicInfo(false)
@@ -65,7 +65,7 @@ export function Account() {
     }
 
     const formData = new FormData()
-    formData.append('avatar', file)
+    if (file) formData.append('avatar', file)
     void uploadAvatarFile(formData)
 
     fileInput.value = ''
@@ -225,7 +225,7 @@ export function Account() {
                     address && 'country' in address ? address.country : '',
                 }}
                 enableReinitialize
-                validationSchema={accountAddressSchema}
+                validationSchema={addressSchema}
                 onSubmit={handleAddressInfoSubmit}
                 onReset={handleAddressInfoReset}>
                 <Form>

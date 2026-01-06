@@ -5,7 +5,7 @@ export function Button({
   onClick,
   children,
   title,
-  $color,
+  $color = 'primary',
   $icon,
   $iconPos = 'left',
   ...props

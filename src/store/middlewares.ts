@@ -10,6 +10,7 @@ import {
 } from './slices/cart'
 import { orderClear } from './slices/order'
 import { orderCreate } from './thunks/order'
+import { paymentSessionKey } from '@/constants'
 import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
@@ -84,24 +85,21 @@ cartToLocalStorageTyped({
   },
 })
 
-export const paymentIdToLocalStorage = createListenerMiddleware()
+export const clientSecretToLocalStorage = createListenerMiddleware()
 
-const paymentIdToLocalStorageTyped =
-  paymentIdToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
+const clientSecretToLocalStorageTyped =
+  clientSecretToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
 
-paymentIdToLocalStorageTyped({
+clientSecretToLocalStorageTyped({
   actionCreator: orderCreate.fulfilled,
   effect: (action) => {
-    localStorage.setItem(
-      'paymentId',
-      action.payload.clientSecret.split('_secret_')[0],
-    )
+    sessionStorage.setItem(paymentSessionKey, action.payload.paymentSession)
   },
 })
 
-paymentIdToLocalStorageTyped({
+clientSecretToLocalStorageTyped({
   actionCreator: orderClear,
   effect: () => {
-    localStorage.removeItem('paymentId')
+    sessionStorage.removeItem(paymentSessionKey)
   },
 })

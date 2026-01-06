@@ -1,30 +1,25 @@
-import { PaymentIntent, type Address } from '@stripe/stripe-js'
+import { PaymentIntent } from '@stripe/stripe-js'
+import type { CartLocalStorage } from './Cart'
 
 export enum OrderStatus {
   Pending = 'PENDING',
   Paid = 'PAID',
+  Captured = 'CAPTURED',
   Canceled = 'CANCELED',
 }
 
 export type Order = {
+  id: number
   paymentId: string
   paymentIntentStatus: PaymentIntent.Status
   orderStatus: OrderStatus
   total: number
   currency: string
   items: OrderItem[]
-  name?: string | null
-  firstName?: string
-  lastName?: string
-  email?: string | null
-  phone?: string | null
-  address?: Partial<Address>
-}
-
-export type OrderInDB = Order & {
-  id: number
-  createdAt: string
-  updatedAt: string
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  shipping: PaymentIntent.Shipping | null
 }
 
 export type OrderItem = {
@@ -35,30 +30,28 @@ export type OrderItem = {
   quantity: number
 }
 
+export type OrderCreate = {
+  items: CartLocalStorage[]
+}
+
 export type OrderInStore = {
-  intent: PaymentIntent.Status
-  status: OrderStatus
-  paymentId: string
-  clientSecret?: string
+  paymentSession: string
   amount: number
-  currency: string
 }
 
-export type OrderUpdate = {
-  paymentId: string
-  fields: Partial<Order>
-}
+export type OrderUpdate = Pick<
+  Order,
+  | 'paymentIntentStatus'
+  | 'orderStatus'
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'shipping'
+>
 
-export type PostPaymentIntent = {
-  amount: number
-  currency: string
-  description: string
-}
-
-export type GetPaymentIntent = {
+export type PaymentIntentResponse = {
   client_secret: string
   amount: number
-  currency: string
   status: PaymentIntent.Status
 }
 

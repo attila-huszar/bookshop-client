@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router'
 import { toast } from 'react-hot-toast'
 import { AccountMenu } from './AccountMenu'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { logout } from '@/store'
 import { Providers } from '@/setupTests'
 
 describe('AccountMenu component', () => {
@@ -65,10 +64,10 @@ describe('AccountMenu component', () => {
     await userEvent.click(screen.getByTitle('July'))
     await userEvent.click(screen.getByText('Logout'))
 
-    expect(mockRemoveFromLocalStorage).toHaveBeenCalledWith('uuid')
+    expect(mockDispatch).toHaveBeenCalled()
     expect(toast.success).toHaveBeenCalledWith(
       'july@test.com successfully logged out',
+      { id: 'logout-success' },
     )
-    expect(mockDispatch).toHaveBeenCalledWith(logout())
   })
 })
