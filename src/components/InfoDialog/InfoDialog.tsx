@@ -1,4 +1,4 @@
-import { Button, Alert, Loading } from '@/components'
+import { Alert, Button, Loading } from '@/components'
 import { StyledInfoDialog } from './InfoDialog.style'
 
 export function InfoDialog({

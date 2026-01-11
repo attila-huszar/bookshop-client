@@ -1,26 +1,25 @@
-import { Suspense, lazy } from 'react'
-import {
-  Navigate,
-  RouterProvider,
-  createBrowserRouter,
-  type RouteObject,
-} from 'react-router'
+import { lazy, Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { ROUTE } from './route'
-import { Alert } from '@/components/Alert/Alert'
-import { Loading } from '@/components/Loading/Loading'
-import { Layout } from '@/pages/Layout/Layout'
+import {
+  createBrowserRouter,
+  Navigate,
+  type RouteObject,
+  RouterProvider,
+} from 'react-router'
 import { Home } from '@/pages/Home/Home'
-import { PublicRoute } from './PublicRoute/PublicRoute'
-import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
+import { Layout } from '@/pages/Layout/Layout'
+import { Alert, Loading } from '@/components'
 import {
   authLoader,
-  landingPageLoader,
-  shopLoader,
   cartLoader,
   cmsLoader,
+  landingPageLoader,
   productLoader,
+  shopLoader,
 } from './loaders'
+import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
+import { PublicRoute } from './PublicRoute/PublicRoute'
+import { ROUTE } from './route'
 
 const Products = lazy(() =>
   import('@/pages/Products/Products').then((m) => ({ default: m.Products })),

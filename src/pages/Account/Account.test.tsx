@@ -1,9 +1,9 @@
-import { vi } from 'vitest'
+import { Providers } from '@/setupTests'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { Account } from './Account'
+import { vi } from 'vitest'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { Providers } from '@/setupTests'
+import { Account } from './Account'
 
 vi.mock('@/services', () => ({
   uploadImage: vi.fn(),

@@ -1,5 +1,8 @@
 import { styled } from 'styled-components'
-import { AccordionItemTypes } from './AccordionItem.types'
+
+type AccordionItemTypes = {
+  $isOpen: boolean
+}
 
 export const Header = styled.div<AccordionItemTypes>`
   display: flex;

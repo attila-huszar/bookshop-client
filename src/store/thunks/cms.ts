@@ -1,13 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
-  getAuthorsCMS,
-  getBooksCMS,
-  getOrdersCMS,
-  getUsersCMS,
   deleteAuthorsCMS,
   deleteBooksCMS,
   deleteOrdersCMS,
   deleteUsersCMS,
+  getAuthorsCMS,
+  getBooksCMS,
+  getOrdersCMS,
+  getUsersCMS,
   patchAuthorCMS,
   patchBookCMS,
   patchOrderCMS,
@@ -19,12 +19,12 @@ import {
 } from '@/api'
 import type {
   Author,
+  AuthorFormValues,
   Book,
   BookFormValues,
   BookWithAuthorId,
-  AuthorFormValues,
-  OrderUpdate,
   Order,
+  OrderUpdate,
   UserWithMetadata,
 } from '@/types'
 

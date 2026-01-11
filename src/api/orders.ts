@@ -1,5 +1,5 @@
-import { baseRequest, PATH } from './'
 import type { Order, OrderCreate, PaymentIntentResponse } from '@/types'
+import { baseRequest, PATH } from './'
 
 export const getPaymentIntent = async (
   paymentId: string,

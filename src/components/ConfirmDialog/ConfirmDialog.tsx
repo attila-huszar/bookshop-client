@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react'
-import { StyledConfirmDialog } from './ConfirmDialog.style'
 import { Button } from '../Button/Button'
+import { StyledConfirmDialog } from './ConfirmDialog.style'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>

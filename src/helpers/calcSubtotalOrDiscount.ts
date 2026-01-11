@@ -1,4 +1,4 @@
-import type { Cart } from '@/types'
+import { Cart } from '@/types'
 
 export function calcSubtotalOrDiscount(
   data: Cart[],

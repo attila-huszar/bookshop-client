@@ -1,8 +1,8 @@
-import { StyledNews } from './News.style'
-import { NewsCard } from './NewsCard'
-import { useAppSelector } from '@/hooks'
 import { newsSelector } from '@/store'
 import { SwiperComponent } from '@/components'
+import { useAppSelector } from '@/hooks'
+import { StyledNews } from './News.style'
+import { NewsCard } from './NewsCard'
 
 export function News() {
   const { newsItems } = useAppSelector(newsSelector)

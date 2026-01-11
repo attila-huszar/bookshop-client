@@ -1,15 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
-import { useAppDispatch, useAppSelector } from '@/hooks'
 import { cartClear, orderClear, orderSelector } from '@/store'
-import { Logo, StyledPaymentStatus, LottieWrapper } from './PaymentStatus.style'
-import { usePaymentStatus } from '../../hooks'
+import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
 import { paymentSessionKey } from '@/constants'
-import logo from '@/assets/image/logo.png'
-import clockAnim from '@/assets/animations/clock_loop.json'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
+import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
+import logo from '@/assets/image/logo.png'
+import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
 const successStatuses = ['succeeded', 'requires_capture']
 const warningStatuses = [

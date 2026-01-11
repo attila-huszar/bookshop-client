@@ -1,5 +1,5 @@
+import type { Book, FilterActive, Filters } from '@/types'
 import { baseRequest, PATH } from './'
-import type { Book, FilterProps, FilterActive } from '@/types'
 
 export const getBooks = async ({
   currentPage,
@@ -88,7 +88,7 @@ export const getBooksByAuthor = async (id: number): Promise<Book[]> => {
 }
 
 export const getBookSearchOptions = async (): Promise<
-  Pick<FilterProps, 'genre' | 'price' | 'publishYear'>
+  Pick<Filters, 'genre' | 'price' | 'publishYear'>
 > => {
   const response = await baseRequest.get<{
     genre: string[]

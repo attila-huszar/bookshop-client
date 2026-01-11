@@ -1,5 +1,5 @@
+import { fetchAuthTokens, store } from '@/store'
 import { baseRequest } from './baseRequest'
-import { store, fetchAuthTokens } from '@/store'
 
 const httpError = {
   Unauthorized: 401,

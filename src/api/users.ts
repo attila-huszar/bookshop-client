@@ -1,5 +1,5 @@
-import { baseRequest, authRequest, PATH } from './'
 import { defaultCountry } from '@/constants'
+import { handleError } from '@/errors'
 import type {
   CountryData,
   LoginRequest,
@@ -9,7 +9,7 @@ import type {
   User,
   UserUpdate,
 } from '@/types'
-import { handleError } from '@/errors'
+import { authRequest, baseRequest, PATH } from './'
 
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string

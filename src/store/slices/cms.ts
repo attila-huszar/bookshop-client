@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit'
-import type { CMSState } from '@/types'
 import {
   addAuthor,
   addBook,
@@ -13,7 +12,8 @@ import {
   listUsers,
   updateAuthor,
   updateBook,
-} from '../thunks/cms'
+} from '@/store/thunks/cms'
+import type { CMSState } from '@/types'
 
 const initialState: CMSState = {
   users: [],

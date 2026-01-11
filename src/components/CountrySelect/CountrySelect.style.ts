@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import { styled } from 'styled-components'
 import { baseInputStyles, FormTypes } from '@/styles'
 
 interface OptionItemProps {

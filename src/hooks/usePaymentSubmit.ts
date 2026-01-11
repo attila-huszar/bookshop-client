@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useStripe, useElements } from '@stripe/react-stripe-js'
-import { useMessages } from './useMessages'
+import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors'
+import { useMessages } from './useMessages'
 
 type UsePaymentSubmitParams = {
   receiptEmail: string

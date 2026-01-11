@@ -1,19 +1,19 @@
-import { vi } from 'vitest'
+import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router'
+import { Providers } from '@/setupTests'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useNavigate } from 'react-router'
-import { toast } from 'react-hot-toast'
-import { Cart } from './Cart'
+import { vi } from 'vitest'
+import { ROUTE } from '@/routes'
+import { orderCreate } from '@/store'
 import {
-  useCart,
-  useAppSelector,
   useAppDispatch,
+  useAppSelector,
+  useCart,
   useLocalStorage,
 } from '@/hooks'
-import { orderCreate } from '@/store'
-import { ROUTE } from '@/routes'
-import { Providers } from '@/setupTests'
 import type { Cart as CartType } from '@/types'
+import { Cart } from './Cart'
 
 vi.mock('@/store', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/store')>()

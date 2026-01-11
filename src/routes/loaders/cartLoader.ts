@@ -1,4 +1,4 @@
-import { store, fetchCartItems, orderRetrieve } from '@/store'
+import { fetchCartItems, orderRetrieve, store } from '@/store'
 import { log } from '@/libs'
 import type { CartLocalStorage } from '@/types'
 

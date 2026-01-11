@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router'
-import { useAppSelector } from '@/hooks'
 import { userSelector } from '@/store'
+import { useAppSelector } from '@/hooks'
 
 export const PublicRoute = () => {
   const { accessToken, userData } = useAppSelector(userSelector)

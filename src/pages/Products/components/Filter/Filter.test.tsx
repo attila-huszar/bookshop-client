@@ -1,17 +1,17 @@
-import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { Filter } from './Filter'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { vi } from 'vitest'
 import {
+  fetchBooks,
+  setBooksCurrentPage,
+  setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
-  setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-  setBooksCurrentPage,
-  fetchBooks,
 } from '@/store'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { Filter } from './Filter'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),

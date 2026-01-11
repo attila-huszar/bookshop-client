@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
+import { WarningIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
 import { StyledAlert } from './Alert.style'
-import { WarningIcon } from '@/assets/svg'
 
 type Props = {
   message?: string

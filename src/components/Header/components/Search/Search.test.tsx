@@ -1,11 +1,11 @@
-import { vi } from 'vitest'
+import { useNavigate } from 'react-router'
+import { Providers } from '@/setupTests'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useNavigate } from 'react-router'
-import { Search } from './Search'
-import { fetchBooksBySearch, fetchAuthorsBySearch } from '@/store'
+import { vi } from 'vitest'
+import { fetchAuthorsBySearch, fetchBooksBySearch } from '@/store'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
-import { Providers } from '@/setupTests'
+import { Search } from './Search'
 
 vi.mock('@/store', () => ({
   authorsSelector: vi.fn(),

@@ -1,19 +1,25 @@
+import { defaultCurrencySymbol } from '@/constants'
 import {
-  StyledPriceCard,
-  StyledPriceProduct,
-  StyledPriceCart,
   Currency,
   Strikethrough,
+  StyledPriceCard,
+  StyledPriceCart,
+  StyledPriceProduct,
 } from './Price.style'
-import { defaultCurrencySymbol } from '@/constants'
-import type { PriceProps } from '@/types'
+
+type Props = {
+  component: 'card' | 'product' | 'cart'
+  price: number
+  discount: number
+  currency?: string
+}
 
 export function Price({
   component,
   price,
   discount,
   currency = defaultCurrencySymbol,
-}: PriceProps) {
+}: Props) {
   const componentMap = {
     card: StyledPriceCard,
     product: StyledPriceProduct,

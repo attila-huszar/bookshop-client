@@ -1,33 +1,33 @@
-import { Formik, Form, Field } from 'formik'
+import 'rc-slider/assets/index.css'
+import { Field, Form, Formik } from 'formik'
 import Slider from 'rc-slider'
-import {
-  StyledFilter,
-  FilterOptions,
-  InputFields,
-  GenreCheckBoxes,
-  DiscountRadioButtons,
-  Rating,
-  ButtonWrapper,
-  CustomButton,
-} from './Filter.style'
-import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
   booksSelector,
   fetchBooks,
+  setBooksCurrentPage,
+  setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
-  setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-  setBooksCurrentPage,
 } from '@/store'
 import { Accordion, AccordionItem, IconButton } from '@/components'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { enforceMinMax, generateFilterArray } from '@/helpers'
-import { filterInitialValues, discountOptions } from '@/constants'
+import { discountOptions, filterInitialValues } from '@/constants'
+import type { DiscountChangeEvent, Filters, InputEvent } from '@/types'
+import { StarFilledIcon, StarIcon } from '@/assets/svg'
 import { sliderStyles } from '@/styles'
-import 'rc-slider/assets/index.css'
-import type { FilterProps, InputEvent, DiscountChangeEvent } from '@/types'
-import { StarIcon, StarFilledIcon } from '@/assets/svg'
+import {
+  ButtonWrapper,
+  CustomButton,
+  DiscountRadioButtons,
+  FilterOptions,
+  GenreCheckBoxes,
+  InputFields,
+  Rating,
+  StyledFilter,
+} from './Filter.style'
 
 export function Filter() {
   const { booksFilters } = useAppSelector(booksSelector)
@@ -98,19 +98,19 @@ export function Filter() {
     dispatch(setBooksFilterGenre([]))
   }
 
-  const handlePriceChange = (value: FilterProps['price']) => {
+  const handlePriceChange = (value: Filters['price']) => {
     dispatch(setBooksFilterPrice(value))
   }
 
-  const handleDiscountChange = (value: FilterProps['discount']) => {
+  const handleDiscountChange = (value: Filters['discount']) => {
     dispatch(setBooksFilterDiscount(value))
   }
 
-  const handlePublishYearChange = (value: FilterProps['publishYear']) => {
+  const handlePublishYearChange = (value: Filters['publishYear']) => {
     dispatch(setBooksFilterPublishYear(value))
   }
 
-  const handleRatingChange = (value: FilterProps['rating']) => {
+  const handleRatingChange = (value: Filters['rating']) => {
     dispatch(setBooksFilterRating(value))
   }
 
@@ -282,7 +282,7 @@ export function Filter() {
                 <Rating>
                   {Array.from({ length: 5 }, (_, idx) => {
                     const isFilled = idx < booksFilters.active.rating
-                    const rating = (idx + 0.5) as FilterProps['rating']
+                    const rating = (idx + 0.5) as Filters['rating']
 
                     return (
                       <IconButton

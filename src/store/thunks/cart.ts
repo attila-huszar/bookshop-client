@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { RootState } from '../store'
-import { fetchBookById } from './books'
+import { RootState } from '@/store'
 import type { CartLocalStorage } from '@/types'
+import { fetchBookById } from './books'
 
 export const fetchCartItems = createAsyncThunk(
   'cart/fetchCartItems',

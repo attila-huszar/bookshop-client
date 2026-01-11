@@ -1,8 +1,8 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { Recommended } from './Recommended'
-import { useAppSelector } from '@/hooks'
 import { Providers } from '@/setupTests'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
+import { useAppSelector } from '@/hooks'
+import { Recommended } from './Recommended'
 
 vi.mock('@/components', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components')>()

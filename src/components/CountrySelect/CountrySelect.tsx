@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { useFormikContext } from 'formik'
 import { getCountryCodes } from '@/api'
 import { useClickOutside } from '@/hooks'
-import { InputWrapper, ErrorMessage } from '@/styles'
+import type { CountryData } from '@/types'
 import { CaretDownIcon } from '@/assets/svg'
+import { ErrorMessage, InputWrapper } from '@/styles'
 import {
-  SelectedOption,
-  DropdownList,
-  SearchInput,
-  OptionsList,
-  OptionItem,
   CountryFlag,
   CountryName,
+  DropdownList,
+  OptionItem,
+  OptionsList,
+  SearchInput,
+  SelectedOption,
 } from './CountrySelect.style'
-import type { CountryData } from '@/types'
 
 interface CountrySelectProps {
   defaultCountry: string
@@ -69,7 +69,7 @@ export function CountrySelect({
   })
 
   const getFlagUrl = (code: string) => {
-    return `https://flagcdn.com/${code?.toLowerCase()}.svg`
+    return `https://flagcdn.com/${code?.toLowerCase() ?? 'un'}.svg`
   }
 
   const onInputClick = () => {

@@ -1,8 +1,8 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { Products } from './Products'
-import { useAppSelector } from '@/hooks'
 import { Providers } from '@/setupTests'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
+import { useAppSelector } from '@/hooks'
+import { Products } from './Products'
 
 vi.mock('./components', () => ({
   Filter: () => <div>Filter component</div>,

@@ -1,14 +1,14 @@
-import { StyledPagination, PageSelectButton } from './Pagination.style'
-import { IconButton } from '@/components'
-import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
   booksSelector,
-  incrementBooksCurrentPage,
   decrementBooksCurrentPage,
   fetchBooks,
+  incrementBooksCurrentPage,
   setBooksCurrentPage,
 } from '@/store'
-import { ChevronLeftIcon, ChevronLeftEndIcon, EllipsisIcon } from '@/assets/svg'
+import { IconButton } from '@/components'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { ChevronLeftEndIcon, ChevronLeftIcon, EllipsisIcon } from '@/assets/svg'
+import { PageSelectButton, StyledPagination } from './Pagination.style'
 
 export function Pagination() {
   const dispatch = useAppDispatch()

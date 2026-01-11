@@ -1,13 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import {
-  register,
+  fetchAuthTokens,
+  fetchUserProfile,
   login,
   logout,
-  fetchUserProfile,
-  fetchAuthTokens,
-  updateUserProfile,
+  register,
   updateAvatar,
-} from '../thunks/user'
+  updateUserProfile,
+} from '@/store/thunks/user'
 import type { UserState } from '@/types'
 
 const initialState: UserState = {

@@ -6,9 +6,9 @@ import {
   fetchBooksByProperty,
   fetchBooksBySearch,
   fetchBookSearchOptions,
-} from '../thunks/books'
-import { addBooksToCache } from '../utils'
-import type { BookState, FilterProps } from '@/types'
+} from '@/store/thunks/books'
+import { addBooksToCache } from '@/helpers'
+import { BookState, Filters } from '@/types'
 
 const initialState: BookState = {
   books: [],
@@ -65,10 +65,7 @@ const booksSlice = createSlice({
         state.booksFilters.active.genre = []
       }
     },
-    setBooksFilterPrice: (
-      state,
-      action: PayloadAction<FilterProps['price']>,
-    ) => {
+    setBooksFilterPrice: (state, action: PayloadAction<Filters['price']>) => {
       if (action.payload.length) {
         state.booksFilters.active.price = action.payload
       } else {
@@ -77,13 +74,13 @@ const booksSlice = createSlice({
     },
     setBooksFilterDiscount: (
       state,
-      action: PayloadAction<FilterProps['discount']>,
+      action: PayloadAction<Filters['discount']>,
     ) => {
       state.booksFilters.active.discount = action.payload
     },
     setBooksFilterPublishYear: (
       state,
-      action: PayloadAction<FilterProps['publishYear']>,
+      action: PayloadAction<Filters['publishYear']>,
     ) => {
       if (action.payload.length) {
         state.booksFilters.active.publishYear = action.payload
@@ -92,10 +89,7 @@ const booksSlice = createSlice({
           state.booksFilters.initial.publishYear
       }
     },
-    setBooksFilterRating: (
-      state,
-      action: PayloadAction<FilterProps['rating']>,
-    ) => {
+    setBooksFilterRating: (state, action: PayloadAction<Filters['rating']>) => {
       state.booksFilters.active.rating = action.payload
     },
   },

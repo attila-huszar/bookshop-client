@@ -1,8 +1,8 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { Product } from './Product'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import { useAppSelector, useCart } from '@/hooks'
+import { Product } from './Product'
 
 vi.mock('@/components', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components')>()

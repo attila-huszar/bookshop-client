@@ -1,15 +1,15 @@
-import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { Pagination } from './Pagination'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { vi } from 'vitest'
 import {
-  setBooksCurrentPage,
   decrementBooksCurrentPage,
-  incrementBooksCurrentPage,
   fetchBooks,
+  incrementBooksCurrentPage,
+  setBooksCurrentPage,
 } from '@/store'
-import type { FilterProps } from '@/types'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import type { Filters } from '@/types'
+import { Pagination } from './Pagination'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
@@ -58,7 +58,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
   })
 
@@ -70,7 +70,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(decrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
   })
 
@@ -82,7 +82,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(3))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
   })
 
@@ -94,7 +94,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(incrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
   })
 
@@ -108,7 +108,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(10))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as FilterProps))
+      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
   })
 })

@@ -1,13 +1,17 @@
-import { useState, ReactElement, isValidElement } from 'react'
-import { AccordionItem } from './AccordionItem'
-import { AccordionProps } from './Accordion.types'
-import { AccordionItemProps } from './AccordionItem.types'
+import { isValidElement, ReactElement, useState } from 'react'
+import { AccordionItem, AccordionItemProps } from './AccordionItem'
+
+type Props = {
+  defaultOpenPanels?: number[]
+  numberOfAllowedOpenPanels?: number | 'all'
+  children: ReactElement<AccordionItemProps>[]
+}
 
 export function Accordion({
   defaultOpenPanels = [0],
   numberOfAllowedOpenPanels = 'all',
   children,
-}: AccordionProps) {
+}: Props) {
   const [openPanels, setOpenPanels] = useState(defaultOpenPanels)
 
   const togglePanel = (panelKey: number) => {

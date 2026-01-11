@@ -1,17 +1,17 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { AppDispatch, RootState } from './store'
+import { paymentSessionKey } from '@/constants'
+import type { Cart, CartLocalStorage } from '@/types'
 import {
   cartAdd,
-  cartRemove,
+  cartClear,
   cartQuantityAdd,
   cartQuantityRemove,
   cartQuantitySet,
-  cartClear,
+  cartRemove,
 } from './slices/cart'
 import { orderClear } from './slices/order'
+import { AppDispatch, RootState } from './store'
 import { orderCreate } from './thunks/order'
-import { paymentSessionKey } from '@/constants'
-import type { Cart, CartLocalStorage } from '@/types'
 
 export const cartToLocalStorage = createListenerMiddleware()
 

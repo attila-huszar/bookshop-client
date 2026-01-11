@@ -1,9 +1,9 @@
-import { vi } from 'vitest'
+import { useNavigate } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { BasketButton } from './BasketButton'
-import { useNavigate } from 'react-router'
+import { vi } from 'vitest'
 import { useAppSelector } from '@/hooks'
+import { BasketButton } from './BasketButton'
 
 describe('BasketButton', () => {
   const mockNavigate = vi.fn()

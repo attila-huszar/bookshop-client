@@ -1,6 +1,6 @@
-import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
-import type { Book, News } from '@/types'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Book, News } from '@/types'
 //@ts-expect-error swiper css import alias issue
 import 'swiper/css'
 //@ts-expect-error swiper css import alias issue

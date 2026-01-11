@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
-import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { ButtonWrapper } from '@/styles'
-import { FormikField, CountrySelect, Button, IconButton } from '@/components'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
+import { useNavigate } from 'react-router'
+import { Form, Formik } from 'formik'
 import { getUserCountry } from '@/api'
 import { register } from '@/store'
+import {
+  AuthorizationMenu,
+  Button,
+  CountrySelect,
+  FormikField,
+  IconButton,
+} from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
+import { ButtonWrapper } from '@/styles'
 
 export function Registration() {
   const dispatch = useAppDispatch()

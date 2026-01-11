@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
-import { StyledRecommended } from './Recommended.style'
-import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
-import { SwiperComponent } from '@/components'
-import { Card } from '../Card/Card'
+import { Card, SwiperComponent } from '@/components'
+import { useAppSelector } from '@/hooks'
+import { StyledRecommended } from './Recommended.style'
 
 export function Recommended() {
   const { booksRecommended } = useAppSelector(booksSelector)

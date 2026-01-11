@@ -1,4 +1,4 @@
-import type { Book } from '@/types'
+import { Book } from '@/types'
 
 export function getRandomBooks(booksArray: Book[], count: number) {
   const bookCopy: Book[] = [...booksArray]

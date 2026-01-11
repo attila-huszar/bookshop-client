@@ -1,11 +1,11 @@
-import { vi } from 'vitest'
+import { toast } from 'react-hot-toast'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { toast } from 'react-hot-toast'
-import { PasswordDialog } from './PasswordDialog'
-import { useAppDispatch } from '@/hooks'
+import { vi } from 'vitest'
 import { postUserLogin } from '@/api'
 import { updateUserProfile } from '@/store'
+import { useAppDispatch } from '@/hooks'
+import { PasswordDialog } from './PasswordDialog'
 
 vi.mock('@/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api')>()

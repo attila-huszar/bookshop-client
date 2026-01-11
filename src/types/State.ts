@@ -1,14 +1,14 @@
 import type {
-  Book,
   Author,
-  News,
-  Cart,
-  FilterProps,
-  User,
-  OrderInStore,
+  Book,
   BookWithAuthorId,
-  UserWithMetadata,
+  Cart,
+  Filters,
+  News,
   Order,
+  OrderInStore,
+  User,
+  UserWithMetadata,
 } from './'
 
 export type BookState = {
@@ -23,8 +23,8 @@ export type BookState = {
   booksTopSellers: Book[]
   booksReleases: Book[]
   booksFilters: {
-    initial: FilterProps
-    active: FilterProps
+    initial: Filters
+    active: Filters
   }
 }
 

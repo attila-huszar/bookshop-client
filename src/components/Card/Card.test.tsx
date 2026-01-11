@@ -1,10 +1,10 @@
-import { vi } from 'vitest'
+import { MemoryRouter, useNavigate } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { MemoryRouter, useNavigate } from 'react-router'
-import { Card } from './Card'
+import { vi } from 'vitest'
 import { useCart } from '@/hooks'
-import type { Book } from '@/types'
+import { Book } from '@/types'
+import { Card } from './Card'
 
 describe('Card', () => {
   const mockBook: Partial<Book> = {

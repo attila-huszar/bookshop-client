@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router'
-import {
-  StyledAuthorizationMenu,
-  FormChangeLinks,
-} from './AuthorizationMenu.style'
 import { ROUTE } from '@/routes'
+import {
+  FormChangeLinks,
+  StyledAuthorizationMenu,
+} from './AuthorizationMenu.style'
 
 export function AuthorizationMenu({ children }: React.PropsWithChildren) {
   return (

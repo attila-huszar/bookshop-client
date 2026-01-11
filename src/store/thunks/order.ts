@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { postOrder, getPaymentIntent, deletePaymentIntent } from '@/api'
+import { deletePaymentIntent, getPaymentIntent, postOrder } from '@/api'
 import { log } from '@/libs'
 import { OrderCreate } from '@/types'
 

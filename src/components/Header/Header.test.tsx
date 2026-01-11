@@ -1,7 +1,7 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { Header } from './Header'
 import { Providers } from '@/setupTests'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
+import { Header } from './Header'
 
 vi.mock('./components', () => ({
   Menu: () => <div>Shop</div>,

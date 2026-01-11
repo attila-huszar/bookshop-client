@@ -1,4 +1,4 @@
-import type { FilterProps } from '@/types'
+import type { Filters } from '@/types'
 
 export const defaultCountry = 'hu'
 export const defaultCurrency = 'USD'
@@ -31,7 +31,7 @@ export const passwordResetInitialValues = {
 }
 
 export const discountOptions: {
-  value: FilterProps['discount']
+  value: Filters['discount']
   label: string
 }[] = [
   { value: 'allBooks', label: 'All Books' },
@@ -39,7 +39,7 @@ export const discountOptions: {
   { value: 'fullPriceOnly', label: 'Full Price Books' },
 ]
 
-export const filterInitialValues: FilterProps = {
+export const filterInitialValues: Filters = {
   genre: [],
   price: [],
   discount: 'allBooks',

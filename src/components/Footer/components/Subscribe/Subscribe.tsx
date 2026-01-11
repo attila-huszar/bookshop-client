@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { Text, SubscribeForm } from './Subscribe.style'
+import { SubscribeForm, Text } from './Subscribe.style'
 
 export function Subscribe() {
   const [email, setEmail] = useState('')

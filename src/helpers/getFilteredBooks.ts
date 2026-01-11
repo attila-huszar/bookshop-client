@@ -1,12 +1,11 @@
-import { store } from '../store'
-import { FilterActive, FilterProps } from '@/types'
+import { FilterActive, Filters } from '@/types'
 
-export const getFilteredResults = (
-  filters?: FilterProps,
+export const getFilteredBooks = (
+  booksFilters: { active: Filters; initial: Filters },
+  filters?: Filters,
 ): FilterActive | null => {
+  const { active, initial } = booksFilters
   if (!filters) return null
-
-  const { active, initial } = store.getState().books.booksFilters
 
   const isFilterActive: Record<keyof FilterActive, boolean> = {
     genre: active.genre.length > 0,

@@ -1,27 +1,27 @@
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Formik, Form } from 'formik'
+import { Form, Formik } from 'formik'
+import { ROUTE } from '@/routes'
 import {
-  StyledForm,
-  SearchButton,
-  SearchField,
+  fetchAuthorsBySearch,
+  fetchBooksByAuthor,
+  fetchBooksBySearch,
+} from '@/store'
+import { useAppDispatch, useClickOutside, useDebounce } from '@/hooks'
+import { searchSchema } from '@/validation'
+import type { Author, Book } from '@/types'
+import { imagePlaceholder, LinkIcon, SearchIcon, XMarkIcon } from '@/assets/svg'
+import {
+  ClearButton,
   Dropdown,
   DropdownList,
   MenuItem,
-  TextBold,
   NoResults,
-  ClearButton,
+  SearchButton,
+  SearchField,
+  StyledForm,
+  TextBold,
 } from './Search.style'
-import { searchSchema } from '@/validation'
-import { useDebounce, useClickOutside, useAppDispatch } from '@/hooks'
-import {
-  fetchBooksByAuthor,
-  fetchBooksBySearch,
-  fetchAuthorsBySearch,
-} from '@/store'
-import { ROUTE } from '@/routes'
-import type { Author, Book } from '@/types'
-import { SearchIcon, XMarkIcon, LinkIcon, imagePlaceholder } from '@/assets/svg'
 
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)

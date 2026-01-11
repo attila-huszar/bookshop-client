@@ -1,11 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { Recommended } from '@/components/Recommended/Recommended'
-import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
-import { Releases } from './components/Releases/Releases'
-import { TopSellers } from './components/TopSellers/TopSellers'
-import { News } from './components/News/News'
-import { useAppSelector } from '@/hooks'
 import { booksSelector } from '@/store'
+import { InfoDialog, Recommended } from '@/components'
+import { useAppSelector } from '@/hooks'
+import { News, Releases, TopSellers } from './components'
 
 export function Home() {
   const { booksError } = useAppSelector(booksSelector)
