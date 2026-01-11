@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { fetchCartItems } from '../thunks/cart'
+import { fetchCartItems } from '@/store/thunks/cart'
 import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {

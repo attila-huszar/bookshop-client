@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { fetchNews } from '../thunks/news'
+import { fetchNews } from '@/store/thunks/news'
 import type { NewsState } from '@/types'
 
 const initialState: NewsState = {

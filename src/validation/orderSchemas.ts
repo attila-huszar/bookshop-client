@@ -1,11 +1,11 @@
 import * as Yup from 'yup'
-import {
-  emailSchema,
-  phoneSchema,
-  addressSchema,
-  nameSchema,
-} from './userSchemas'
 import { OrderStatus } from '@/types'
+import {
+  addressSchema,
+  emailSchema,
+  nameSchema,
+  phoneSchema,
+} from './userSchemas'
 
 export const orderStatusSchema = Yup.string()
   .oneOf(Object.values(OrderStatus), 'Invalid order status')

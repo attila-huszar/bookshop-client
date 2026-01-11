@@ -1,8 +1,8 @@
 import {
-  HomeIcon,
   BookIcon,
   facebookIcon,
   googleIcon,
+  HomeIcon,
   instagramIcon,
 } from '@/assets/svg'
 

@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import { store } from './store'
-import { log } from './libs'
 import App from './App.tsx'
+import { log } from './libs'
+import { store } from './store'
 
 const container = document.getElementById('root')!
 const root = createRoot(container, {

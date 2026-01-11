@@ -1,4 +1,4 @@
-import { type Cart } from '@/types'
+import { Cart } from '@/types'
 
 export const getPaymentId = (paymentSession: string | undefined): string =>
   paymentSession?.split('_secret_')[0] ?? ''

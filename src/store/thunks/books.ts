@@ -1,5 +1,4 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { RootState } from '../store'
 import {
   getBookById,
   getBooks,
@@ -8,8 +7,8 @@ import {
   getBooksBySearch,
   getBookSearchOptions,
 } from '@/api'
-import { getFilteredResults } from '../utils'
-import { generateUniqueRndNums } from '@/helpers'
+import type { RootState } from '@/store'
+import { generateUniqueRndNums, getFilteredBooks } from '@/helpers'
 import type { Book, FilterProps } from '@/types'
 
 export const fetchBooks = createAsyncThunk<
@@ -19,7 +18,9 @@ export const fetchBooks = createAsyncThunk<
 >('books/fetchBooks', (optionalFilters, { getState }) => {
   const currentPage = getState().books.booksCurrentPage
   const itemsPerPage = getState().books.booksPerPage
-  const criteria = getFilteredResults(optionalFilters)
+  const booksFilters = getState().books.booksFilters
+
+  const criteria = getFilteredBooks(booksFilters, optionalFilters)
 
   return getBooks({ currentPage, itemsPerPage, ...(criteria && { criteria }) })
 })

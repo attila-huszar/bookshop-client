@@ -1,6 +1,6 @@
 import * as Yup from 'yup'
-import { imageSchema } from './fileSchemas'
 import { UserRole } from '@/types'
+import { imageSchema } from './fileSchemas'
 
 export const emailSchema = Yup.string()
   .email('Invalid Email')

@@ -1,6 +1,6 @@
-import { MockedFunction, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLoaderData } from 'react-router'
+import { render, screen } from '@testing-library/react'
+import { MockedFunction, vi } from 'vitest'
 import { ProtectedRoute } from './ProtectedRoute'
 
 vi.mock(import('react-router'), async (importOriginal) => {

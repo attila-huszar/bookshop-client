@@ -1,4 +1,4 @@
-import { BookState, Book } from '@/types'
+import { Book, BookState } from '@/types'
 
 export const addBooksToCache = (state: BookState, newBooks: Book | Book[]) => {
   const booksArray = Array.isArray(newBooks) ? newBooks : [newBooks]

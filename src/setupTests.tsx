@@ -1,8 +1,10 @@
-import { vi } from 'vitest'
-import { BrowserRouter } from 'react-router'
-import { Provider } from 'react-redux'
-import { store } from './store'
 import '@testing-library/jest-dom'
+import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router'
+import { vi } from 'vitest'
+import { store } from './store'
+
+declare const global: typeof globalThis
 
 vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()

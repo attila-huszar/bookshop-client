@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { fetchAuthorById, fetchAuthorsBySearch } from '../thunks/authors'
+import { fetchAuthorById, fetchAuthorsBySearch } from '@/store/thunks/authors'
 import type { Author, AuthorState } from '@/types'
 
 const initialState: AuthorState = {

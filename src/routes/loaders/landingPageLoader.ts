@@ -1,4 +1,4 @@
-import { store, fetchBooksByProperty, fetchNews } from '@/store'
+import { fetchBooksByProperty, fetchNews, store } from '@/store'
 
 export const landingPageLoader = () => {
   if (!store.getState().books.booksReleases.length) {

@@ -1,20 +1,20 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
-  retrieveAuthTokens,
   getUserProfile,
+  patchUserProfile,
   postUserLogin,
   postUserLogout,
-  patchUserProfile,
-  uploadAvatar,
   postUserRegister,
+  retrieveAuthTokens,
+  uploadAvatar,
 } from '@/api'
 import type {
-  UserUpdate,
-  User,
   LoginRequest,
   LoginResponse,
-  RegisterResponse,
   RegisterRequest,
+  RegisterResponse,
+  User,
+  UserUpdate,
 } from '@/types'
 
 export const fetchAuthTokens = createAsyncThunk<

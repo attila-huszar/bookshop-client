@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { orderCreate, orderRetrieve, orderCancel } from '../thunks/order'
+import { orderCancel, orderCreate, orderRetrieve } from '@/store/thunks/order'
 import { OrderState } from '@/types'
 
 const initialState: OrderState = {

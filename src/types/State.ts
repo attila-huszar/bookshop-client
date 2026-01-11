@@ -1,14 +1,14 @@
 import type {
-  Book,
   Author,
-  News,
+  Book,
+  BookWithAuthorId,
   Cart,
   FilterProps,
-  User,
-  OrderInStore,
-  BookWithAuthorId,
-  UserWithMetadata,
+  News,
   Order,
+  OrderInStore,
+  User,
+  UserWithMetadata,
 } from './'
 
 export type BookState = {

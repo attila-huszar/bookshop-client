@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { booksReducer } from './slices/books'
-import { authorsReducer } from './slices/authors'
-import { newsReducer } from './slices/news'
-import { userReducer } from './slices/user'
-import { cartReducer } from './slices/cart'
-import { orderReducer } from './slices/order'
-import { cmsReducer } from './slices/cms'
 import { cartToLocalStorage, clientSecretToLocalStorage } from './middlewares'
+import { authorsReducer } from './slices/authors'
+import { booksReducer } from './slices/books'
+import { cartReducer } from './slices/cart'
+import { cmsReducer } from './slices/cms'
+import { newsReducer } from './slices/news'
+import { orderReducer } from './slices/order'
+import { userReducer } from './slices/user'
 
 export const store = configureStore({
   reducer: {
