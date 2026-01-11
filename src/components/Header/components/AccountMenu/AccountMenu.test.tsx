@@ -1,11 +1,11 @@
-import { vi } from 'vitest'
+import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router'
+import { Providers } from '@/setupTests'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useNavigate } from 'react-router'
-import { toast } from 'react-hot-toast'
-import { AccountMenu } from './AccountMenu'
+import { vi } from 'vitest'
 import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
-import { Providers } from '@/setupTests'
+import { AccountMenu } from './AccountMenu'
 
 describe('AccountMenu component', () => {
   const mockNavigate = vi.fn()

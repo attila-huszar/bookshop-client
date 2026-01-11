@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { Field, useFormikContext } from 'formik'
+import { FormikInput, FormikProps } from '@/types'
+import { EyeHideIcon, EyeIcon } from '@/assets/svg'
 import {
-  InputWrapper,
-  Input,
-  Select,
   ErrorMessage,
+  Input,
+  InputWrapper,
   PasswordEye,
+  Select,
   Textarea,
 } from '@/styles'
-import type { FormikProps, FormikInput } from '@/types'
-import { EyeIcon, EyeHideIcon } from '@/assets/svg'
 
 export function FormikField({
   focus,

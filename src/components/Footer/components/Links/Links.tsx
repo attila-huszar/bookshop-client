@@ -1,5 +1,5 @@
-import { NavList, SocialsList, StyledLinks } from './Links.style'
 import { legalLinks, socialLinks } from '@/constants'
+import { NavList, SocialsList, StyledLinks } from './Links.style'
 
 export function Links() {
   return (

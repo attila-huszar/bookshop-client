@@ -1,8 +1,8 @@
-import { vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { vi } from 'vitest'
 import { IconButton } from './IconButton'
-import { type IconButtonTypes } from './IconButton.types'
+import { IconButtonTypes } from './IconButton.types'
 
 const renderIconButton = (props: Partial<IconButtonTypes> = {}) => {
   const defaultProps: IconButtonTypes = {

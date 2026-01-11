@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router'
+import { ExtraSpace, Footer, Header, Loading } from '@/components'
 import { StyledLayout } from './Layout.style'
-import { Header, Footer, ExtraSpace, Loading } from '@/components'
 
 export function Layout() {
   return (

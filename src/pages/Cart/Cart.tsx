@@ -1,7 +1,7 @@
-import { Fragment, ChangeEvent, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { ChangeEvent, Fragment, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { Link, useNavigate } from 'react-router'
+import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
@@ -9,36 +9,35 @@ import {
   orderCreate,
   orderSelector,
 } from '@/store'
-import {
-  StyledCart,
-  CartGrid,
-  TotalPrice,
-  ButtonWrapper,
-  Book,
-  Quantity,
-  PriceItem,
-  RemoveItem,
-  ImageWrapper,
-  PriceTotal,
-  LabelQuantity,
-  LabelPrice,
-  EmptyCart,
-} from './Cart.style'
-import { Button, IconButton, Loading, Price } from '@/components'
-import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
-import { ROUTE } from '@/routes'
-import { enforceMinMax, calcSubtotalOrDiscount } from '@/helpers'
+import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
+import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { calcSubtotalOrDiscount, enforceMinMax } from '@/helpers'
 import { paymentSessionKey } from '@/constants'
 import type { Cart } from '@/types'
 import {
-  MinusIcon,
-  PlusIcon,
   BinIcon,
   CartEmptyIcon,
-  imagePlaceholder,
   CartIcon,
+  imagePlaceholder,
+  MinusIcon,
+  PlusIcon,
   SpinnerIcon,
 } from '@/assets/svg'
+import {
+  Book,
+  ButtonWrapper,
+  CartGrid,
+  EmptyCart,
+  ImageWrapper,
+  LabelPrice,
+  LabelQuantity,
+  PriceItem,
+  PriceTotal,
+  Quantity,
+  RemoveItem,
+  StyledCart,
+  TotalPrice,
+} from './Cart.style'
 
 export function Cart() {
   const navigate = useNavigate()

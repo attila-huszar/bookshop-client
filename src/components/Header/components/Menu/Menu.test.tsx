@@ -1,8 +1,10 @@
+import { Providers } from '@/setupTests'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { Menu } from './Menu'
 import { ROUTE } from '@/routes'
-import { Providers } from '@/setupTests'
+import { Menu } from './Menu'
+
+declare const global: typeof globalThis
 
 describe('Menu component', () => {
   it('should render the menu button', () => {

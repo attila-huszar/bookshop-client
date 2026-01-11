@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  PaymentElement,
-  useStripe,
-  useElements,
   LinkAuthenticationElement,
+  PaymentElement,
+  useElements,
+  useStripe,
 } from '@stripe/react-stripe-js'
 import { type StripePaymentElementOptions } from '@stripe/stripe-js'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { ROUTE } from '@/routes'
 import {
   cartClear,
   orderCancel,
@@ -16,10 +16,9 @@ import {
   orderSelector,
   userSelector,
 } from '@/store'
-import { ROUTE } from '@/routes'
+import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getPaymentId } from '@/helpers'
 import { defaultCurrency, paymentSessionKey } from '@/constants'
-import { usePaymentSubmit } from '../../hooks'
 
 export function CheckoutForm() {
   const stripe = useStripe()

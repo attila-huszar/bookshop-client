@@ -1,8 +1,8 @@
-import { FilterActive, FilterProps } from '@/types'
+import { FilterActive, Filters } from '@/types'
 
 export const getFilteredBooks = (
-  booksFilters: { active: FilterProps; initial: FilterProps },
-  filters?: FilterProps,
+  booksFilters: { active: Filters; initial: Filters },
+  filters?: Filters,
 ): FilterActive | null => {
   const { active, initial } = booksFilters
   if (!filters) return null

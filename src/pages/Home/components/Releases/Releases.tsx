@@ -1,15 +1,15 @@
 import { Link, useNavigate } from 'react-router'
-import {
-  StyledReleases,
-  Welcome,
-  ImageWrapper,
-  ImageItem,
-  MirrorImg,
-} from './Releases.style'
-import { useAppSelector } from '@/hooks'
+import { ROUTE } from '@/routes'
 import { booksSelector } from '@/store'
 import { Button } from '@/components'
-import { ROUTE } from '@/routes'
+import { useAppSelector } from '@/hooks'
+import {
+  ImageItem,
+  ImageWrapper,
+  MirrorImg,
+  StyledReleases,
+  Welcome,
+} from './Releases.style'
 
 export function Releases() {
   const { booksReleases } = useAppSelector(booksSelector)

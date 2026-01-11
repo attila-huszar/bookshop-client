@@ -1,6 +1,6 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
 import { useLocation, useNavigate } from 'react-router'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import { VerifyEmail } from './VerifyEmail'
 
 describe('VerifyEmail Component', () => {

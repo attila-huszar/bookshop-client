@@ -1,34 +1,34 @@
-import { useState, useRef, ChangeEvent } from 'react'
+import { ChangeEvent, useRef, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
-import toast from 'react-hot-toast'
-import {
-  StyledAccount,
-  UserDataFields,
-  Details,
-  General,
-  GeneralLine,
-  AvatarPanel,
-  Address,
-  AddressLine,
-  ButtonWrapper,
-} from './Account.style'
+import { updateAvatar, updateUserProfile, userSelector } from '@/store'
 import {
   Avatar,
   Button,
-  FormikField,
   CountrySelect,
+  FormikField,
   IconButton,
+  PasswordDialog,
 } from '@/components'
-import { PasswordDialog } from './components/PasswordDialog/PasswordDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { userSelector, updateUserProfile, updateAvatar } from '@/store'
 import {
   accountBasicSchema,
   addressSchema,
   validateImageFile,
 } from '@/validation'
-import { EditIcon } from '@/assets/svg'
 import type { User } from '@/types'
+import { EditIcon } from '@/assets/svg'
+import {
+  Address,
+  AddressLine,
+  AvatarPanel,
+  ButtonWrapper,
+  Details,
+  General,
+  GeneralLine,
+  StyledAccount,
+  UserDataFields,
+} from './Account.style'
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)

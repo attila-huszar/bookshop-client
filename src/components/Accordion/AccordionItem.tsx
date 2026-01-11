@@ -1,6 +1,13 @@
-import { Header, Item, Content } from './AccordionItem.style'
-import { AccordionItemProps } from './AccordionItem.types'
 import { CaretDownIcon } from '@/assets/svg'
+import { Content, Header, Item } from './AccordionItem.style'
+
+export type AccordionItemProps = {
+  panelKey?: number
+  isOpen?: boolean
+  setIsOpen?: (panelKey: number) => void
+  header: string
+  children: React.ReactNode
+}
 
 export function AccordionItem({
   panelKey = 0,

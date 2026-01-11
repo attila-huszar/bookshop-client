@@ -1,5 +1,5 @@
-import { StyledHeader } from './Header.style'
 import { AccountMenu, BasketButton, Menu, Search } from './components'
+import { StyledHeader } from './Header.style'
 
 export function Header() {
   return (

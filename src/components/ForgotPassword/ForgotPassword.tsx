@@ -1,13 +1,13 @@
 import { useImperativeHandle, useRef } from 'react'
-import { Form, Formik } from 'formik'
 import { toast } from 'react-hot-toast'
-import { StyledForgotPassword } from './ForgotPassword.style'
-import { Button, FormikField, IconButton } from '@/components'
-import { ButtonWrapper } from '@/styles'
+import { Form, Formik } from 'formik'
 import { postPasswordReset } from '@/api'
+import { Button, FormikField, IconButton } from '@/components'
 import { forgotPasswordSchema } from '@/validation'
 import { handleError } from '@/errors'
 import { BackIcon } from '@/assets/svg'
+import { ButtonWrapper } from '@/styles'
+import { StyledForgotPassword } from './ForgotPassword.style'
 
 type PasswordDialogHandle = {
   showModal: () => void

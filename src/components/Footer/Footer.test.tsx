@@ -1,6 +1,6 @@
-import { vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
 import { Providers } from '@/setupTests'
+import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import { Footer } from './Footer'
 
 vi.mock(import('./components'), async (importOriginal) => {

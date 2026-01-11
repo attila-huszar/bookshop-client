@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
 import { PaymentIntent } from '@stripe/stripe-js'
 import { useMessages } from './useMessages'
@@ -28,7 +28,7 @@ export function usePaymentStatus(paymentSession: string | null) {
   useEffect(() => {
     if (!stripe || !paymentSession) return
 
-    const timeoutIds: NodeJS.Timeout[] = []
+    const timeoutIds: ReturnType<typeof setTimeout>[] = []
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       try {

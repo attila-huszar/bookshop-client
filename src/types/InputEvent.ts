@@ -1,4 +1,4 @@
-import type { FilterProps } from './FilterProps'
+import type { Filters } from './Filters'
 
 export type InputEvent = {
   target: EventTarget & HTMLInputElement
@@ -6,6 +6,6 @@ export type InputEvent = {
 
 export type DiscountChangeEvent = {
   target: {
-    value: FilterProps['discount']
+    value: Filters['discount']
   }
 }

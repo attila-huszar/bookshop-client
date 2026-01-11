@@ -1,10 +1,10 @@
 import { useOutletContext } from 'react-router'
-import { StyledTable } from '../Tabs/Tabs.style'
-import { Alert, IconButton } from '@/components'
 import { cmsUsersSelector } from '@/store'
+import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
+import { StyledTable } from '../../CMS.style'
 
 export const Users = () => {
   const { users, usersLoading, usersError } = useAppSelector(cmsUsersSelector)

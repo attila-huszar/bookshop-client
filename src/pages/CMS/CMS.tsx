@@ -1,13 +1,7 @@
 import { useRef, useState } from 'react'
-import { Outlet, useNavigate, useLocation } from 'react-router'
-import { AsyncThunkAction } from '@reduxjs/toolkit'
 import { toast } from 'react-hot-toast'
-import { Button, ConfirmDialog, ExtraSpace } from '@/components'
-import { EditDialog, Tabs } from './components'
-import { StyledCMS, MainContainer, MenuButtons } from './CMS.style'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { SelectContext } from '@/types'
-import { LogoutIcon } from '@/assets/svg'
+import { Outlet, useLocation, useNavigate } from 'react-router'
+import { AsyncThunkAction } from '@reduxjs/toolkit'
 import {
   AppDispatch,
   deleteAuthors,
@@ -16,7 +10,13 @@ import {
   deleteUsers,
   RootState,
 } from '@/store'
-import { BookWithAuthorId, Author, Order, User } from '@/types'
+import { Button, ConfirmDialog, ExtraSpace } from '@/components'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { SelectContext } from '@/types'
+import { Author, BookWithAuthorId, Order, User } from '@/types'
+import { LogoutIcon } from '@/assets/svg'
+import { MainContainer, MenuButtons, StyledCMS } from './CMS.style'
+import { EditDialog, Tabs } from './components'
 
 export const CMS = () => {
   const navigate = useNavigate()

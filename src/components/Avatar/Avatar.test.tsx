@@ -1,8 +1,8 @@
-import { vi } from 'vitest'
+import { Providers } from '@/setupTests'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { vi } from 'vitest'
 import { Avatar } from './Avatar'
-import { Providers } from '@/setupTests'
 
 describe('Avatar', () => {
   const imgUrl = 'sample.jpg'

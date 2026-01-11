@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { AuthorizationMenu } from './AuthorizationMenu'
+import { render, screen } from '@testing-library/react'
 import { ROUTE } from '@/routes'
+import { AuthorizationMenu } from './AuthorizationMenu'
 
 describe('AuthorizationMenu', () => {
   const renderWithRouter = (children: React.ReactNode) => {

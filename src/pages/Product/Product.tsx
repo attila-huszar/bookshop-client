@@ -1,22 +1,21 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
+import { ROUTE } from '@/routes'
+import { booksSelector } from '@/store'
+import { Alert, Button, Price, Recommended } from '@/components'
+import { useAppSelector, useCart } from '@/hooks'
+import type { Book } from '@/types'
+import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import {
-  StyledProduct,
+  BookAuthor,
+  BookTitle,
   Breadcrumb,
+  ButtonWrapper,
+  Description,
   DetailsSection,
   ImageWrapper,
-  BookTitle,
-  BookAuthor,
-  Description,
-  ButtonWrapper,
+  StyledProduct,
 } from './Product.style'
-import { useAppSelector, useCart } from '@/hooks'
-import { booksSelector } from '@/store'
-import { Button, Alert, Price } from '@/components'
-import { Recommended } from '@/components/Recommended/Recommended'
-import { ROUTE } from '@/routes'
-import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
-import type { Book } from '@/types'
 
 export function Product() {
   const navigate = useNavigate()

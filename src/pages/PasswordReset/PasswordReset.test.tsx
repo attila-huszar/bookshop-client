@@ -1,10 +1,10 @@
-import { vi } from 'vitest'
+import { toast } from 'react-hot-toast'
+import { useLocation, useNavigate } from 'react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { useLocation, useNavigate } from 'react-router'
-import { toast } from 'react-hot-toast'
+import { vi } from 'vitest'
+import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
 import { PasswordReset } from './PasswordReset'
-import { postVerifyPasswordReset, postPasswordResetSubmit } from '@/api'
 
 vi.mock('@/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api')>()

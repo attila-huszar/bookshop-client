@@ -1,16 +1,16 @@
-import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { EmptyFilterResults } from './EmptyFilterResults'
-import { useAppDispatch } from '@/hooks'
+import { vi } from 'vitest'
 import {
   fetchBooks,
+  setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
-  setBooksFilterDiscount,
   setBooksFilterPublishYear,
   setBooksFilterRating,
 } from '@/store'
+import { useAppDispatch } from '@/hooks'
+import { EmptyFilterResults } from './EmptyFilterResults'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),

@@ -1,10 +1,10 @@
 import { useOutletContext } from 'react-router'
-import { StyledTable } from '../Tabs/Tabs.style'
-import { Alert, IconButton } from '@/components'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
+import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
+import { StyledTable } from '../../CMS.style'
 
 export const Books = () => {
   const { books, booksLoading, booksError } = useAppSelector(cmsBooksSelector)

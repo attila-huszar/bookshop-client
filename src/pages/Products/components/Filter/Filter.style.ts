@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { StyleTypes } from '../../../../components/Button/Button.types'
+import { StyleTypes } from '@/components/Button/Button.types'
 
 export const StyledFilter = styled.aside`
   position: sticky;

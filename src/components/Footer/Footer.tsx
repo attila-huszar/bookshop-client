@@ -1,12 +1,10 @@
+import { Links, Navigation, Subscribe } from './components'
 import {
-  StyledFooter,
+  BottomSection,
   LeftSection,
   RightSection,
-  BottomSection,
+  StyledFooter,
 } from './Footer.style'
-import { Navigation } from './components/Navigation/Navigation'
-import { Subscribe } from './components/Subscribe/Subscribe'
-import { Links } from './components/Links/Links'
 
 export function Footer() {
   return (

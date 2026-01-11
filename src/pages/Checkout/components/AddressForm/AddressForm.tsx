@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AddressElement } from '@stripe/react-stripe-js'
-import { useAppSelector } from '@/hooks'
-import { userSelector } from '@/store'
 import { getUserCountry } from '@/api'
+import { userSelector } from '@/store'
+import { useAppSelector } from '@/hooks'
 import { defaultCountry, googleMapsKey } from '@/constants'
 
 export function AddressForm() {

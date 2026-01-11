@@ -3,7 +3,7 @@ import type {
   Book,
   BookWithAuthorId,
   Cart,
-  FilterProps,
+  Filters,
   News,
   Order,
   OrderInStore,
@@ -23,8 +23,8 @@ export type BookState = {
   booksTopSellers: Book[]
   booksReleases: Book[]
   booksFilters: {
-    initial: FilterProps
-    active: FilterProps
+    initial: Filters
+    active: Filters
   }
 }
 

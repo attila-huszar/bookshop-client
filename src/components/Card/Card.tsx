@@ -1,10 +1,10 @@
 import { Link, useNavigate } from 'react-router'
-import { StyledCard, Details, Image, Title, Description } from './Card.style'
+import { ROUTE } from '@/routes'
 import { Button, Price } from '@/components'
 import { useCart } from '@/hooks'
-import { ROUTE } from '@/routes'
-import type { Book } from '@/types'
+import { Book } from '@/types'
 import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
+import { Description, Details, Image, StyledCard, Title } from './Card.style'
 
 export function Card({ book }: { book: Book }) {
   const navigate = useNavigate()

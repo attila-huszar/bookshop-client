@@ -1,18 +1,18 @@
-import { useState, useRef } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
+import { Link, useNavigate } from 'react-router'
+import { ROUTE } from '@/routes'
+import { logout, userSelector } from '@/store'
+import { Avatar, Button } from '@/components'
+import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
+import { UserRole } from '@/types'
+import { AccountIcon, CMSIcon, LogoutIcon, ProfileIcon } from '@/assets/svg'
 import {
-  StyledMenu,
   Dropdown,
   DropdownList,
   MenuItem,
+  StyledMenu,
 } from '../Menu/Menu.style'
-import { Avatar, Button } from '@/components'
-import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
-import { userSelector, logout } from '@/store'
-import { ROUTE } from '@/routes'
-import { UserRole } from '@/types'
-import { AccountIcon, ProfileIcon, LogoutIcon, CMSIcon } from '@/assets/svg'
 
 export function AccountMenu() {
   const navigate = useNavigate()

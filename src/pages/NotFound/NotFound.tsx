@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router'
+import books from '@/assets/image/books.png'
 import {
   BackButton,
   ImageWrapper,
   NotFoundSection,
   StyledNotFound,
 } from './NotFound.style'
-import books from '@/assets/image/books.png'
 
 export function NotFound() {
   const navigate = useNavigate()

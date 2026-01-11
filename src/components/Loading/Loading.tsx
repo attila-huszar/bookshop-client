@@ -1,5 +1,5 @@
-import { StyledLoading, Text } from './Loading.style'
 import { LoadingIcon } from '@/assets/svg'
+import { StyledLoading, Text } from './Loading.style'
 
 type Props = {
   message?: string

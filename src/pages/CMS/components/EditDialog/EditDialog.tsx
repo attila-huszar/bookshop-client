@@ -1,18 +1,7 @@
-import { FC, useEffect, useState, useRef, ChangeEvent } from 'react'
-import { Form, Formik, FormikHelpers, FormikState } from 'formik'
+import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import {
-  FormButtons,
-  TitleRow,
-  DefaultRow,
-  StyledEditDialog,
-  SettingsRow,
-  AddressBlock,
-  ItemBlock,
-  ItemRow,
-  GenreRow,
-} from './EditDialog.style'
-import { Button, FormikField, IconButton } from '@/components'
+import { Form, Formik, FormikHelpers, FormikState } from 'formik'
+import { uploadProductImage } from '@/api'
 import {
   addAuthor,
   addBook,
@@ -23,7 +12,9 @@ import {
   updateOrder,
   updateUser,
 } from '@/store'
+import { Button, FormikField, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
+import { log } from '@/libs'
 import {
   authorSchema,
   bookSchema,
@@ -31,14 +22,6 @@ import {
   userSchema,
   validateImageFile,
 } from '@/validation'
-import { uploadProductImage } from '@/api'
-import {
-  initialAuthorValues,
-  initialBookValues,
-  initialOrderValues,
-  initialUserValues,
-} from './initialValues'
-import { log } from '@/libs'
 import {
   Author,
   AuthorFormValues,
@@ -46,12 +29,29 @@ import {
   BookWithAuthorId,
   Order,
   OrderFormValues,
+  SelectContext,
   User,
   UserFormValues,
-  SelectContext,
   UserWithMetadata,
 } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
+import {
+  AddressBlock,
+  DefaultRow,
+  FormButtons,
+  GenreRow,
+  ItemBlock,
+  ItemRow,
+  SettingsRow,
+  StyledEditDialog,
+  TitleRow,
+} from './EditDialog.style'
+import {
+  initialAuthorValues,
+  initialBookValues,
+  initialOrderValues,
+  initialUserValues,
+} from './initialValues'
 
 type Props = {
   ref: React.RefObject<HTMLDialogElement | null>

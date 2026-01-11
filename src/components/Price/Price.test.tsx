@@ -1,9 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { Price } from './Price'
-import type { PriceProps } from '@/types'
 
-const defaultProps: PriceProps = {
-  component: 'card',
+const defaultProps = {
+  component: 'card' as const,
   price: 100,
   discount: 0,
 }

@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router'
-import { StyledBasketButton, CartItemCount } from './BasketButton.style'
+import { ROUTE } from '@/routes'
+import { cartSelector, orderSelector } from '@/store'
 import { Button } from '@/components'
 import { useAppSelector } from '@/hooks'
-import { cartSelector, orderSelector } from '@/store'
-import { ROUTE } from '@/routes'
-import { CartIcon } from '@/assets/svg'
 import { CartLocalStorage } from '@/types'
+import { CartIcon } from '@/assets/svg'
+import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
 export function BasketButton() {
   const { cartItems } = useAppSelector(cartSelector)

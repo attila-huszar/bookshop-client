@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
-import { Formik, Form } from 'formik'
 import { toast } from 'react-hot-toast'
-import { ButtonWrapper } from '@/styles'
-import { FormikField, Button, IconButton } from '@/components'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
-import { ForgotPassword } from './components/ForgotPassword/ForgotPassword'
-import { loginSchema } from '@/validation'
-import { useAppDispatch } from '@/hooks'
+import { useNavigate } from 'react-router'
+import { Form, Formik } from 'formik'
 import { fetchUserProfile, login } from '@/store'
+import {
+  AuthorizationMenu,
+  Button,
+  ForgotPassword,
+  FormikField,
+  IconButton,
+} from '@/components'
+import { useAppDispatch } from '@/hooks'
+import { loginSchema } from '@/validation'
 import { loginInitialValues } from '@/constants'
-import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
 import type { LoginRequest } from '@/types'
+import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
+import { ButtonWrapper } from '@/styles'
 
 export function Login() {
   const dispatch = useAppDispatch()

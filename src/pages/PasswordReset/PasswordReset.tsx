@@ -1,14 +1,14 @@
-import { useEffect, useState, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { Formik, Form } from 'formik'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { StyledPasswordReset } from './PasswordReset.style'
-import { FormikField, Button, Loading } from '@/components'
-import { ButtonWrapper } from '@/styles'
+import { useLocation, useNavigate } from 'react-router'
+import { Form, Formik } from 'formik'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
+import { Button, FormikField, Loading } from '@/components'
 import { resetPasswordSchema } from '@/validation'
 import { passwordResetInitialValues } from '@/constants'
 import { handleError } from '@/errors'
+import { ButtonWrapper } from '@/styles'
+import { StyledPasswordReset } from './PasswordReset.style'
 
 export function PasswordReset() {
   const navigate = useNavigate()

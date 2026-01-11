@@ -9,11 +9,11 @@ import {
 } from '@/api'
 import type { RootState } from '@/store'
 import { generateUniqueRndNums, getFilteredBooks } from '@/helpers'
-import type { Book, FilterProps } from '@/types'
+import type { Book, Filters } from '@/types'
 
 export const fetchBooks = createAsyncThunk<
   { books: Book[]; total: number },
-  FilterProps | undefined,
+  Filters | undefined,
   { state: RootState }
 >('books/fetchBooks', (optionalFilters, { getState }) => {
   const currentPage = getState().books.booksCurrentPage
