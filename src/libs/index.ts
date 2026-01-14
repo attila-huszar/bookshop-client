@@ -1,1 +1,1 @@
-export { log } from './seq'
+export { log } from './logbull'

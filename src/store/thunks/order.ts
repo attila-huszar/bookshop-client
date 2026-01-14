@@ -59,7 +59,7 @@ export const orderCancel = createAsyncThunk(
     try {
       await deletePaymentIntent(paymentId)
     } catch (stripeError) {
-      void log.warn(
+      void log.warning(
         'Failed to cancel Stripe payment intent, continuing with order cancellation',
         {
           error: stripeError,

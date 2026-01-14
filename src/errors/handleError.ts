@@ -23,7 +23,7 @@ export async function handleError({
       const response = await error.response.json<ErrorResponse>()
 
       if (response.validation) {
-        void log.warn('Validation error', {
+        void log.warning('Validation error', {
           error: response.validation,
           status: error.response.status,
         })
@@ -37,14 +37,14 @@ export async function handleError({
         return new Error(allErrors.join(', ') || message)
       }
 
-      void log.warn('Server error', {
+      void log.warning('Server error', {
         error: response.error,
         status: error.response.status,
       })
 
       return new Error(response.error ?? message)
     } catch (parseError) {
-      void log.warn('Failed to parse server error', {
+      void log.warning('Failed to parse server error', {
         parseError,
         originalError: error,
       })
