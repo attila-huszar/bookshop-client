@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { deletePaymentIntent, getPaymentIntent, postOrder } from '@/api'
-import { log } from '@/libs'
+import { log } from '@/services'
 import { OrderCreate } from '@/types'
 
 export const orderCreate = createAsyncThunk(
@@ -59,7 +59,7 @@ export const orderCancel = createAsyncThunk(
     try {
       await deletePaymentIntent(paymentId)
     } catch (stripeError) {
-      void log.warning(
+      void log.warn(
         'Failed to cancel Stripe payment intent, continuing with order cancellation',
         {
           error: stripeError,
