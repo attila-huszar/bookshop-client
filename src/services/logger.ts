@@ -1,16 +1,20 @@
-import { sendLog } from '@/api/logs'
+import { LogLevel, sendLog } from '@/api'
 
 class Logger {
-  info(message: string, meta?: object): void {
-    void sendLog('info', message, meta)
+  info(message: string, meta?: Record<string, unknown>): void {
+    void sendLog(LogLevel.Info, message, meta)
   }
 
-  error(message: string, meta?: object): void {
-    void sendLog('error', message, meta)
+  warn(message: string, meta?: Record<string, unknown>): void {
+    void sendLog(LogLevel.Warn, message, meta)
   }
 
-  warn(message: string, meta?: object): void {
-    void sendLog('warn', message, meta)
+  error(message: string, meta?: Record<string, unknown>): void {
+    void sendLog(LogLevel.Error, message, meta)
+  }
+
+  debug(message: string, meta?: Record<string, unknown>): void {
+    void sendLog(LogLevel.Debug, message, meta)
   }
 }
 
