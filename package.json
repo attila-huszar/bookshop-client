@@ -17,7 +17,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
     "@stripe/react-stripe-js": "^5.4.1",
-    "@stripe/stripe-js": "^8.6.3",
+    "@stripe/stripe-js": "^8.6.4",
     "formik": "^2.4.9",
     "ky": "^1.14.2",
     "lottie-react": "^2.4.1",
@@ -27,7 +27,7 @@
     "react-error-boundary": "^6.1.0",
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
-    "react-router": "^7.12.0",
+    "react-router": "^7.13.0",
     "styled-components": "^6.3.8",
     "swiper": "^12.0.3",
     "yup": "^1.7.1"
@@ -53,7 +53,7 @@
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.26",
-    "globals": "^17.0.0",
+    "globals": "^17.1.0",
     "jsdom": "^27.4.0",
     "prettier": "^3.8.1",
     "rollup-plugin-visualizer": "^6.0.5",

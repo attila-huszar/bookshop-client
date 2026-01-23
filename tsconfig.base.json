@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+
+    /* Linting */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
