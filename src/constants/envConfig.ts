@@ -1,4 +1,4 @@
-import { log } from '@/libs'
+import { log } from '@/services'
 
 function getEnvVar(key: string, defaultValue?: string | null): string {
   const importEnv = import.meta.env as Record<string, string>
@@ -19,7 +19,7 @@ function getEnvVar(key: string, defaultValue?: string | null): string {
   return value
 }
 
-export const baseURL = getEnvVar('VITE_BASE_URL', 'http://localhost:5173')
-export const serverUrl = getEnvVar('VITE_SERVER_URL', 'http://localhost:5000')
+export const baseURL = getEnvVar('VITE_BASE_URL')
+export const serverUrl = getEnvVar('VITE_SERVER_URL')
 export const stripeKey = getEnvVar('VITE_STRIPE_PUBLIC_KEY')
 export const googleMapsKey = getEnvVar('VITE_GOOGLE_MAPS_KEY', null)

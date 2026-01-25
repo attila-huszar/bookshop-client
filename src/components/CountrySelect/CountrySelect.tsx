@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFormikContext } from 'formik'
 import { getCountryCodes } from '@/api'
-import { useClickOutside } from '@/hooks'
+import { userSelector } from '@/store'
+import { useAppSelector, useClickOutside } from '@/hooks'
 import type { CountryData } from '@/types'
 import { CaretDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles'
@@ -24,6 +25,7 @@ export function CountrySelect({
   defaultCountry,
   readOnly = false,
 }: CountrySelectProps) {
+  const { userData } = useAppSelector(userSelector)
   const { values, setFieldValue, getFieldMeta, submitCount } =
     useFormikContext<Record<string, string>>()
   const [countries, setCountries] = useState<CountryData>({})
@@ -33,8 +35,10 @@ export function CountrySelect({
   const listRef = useRef<HTMLUListElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const currentCountryCode = values.country ?? defaultCountry
-  const currentCountryName = countries[currentCountryCode]
+  const countryCode = isNonEmpty(values.country)
+    ? values.country
+    : (userData?.country ?? defaultCountry)
+  const countryName = countries[countryCode]
 
   useClickOutside({ ref: dropdownRef, state: isOpen, setter: setIsOpen })
 
@@ -69,7 +73,7 @@ export function CountrySelect({
   })
 
   const getFlagUrl = (code: string) => {
-    return `https://flagcdn.com/${code?.toLowerCase() ?? 'un'}.svg`
+    return `https://flagcdn.com/${code.toLowerCase()}.svg`
   }
 
   const onInputClick = () => {
@@ -96,11 +100,11 @@ export function CountrySelect({
         disabled={readOnly}>
         <div>
           <CountryFlag
-            src={getFlagUrl(currentCountryCode)}
-            alt={`${currentCountryName} flag`}
+            src={getFlagUrl(countryCode)}
+            alt={`${countryName} flag`}
             loading="lazy"
           />
-          <CountryName>{currentCountryName}</CountryName>
+          <CountryName>{countryName}</CountryName>
         </div>
         <CaretDownIcon />
       </SelectedOption>
@@ -120,8 +124,8 @@ export function CountrySelect({
                 <OptionItem
                   key={code}
                   onClick={() => onSelect(code)}
-                  $selected={code === currentCountryCode}
-                  aria-selected={code === currentCountryCode}>
+                  $selected={code === countryCode}
+                  aria-selected={code === countryCode}>
                   <CountryFlag
                     src={getFlagUrl(code)}
                     alt={`${countryName} flag`}
@@ -143,4 +147,8 @@ export function CountrySelect({
       )}
     </InputWrapper>
   )
+}
+
+function isNonEmpty(s?: string | null): s is string {
+  return typeof s === 'string' && s.trim().length > 0
 }

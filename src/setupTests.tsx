@@ -40,7 +40,7 @@ vi.mock('react-hot-toast', () => ({
   },
 }))
 
-vi.mock('@/libs', () => ({
+vi.mock('@/services', () => ({
   log: {
     info: vi.fn(),
     warn: vi.fn(),

@@ -1,40 +1,37 @@
-const enum P {
-  books = 'books',
-  authors = 'authors',
-  news = 'news',
-  searchOptions = 'search_opts',
-  users = 'users',
-  orders = 'orders',
-  cms = 'cms',
-}
-
-const createUserEndpoints = (base: string) => ({
-  register: `${base}/register`,
-  login: `${base}/login`,
-  logout: `${base}/logout`,
-  verification: `${base}/verification`,
-  passwordResetRequest: `${base}/password-reset-request`,
-  passwordResetToken: `${base}/password-reset-token`,
-  passwordResetSubmit: `${base}/password-reset-submit`,
-  profile: `${base}/profile`,
-  refresh: `${base}/refresh`,
-  avatar: `${base}/avatar`,
-  country: `${base}/country`,
-  countryCodes: `${base}/country-codes`,
-})
-
-const createOrderEndpoints = (base: string) => ({
-  base,
-  paymentIntents: `${base}/payment-intents`,
-})
+const P = {
+  books: 'books',
+  authors: 'authors',
+  news: 'news',
+  searchOptions: 'search_opts',
+  users: 'users',
+  orders: 'orders',
+  cms: 'cms',
+  logs: 'logs',
+} as const
 
 export const PATH = {
   books: P.books,
   authors: P.authors,
   news: P.news,
   searchOptions: P.searchOptions,
-  users: createUserEndpoints(P.users),
-  orders: createOrderEndpoints(P.orders),
+  users: {
+    register: `${P.users}/register`,
+    login: `${P.users}/login`,
+    logout: `${P.users}/logout`,
+    verification: `${P.users}/verification`,
+    passwordResetRequest: `${P.users}/password-reset-request`,
+    passwordResetToken: `${P.users}/password-reset-token`,
+    passwordResetSubmit: `${P.users}/password-reset-submit`,
+    profile: `${P.users}/profile`,
+    refresh: `${P.users}/refresh`,
+    avatar: `${P.users}/avatar`,
+    country: `${P.users}/country`,
+    countryCodes: `${P.users}/country-codes`,
+  },
+  orders: {
+    base: P.orders,
+    paymentIntents: `${P.orders}/payment-intents`,
+  },
   cms: {
     orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
@@ -42,4 +39,5 @@ export const PATH = {
     authors: `${P.cms}/${P.authors}`,
     productImage: `${P.cms}/product-image`,
   },
+  logs: P.logs,
 } as const
