@@ -8,37 +8,39 @@ export const enum LogLevel {
   Error = 'error',
 }
 
+const serialize = (value: unknown): unknown => {
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message,
+      stack: value.stack,
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(serialize)
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, serialize(v)]),
+    )
+  }
+
+  return value
+}
+
 export function sendLog(
   level: LogLevel,
   message: string,
-  meta?: Record<string, unknown>,
+  meta?: unknown,
 ): void {
-  const serialize = (val: unknown): Record<string, unknown> => {
-    if (val instanceof Error) {
-      return {
-        name: val.name,
-        message: val.message,
-        stack: val.stack,
-      }
-    }
-
-    if (val !== null && typeof val === 'object') {
-      return Object.fromEntries(
-        Object.entries(val).map(([k, v]) => [k, serialize(v)]),
-      )
-    }
-
-    return val as Record<string, unknown>
-  }
-
-  const cleanMeta = meta ? serialize(meta) : null
-
   void baseRequest
     .post(PATH.logs, {
       json: {
         level,
         message,
-        ...(cleanMeta ? { meta: cleanMeta } : {}),
+        meta: serialize(meta),
       },
     })
     .catch(() => null)
