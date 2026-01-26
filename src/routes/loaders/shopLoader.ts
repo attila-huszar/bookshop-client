@@ -1,9 +1,10 @@
 import { fetchBooks, fetchBookSearchOptions, store } from '@/store'
 
 export const shopLoader = () => {
-  void store.dispatch(fetchBooks())
+  const activeFilters = store.getState().books.booksFilters.active
+  void store.dispatch(fetchBooks(activeFilters))
 
-  if (!store.getState().books.booksFilters.active.price.length) {
+  if (!activeFilters.price.length) {
     void store.dispatch(fetchBookSearchOptions())
   }
 }
