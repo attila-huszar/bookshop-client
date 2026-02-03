@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
-import { PaymentIntent } from '@stripe/stripe-js'
+import { PaymentIntentStatus } from '@/types'
 import { useMessages } from './useMessages'
 
 type PaymentStatus = {
-  intent: PaymentIntent.Status
+  intent: PaymentIntentStatus
   message: string
 }
 

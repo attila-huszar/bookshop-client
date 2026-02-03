@@ -6,7 +6,6 @@ import {
   useElements,
   useStripe,
 } from '@stripe/react-stripe-js'
-import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { ROUTE } from '@/routes'
 import {
   cartClear,
@@ -19,13 +18,15 @@ import {
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getPaymentId } from '@/helpers'
 import { defaultCurrency, paymentSessionKey } from '@/constants'
+import { StripePaymentElementOptions } from '@/types'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
   const { order } = useAppSelector(orderSelector)
-  const [receiptEmail, setReceiptEmail] = useState(userData?.email ?? '')
+  const [guestEmail, setGuestEmail] = useState('')
+  const receiptEmail = userData?.email ?? guestEmail
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
@@ -70,15 +71,36 @@ export function CheckoutForm() {
     void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
+  const billingName = userData
+    ? `${userData.firstName ?? ''} ${userData.lastName ?? ''}`.trim() ||
+      undefined
+    : undefined
+
   const paymentElementOptions: StripePaymentElementOptions = {
-    layout: 'tabs',
+    layout: 'accordion',
     business: {
-      name: 'Book Shop',
+      name: 'Bookshop',
     },
     terms: {
       card: 'auto',
       googlePay: 'auto',
       paypal: 'auto',
+    },
+    defaultValues: {
+      billingDetails: {
+        email: receiptEmail,
+        name: billingName,
+        phone: userData?.phone,
+        address: userData?.address,
+      },
+    },
+    fields: {
+      billingDetails: {
+        email: userData?.email ? 'never' : 'auto',
+        name: userData?.email ? 'never' : 'auto',
+        phone: 'auto',
+        address: 'auto',
+      },
     },
   }
 
@@ -93,7 +115,7 @@ export function CheckoutForm() {
       {!userData?.email && (
         <LinkAuthenticationElement
           options={{ defaultValues: { email: receiptEmail } }}
-          onChange={(e) => setReceiptEmail(e.value.email)}
+          onChange={(e) => setGuestEmail(e.value.email)}
         />
       )}
       <PaymentElement id="payment-element" options={paymentElementOptions} />

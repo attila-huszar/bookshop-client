@@ -4,21 +4,22 @@ import Lottie from 'lottie-react'
 import { cartClear, orderClear, orderSelector } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
 import { paymentSessionKey } from '@/constants'
+import { PaymentIntentStatus } from '@/types'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 import logo from '@/assets/image/logo.png'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
-const successStatuses = ['succeeded', 'requires_capture']
-const warningStatuses = [
+const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
+const warningStatuses: PaymentIntentStatus[] = [
   'requires_payment_method',
   'requires_confirmation',
   'requires_action',
   'canceled',
 ]
 
-const getAnimation = (status: string) => {
+const getAnimation = (status: PaymentIntentStatus) => {
   if (successStatuses.includes(status)) return checkmarkAnim
   if (warningStatuses.includes(status)) return exclamationAnim
   return clockAnim

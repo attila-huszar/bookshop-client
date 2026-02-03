@@ -395,22 +395,6 @@ export const EditDialog: FC<Props> = ({
                       type="text"
                     />
                   </div>
-                  <div>
-                    <p>Payment Status</p>
-                    <FormikField
-                      name="paymentIntentStatus"
-                      placeholder="Payment Status"
-                      type="text"
-                    />
-                  </div>
-                  <div>
-                    <p>Order Status</p>
-                    <FormikField
-                      name="orderStatus"
-                      placeholder="Order Status"
-                      type="text"
-                    />
-                  </div>
                 </DefaultRow>
                 <DefaultRow>
                   <div>

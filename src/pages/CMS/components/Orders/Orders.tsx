@@ -57,7 +57,6 @@ export const Orders = () => {
             <th>ID</th>
             <th>PaymentID</th>
             <th>Payment Status</th>
-            <th>Order Status</th>
             <th>Name</th>
             <th>Email</th>
             <th>Address</th>
@@ -104,8 +103,7 @@ export const Orders = () => {
                     {order.paymentId}
                   </p>
                 </td>
-                <td>{order.paymentIntentStatus}</td>
-                <td>{order.orderStatus}</td>
+                <td>{order.paymentStatus}</td>
                 <td>
                   {[order.firstName, order.lastName].filter(Boolean).join(' ')}
                 </td>

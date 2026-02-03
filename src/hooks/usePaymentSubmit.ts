@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { SubmitEvent, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
@@ -13,7 +13,7 @@ type UsePaymentSubmitParams = {
 type UsePaymentSubmitReturn = {
   isLoading: boolean
   message: string | undefined
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>
+  handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
 }
 
 export function usePaymentSubmit({
@@ -28,7 +28,7 @@ export function usePaymentSubmit({
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
+    event: SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     event.preventDefault()
 

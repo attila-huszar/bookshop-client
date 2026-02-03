@@ -1,15 +1,10 @@
 import * as Yup from 'yup'
-import { OrderStatus } from '@/types'
 import {
   addressSchema,
   emailSchema,
   nameSchema,
   phoneSchema,
 } from './userSchemas'
-
-export const orderStatusSchema = Yup.string()
-  .oneOf(Object.values(OrderStatus), 'Invalid order status')
-  .required('Required')
 
 export const orderItemSchema = Yup.object().shape({
   id: Yup.number().integer().positive().required('Required'),
@@ -26,7 +21,6 @@ export const orderItemSchema = Yup.object().shape({
 })
 
 export const orderSchema = Yup.object().shape({
-  orderStatus: orderStatusSchema,
   firstName: nameSchema,
   lastName: nameSchema,
   email: emailSchema,

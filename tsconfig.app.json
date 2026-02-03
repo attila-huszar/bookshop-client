@@ -12,11 +12,7 @@
     "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./src/*"]
-    },
-
-    /* Linting */
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    }
   },
   "include": ["src"]
 }

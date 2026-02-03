@@ -1,4 +1,4 @@
-import type { Address } from '@stripe/stripe-js'
+import { StripeAddress } from './'
 
 export type User = {
   id: number
@@ -9,7 +9,7 @@ export type User = {
   email: string
   country: string
   phone: string
-  address: Address
+  address: StripeAddress
   avatar: string
 }
 

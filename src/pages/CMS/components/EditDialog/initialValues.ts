@@ -2,7 +2,6 @@ import {
   AuthorFormValues,
   BookFormValues,
   OrderFormValues,
-  OrderStatus,
   UserFormValues,
   UserRole,
 } from '@/types'
@@ -33,8 +32,7 @@ export const initialAuthorValues: AuthorFormValues = {
 
 export const initialOrderValues: OrderFormValues = {
   paymentId: '',
-  paymentIntentStatus: 'processing',
-  orderStatus: OrderStatus.Pending,
+  paymentStatus: 'processing',
   total: 0,
   currency: 'EUR',
   items: [],

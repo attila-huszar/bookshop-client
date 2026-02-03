@@ -1,4 +1,4 @@
-import { PaymentIntent } from '@stripe/stripe-js'
+import { PaymentIntentShipping, PaymentIntentStatus } from './'
 import type { CartLocalStorage } from './Cart'
 
 export enum OrderStatus {
@@ -11,15 +11,14 @@ export enum OrderStatus {
 export type Order = {
   id: number
   paymentId: string
-  paymentIntentStatus: PaymentIntent.Status
-  orderStatus: OrderStatus
+  paymentStatus: PaymentIntentStatus
   total: number
   currency: string
   items: OrderItem[]
-  firstName: string | null
-  lastName: string | null
-  email: string | null
-  shipping: PaymentIntent.Shipping | null
+  firstName: string
+  lastName: string
+  email: string
+  shipping: PaymentIntentShipping
 }
 
 export type OrderItem = {
@@ -41,18 +40,13 @@ export type OrderInStore = {
 
 export type OrderUpdate = Pick<
   Order,
-  | 'paymentIntentStatus'
-  | 'orderStatus'
-  | 'firstName'
-  | 'lastName'
-  | 'email'
-  | 'shipping'
+  'paymentStatus' | 'firstName' | 'lastName' | 'email' | 'shipping'
 >
 
 export type PaymentIntentResponse = {
   client_secret: string
   amount: number
-  status: PaymentIntent.Status
+  status: PaymentIntentStatus
 }
 
-export type OrderFormValues = Omit<Order, 'id'>
+export type OrderFormValues = Omit<Order, 'id' | 'createdAt' | 'updatedAt'>
