@@ -1,4 +1,9 @@
-import type { Order, OrderCreate, PaymentIntentResponse } from '@/types'
+import type {
+  Order,
+  PaymentIntentRequest,
+  PaymentIntentResponse,
+  PaymentSession,
+} from '@/types'
 import { baseRequest, PATH } from './'
 
 export const getPaymentIntent = async (
@@ -27,11 +32,10 @@ export const getOrder = async (paymentId: string): Promise<Order> => {
 }
 
 export const postOrder = async (
-  order: OrderCreate,
-): Promise<{ paymentSession: string; amount: number }> => {
-  const response = await baseRequest.post<{
-    paymentSession: string
-    amount: number
-  }>(PATH.orders.base, { json: order })
+  order: PaymentIntentRequest,
+): Promise<PaymentSession> => {
+  const response = await baseRequest.post<PaymentSession>(PATH.orders.base, {
+    json: order,
+  })
   return await response.json()
 }

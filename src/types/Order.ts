@@ -22,11 +22,6 @@ export type OrderItem = {
   quantity: number
 }
 
-export type OrderInStore = {
-  paymentSession: string
-  amount: number
-}
-
 export type OrderUpdate = Pick<
   Order,
   'paymentStatus' | 'firstName' | 'lastName' | 'email' | 'shipping'
@@ -42,4 +37,9 @@ export type PaymentIntentResponse = {
   client_secret: string
   amount: number
   status: PaymentIntentStatus
+}
+
+export type PaymentSession = {
+  paymentSession: string
+  amount: number
 }

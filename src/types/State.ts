@@ -6,7 +6,7 @@ import type {
   Filters,
   News,
   Order,
-  OrderInStore,
+  PaymentSession,
   User,
   UserWithMetadata,
 } from './'
@@ -58,7 +58,7 @@ export type CartState = {
 }
 
 export type OrderState = {
-  order: OrderInStore | null
+  order: PaymentSession | null
   orderIsLoading: boolean
   orderCreateError: string | null
   orderRetrieveError: string | null
