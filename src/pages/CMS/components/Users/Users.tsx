@@ -103,7 +103,8 @@ export const Users = () => {
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>
-                  {user.address && Object.values(user.address).join(', ')}
+                  {user.address &&
+                    Object.values(user.address).filter(Boolean).join(', ')}
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   {user.avatar && (

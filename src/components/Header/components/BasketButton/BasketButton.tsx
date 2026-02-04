@@ -3,7 +3,7 @@ import { ROUTE } from '@/routes'
 import { cartSelector, orderSelector } from '@/store'
 import { Button } from '@/components'
 import { useAppSelector } from '@/hooks'
-import { CartLocalStorage } from '@/types'
+import { CartItem } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
@@ -17,7 +17,7 @@ export function BasketButton() {
     if (!cart) return 0
 
     try {
-      const cartItems = JSON.parse(cart) as CartLocalStorage[]
+      const cartItems = JSON.parse(cart) as CartItem[]
       return cartItems.reduce((sum, item) => sum + item.quantity, 0)
     } catch {
       return 0

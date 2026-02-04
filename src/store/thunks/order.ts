@@ -1,12 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { deletePaymentIntent, getPaymentIntent, postOrder } from '@/api'
 import { log } from '@/services'
-import { OrderCreate } from '@/types'
+import { PaymentIntentRequest } from '@/types'
 
 export const orderCreate = createAsyncThunk(
   'order/orderCreate',
   async (
-    order: OrderCreate,
+    order: PaymentIntentRequest,
   ): Promise<{ paymentSession: string; amount: number }> => {
     try {
       const { paymentSession, amount } = await postOrder(order)

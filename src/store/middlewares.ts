@@ -1,6 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import { paymentSessionKey } from '@/constants'
-import type { Cart, CartLocalStorage } from '@/types'
+import type { Cart, CartItem } from '@/types'
 import {
   cartAdd,
   cartClear,
@@ -31,11 +31,11 @@ cartToLocalStorageTyped({
   ),
   effect: (action) => {
     if (action.payload) {
-      const cartFromLocalStorage: CartLocalStorage[] = JSON.parse(
+      const cartFromLocalStorage: CartItem[] = JSON.parse(
         localStorage.getItem('cart') ?? '[]',
-      ) as CartLocalStorage[]
+      ) as CartItem[]
 
-      let cartToLocalStorage: CartLocalStorage[] = []
+      let cartToLocalStorage: CartItem[] = []
 
       const payload = action.payload as Cart
       const { cartItem, newQuantity } = payload as unknown as {

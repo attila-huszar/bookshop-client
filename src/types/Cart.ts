@@ -7,7 +7,7 @@ export type Cart = {
   imgUrl: string
 }
 
-export type CartLocalStorage = {
+export type CartItem = {
   id: number
   quantity: number
 }

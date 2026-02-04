@@ -1,12 +1,5 @@
 import { PaymentIntentShipping, PaymentIntentStatus } from './'
-import type { CartLocalStorage } from './Cart'
-
-export enum OrderStatus {
-  Pending = 'PENDING',
-  Paid = 'PAID',
-  Captured = 'CAPTURED',
-  Canceled = 'CANCELED',
-}
+import type { CartItem } from './Cart'
 
 export type Order = {
   id: number
@@ -29,10 +22,6 @@ export type OrderItem = {
   quantity: number
 }
 
-export type OrderCreate = {
-  items: CartLocalStorage[]
-}
-
 export type OrderInStore = {
   paymentSession: string
   amount: number
@@ -43,10 +32,14 @@ export type OrderUpdate = Pick<
   'paymentStatus' | 'firstName' | 'lastName' | 'email' | 'shipping'
 >
 
+export type OrderFormValues = Omit<Order, 'id'>
+
+export type PaymentIntentRequest = {
+  items: CartItem[]
+}
+
 export type PaymentIntentResponse = {
   client_secret: string
   amount: number
   status: PaymentIntentStatus
 }
-
-export type OrderFormValues = Omit<Order, 'id' | 'createdAt' | 'updatedAt'>

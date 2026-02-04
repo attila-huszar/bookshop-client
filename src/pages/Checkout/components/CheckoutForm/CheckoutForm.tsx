@@ -71,10 +71,7 @@ export function CheckoutForm() {
     void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
-  const billingName = userData
-    ? `${userData.firstName ?? ''} ${userData.lastName ?? ''}`.trim() ||
-      undefined
-    : undefined
+  const name = userData ? `${userData.firstName} ${userData.lastName}` : ''
 
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: 'accordion',
@@ -89,7 +86,7 @@ export function CheckoutForm() {
     defaultValues: {
       billingDetails: {
         email: receiptEmail,
-        name: billingName,
+        name,
         phone: userData?.phone,
         address: userData?.address,
       },
@@ -97,7 +94,7 @@ export function CheckoutForm() {
     fields: {
       billingDetails: {
         email: userData?.email ? 'never' : 'auto',
-        name: userData?.email ? 'never' : 'auto',
+        name: 'auto',
         phone: 'auto',
         address: 'auto',
       },
