@@ -1,21 +1,25 @@
-import { fetchCartItems, orderRetrieve, store } from '@/store'
-import { log } from '@/services'
+import { redirect } from 'react-router'
+import { ROUTE } from '@/routes'
+import { fetchCartItems, store } from '@/store'
+import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
+import { cartKey, paymentSessionKey } from '@/constants'
 import type { CartItem } from '@/types'
 
 export const cartLoader = () => {
-  const cart = localStorage.getItem('cart')
-  if (cart) {
-    try {
-      const parsed = JSON.parse(cart) as CartItem[]
-      const cartItems = Array.isArray(parsed) ? parsed : []
-      void store.dispatch(fetchCartItems(cartItems))
-    } catch (error) {
-      void log.error('Failed to parse cart from localStorage', { error })
-    }
+  const state = store.getState()
+  const activeSession = state.payment?.payment?.session
+  if (activeSession) {
+    return redirect(`/${ROUTE.CHECKOUT}`)
   }
 
-  const paymentId = localStorage.getItem('paymentId')
-  if (paymentId) {
-    void store.dispatch(orderRetrieve(paymentId))
+  const paymentSession = sessionStorageAdapter.get<string>(paymentSessionKey)
+  if (paymentSession) {
+    return redirect(`/${ROUTE.CHECKOUT}`)
+  }
+
+  const cart = localStorageAdapter.get<CartItem[]>(cartKey)
+
+  if (cart && Array.isArray(cart)) {
+    void store.dispatch(fetchCartItems(cart))
   }
 }

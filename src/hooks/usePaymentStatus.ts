@@ -16,7 +16,7 @@ const getUnknownErrorMessage = (error: unknown): string => {
   return 'Unknown error'
 }
 
-export function usePaymentStatus(paymentSession: string | null) {
+export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
   const { getMessage } = useMessages()
 
@@ -26,14 +26,14 @@ export function usePaymentStatus(paymentSession: string | null) {
   })
 
   useEffect(() => {
-    if (!stripe || !paymentSession) return
+    if (!stripe || !session) return
 
     const timeoutIds: ReturnType<typeof setTimeout>[] = []
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       try {
         const { paymentIntent, error } =
-          await stripe.retrievePaymentIntent(paymentSession)
+          await stripe.retrievePaymentIntent(session)
 
         if (error) {
           throw new Error(error.message ?? 'Failed to retrieve payment intent')
@@ -74,7 +74,7 @@ export function usePaymentStatus(paymentSession: string | null) {
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [paymentSession, stripe, getMessage])
+  }, [session, stripe, getMessage])
 
   return { status }
 }

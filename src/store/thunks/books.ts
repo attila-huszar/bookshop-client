@@ -8,8 +8,8 @@ import {
   getBookSearchOptions,
 } from '@/api'
 import type { RootState } from '@/store'
-import { generateUniqueRndNums, getFilteredBooks } from '@/helpers'
 import type { Book, Filters } from '@/types'
+import { generateUniqueRndNums, getFilteredBooks } from '../utils'
 
 export const fetchBooks = createAsyncThunk<
   { books: Book[]; total: number },

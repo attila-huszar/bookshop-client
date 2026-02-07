@@ -42,6 +42,12 @@ export function usePaymentSubmit({
     setIsLoading(true)
     setMessage(undefined)
 
+    if (!receiptEmail) {
+      setMessage('Please enter your email address to proceed with payment.')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const addressElement = elements.getElement('address')
       const addressData = addressElement
@@ -73,6 +79,14 @@ export function usePaymentSubmit({
         elements,
         confirmParams: {
           receipt_email: receiptEmail,
+          payment_method_data: {
+            billing_details: {
+              email: receiptEmail,
+              name: shipping?.name,
+              phone: shipping?.phone,
+              address: shipping?.address ?? undefined,
+            },
+          },
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
           shipping,
         },

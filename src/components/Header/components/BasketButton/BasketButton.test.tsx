@@ -32,7 +32,7 @@ describe('BasketButton', () => {
             },
           ],
         },
-        order: { order: null },
+        payment: { payment: null },
       }
       return selector(mockState as never)
     })
@@ -55,7 +55,7 @@ describe('BasketButton', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: { cartItems: [] },
-        order: { order: null },
+        payment: { payment: null },
       }
       return selector(mockState as never)
     })
@@ -69,7 +69,7 @@ describe('BasketButton', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: { cartItems: [] },
-        order: { order: { paymentSession: 'test' } },
+        payment: { payment: { session: 'test' } },
       }
       return selector(mockState as never)
     })

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   LinkAuthenticationElement,
@@ -9,22 +9,21 @@ import {
 import { ROUTE } from '@/routes'
 import {
   cartClear,
-  orderCancel,
-  orderClear,
-  orderRetrieve,
-  orderSelector,
+  paymentCancel,
+  paymentClear,
+  paymentSelector,
   userSelector,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getPaymentId } from '@/helpers'
-import { defaultCurrency, paymentSessionKey } from '@/constants'
+import { defaultCurrency } from '@/constants'
 import { StripePaymentElementOptions } from '@/types'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { order } = useAppSelector(orderSelector)
+  const { payment } = useAppSelector(paymentSelector)
   const [guestEmail, setGuestEmail] = useState('')
   const receiptEmail = userData?.email ?? guestEmail
   const navigate = useNavigate()
@@ -34,15 +33,7 @@ export function CheckoutForm() {
     receiptEmail,
   })
 
-  useEffect(() => {
-    const paymentSession = sessionStorage.getItem(paymentSessionKey)
-    if (paymentSession && !order) {
-      const paymentId = getPaymentId(paymentSession)
-      void dispatch(orderRetrieve(paymentId))
-    }
-  }, [order, dispatch])
-
-  if (!order) {
+  if (!payment) {
     return (
       <div>
         <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
@@ -57,21 +48,32 @@ export function CheckoutForm() {
     )
   }
 
-  const paymentId = getPaymentId(order.paymentSession)
+  const paymentId = getPaymentId(payment.session)
 
   const orderForm = {
     num: paymentId?.slice(-6).toUpperCase(),
-    amount: (order.amount / 100).toFixed(2),
+    amount: (payment.amount / 100).toFixed(2),
   }
 
   const handleCancel = async () => {
-    await dispatch(orderCancel(paymentId))
-    dispatch(orderClear())
+    await dispatch(paymentCancel(paymentId))
+    dispatch(paymentClear())
     dispatch(cartClear())
     void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const name = userData ? `${userData.firstName} ${userData.lastName}` : ''
+
+  const address = userData?.address
+    ? {
+        line1: userData.address.line1 ?? '',
+        line2: userData.address.line2 ?? '',
+        city: userData.address.city ?? '',
+        state: userData.address.state ?? '',
+        postal_code: userData.address.postal_code ?? '',
+        country: userData.address.country ?? '',
+      }
+    : undefined
 
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: 'accordion',
@@ -87,8 +89,8 @@ export function CheckoutForm() {
       billingDetails: {
         email: receiptEmail,
         name,
+        address,
         phone: userData?.phone,
-        address: userData?.address,
       },
     },
     fields: {
@@ -99,6 +101,7 @@ export function CheckoutForm() {
         address: 'auto',
       },
     },
+    readOnly: !!userData?.email,
   }
 
   return (

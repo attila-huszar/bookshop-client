@@ -18,7 +18,7 @@ export const userSelector = (state: RootState) => state.user
 
 export const cartSelector = (state: RootState) => state.cart
 
-export const orderSelector = (state: RootState) => state.order
+export const paymentSelector = (state: RootState) => state.payment
 
 export const cmsBooksSelector = createSelector(
   [

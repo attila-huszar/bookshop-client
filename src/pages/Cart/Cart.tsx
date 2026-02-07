@@ -5,13 +5,17 @@ import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
-  orderClear,
-  orderCreate,
-  orderSelector,
+  paymentClear,
+  paymentCreate,
+  paymentSelector,
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { calcSubtotalOrDiscount, enforceMinMax } from '@/helpers'
+import {
+  calcSubtotalOrDiscount,
+  enforceMinMax,
+  sessionStorageAdapter,
+} from '@/helpers'
 import { paymentSessionKey } from '@/constants'
 import type { Cart } from '@/types'
 import {
@@ -49,35 +53,32 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
-  const { order, orderIsLoading, orderCreateError } =
-    useAppSelector(orderSelector)
+  const { payment, paymentIsLoading, paymentCreateError } =
+    useAppSelector(paymentSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const paymentSession =
-      order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
-
-    if (paymentSession) {
+    if (payment?.session) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.paymentSession, navigate])
+  }, [payment?.session, navigate])
 
   useEffect(() => {
-    if (orderIsLoading) {
+    if (paymentIsLoading) {
       ref.current?.showModal()
     } else {
       ref.current?.close()
     }
-  }, [orderIsLoading])
+  }, [paymentIsLoading])
 
   useEffect(() => {
-    if (orderCreateError) {
-      toast.error(orderCreateError, {
-        id: 'order-error',
+    if (paymentCreateError) {
+      toast.error(paymentCreateError, {
+        id: 'payment-error',
       })
     }
-  }, [orderCreateError])
+  }, [paymentCreateError])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -107,8 +108,9 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartItems.length && !orderIsLoading) {
-      const existingSession = sessionStorage.getItem(paymentSessionKey)
+    if (cartItems.length && !paymentIsLoading) {
+      const existingSession =
+        sessionStorageAdapter.get<string>(paymentSessionKey)
 
       if (existingSession) {
         void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
@@ -120,14 +122,14 @@ export function Cart() {
           })),
         }
 
-        void dispatch(orderCreate(orderRequest))
+        void dispatch(paymentCreate(orderRequest))
       }
     }
   }
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(orderClear())
+    dispatch(paymentClear())
   }
 
   const navigateToBooks = () => {
@@ -237,7 +239,7 @@ export function Cart() {
         <ButtonWrapper>
           <Button
             onClick={navigateToBooks}
-            disabled={orderIsLoading}
+            disabled={paymentIsLoading}
             $size="lg"
             $textSize="lg"
             $inverted>
@@ -246,7 +248,7 @@ export function Cart() {
           <IconButton
             icon={<BinIcon />}
             onClick={handleCartClear}
-            disabled={orderIsLoading}
+            disabled={paymentIsLoading}
             title="Reset Cart"
             $size="lg"
             $color="var(--mid-grey)"
@@ -254,8 +256,8 @@ export function Cart() {
           />
           <Button
             onClick={handleCheckout}
-            disabled={orderIsLoading}
-            $icon={orderIsLoading ? <SpinnerIcon /> : <CartIcon />}
+            disabled={paymentIsLoading}
+            $icon={paymentIsLoading ? <SpinnerIcon /> : <CartIcon />}
             $size="lg"
             $textSize="lg"
             $shadow>

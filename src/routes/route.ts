@@ -7,7 +7,6 @@ export const ROUTE = {
   ACCOUNT: 'account',
   CART: 'cart',
   CHECKOUT: 'checkout',
-  ORDERS: 'orders',
   VERIFICATION: 'verification',
   PASSWORD_RESET: 'password-reset',
   CMS: 'cms',

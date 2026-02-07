@@ -4,7 +4,7 @@ const P = {
   news: 'news',
   searchOptions: 'search_opts',
   users: 'users',
-  orders: 'orders',
+  payments: 'payments',
   cms: 'cms',
   logs: 'logs',
 } as const
@@ -14,6 +14,7 @@ export const PATH = {
   authors: P.authors,
   news: P.news,
   searchOptions: P.searchOptions,
+  payments: P.payments,
   users: {
     register: `${P.users}/register`,
     login: `${P.users}/login`,
@@ -28,12 +29,8 @@ export const PATH = {
     country: `${P.users}/country`,
     countryCodes: `${P.users}/country-codes`,
   },
-  orders: {
-    base: P.orders,
-    paymentIntents: `${P.orders}/payment-intents`,
-  },
   cms: {
-    orders: `${P.cms}/${P.orders}`,
+    orders: `${P.cms}/${P.payments}`,
     users: `${P.cms}/${P.users}`,
     books: `${P.cms}/${P.books}`,
     authors: `${P.cms}/${P.authors}`,

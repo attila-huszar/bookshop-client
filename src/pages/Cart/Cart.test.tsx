@@ -5,13 +5,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { orderCreate } from '@/store'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useCart,
-  useLocalStorage,
-} from '@/hooks'
+import { paymentCreate } from '@/store'
+import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { sessionStorageAdapter } from '@/helpers'
+import { paymentSessionKey } from '@/constants'
 import type { Cart as CartType } from '@/types'
 import { Cart } from './Cart'
 
@@ -20,6 +17,7 @@ vi.mock('@/store', async (importOriginal) => {
   return {
     ...actual,
     orderCreate: vi.fn(),
+    paymentCreate: vi.fn(),
   }
 })
 
@@ -29,12 +27,12 @@ const mockCartState = {
   cartError: null,
 }
 
-const mockOrderState = {
-  order: null,
-  orderIsLoading: false,
-  orderCreateError: null,
-  orderRetrieveError: null,
-  orderCancelError: null,
+const mockPaymentState = {
+  payment: null,
+  paymentIsLoading: false,
+  paymentCreateError: null,
+  paymentRetrieveError: null,
+  paymentCancelError: null,
 }
 
 const mockUserState = {
@@ -63,6 +61,8 @@ describe('Cart component', () => {
   ]
 
   beforeEach(() => {
+    sessionStorageAdapter.remove(paymentSessionKey)
+
     vi.mocked(useCart).mockReturnValue({
       cartItems: mockCartItems,
       addQuantity: vi.fn(),
@@ -75,7 +75,7 @@ describe('Cart component', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: mockCartState,
-        order: mockOrderState,
+        payment: mockPaymentState,
         user: mockUserState,
       }
       return selector(mockState as Parameters<typeof selector>[0])
@@ -84,12 +84,6 @@ describe('Cart component', () => {
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
 
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-
-    vi.mocked(useLocalStorage).mockReturnValue({
-      getFromLocalStorage: vi.fn().mockReturnValue(null),
-      setToLocalStorage: vi.fn(),
-      removeFromLocalStorage: vi.fn(),
-    })
   })
 
   afterEach(() => {
@@ -100,7 +94,7 @@ describe('Cart component', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: { ...mockCartState, cartIsLoading: true },
-        order: mockOrderState,
+        payment: mockPaymentState,
         user: mockUserState,
       }
       return selector(mockState as Parameters<typeof selector>[0])
@@ -164,7 +158,10 @@ describe('Cart component', () => {
     expect(mockRemoveQuantity).toHaveBeenCalledWith(mockCartItems[0])
   })
 
-  it('should handle checkout and dispatch order creation', async () => {
+  it('should handle checkout and dispatch payment creation', async () => {
+    const mockThunk = vi.fn()
+    vi.mocked(paymentCreate).mockReturnValue(mockThunk)
+
     render(<Cart />, { wrapper: Providers })
 
     const checkoutButton = screen.getByRole('button', { name: /checkout/i })
@@ -172,21 +169,39 @@ describe('Cart component', () => {
     await userEvent.click(checkoutButton)
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(
-        orderCreate({
-          items: [{ id: 1, quantity: 2 }],
-        }),
-      )
+      expect(paymentCreate).toHaveBeenCalledWith({
+        items: [{ id: 1, quantity: 2 }],
+      })
+      expect(mockDispatch).toHaveBeenCalledWith(mockThunk)
     })
   })
 
-  it('should navigate to checkout on successful order creation', async () => {
+  it('should display an error toast on payment error', async () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
       const mockState = {
         cart: mockCartState,
-        order: {
-          ...mockOrderState,
-          order: { paymentSession: 'paymentSession' },
+        payment: { ...mockPaymentState, paymentCreateError: 'Payment failed' },
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Payment failed', {
+        id: 'payment-error',
+      })
+    })
+  })
+
+  it('should redirect to checkout when payment session exists', () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: {
+          ...mockPaymentState,
+          payment: { session: 'session_123', amount: 4200 },
         },
         user: mockUserState,
       }
@@ -195,49 +210,8 @@ describe('Cart component', () => {
 
     render(<Cart />, { wrapper: Providers })
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
-        replace: true,
-      })
-    })
-  })
-
-  it('should navigate to checkout when paymentSession exists in sessionStorage', async () => {
-    const mockSessionStorage = {
-      getItem: vi.fn().mockReturnValue('secret_from_storage'),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-    }
-    Object.defineProperty(window, 'sessionStorage', {
-      value: mockSessionStorage,
-      writable: true,
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
-        replace: true,
-      })
-    })
-  })
-
-  it('should display an error toast on order error', async () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
-        cart: mockCartState,
-        order: { ...mockOrderState, orderCreateError: 'Order failed' },
-        user: mockUserState,
-      }
-      return selector(mockState as Parameters<typeof selector>[0])
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Order failed', {
-        id: 'order-error',
-      })
+    expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
+      replace: true,
     })
   })
 })

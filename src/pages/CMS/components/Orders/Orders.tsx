@@ -109,7 +109,7 @@ export const Orders = () => {
                 </td>
                 <td>{order.email}</td>
                 <td>
-                  {order.shipping.address &&
+                  {order.shipping?.address &&
                     Object.values(order.shipping.address)
                       .filter(Boolean)
                       .join(', ')}

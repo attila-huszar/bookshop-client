@@ -8,10 +8,10 @@ export type Order = {
   total: number
   currency: string
   items: OrderItem[]
-  firstName: string
-  lastName: string
-  email: string
-  shipping: PaymentIntentShipping
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  shipping: PaymentIntentShipping | null
 }
 
 export type OrderItem = {
@@ -40,6 +40,6 @@ export type PaymentIntentResponse = {
 }
 
 export type PaymentSession = {
-  paymentSession: string
+  session: string
   amount: number
 }

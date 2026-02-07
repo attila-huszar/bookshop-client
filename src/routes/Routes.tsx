@@ -12,6 +12,7 @@ import { Alert, Loading } from '@/components'
 import {
   authLoader,
   cartLoader,
+  checkoutLoader,
   cmsLoader,
   landingPageLoader,
   productLoader,
@@ -153,6 +154,7 @@ const routes: RouteObject[] = [
         <Checkout />
       </Suspense>
     ),
+    loader: checkoutLoader,
   },
   {
     element: <ProtectedRoute />,
