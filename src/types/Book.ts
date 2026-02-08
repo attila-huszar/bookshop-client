@@ -15,3 +15,5 @@ export type Book = {
 }
 
 export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }
+
+export type BookUpdate = { id: number } & Partial<Omit<Book, 'id'>>

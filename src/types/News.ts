@@ -4,3 +4,5 @@ export type News = {
   content: string
   img: string
 }
+
+export type NewsUpdate = { id: number } & Partial<Omit<News, 'id'>>

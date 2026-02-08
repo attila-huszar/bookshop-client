@@ -12,9 +12,9 @@ export type Order = {
   lastName: string | null
   email: string | null
   shipping: PaymentIntentShipping | null
-  paidAt: Date | null
-  createdAt: Date
-  updatedAt: Date
+  paidAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export type OrderItem = {
@@ -25,6 +25,10 @@ export type OrderItem = {
   discount: number
   quantity: number
 }
+
+export type OrderUpdate = { paymentId: string } & Partial<
+  Omit<Order, 'paymentId' | 'id' | 'createdAt' | 'updatedAt' | 'paidAt'>
+>
 
 export type PaymentIntentRequest = {
   items: MinimalCart[]

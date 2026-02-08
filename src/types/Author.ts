@@ -7,3 +7,5 @@ export type Author = {
   homeland: string
   biography: string
 }
+
+export type AuthorUpdate = { id: number } & Partial<Omit<Author, 'id'>>

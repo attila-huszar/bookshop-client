@@ -1,3 +1,4 @@
+import { defaultCountry } from '@/constants'
 import {
   Author,
   BookWithAuthorId,
@@ -37,7 +38,7 @@ export const initialOrderValues: Order = {
   paymentId: '',
   paymentStatus: 'processing',
   total: 0,
-  currency: 'EUR',
+  currency: defaultCountry,
   items: [],
   firstName: '',
   lastName: '',
@@ -55,8 +56,8 @@ export const initialOrderValues: Order = {
     },
   },
   paidAt: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: '',
+  updatedAt: '',
 }
 
 export const initialUserValues: UserWithMetadata = {

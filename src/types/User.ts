@@ -51,8 +51,10 @@ export type LoginResponse = {
   firstName: string
 }
 
-export type UserUpdate = Partial<User> & { password?: string }
+export type UserUpdate = Partial<Omit<User, 'uuid'>> & {
+  password?: string
+}
 
-export type UserFormValues = Omit<User, 'id' | 'uuid'>
+export type UserFormValues = Omit<User, 'uuid'>
 
 export type CountryData = Record<string, string>

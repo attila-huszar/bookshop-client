@@ -1,4 +1,13 @@
-import { Author, BookWithAuthorId, Order, UserWithMetadata } from '@/types'
+import {
+  Author,
+  AuthorUpdate,
+  BookUpdate,
+  BookWithAuthorId,
+  Order,
+  OrderUpdate,
+  UserUpdate,
+  UserWithMetadata,
+} from '@/types'
 import { authRequest, PATH } from './'
 
 export const getBooksCMS = async (): Promise<BookWithAuthorId[]> => {
@@ -88,7 +97,7 @@ export const postUserCMS = async (
 }
 
 export const patchBookCMS = async (
-  book: BookWithAuthorId,
+  book: BookUpdate,
 ): Promise<BookWithAuthorId> => {
   const response = await authRequest.patch(PATH.cms.books, {
     json: book,
@@ -100,7 +109,7 @@ export const patchBookCMS = async (
   return await response.json()
 }
 
-export const patchAuthorCMS = async (author: Author): Promise<Author> => {
+export const patchAuthorCMS = async (author: AuthorUpdate): Promise<Author> => {
   const response = await authRequest.patch(PATH.cms.authors, {
     json: author,
   })
@@ -111,7 +120,7 @@ export const patchAuthorCMS = async (author: Author): Promise<Author> => {
   return await response.json()
 }
 
-export const patchOrderCMS = async (order: Order): Promise<Order> => {
+export const patchOrderCMS = async (order: OrderUpdate): Promise<Order> => {
   const response = await authRequest.patch(PATH.cms.orders, {
     json: order,
   })
@@ -123,7 +132,7 @@ export const patchOrderCMS = async (order: Order): Promise<Order> => {
 }
 
 export const patchUserCMS = async (
-  user: UserWithMetadata,
+  user: UserUpdate,
 ): Promise<UserWithMetadata> => {
   const response = await authRequest.patch(PATH.cms.users, {
     json: user,

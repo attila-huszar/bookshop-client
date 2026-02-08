@@ -127,3 +127,38 @@ export const ItemBlock = styled.div`
     border-bottom: 1px solid var(--light-grey);
   }
 `
+
+export const SectionHeader = styled.h3`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #555;
+  margin: 1rem 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--light-grey);
+`
+
+export const MetadataBlock = styled.div`
+  padding: 0.75rem;
+  background: var(--whitesmoke);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+
+  > div {
+    > p {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 0.25rem;
+    }
+
+    > span {
+      font-size: 0.875rem;
+      color: var(--black);
+      word-break: break-all;
+    }
+  }
+`

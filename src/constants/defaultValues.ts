@@ -3,6 +3,7 @@ import type { Filters } from '@/types'
 export const defaultCountry = 'hu'
 export const defaultCurrency = 'USD'
 export const defaultCurrencySymbol = '$'
+export const defaultLocale = 'hu-HU'
 
 export const maxOrderItems = 100
 

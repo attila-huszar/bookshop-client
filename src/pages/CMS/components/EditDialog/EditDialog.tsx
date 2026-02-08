@@ -15,6 +15,7 @@ import {
 import { Button, FormikField, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import { log } from '@/services'
+import { formatDate, formatPaymentStatus } from '@/helpers'
 import {
   authorSchema,
   bookSchema,
@@ -24,11 +25,14 @@ import {
 } from '@/validation'
 import {
   Author,
+  AuthorUpdate,
+  BookUpdate,
   BookWithAuthorId,
   Order,
   SelectContext,
   User,
   UserFormValues,
+  UserUpdate,
   UserWithMetadata,
 } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
@@ -39,6 +43,8 @@ import {
   GenreRow,
   ItemBlock,
   ItemRow,
+  MetadataBlock,
+  SectionHeader,
   SettingsRow,
   StyledEditDialog,
   TitleRow,
@@ -143,22 +149,26 @@ export const EditDialog: FC<Props> = ({
 
   const actionMap = {
     books: {
-      action: editedItem ? updateBook : addBook,
+      addAction: addBook,
+      updateAction: updateBook,
       success: `Book ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} book`,
     },
     authors: {
-      action: editedItem ? updateAuthor : addAuthor,
+      addAction: addAuthor,
+      updateAction: updateAuthor,
       success: `Author ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} author`,
     },
     orders: {
-      action: editedItem ? updateOrder : addOrder,
+      addAction: addOrder,
+      updateAction: updateOrder,
       success: `Order ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} order`,
     },
     users: {
-      action: editedItem ? updateUser : addUser,
+      addAction: addUser,
+      updateAction: updateUser,
       success: `User ${editedItem ? 'updated' : 'added'} successfully`,
       error: `Failed to ${editedItem ? 'update' : 'add'} user`,
     },
@@ -181,27 +191,64 @@ export const EditDialog: FC<Props> = ({
 
       switch (activeTab) {
         case 'books': {
-          result = await dispatch(
-            (config.action as typeof addBook)(values as BookWithAuthorId),
-          )
+          if (editedItem) {
+            result = await dispatch(
+              (config.updateAction as typeof updateBook)(values as BookUpdate),
+            )
+          } else {
+            result = await dispatch(
+              (config.addAction as typeof addBook)(
+                values as Omit<BookWithAuthorId, 'id'>,
+              ),
+            )
+          }
           break
         }
         case 'authors': {
-          result = await dispatch(
-            (config.action as typeof addAuthor)(values as Author),
-          )
+          if (editedItem) {
+            result = await dispatch(
+              (config.updateAction as typeof updateAuthor)(
+                values as AuthorUpdate,
+              ),
+            )
+          } else {
+            result = await dispatch(
+              (config.addAction as typeof addAuthor)(
+                values as Omit<Author, 'id'>,
+              ),
+            )
+          }
           break
         }
         case 'orders': {
-          result = await dispatch(
-            (config.action as typeof addOrder)(values as Order),
-          )
+          if (editedItem) {
+            const { createdAt, updatedAt, paidAt, ...orderValues } =
+              values as Order
+
+            result = await dispatch(
+              (config.updateAction as typeof updateOrder)(orderValues),
+            )
+          } else {
+            result = await dispatch(
+              (config.addAction as typeof addOrder)(
+                values as Omit<Order, 'id'>,
+              ),
+            )
+          }
           break
         }
         case 'users': {
-          result = await dispatch(
-            (config.action as typeof addUser)(values as UserWithMetadata),
-          )
+          if (editedItem) {
+            result = await dispatch(
+              (config.updateAction as typeof updateUser)(values as UserUpdate),
+            )
+          } else {
+            result = await dispatch(
+              (config.addAction as typeof addUser)(
+                values as Omit<UserWithMetadata, 'id'>,
+              ),
+            )
+          }
           break
         }
         default:
@@ -371,7 +418,8 @@ export const EditDialog: FC<Props> = ({
 
   const renderForm = () => {
     switch (activeTab) {
-      case 'orders':
+      case 'orders': {
+        const orderItem = editedItem as Order
         return (
           <Formik
             key={activeTab}
@@ -380,6 +428,30 @@ export const EditDialog: FC<Props> = ({
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
+                {editedItem && (
+                  <>
+                    <SectionHeader>Order Information</SectionHeader>
+                    <MetadataBlock>
+                      <div>
+                        <p>Order ID</p>
+                        <span>{orderItem.id}</span>
+                      </div>
+                      <div>
+                        <p>Created At</p>
+                        <span>{formatDate(orderItem.createdAt)}</span>
+                      </div>
+                      <div>
+                        <p>Updated At</p>
+                        <span>{formatDate(orderItem.updatedAt)}</span>
+                      </div>
+                      <div>
+                        <p>Paid At</p>
+                        <span>{formatDate(orderItem.paidAt)}</span>
+                      </div>
+                    </MetadataBlock>
+                  </>
+                )}
+                <SectionHeader>Payment Details</SectionHeader>
                 <DefaultRow>
                   <div>
                     <p>Payment ID</p>
@@ -389,7 +461,36 @@ export const EditDialog: FC<Props> = ({
                       type="text"
                     />
                   </div>
+                  <div>
+                    <p>Payment Status</p>
+                    <FormikField
+                      name="paymentStatus"
+                      placeholder="Payment Status"
+                      type="text"
+                      value={formatPaymentStatus(orderItem.paymentStatus)}
+                      readOnly
+                    />
+                  </div>
                 </DefaultRow>
+                <DefaultRow>
+                  <div>
+                    <p>Total</p>
+                    <FormikField
+                      name="total"
+                      placeholder="Total"
+                      type="number"
+                    />
+                  </div>
+                  <div>
+                    <p>Currency</p>
+                    <FormikField
+                      name="currency"
+                      placeholder="Currency"
+                      type="text"
+                    />
+                  </div>
+                </DefaultRow>
+                <SectionHeader>Customer Information</SectionHeader>
                 <DefaultRow>
                   <div>
                     <p>First Name</p>
@@ -422,23 +523,16 @@ export const EditDialog: FC<Props> = ({
                     <FormikField name="phone" placeholder="Phone" type="text" />
                   </div>
                 </DefaultRow>
+                <SectionHeader>Shipping Address</SectionHeader>
                 {renderAddressBlock()}
+                <SectionHeader>Order Items</SectionHeader>
                 {renderItemBlock()}
-                <DefaultRow>
-                  <div>
-                    <p>Total</p>
-                    <FormikField
-                      name="total"
-                      placeholder="Total"
-                      type="number"
-                    />
-                  </div>
-                </DefaultRow>
                 {renderButtons({ isSubmitting })}
               </Form>
             )}
           </Formik>
         )
+      }
       case 'books':
         return (
           <Formik

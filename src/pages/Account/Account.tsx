@@ -16,7 +16,7 @@ import {
   addressSchema,
   validateImageFile,
 } from '@/validation'
-import type { User } from '@/types'
+import type { StripeAddress, UserUpdate } from '@/types'
 import { EditIcon } from '@/assets/svg'
 import {
   Address,
@@ -32,22 +32,32 @@ import {
 
 export function Account() {
   const { userData, userIsUpdating } = useAppSelector(userSelector)
-  const [editingBasicInfo, setEditingBasicInfo] = useState(false)
-  const [editingAddressInfo, setEditingAddressInfo] = useState(false)
+  const [editingUserInfo, setEditingUserInfo] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(false)
   const inputFile = useRef<HTMLInputElement>(null)
   const passwordDialog = useRef<HTMLDialogElement>(null)
   const dispatch = useAppDispatch()
 
-  const handleBasicInfoSubmit = (values: Partial<User>) => {
-    void dispatch(updateUserProfile({ ...values }))
+  const handleUserInfoSubmit = (values: UserUpdate) => {
+    void dispatch(updateUserProfile(values))
   }
 
-  const handleAddressInfoSubmit = (values: User['address']) => {
-    void dispatch(updateUserProfile({ address: values }))
+  const handleAddressSubmit = (values: StripeAddress) => {
+    const updateData: UserUpdate = {
+      address: {
+        line1: values.line1,
+        line2: values.line2,
+        city: values.city,
+        state: values.state,
+        postal_code: values.postal_code,
+        country: values.country,
+      },
+    }
+    void dispatch(updateUserProfile(updateData))
   }
 
-  const handleBasicInfoReset = () => setEditingBasicInfo(false)
-  const handleAddressInfoReset = () => setEditingAddressInfo(false)
+  const handleUserInfoReset = () => setEditingUserInfo(false)
+  const handleAddressReset = () => setEditingAddress(false)
   const handleAvatarClick = () => inputFile.current?.click()
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -140,8 +150,8 @@ export function Account() {
                   }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
-                  onSubmit={handleBasicInfoSubmit}
-                  onReset={handleBasicInfoReset}>
+                  onSubmit={handleUserInfoSubmit}
+                  onReset={handleUserInfoReset}>
                   <Form>
                     <GeneralLine>
                       <div>
@@ -150,7 +160,7 @@ export function Account() {
                           name="firstName"
                           placeholder="First name"
                           type="text"
-                          readOnly={!editingBasicInfo}
+                          readOnly={!editingUserInfo}
                         />
                       </div>
                       <div>
@@ -159,7 +169,7 @@ export function Account() {
                           name="lastName"
                           placeholder="Last name"
                           type="text"
-                          readOnly={!editingBasicInfo}
+                          readOnly={!editingUserInfo}
                         />
                       </div>
                     </GeneralLine>
@@ -180,11 +190,11 @@ export function Account() {
                           placeholder="Phone"
                           type="tel"
                           inputMode="numeric"
-                          readOnly={!editingBasicInfo}
+                          readOnly={!editingUserInfo}
                         />
                       </div>
                     </GeneralLine>
-                    {editingBasicInfo && (
+                    {editingUserInfo && (
                       <ButtonWrapper>
                         <Button type="reset" $size="sm" $inverted>
                           Cancel
@@ -202,10 +212,10 @@ export function Account() {
               </General>
             </div>
             <IconButton
-              onClick={() => setEditingBasicInfo(true)}
+              onClick={() => setEditingUserInfo(true)}
               icon={<EditIcon />}
               title="Edit contact info"
-              disabled={editingBasicInfo}
+              disabled={editingUserInfo}
             />
           </Details>
           <Details>
@@ -226,8 +236,8 @@ export function Account() {
                 }}
                 enableReinitialize
                 validationSchema={addressSchema}
-                onSubmit={handleAddressInfoSubmit}
-                onReset={handleAddressInfoReset}>
+                onSubmit={handleAddressSubmit}
+                onReset={handleAddressReset}>
                 <Form>
                   <AddressLine>
                     <div>
@@ -236,7 +246,7 @@ export function Account() {
                         name="line1"
                         placeholder="Address line 1"
                         type="text"
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                     <div>
@@ -245,7 +255,7 @@ export function Account() {
                         name="line2"
                         placeholder="Address line 2"
                         type="text"
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                   </AddressLine>
@@ -256,7 +266,7 @@ export function Account() {
                         name="city"
                         placeholder="City"
                         type="text"
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                     <div>
@@ -265,7 +275,7 @@ export function Account() {
                         name="state"
                         placeholder="State"
                         type="text"
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                     <div>
@@ -274,7 +284,7 @@ export function Account() {
                         name="postal_code"
                         placeholder="Postal Code"
                         type="text"
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                   </AddressLine>
@@ -283,11 +293,11 @@ export function Account() {
                       <p>Country</p>
                       <CountrySelect
                         defaultCountry={defaultCountry}
-                        readOnly={!editingAddressInfo}
+                        readOnly={!editingAddress}
                       />
                     </div>
                   </AddressLine>
-                  {editingAddressInfo && (
+                  {editingAddress && (
                     <ButtonWrapper>
                       <Button $size="sm" type="reset" $inverted>
                         Cancel
@@ -304,10 +314,10 @@ export function Account() {
               </Formik>
             </Address>
             <IconButton
-              onClick={() => setEditingAddressInfo(true)}
+              onClick={() => setEditingAddress(true)}
               icon={<EditIcon />}
               title="Edit address"
-              disabled={editingAddressInfo}
+              disabled={editingAddress}
             />
           </Details>
         </UserDataFields>
