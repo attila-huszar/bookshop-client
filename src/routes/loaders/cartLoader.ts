@@ -3,7 +3,7 @@ import { ROUTE } from '@/routes'
 import { fetchCartItems, store } from '@/store'
 import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
 import { cartKey, paymentSessionKey } from '@/constants'
-import type { CartItem } from '@/types'
+import type { MinimalCart } from '@/types'
 
 export const cartLoader = () => {
   const state = store.getState()
@@ -17,7 +17,7 @@ export const cartLoader = () => {
     return redirect(`/${ROUTE.CHECKOUT}`)
   }
 
-  const cart = localStorageAdapter.get<CartItem[]>(cartKey)
+  const cart = localStorageAdapter.get<MinimalCart[]>(cartKey)
 
   if (cart && Array.isArray(cart)) {
     void store.dispatch(fetchCartItems(cart))

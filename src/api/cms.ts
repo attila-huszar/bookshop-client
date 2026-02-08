@@ -1,12 +1,4 @@
-import {
-  Author,
-  AuthorFormValues,
-  BookFormValues,
-  BookWithAuthorId,
-  Order,
-  OrderUpdate,
-  UserWithMetadata,
-} from '@/types'
+import { Author, BookWithAuthorId, Order, UserWithMetadata } from '@/types'
 import { authRequest, PATH } from './'
 
 export const getBooksCMS = async (): Promise<BookWithAuthorId[]> => {
@@ -46,7 +38,7 @@ export const getUsersCMS = async (): Promise<UserWithMetadata[]> => {
 }
 
 export const postBookCMS = async (
-  book: BookFormValues,
+  book: Omit<BookWithAuthorId, 'id'>,
 ): Promise<BookWithAuthorId> => {
   const response = await authRequest.post(PATH.cms.books, { json: book })
 
@@ -96,11 +88,10 @@ export const postUserCMS = async (
 }
 
 export const patchBookCMS = async (
-  bookId: number,
-  book: Partial<BookFormValues>,
+  book: BookWithAuthorId,
 ): Promise<BookWithAuthorId> => {
   const response = await authRequest.patch(PATH.cms.books, {
-    json: { id: bookId, ...book },
+    json: book,
   })
 
   if (!response.ok) {
@@ -109,12 +100,9 @@ export const patchBookCMS = async (
   return await response.json()
 }
 
-export const patchAuthorCMS = async (
-  authorId: number,
-  author: Partial<AuthorFormValues>,
-): Promise<Author> => {
+export const patchAuthorCMS = async (author: Author): Promise<Author> => {
   const response = await authRequest.patch(PATH.cms.authors, {
-    json: { id: authorId, ...author },
+    json: author,
   })
 
   if (!response.ok) {
@@ -123,12 +111,9 @@ export const patchAuthorCMS = async (
   return await response.json()
 }
 
-export const patchOrderCMS = async (
-  paymentId: string,
-  fields: OrderUpdate,
-): Promise<Order> => {
+export const patchOrderCMS = async (order: Order): Promise<Order> => {
   const response = await authRequest.patch(PATH.cms.orders, {
-    json: { paymentId, ...fields },
+    json: order,
   })
 
   if (!response.ok) {
@@ -138,11 +123,10 @@ export const patchOrderCMS = async (
 }
 
 export const patchUserCMS = async (
-  userId: number,
-  user: Partial<UserWithMetadata>,
+  user: UserWithMetadata,
 ): Promise<UserWithMetadata> => {
   const response = await authRequest.patch(PATH.cms.users, {
-    json: { id: userId, ...user },
+    json: user,
   })
 
   if (!response.ok) {

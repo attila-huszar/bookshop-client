@@ -11,12 +11,12 @@ import {
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
 import {
-  calcSubtotalOrDiscount,
-  enforceMinMax,
-  sessionStorageAdapter,
-} from '@/helpers'
-import { paymentSessionKey } from '@/constants'
+  defaultCurrencySymbol,
+  maxOrderItems,
+  paymentSessionKey,
+} from '@/constants'
 import type { Cart } from '@/types'
 import {
   BinIcon,
@@ -84,8 +84,16 @@ export function Cart() {
     window.scrollTo(0, 0)
   }, [])
 
-  const subtotal = calcSubtotalOrDiscount(cartItems, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cartItems, 'discount')
+  const price = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  )
+
+  const discountPrice = cartItems.reduce((acc, item) => {
+    return acc + item.discountPrice * item.quantity
+  }, 0)
+
+  const discount = price - discountPrice
 
   const handleRemoveQuantity = (item: Cart) => {
     if (item.quantity > 0) {
@@ -94,7 +102,7 @@ export function Cart() {
   }
 
   const handleAddQuantity = (item: Cart) => {
-    if (item.quantity < 50) {
+    if (item.quantity < maxOrderItems) {
       addQuantity(item)
     }
   }
@@ -182,7 +190,7 @@ export function Cart() {
                   type="number"
                   inputMode="numeric"
                   min={1}
-                  max={50}
+                  max={maxOrderItems}
                 />
                 <IconButton
                   onClick={() => handleAddQuantity(item)}
@@ -191,7 +199,7 @@ export function Cart() {
                   $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
-                  disabled={item.quantity >= 50}
+                  disabled={item.quantity >= maxOrderItems}
                 />
               </Quantity>
               <PriceItem>
@@ -226,14 +234,20 @@ export function Cart() {
           {!!discount && (
             <div>
               <h4>Subtotal:</h4>
-              <h4>$ {subtotal.toFixed(2)}</h4>
+              <h4>
+                {defaultCurrencySymbol} {price.toFixed(2)}
+              </h4>
               <h4>Discount:</h4>
-              <h4>$ -{discount.toFixed(2)}</h4>
+              <h4>
+                {defaultCurrencySymbol} -{discount.toFixed(2)}
+              </h4>
             </div>
           )}
           <div>
             <p>Total:</p>
-            <p>$ {(subtotal - discount).toFixed(2)}</p>
+            <p>
+              {defaultCurrencySymbol} {discountPrice.toFixed(2)}
+            </p>
           </div>
         </TotalPrice>
         <ButtonWrapper>

@@ -1,7 +1,6 @@
 import { StripeAddress } from './'
 
 export type User = {
-  id: number
   uuid: string
   role: UserRole
   firstName: string
@@ -14,6 +13,7 @@ export type User = {
 }
 
 export type UserWithMetadata = User & {
+  id: number
   verified: boolean
   verificationToken: string | null
   verificationExpires: string | null

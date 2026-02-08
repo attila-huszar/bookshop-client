@@ -44,7 +44,7 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentCreateError =
-          action.error.message ?? 'Failed to create order'
+          action.error.message ?? 'Failed to create payment'
       })
       .addCase(paymentRetrieve.pending, (state) => {
         state.paymentIsLoading = true
@@ -62,7 +62,7 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentRetrieveError =
-          action.error.message ?? 'Failed to retrieve order'
+          action.error.message ?? 'Failed to retrieve payment'
       })
       .addCase(paymentCancel.pending, (state) => {
         state.paymentIsLoading = true
@@ -78,7 +78,7 @@ const paymentSlice = createSlice({
       .addCase(paymentCancel.rejected, (state, action) => {
         state.paymentIsLoading = false
         state.paymentCancelError =
-          action.error.message ?? 'Failed to cancel order'
+          action.error.message ?? 'Failed to cancel payment'
       })
   },
 })

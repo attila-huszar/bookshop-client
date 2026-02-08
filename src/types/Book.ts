@@ -15,5 +15,3 @@ export type Book = {
 }
 
 export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }
-
-export type BookFormValues = Omit<BookWithAuthorId, 'id'>

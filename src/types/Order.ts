@@ -1,5 +1,5 @@
 import { PaymentIntentShipping, PaymentIntentStatus } from './'
-import type { CartItem } from './Cart'
+import type { MinimalCart } from './Cart'
 
 export type Order = {
   id: number
@@ -12,25 +12,22 @@ export type Order = {
   lastName: string | null
   email: string | null
   shipping: PaymentIntentShipping | null
+  paidAt: Date | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type OrderItem = {
   id: number
+  author: string
   title: string
   price: number
   discount: number
   quantity: number
 }
 
-export type OrderUpdate = Pick<
-  Order,
-  'paymentStatus' | 'firstName' | 'lastName' | 'email' | 'shipping'
->
-
-export type OrderFormValues = Omit<Order, 'id'>
-
 export type PaymentIntentRequest = {
-  items: CartItem[]
+  items: MinimalCart[]
 }
 
 export type PaymentIntentResponse = {

@@ -55,6 +55,7 @@ describe('Cart component', () => {
       title: 'Book 1',
       price: 20,
       discount: 10,
+      discountPrice: 18,
       quantity: 2,
       imgUrl: 'book1.jpg',
     },

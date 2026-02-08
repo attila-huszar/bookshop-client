@@ -4,6 +4,8 @@ export const defaultCountry = 'hu'
 export const defaultCurrency = 'USD'
 export const defaultCurrencySymbol = '$'
 
+export const maxOrderItems = 100
+
 export const loginInitialValues = {
   email: '',
   password: '',

@@ -2,9 +2,10 @@ import { styled } from 'styled-components'
 
 export const StyledEditDialog = styled.dialog`
   position: fixed;
-  top: 50%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
+  height: 80%;
   width: 80%;
   min-width: 40rem;
   max-width: 100rem;

@@ -1,12 +1,13 @@
 import {
-  AuthorFormValues,
-  BookFormValues,
-  OrderFormValues,
-  UserFormValues,
+  Author,
+  BookWithAuthorId,
+  Order,
   UserRole,
+  UserWithMetadata,
 } from '@/types'
 
-export const initialBookValues: BookFormValues = {
+export const initialBookValues: BookWithAuthorId = {
+  id: 0,
   title: '',
   authorId: 0,
   genre: '',
@@ -21,7 +22,8 @@ export const initialBookValues: BookFormValues = {
   newRelease: false,
 }
 
-export const initialAuthorValues: AuthorFormValues = {
+export const initialAuthorValues: Author = {
+  id: 0,
   name: '',
   fullName: '',
   birthYear: '',
@@ -30,7 +32,8 @@ export const initialAuthorValues: AuthorFormValues = {
   biography: '',
 }
 
-export const initialOrderValues: OrderFormValues = {
+export const initialOrderValues: Order = {
+  id: 0,
   paymentId: '',
   paymentStatus: 'processing',
   total: 0,
@@ -51,9 +54,14 @@ export const initialOrderValues: OrderFormValues = {
       country: '',
     },
   },
+  paidAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
-export const initialUserValues: UserFormValues = {
+export const initialUserValues: UserWithMetadata = {
+  id: 0,
+  uuid: '',
   email: '',
   firstName: '',
   lastName: '',
@@ -69,4 +77,11 @@ export const initialUserValues: UserFormValues = {
     postal_code: '',
     state: '',
   },
+  verified: false,
+  verificationToken: null,
+  verificationExpires: null,
+  passwordResetToken: null,
+  passwordResetExpires: null,
+  createdAt: '',
+  updatedAt: '',
 }

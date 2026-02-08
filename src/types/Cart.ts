@@ -1,13 +1,10 @@
-export type Cart = {
-  id: number
+import { Book } from './Book'
+
+export type Cart = Pick<
+  Book,
+  'id' | 'title' | 'price' | 'discount' | 'discountPrice' | 'imgUrl'
+> & {
   quantity: number
-  title: string
-  price: number
-  discount: number
-  imgUrl: string
 }
 
-export type CartItem = {
-  id: number
-  quantity: number
-}
+export type MinimalCart = Pick<Cart, 'id' | 'quantity'>

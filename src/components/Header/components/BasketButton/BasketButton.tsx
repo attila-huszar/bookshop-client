@@ -5,7 +5,7 @@ import { Button } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { localStorageAdapter } from '@/helpers'
 import { cartKey } from '@/constants'
-import { CartItem } from '@/types'
+import { MinimalCart } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
@@ -14,11 +14,14 @@ export function BasketButton() {
   const { payment } = useAppSelector(paymentSelector)
   const navigate = useNavigate()
 
-  const calculateCartQuantity = (items: CartItem[] | null): number =>
+  const calculateCartQuantity = (items: MinimalCart[] | null): number =>
     items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
+  const storedCart = localStorageAdapter.get<MinimalCart[]>(cartKey)
+  const safeStoredCart = Array.isArray(storedCart) ? storedCart : null
+
   const cartCount = calculateCartQuantity(
-    cartItems.length ? cartItems : localStorageAdapter.get<CartItem[]>(cartKey),
+    cartItems.length ? cartItems : safeStoredCart,
   )
 
   return (

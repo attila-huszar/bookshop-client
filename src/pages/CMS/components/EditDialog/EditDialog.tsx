@@ -24,11 +24,8 @@ import {
 } from '@/validation'
 import {
   Author,
-  AuthorFormValues,
-  BookFormValues,
   BookWithAuthorId,
   Order,
-  OrderFormValues,
   SelectContext,
   User,
   UserFormValues,
@@ -58,12 +55,7 @@ type Props = {
   isDialogOpen: boolean
   setIsDialogOpen: (isOpen: boolean) => void
   activeTab: keyof SelectContext
-  editedItem:
-    | BookFormValues
-    | AuthorFormValues
-    | OrderFormValues
-    | UserFormValues
-    | null
+  editedItem: BookWithAuthorId | Author | Order | UserFormValues | null
   setEditedItem: React.Dispatch<
     React.SetStateAction<BookWithAuthorId | Author | Order | User | null>
   >
@@ -180,43 +172,29 @@ export const EditDialog: FC<Props> = ({
   }
 
   const handleSubmit = async (
-    values:
-      | BookFormValues
-      | AuthorFormValues
-      | OrderFormValues
-      | UserFormValues,
-    actions: FormikHelpers<
-      BookFormValues | AuthorFormValues | OrderFormValues | UserFormValues
-    >,
+    values: BookWithAuthorId | Author | Order | UserFormValues,
+    actions: FormikHelpers<BookWithAuthorId | Author | Order | UserFormValues>,
   ) => {
     try {
       let result
       const config = actionMap[activeTab]
 
-      if (!config.action) {
-        toast('Action not implemented yet', {
-          icon: '🥺',
-          style: { backgroundColor: 'var(--secondary-hover)' },
-        })
-        return
-      }
-
       switch (activeTab) {
         case 'books': {
           result = await dispatch(
-            (config.action as typeof addBook)(values as BookFormValues),
+            (config.action as typeof addBook)(values as BookWithAuthorId),
           )
           break
         }
         case 'authors': {
           result = await dispatch(
-            (config.action as typeof addAuthor)(values as AuthorFormValues),
+            (config.action as typeof addAuthor)(values as Author),
           )
           break
         }
         case 'orders': {
           result = await dispatch(
-            (config.action as typeof addOrder)(values as OrderFormValues),
+            (config.action as typeof addOrder)(values as Order),
           )
           break
         }
@@ -269,28 +247,44 @@ export const EditDialog: FC<Props> = ({
       <DefaultRow>
         <div>
           <p>Line 1</p>
-          <FormikField name="address.line1" placeholder="Line 1" type="text" />
+          <FormikField
+            name="shipping.address.line1"
+            placeholder="Line 1"
+            type="text"
+          />
         </div>
         <div>
           <p>Line 2</p>
-          <FormikField name="address.line2" placeholder="Line 2" type="text" />
+          <FormikField
+            name="shipping.address.line2"
+            placeholder="Line 2"
+            type="text"
+          />
         </div>
       </DefaultRow>
       <DefaultRow>
         <div>
           <p>City</p>
-          <FormikField name="address.city" placeholder="City" type="text" />
+          <FormikField
+            name="shipping.address.city"
+            placeholder="City"
+            type="text"
+          />
         </div>
         <div>
           <p>State</p>
-          <FormikField name="address.state" placeholder="State" type="text" />
+          <FormikField
+            name="shipping.address.state"
+            placeholder="State"
+            type="text"
+          />
         </div>
       </DefaultRow>
       <DefaultRow>
         <div>
           <p>Postal Code</p>
           <FormikField
-            name="address.postal_code"
+            name="shipping.address.postal_code"
             placeholder="Postal Code"
             type="text"
           />
@@ -298,7 +292,7 @@ export const EditDialog: FC<Props> = ({
         <div>
           <p>Country</p>
           <FormikField
-            name="address.country"
+            name="shipping.address.country"
             placeholder="Country"
             type="text"
           />
@@ -315,7 +309,7 @@ export const EditDialog: FC<Props> = ({
     return (
       <ItemBlock>
         <p>Items</p>
-        {editedItem.items.map((item, idx) => (
+        {editedItem.items?.map((item, idx) => (
           <div key={item.id}>
             <ItemRow>
               <div>
@@ -526,7 +520,7 @@ export const EditDialog: FC<Props> = ({
                   <div>
                     <p>Discount Price</p>
                     {(() => {
-                      const bookValues = values as BookFormValues
+                      const bookValues = values as BookWithAuthorId
                       const price = Number(bookValues.price) || 0
                       const discount = Number(bookValues.discount) || 0
                       const discountPrice = (
@@ -559,7 +553,7 @@ export const EditDialog: FC<Props> = ({
                     />
                     {showBookCover && (
                       <img
-                        src={(values as BookFormValues).imgUrl}
+                        src={(values as BookWithAuthorId).imgUrl}
                         style={{
                           display: 'block',
                           position: 'absolute',

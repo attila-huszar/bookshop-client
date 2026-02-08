@@ -6,6 +6,7 @@ const P = {
   users: 'users',
   payments: 'payments',
   cms: 'cms',
+  orders: 'orders',
   logs: 'logs',
 } as const
 
@@ -30,7 +31,7 @@ export const PATH = {
     countryCodes: `${P.users}/country-codes`,
   },
   cms: {
-    orders: `${P.cms}/${P.payments}`,
+    orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
     books: `${P.cms}/${P.books}`,
     authors: `${P.cms}/${P.authors}`,

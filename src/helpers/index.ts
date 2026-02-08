@@ -1,4 +1,3 @@
-export * from './calcSubtotalOrDiscount'
 export * from './enforceMinMax'
 export * from './generateFilterArray'
 export * from './getCookie'

@@ -1,7 +1,7 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
 import { cartKey, paymentSessionKey } from '@/constants'
-import type { CartItem } from '@/types'
+import { MinimalCart } from '@/types'
 import {
   cartAdd,
   cartClear,
@@ -13,7 +13,6 @@ import {
 import { paymentClear } from './slices/payment'
 import { AppDispatch, RootState } from './store'
 import { paymentCreate } from './thunks/payment'
-import { getNextCartItems } from './utils/cartStorage'
 
 export const cartToLocalStorage = createListenerMiddleware()
 
@@ -31,18 +30,19 @@ cartToLocalStorageTyped({
     cartQuantitySet,
     cartClear,
   ),
-  effect: (action) => {
-    const typedAction = action as Parameters<typeof getNextCartItems>[0]
-    const cartFromLocalStorage: CartItem[] =
-      localStorageAdapter.get<CartItem[]>(cartKey) ?? []
-    const nextItems = getNextCartItems(typedAction, cartFromLocalStorage)
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState()
+    const cartItems = state.cart.cartItems
 
-    if (!nextItems) {
+    if (cartItems.length === 0) {
       localStorageAdapter.remove(cartKey)
       return
     }
 
-    localStorageAdapter.set(cartKey, nextItems)
+    const minimalCartItems: MinimalCart[] = cartItems.map(
+      ({ title, price, discount, discountPrice, imgUrl, ...rest }) => rest,
+    )
+    localStorageAdapter.set(cartKey, minimalCartItems)
   },
 })
 

@@ -1,11 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { RootState } from '@/store'
-import type { CartItem } from '@/types'
+import type { MinimalCart } from '@/types'
 import { fetchBookById } from './books'
 
 export const fetchCartItems = createAsyncThunk(
   'cart/fetchCartItems',
-  async (cartItems: CartItem[], listenerApi) => {
+  async (cartItems: MinimalCart[], listenerApi) => {
     const state = listenerApi.getState() as RootState
 
     const promises = cartItems.map(async (item) => {
