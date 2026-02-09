@@ -1,7 +1,7 @@
 import { defaultLocale } from '@/constants'
 
 export const formatDate = (dateString: string | null): string => {
-  if (!dateString) return 'N/A'
+  if (!dateString) return '—'
   try {
     const date = new Date(dateString)
     return date.toLocaleDateString(defaultLocale, {

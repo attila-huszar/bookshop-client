@@ -103,10 +103,14 @@ export const CMS = () => {
       <MainContainer>
         <MenuButtons>
           <Button
-            onClick={() => setIsEditDialogOpen(true)}
+            onClick={() => {
+              setEditedItem(null)
+              setIsEditDialogOpen(true)
+            }}
             $size="smMd"
             $color="secondary"
-            type="button">
+            type="button"
+            disabled={activeTab === 'orders'}>
             Add
           </Button>
           <Button

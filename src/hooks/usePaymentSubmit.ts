@@ -4,10 +4,12 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors'
+import type { PaymentIntentShipping } from '@/types'
 import { useMessages } from './useMessages'
 
 type UsePaymentSubmitParams = {
   receiptEmail: string
+  shipping: PaymentIntentShipping | null
 }
 
 type UsePaymentSubmitReturn = {
@@ -18,6 +20,7 @@ type UsePaymentSubmitReturn = {
 
 export function usePaymentSubmit({
   receiptEmail,
+  shipping,
 }: UsePaymentSubmitParams): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
@@ -49,31 +52,13 @@ export function usePaymentSubmit({
     }
 
     try {
-      const addressElement = elements.getElement('address')
-      const addressData = addressElement
-        ? await addressElement.getValue()
-        : null
-
-      if (addressData && !addressData.complete) {
+      if (!shipping) {
         setMessage('Please complete the shipping address form.')
         setIsLoading(false)
         return
       }
 
-      const shipping = addressData?.value
-        ? {
-            name: `${addressData.value.firstName ?? ''} ${addressData.value.lastName ?? ''}`.trim(),
-            phone: addressData.value.phone ?? '',
-            address: {
-              line1: addressData.value.address.line1,
-              line2: addressData.value.address.line2 ?? '',
-              city: addressData.value.address.city,
-              state: addressData.value.address.state,
-              postal_code: addressData.value.address.postal_code,
-              country: addressData.value.address.country,
-            },
-          }
-        : null
+      const { name, phone, address } = shipping
 
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
@@ -82,9 +67,9 @@ export function usePaymentSubmit({
           payment_method_data: {
             billing_details: {
               email: receiptEmail,
-              name: shipping?.name,
-              phone: shipping?.phone,
-              address: shipping?.address ?? undefined,
+              name,
+              phone,
+              address,
             },
           },
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,

@@ -5,7 +5,7 @@ export const StyledEditDialog = styled.dialog`
   top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 80%;
+  max-height: 80%;
   width: 80%;
   min-width: 40rem;
   max-width: 100rem;
@@ -25,6 +25,12 @@ export const FormRow = styled.div`
 export const DefaultRow = styled(FormRow)`
   > div {
     flex-grow: 1;
+  }
+
+  > div.centered-checkbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 `
 

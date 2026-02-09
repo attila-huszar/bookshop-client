@@ -55,6 +55,7 @@ export const StyledTable = styled.div`
       background: var(--whitesmoke);
       font-size: 0.75rem;
       font-weight: 600;
+      text-align: left;
     }
 
     td {

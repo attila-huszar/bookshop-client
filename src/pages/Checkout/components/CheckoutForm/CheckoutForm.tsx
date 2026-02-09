@@ -17,9 +17,16 @@ import {
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getPaymentId } from '@/helpers'
 import { defaultCurrency } from '@/constants'
-import { StripePaymentElementOptions } from '@/types'
+import type {
+  PaymentIntentShipping,
+  StripePaymentElementOptions,
+} from '@/types'
 
-export function CheckoutForm() {
+type CheckoutFormProps = {
+  shipping: PaymentIntentShipping | null
+}
+
+export function CheckoutForm({ shipping }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
@@ -31,6 +38,7 @@ export function CheckoutForm() {
 
   const { isLoading, message, handleSubmit } = usePaymentSubmit({
     receiptEmail,
+    shipping,
   })
 
   if (!payment) {

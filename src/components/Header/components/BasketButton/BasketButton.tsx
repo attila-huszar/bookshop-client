@@ -3,8 +3,8 @@ import { ROUTE } from '@/routes'
 import { cartSelector, paymentSelector } from '@/store'
 import { Button } from '@/components'
 import { useAppSelector } from '@/hooks'
-import { localStorageAdapter } from '@/helpers'
-import { cartKey } from '@/constants'
+import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
+import { cartKey, paymentSessionKey } from '@/constants'
 import { MinimalCart } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
@@ -13,6 +13,9 @@ export function BasketButton() {
   const { cartItems } = useAppSelector(cartSelector)
   const { payment } = useAppSelector(paymentSelector)
   const navigate = useNavigate()
+
+  const storedPayment = sessionStorageAdapter.get(paymentSessionKey)
+  const isCheckingOut = !!(payment ?? storedPayment)
 
   const calculateCartQuantity = (items: MinimalCart[] | null): number =>
     items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
@@ -30,8 +33,8 @@ export function BasketButton() {
         onClick={() => void navigate(`/${ROUTE.CART}`)}
         $size="smMd"
         $icon={<CartIcon />}
-        title={payment ? 'Checkout' : 'Basket'}>
-        {payment ? 'Checkout' : 'Basket'}
+        title={isCheckingOut ? 'Checkout' : 'Basket'}>
+        {isCheckingOut ? 'Checkout' : 'Basket'}
       </Button>
       {cartCount > 0 && <CartItemCount>{cartCount}</CartItemCount>}
     </StyledBasketButton>

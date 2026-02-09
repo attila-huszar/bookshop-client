@@ -12,6 +12,8 @@ export type Book = {
   discountPrice: number
   topSellers: boolean
   newRelease: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }

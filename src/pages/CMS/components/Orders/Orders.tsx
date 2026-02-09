@@ -113,7 +113,7 @@ export const Orders = () => {
                   {formatDate(order.createdAt)}
                 </td>
                 <td style={{ fontSize: '0.75rem' }}>
-                  {order.paidAt ? formatDate(order.paidAt) : 'N/A'}
+                  {order.paidAt ? formatDate(order.paidAt) : '—'}
                 </td>
                 <td style={{ padding: 0 }}>
                   <IconButton

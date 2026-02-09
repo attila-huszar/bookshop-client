@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { toast } from 'react-hot-toast'
 import { type Location, Navigate, useLocation } from 'react-router'
@@ -10,7 +10,7 @@ import { useAppSelector } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentSessionKey, stripeKey } from '@/constants'
 import { handleError } from '@/errors'
-import { StripeElementsOptions } from '@/types'
+import type { PaymentIntentShipping, StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
 import { AddressForm, CheckoutForm, PaymentStatus } from './components'
 
@@ -37,6 +37,7 @@ export function Checkout() {
   const location = useLocation() as Location<LocationState | null>
   const { payment, paymentIsLoading, paymentRetrieveError } =
     useAppSelector(paymentSelector)
+  const [shipping, setShipping] = useState<PaymentIntentShipping | null>(null)
   const ref = useRef<HTMLDialogElement>(null)
 
   const showPaymentStatus = location.state?.showPaymentStatus
@@ -73,7 +74,7 @@ export function Checkout() {
 
   const options: StripeElementsOptions = {
     clientSecret: payment?.session,
-    appearance: { theme: 'flat', variables: {} },
+    appearance: { theme: 'stripe', variables: {} },
     loader: 'auto',
   }
 
@@ -86,8 +87,8 @@ export function Checkout() {
             <PaymentStatus />
           ) : (
             <>
-              <AddressForm />
-              <CheckoutForm />
+              <AddressForm onAddressChange={setShipping} />
+              <CheckoutForm shipping={shipping} />
             </>
           )}
         </Elements>

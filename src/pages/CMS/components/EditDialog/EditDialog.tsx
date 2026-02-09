@@ -32,6 +32,7 @@ import {
   SelectContext,
   User,
   UserFormValues,
+  UserRole,
   UserUpdate,
   UserWithMetadata,
 } from '@/types'
@@ -542,6 +543,37 @@ export const EditDialog: FC<Props> = ({
             onSubmit={handleSubmit}>
             {({ values, isSubmitting, setFieldValue }) => (
               <Form>
+                {editedItem && (
+                  <>
+                    <SectionHeader>Book Information</SectionHeader>
+                    <MetadataBlock>
+                      <div>
+                        <p>Book ID</p>
+                        <span>{(editedItem as BookWithAuthorId).id}</span>
+                      </div>
+                      <div>
+                        <p>Created At</p>
+                        <span>
+                          {(editedItem as BookWithAuthorId).createdAt
+                            ? formatDate(
+                                (editedItem as BookWithAuthorId).createdAt!,
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <p>Updated At</p>
+                        <span>
+                          {(editedItem as BookWithAuthorId).updatedAt
+                            ? formatDate(
+                                (editedItem as BookWithAuthorId).updatedAt!,
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                    </MetadataBlock>
+                  </>
+                )}
                 <TitleRow>
                   <div>
                     <p>Title</p>
@@ -708,6 +740,33 @@ export const EditDialog: FC<Props> = ({
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
+                {editedItem && (
+                  <>
+                    <SectionHeader>Author Information</SectionHeader>
+                    <MetadataBlock>
+                      <div>
+                        <p>Author ID</p>
+                        <span>{(editedItem as Author).id}</span>
+                      </div>
+                      <div>
+                        <p>Created At</p>
+                        <span>
+                          {(editedItem as Author).createdAt
+                            ? formatDate((editedItem as Author).createdAt!)
+                            : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <p>Updated At</p>
+                        <span>
+                          {(editedItem as Author).updatedAt
+                            ? formatDate((editedItem as Author).updatedAt!)
+                            : '—'}
+                        </span>
+                      </div>
+                    </MetadataBlock>
+                  </>
+                )}
                 <DefaultRow>
                   <div>
                     <p>Name</p>
@@ -773,6 +832,37 @@ export const EditDialog: FC<Props> = ({
             onSubmit={handleSubmit}>
             {({ isSubmitting }) => (
               <Form>
+                {editedItem && (
+                  <>
+                    <SectionHeader>User Information</SectionHeader>
+                    <MetadataBlock>
+                      <div>
+                        <p>User ID</p>
+                        <span>{(editedItem as UserWithMetadata).id}</span>
+                      </div>
+                      <div>
+                        <p>Created At</p>
+                        <span>
+                          {(editedItem as UserWithMetadata).createdAt
+                            ? formatDate(
+                                (editedItem as UserWithMetadata).createdAt,
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <p>Updated At</p>
+                        <span>
+                          {(editedItem as UserWithMetadata).updatedAt
+                            ? formatDate(
+                                (editedItem as UserWithMetadata).updatedAt,
+                              )
+                            : '—'}
+                        </span>
+                      </div>
+                    </MetadataBlock>
+                  </>
+                )}
                 <DefaultRow>
                   <div>
                     <p>First Name</p>
@@ -802,7 +892,19 @@ export const EditDialog: FC<Props> = ({
                   </div>
                   <div>
                     <p>Role</p>
-                    <FormikField name="role" placeholder="Role" type="text" />
+                    <FormikField name="role" type="select">
+                      {Object.values(UserRole).map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </FormikField>
+                  </div>
+                  <div className="centered-checkbox">
+                    <p>Verified</p>
+                    <div style={{ display: 'flex', height: '100%' }}>
+                      <FormikField name="verified" type="checkbox" />
+                    </div>
                   </div>
                 </DefaultRow>
                 <DefaultRow>

@@ -1,3 +1,4 @@
+import { authRequest, PATH } from '.'
 import {
   Author,
   AuthorUpdate,
@@ -8,7 +9,6 @@ import {
   UserUpdate,
   UserWithMetadata,
 } from '@/types'
-import { authRequest, PATH } from './'
 
 export const getBooksCMS = async (): Promise<BookWithAuthorId[]> => {
   const response = await authRequest.get(PATH.cms.books)

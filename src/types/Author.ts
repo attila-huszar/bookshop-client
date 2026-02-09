@@ -6,6 +6,8 @@ export type Author = {
   deathYear: string
   homeland: string
   biography: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type AuthorUpdate = { id: number } & Partial<Omit<Author, 'id'>>
