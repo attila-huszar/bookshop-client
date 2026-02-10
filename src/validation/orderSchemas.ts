@@ -9,7 +9,7 @@ import {
 export const orderItemSchema = Yup.object().shape({
   id: Yup.number().integer().positive().required('Required'),
   title: Yup.string().required('Required'),
-  author: Yup.string(),
+  author: Yup.string().nullable(),
   price: Yup.number().positive('Must be positive').required('Required'),
   discount: Yup.number()
     .min(0, 'Min 0%')
@@ -27,9 +27,9 @@ export const orderSchema = Yup.object().shape({
   email: emailSchema,
   shipping: Yup.object()
     .shape({
-      address: addressSchema,
-      phone: phoneSchema,
       name: nameSchema,
+      address: addressSchema,
+      phone: phoneSchema.optional(),
     })
     .required('Shipping information is required'),
   items: Yup.array().of(orderItemSchema).required('Order items are required'),

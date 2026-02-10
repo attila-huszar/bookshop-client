@@ -11,8 +11,8 @@ export const checkoutLoader = async () => {
   }
 
   const state = store.getState()
-  const currentOrder = state.payment?.payment
-  if (currentOrder?.session) return null
+  const currentPayment = state.payment?.payment
+  if (currentPayment?.session) return null
 
   try {
     const paymentId = getPaymentId(paymentSession)

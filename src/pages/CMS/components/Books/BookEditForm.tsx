@@ -113,7 +113,8 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
       if (editedItem) {
         result = await dispatch(updateBook(values as BookUpdate))
       } else {
-        result = await dispatch(addBook(values as Omit<BookWithAuthorId, 'id'>))
+        const { id, ...bookWithoutId } = values
+        result = await dispatch(addBook(bookWithoutId))
       }
 
       if (result?.meta?.requestStatus === 'fulfilled') {

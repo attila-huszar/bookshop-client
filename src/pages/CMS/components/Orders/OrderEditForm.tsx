@@ -62,7 +62,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
         const { createdAt, updatedAt, paidAt, ...orderValues } = values
         result = await dispatch(updateOrder(orderValues))
       } else {
-        result = await dispatch(addOrder(values as Omit<Order, 'id'>))
+        const { id, ...orderWithoutId } = values
+        result = await dispatch(addOrder(orderWithoutId))
       }
 
       if (result?.meta?.requestStatus === 'fulfilled') {
@@ -304,12 +305,26 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Email</p>
               <FormikField name="email" placeholder="Email" type="email" />
             </div>
-            <div>
-              <p>Phone</p>
-              <FormikField name="phone" placeholder="Phone" type="text" />
-            </div>
           </DefaultRow>
           <SectionHeader>Shipping Address</SectionHeader>
+          <DefaultRow>
+            <div>
+              <p>Name</p>
+              <FormikField
+                name="shipping.name"
+                placeholder="Name"
+                type="text"
+              />
+            </div>
+            <div>
+              <p>Phone</p>
+              <FormikField
+                name="shipping.phone"
+                placeholder="Phone"
+                type="text"
+              />
+            </div>
+          </DefaultRow>
           {renderAddressBlock()}
           <SectionHeader>Order Items</SectionHeader>
           {renderItemBlock()}

@@ -19,7 +19,7 @@ export type Order = {
 
 export type OrderItem = {
   id: number
-  author: string
+  author: string | null
   title: string
   price: number
   discount: number

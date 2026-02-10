@@ -42,7 +42,8 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
       if (editedItem) {
         result = await dispatch(updateAuthor(values as AuthorUpdate))
       } else {
-        result = await dispatch(addAuthor(values as Omit<Author, 'id'>))
+        const { id, ...authorWithoutId } = values
+        result = await dispatch(addAuthor(authorWithoutId))
       }
 
       if (result?.meta?.requestStatus === 'fulfilled') {
