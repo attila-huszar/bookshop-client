@@ -54,22 +54,12 @@ export function usePaymentSubmit({
     }
 
     try {
-      const { name, phone, address } = shipping
-
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: receiptEmail,
-          payment_method_data: {
-            billing_details: {
-              email: receiptEmail,
-              name,
-              phone,
-              address,
-            },
-          },
-          return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
           shipping,
+          return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
         },
         redirect: 'if_required',
       })
