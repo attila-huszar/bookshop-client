@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
 import {
   defaultCurrencySymbol,
-  maxOrderItems,
+  maxItemQuantity,
   paymentSessionKey,
 } from '@/constants'
 import type { Cart } from '@/types'
@@ -102,7 +102,7 @@ export function Cart() {
   }
 
   const handleAddQuantity = (item: Cart) => {
-    if (item.quantity < maxOrderItems) {
+    if (item.quantity < maxItemQuantity) {
       addQuantity(item)
     }
   }
@@ -190,7 +190,7 @@ export function Cart() {
                   type="number"
                   inputMode="numeric"
                   min={1}
-                  max={maxOrderItems}
+                  max={maxItemQuantity}
                 />
                 <IconButton
                   onClick={() => handleAddQuantity(item)}
@@ -199,7 +199,7 @@ export function Cart() {
                   $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
-                  disabled={item.quantity >= maxOrderItems}
+                  disabled={item.quantity >= maxItemQuantity}
                 />
               </Quantity>
               <PriceItem>

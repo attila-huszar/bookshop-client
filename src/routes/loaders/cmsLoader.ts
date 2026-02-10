@@ -1,5 +1,5 @@
 import { listAuthors, listBooks, listOrders, listUsers, store } from '@/store'
-import type { TabValue } from '@/pages/CMS/components'
+import type { TabValue } from '@/pages/CMS/CMS'
 
 export const cmsLoader = (tab: TabValue) => {
   switch (tab) {

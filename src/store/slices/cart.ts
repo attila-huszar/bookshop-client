@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { fetchCartItems } from '@/store/thunks/cart'
-import { maxOrderItems } from '@/constants'
+import { maxItemQuantity } from '@/constants'
 import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
@@ -51,7 +51,7 @@ const cartSlice = createSlice({
 
       if (idx !== -1) {
         const item = state.cartItems[idx]
-        if (item && item.quantity < maxOrderItems) item.quantity++
+        if (item && item.quantity < maxItemQuantity) item.quantity++
       }
     },
     cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
@@ -75,7 +75,7 @@ const cartSlice = createSlice({
       if (
         idx !== -1 &&
         action.payload.newQuantity >= 1 &&
-        action.payload.newQuantity <= maxOrderItems
+        action.payload.newQuantity <= maxItemQuantity
       ) {
         const item = state.cartItems[idx]
         if (item) item.quantity = action.payload.newQuantity

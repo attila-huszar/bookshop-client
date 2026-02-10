@@ -4,7 +4,7 @@ import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../CMS.style'
+import { StyledTable } from '../../styles/CMS.style'
 
 export const Authors = () => {
   const { authors, authorsLoading, authorsError } =

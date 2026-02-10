@@ -5,7 +5,7 @@ import { useAppSelector } from '@/hooks'
 import { formatDate, formatPaymentStatus } from '@/helpers'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../CMS.style'
+import { StyledTable } from '../../styles/CMS.style'
 
 export const Orders = () => {
   const { orders, ordersLoading, ordersError } =
