@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { toast } from 'react-hot-toast'
 import { Form, Formik, FormikHelpers, FormikState } from 'formik'
 import { addOrder, updateOrder } from '@/store'
-import { Button, FormikField } from '@/components'
+import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { formatDate, formatPaymentStatus } from '@/helpers'
 import { orderSchema } from '@/validation'
@@ -215,11 +215,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
               </div>
               <div>
                 <p>Country</p>
-                <FormikField
-                  name="shipping.address.country"
-                  placeholder="Country"
-                  type="text"
-                />
+                <CountrySelect fieldName="shipping.address.country" />
               </div>
             </DefaultRow>
           </AddressBlock>

@@ -15,6 +15,7 @@ type UsePaymentSubmitParams = {
 type UsePaymentSubmitReturn = {
   handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
   message: string | null
+  setMessage: (message: string | null) => void
   isLoading: boolean
 }
 
@@ -40,6 +41,7 @@ export function usePaymentSubmit({
       setMessage(
         'Payment system is not ready. Please wait a moment and try again.',
       )
+      setIsLoading(false)
       return
     }
 
@@ -47,6 +49,7 @@ export function usePaymentSubmit({
       setMessage(
         'Shipping information is missing. Please complete the address form.',
       )
+      setIsLoading(false)
       return
     }
 
@@ -96,6 +99,7 @@ export function usePaymentSubmit({
   return {
     handleSubmit,
     message,
+    setMessage,
     isLoading,
   }
 }

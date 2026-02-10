@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { toast } from 'react-hot-toast'
 import { Form, Formik, FormikHelpers, FormikState } from 'formik'
 import { addUser, updateUser } from '@/store'
-import { Button, FormikField } from '@/components'
+import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { formatDate } from '@/helpers'
 import { userSchema } from '@/validation'
@@ -158,6 +158,22 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <FormikField name="email" placeholder="Email" type="email" />
             </div>
             <div>
+              <p>Phone</p>
+              <FormikField name="phone" placeholder="Phone" type="text" />
+            </div>
+          </DefaultRow>
+          <DefaultRow>
+            <div>
+              <p>Country at Registration</p>
+              <CountrySelect fieldName="country" />
+            </div>
+            <div>
+              <p>Avatar URL</p>
+              <FormikField name="avatar" placeholder="Avatar URL" type="text" />
+            </div>
+          </DefaultRow>
+          <DefaultRow>
+            <div>
               <p>Role</p>
               <FormikField name="role" type="select">
                 {Object.values(UserRole).map((role) => (
@@ -172,24 +188,6 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <div style={{ display: 'flex', height: '100%' }}>
                 <FormikField name="verified" type="checkbox" />
               </div>
-            </div>
-          </DefaultRow>
-          <DefaultRow>
-            <div>
-              <p>Country Code</p>
-              <FormikField
-                name="country"
-                placeholder="Country Code"
-                type="text"
-              />
-            </div>
-            <div>
-              <p>Phone</p>
-              <FormikField name="phone" placeholder="Phone" type="text" />
-            </div>
-            <div>
-              <p>Avatar URL</p>
-              <FormikField name="avatar" placeholder="Avatar URL" type="text" />
             </div>
           </DefaultRow>
           <AddressBlock>
@@ -241,11 +239,7 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               </div>
               <div>
                 <p>Country</p>
-                <FormikField
-                  name="address.country"
-                  placeholder="Country"
-                  type="text"
-                />
+                <CountrySelect fieldName="address.country" />
               </div>
             </DefaultRow>
           </AddressBlock>

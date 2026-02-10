@@ -36,7 +36,7 @@ export function CheckoutForm({ shipping }: CheckoutFormProps) {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const { handleSubmit, message, isLoading } = usePaymentSubmit({
+  const { handleSubmit, message, setMessage, isLoading } = usePaymentSubmit({
     receiptEmail,
     shipping,
   })
@@ -75,27 +75,14 @@ export function CheckoutForm({ shipping }: CheckoutFormProps) {
     business: {
       name: 'Bookshop',
     },
-    terms: {
-      card: 'auto',
-      googlePay: 'auto',
-      paypal: 'auto',
-    },
     defaultValues: {
       billingDetails: {
         email: receiptEmail,
         name: userData
           ? `${userData.firstName} ${userData.lastName}`
           : undefined,
-        address: userData?.address,
-        phone: userData?.phone,
-      },
-    },
-    fields: {
-      billingDetails: {
-        email: userData?.email ? 'never' : 'auto',
-        name: 'auto',
-        phone: 'auto',
-        address: 'auto',
+        address: userData?.address ?? undefined,
+        phone: userData?.phone ?? undefined,
       },
     },
   }
@@ -111,10 +98,17 @@ export function CheckoutForm({ shipping }: CheckoutFormProps) {
       {!userData?.email && (
         <LinkAuthenticationElement
           options={{ defaultValues: { email: receiptEmail } }}
-          onChange={(e) => setGuestEmail(e.value.email)}
+          onChange={(e) => {
+            setGuestEmail(e.value.email)
+            setMessage(null)
+          }}
         />
       )}
-      <PaymentElement id="payment-element" options={paymentElementOptions} />
+      <PaymentElement
+        id="payment-element"
+        options={paymentElementOptions}
+        onChange={() => setMessage(null)}
+      />
       <button
         type="submit"
         disabled={isLoading || !stripe || !elements}
