@@ -131,7 +131,7 @@ export function FormikField({
               $valid={shouldShowError && !meta.error}
               $error={shouldShowError && meta.error}
             />
-            {!!props.name && /password/i.test(props.name) && (
+            {showPassword !== undefined && (
               <PasswordEye
                 type="button"
                 onClick={() => setShowPassword?.((prev) => !prev)}>
@@ -139,8 +139,7 @@ export function FormikField({
               </PasswordEye>
             )}
             {shouldShowError && meta.error && (
-              <ErrorMessage
-                $passwordError={!!props.name && /password/i.test(props.name)}>
+              <ErrorMessage $passwordError={showPassword !== undefined}>
                 {meta.error}
               </ErrorMessage>
             )}

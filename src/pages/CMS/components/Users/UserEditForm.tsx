@@ -254,22 +254,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <SectionHeader>Read-Only Metadata</SectionHeader>
               <DefaultRow>
                 <div>
-                  <p>User ID</p>
-                  <FormikField name="id" type="text" readOnly />
-                </div>
-                <div>
                   <p>UUID</p>
                   <FormikField name="uuid" type="text" readOnly />
-                </div>
-              </DefaultRow>
-              <DefaultRow>
-                <div>
-                  <p>Created At</p>
-                  <FormikField name="createdAt" type="text" readOnly />
-                </div>
-                <div>
-                  <p>Updated At</p>
-                  <FormikField name="updatedAt" type="text" readOnly />
                 </div>
               </DefaultRow>
               <DefaultRow>

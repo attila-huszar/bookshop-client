@@ -13,9 +13,9 @@ type UsePaymentSubmitParams = {
 }
 
 type UsePaymentSubmitReturn = {
-  isLoading: boolean
-  message: string | undefined
   handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
+  message: string | null
+  isLoading: boolean
 }
 
 export function usePaymentSubmit({
@@ -26,14 +26,15 @@ export function usePaymentSubmit({
   const elements = useElements()
   const navigate = useNavigate()
   const { getErrorMessage } = useMessages()
-
-  const [message, setMessage] = useState<string>()
+  const [message, setMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (
     event: SubmitEvent<HTMLFormElement>,
   ): Promise<void> => {
     event.preventDefault()
+    setMessage(null)
+    setIsLoading(true)
 
     if (!stripe || !elements) {
       setMessage(
@@ -42,22 +43,14 @@ export function usePaymentSubmit({
       return
     }
 
-    setIsLoading(true)
-    setMessage(undefined)
-
-    if (!receiptEmail) {
-      setMessage('Please enter your email address to proceed with payment.')
-      setIsLoading(false)
+    if (!shipping) {
+      setMessage(
+        'Shipping information is missing. Please complete the address form.',
+      )
       return
     }
 
     try {
-      if (!shipping) {
-        setMessage('Please complete the shipping address form.')
-        setIsLoading(false)
-        return
-      }
-
       const { name, phone, address } = shipping
 
       const { paymentIntent, error } = await stripe.confirmPayment({
@@ -100,5 +93,9 @@ export function usePaymentSubmit({
     }
   }
 
-  return { isLoading, message, handleSubmit }
+  return {
+    handleSubmit,
+    message,
+    isLoading,
+  }
 }
