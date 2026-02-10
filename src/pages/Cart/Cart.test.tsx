@@ -130,8 +130,11 @@ describe('Cart component', () => {
     render(<Cart />, { wrapper: Providers })
 
     expect(screen.getByText('Book 1')).toBeInTheDocument()
-    const container = screen.getByText('18').closest('div')
-    expect(container).toHaveTextContent('$')
+    expect(
+      screen.getAllByText((_content, element) =>
+        /\$\s*18/.test(element?.textContent ?? ''),
+      )[0],
+    ).toBeInTheDocument()
   })
 
   it('should handle add and remove quantity actions', async () => {

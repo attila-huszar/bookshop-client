@@ -58,8 +58,8 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
   })
 
   it('should dispatch decrement action when clicking on the previous page button', async () => {
@@ -70,8 +70,8 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(decrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
   })
 
   it('should dispatch set current page action when a page button is clicked', async () => {
@@ -82,8 +82,8 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(3))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
   })
 
   it('should dispatch increment action when clicking on the next page button', async () => {
@@ -94,8 +94,8 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(incrementBooksCurrentPage())
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
   })
 
   it('should dispatch actions for the last page button click', async () => {
@@ -108,7 +108,7 @@ describe('Pagination', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(10))
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(fetchBooks({} as Filters))
   })
 })

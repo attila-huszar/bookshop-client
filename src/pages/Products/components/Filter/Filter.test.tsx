@@ -82,14 +82,6 @@ describe('Filter', () => {
     await userEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setBooksFilterGenre(['Fiction']),
-      )
-
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(2.5))
-
       expect(mockDispatch).toHaveBeenCalledWith(
         fetchBooks({
           genre: ['Fiction'],
@@ -100,6 +92,9 @@ describe('Filter', () => {
         }),
       )
     })
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre(['Fiction']))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(2.5))
   })
 
   it('should reset the filters when reset button is clicked', async () => {
@@ -110,14 +105,14 @@ describe('Filter', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(fetchBooks())
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setBooksFilterDiscount('allBooks'),
-      )
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
+    expect(mockDispatch).toHaveBeenCalledWith(
+      setBooksFilterDiscount('allBooks'),
+    )
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
   })
 })

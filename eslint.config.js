@@ -1,17 +1,19 @@
 import js from '@eslint/js'
-import globals from 'globals'
+import prettierConfig from 'eslint-config-prettier'
+import prettier from 'eslint-plugin-prettier'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import testingLibrary from 'eslint-plugin-testing-library'
+import { defineConfig } from 'eslint/config'
+import globals from 'globals'
 import tseslint from 'typescript-eslint'
-import prettier from 'eslint-plugin-prettier'
-import prettierConfig from 'eslint-config-prettier'
-import jestDom from 'eslint-plugin-jest-dom'
 
-export default tseslint.config(
+export default defineConfig(
+  {
+    ignores: ['dist', 'coverage'],
+  },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
   prettierConfig,
   {
     files: ['**/*.{ts,tsx}'],
@@ -25,11 +27,35 @@ export default tseslint.config(
       },
     },
     plugins: {
+      '@typescript-eslint': tseslint.plugin,
       'react-compiler': reactCompiler,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       prettier,
     },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+      'import/parsers': {
+        '@typescript-eslint/parser': ['.ts', '.tsx'],
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: 'warn',
+    },
+  },
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      ...tseslint.configs.recommendedTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
+    ],
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-compiler/react-compiler': 'error',
@@ -49,41 +75,16 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/consistent-generic-constructors': 'off',
       'prettier/prettier': 'warn',
     },
   },
   {
     files: ['src/**/*.test.{ts,tsx}'],
-    ...jestDom.configs['flat/recommended'],
+    extends: [testingLibrary.configs['flat/react']],
   },
   {
     files: ['**/*.js'],
-    ...tseslint.configs.disableTypeChecked,
-    rules: {
-      ...tseslint.configs.disableTypeChecked.rules,
-    },
-  },
-  {
-    settings: {
-      react: {
-        version: 'detect',
-      },
-      'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx'],
-      },
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-        },
-      },
-    },
-  },
-  {
-    linterOptions: {
-      reportUnusedDisableDirectives: 'warn',
-    },
-  },
-  {
-    ignores: ['dist', 'coverage'],
+    extends: [tseslint.configs.disableTypeChecked],
   },
 )

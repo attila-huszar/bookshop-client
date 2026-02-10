@@ -53,9 +53,11 @@ describe('PasswordDialog', () => {
       meta: { requestStatus: 'fulfilled' },
     })
 
-    const { container } = render(<PasswordDialog ref={null} email={email} />)
+    render(<PasswordDialog ref={null} email={email} />)
 
-    const dialog = container.querySelector('dialog')!
+    const dialog: HTMLDialogElement = screen.getByRole('dialog', {
+      hidden: true,
+    })
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),

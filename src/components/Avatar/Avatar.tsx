@@ -41,7 +41,10 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
       {imgUrl ? (
         <img src={imgUrl} alt={props.title} />
       ) : (
-        <AccountDefaultIcon color="var(--light-black)" />
+        <AccountDefaultIcon
+          color="var(--light-black)"
+          data-testid="default-avatar-icon"
+        />
       )}
     </StyledAvatar>
   )
