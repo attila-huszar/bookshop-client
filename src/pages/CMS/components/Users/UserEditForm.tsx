@@ -6,7 +6,7 @@ import { Button, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { formatDate } from '@/helpers'
 import { userSchema } from '@/validation'
-import { UserFormValues, UserRole, UserUpdate, UserWithMetadata } from '@/types'
+import { UserRole, UserWithMetadata } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   AddressBlock,
@@ -52,15 +52,26 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
   const dispatch = useAppDispatch()
 
   const handleSubmit = async (
-    values: UserFormValues,
-    actions: FormikHelpers<UserFormValues>,
+    values: UserWithMetadata,
+    actions: FormikHelpers<UserWithMetadata>,
   ) => {
     try {
       let result
       if (editedItem) {
-        result = await dispatch(updateUser(values as UserUpdate))
+        const {
+          id,
+          verificationToken,
+          verificationExpires,
+          passwordResetToken,
+          passwordResetExpires,
+          createdAt,
+          updatedAt,
+          ...userValues
+        } = values
+        result = await dispatch(updateUser(userValues))
       } else {
-        result = await dispatch(addUser(values as Omit<UserWithMetadata, 'id'>))
+        const { id, ...userWithoutId } = values
+        result = await dispatch(addUser(userWithoutId))
       }
 
       if (result?.meta?.requestStatus === 'fulfilled') {
@@ -88,75 +99,15 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
     </FormButtons>
   )
 
-  const renderAddressBlock = () => (
-    <AddressBlock>
-      <p>Address</p>
-      <DefaultRow>
-        <div>
-          <p>Line 1</p>
-          <FormikField
-            name="shipping.address.line1"
-            placeholder="Line 1"
-            type="text"
-          />
-        </div>
-        <div>
-          <p>Line 2</p>
-          <FormikField
-            name="shipping.address.line2"
-            placeholder="Line 2"
-            type="text"
-          />
-        </div>
-      </DefaultRow>
-      <DefaultRow>
-        <div>
-          <p>City</p>
-          <FormikField
-            name="shipping.address.city"
-            placeholder="City"
-            type="text"
-          />
-        </div>
-        <div>
-          <p>State</p>
-          <FormikField
-            name="shipping.address.state"
-            placeholder="State"
-            type="text"
-          />
-        </div>
-      </DefaultRow>
-      <DefaultRow>
-        <div>
-          <p>Postal Code</p>
-          <FormikField
-            name="shipping.address.postal_code"
-            placeholder="Postal Code"
-            type="text"
-          />
-        </div>
-        <div>
-          <p>Country</p>
-          <FormikField
-            name="shipping.address.country"
-            placeholder="Country"
-            type="text"
-          />
-        </div>
-      </DefaultRow>
-    </AddressBlock>
-  )
-
   return (
     <Formik
       key="users"
-      initialValues={(editedItem as UserFormValues) ?? initialUserValues}
+      initialValues={editedItem ?? initialUserValues}
       validationSchema={userSchema}
       onSubmit={handleSubmit}>
       {({ isSubmitting }) => (
         <Form>
-          {editedItem && 'id' in editedItem && (
+          {editedItem && (
             <>
               <SectionHeader>User Information</SectionHeader>
               <MetadataBlock>
@@ -225,6 +176,14 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
           </DefaultRow>
           <DefaultRow>
             <div>
+              <p>Country Code</p>
+              <FormikField
+                name="country"
+                placeholder="Country Code"
+                type="text"
+              />
+            </div>
+            <div>
               <p>Phone</p>
               <FormikField name="phone" placeholder="Phone" type="text" />
             </div>
@@ -233,7 +192,116 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <FormikField name="avatar" placeholder="Avatar URL" type="text" />
             </div>
           </DefaultRow>
-          {renderAddressBlock()}
+          <AddressBlock>
+            <p>Address</p>
+            <DefaultRow>
+              <div>
+                <p>Line 1</p>
+                <FormikField
+                  name="address.line1"
+                  placeholder="Line 1"
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>Line 2</p>
+                <FormikField
+                  name="address.line2"
+                  placeholder="Line 2"
+                  type="text"
+                />
+              </div>
+            </DefaultRow>
+            <DefaultRow>
+              <div>
+                <p>City</p>
+                <FormikField
+                  name="address.city"
+                  placeholder="City"
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>State</p>
+                <FormikField
+                  name="address.state"
+                  placeholder="State"
+                  type="text"
+                />
+              </div>
+            </DefaultRow>
+            <DefaultRow>
+              <div>
+                <p>Postal Code</p>
+                <FormikField
+                  name="address.postal_code"
+                  placeholder="Postal Code"
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>Country</p>
+                <FormikField
+                  name="address.country"
+                  placeholder="Country"
+                  type="text"
+                />
+              </div>
+            </DefaultRow>
+          </AddressBlock>
+          {editedItem && (
+            <>
+              <SectionHeader>Read-Only Metadata</SectionHeader>
+              <DefaultRow>
+                <div>
+                  <p>User ID</p>
+                  <FormikField name="id" type="text" readOnly />
+                </div>
+                <div>
+                  <p>UUID</p>
+                  <FormikField name="uuid" type="text" readOnly />
+                </div>
+              </DefaultRow>
+              <DefaultRow>
+                <div>
+                  <p>Created At</p>
+                  <FormikField name="createdAt" type="text" readOnly />
+                </div>
+                <div>
+                  <p>Updated At</p>
+                  <FormikField name="updatedAt" type="text" readOnly />
+                </div>
+              </DefaultRow>
+              <DefaultRow>
+                <div>
+                  <p>Verification Token</p>
+                  <FormikField name="verificationToken" type="text" readOnly />
+                </div>
+                <div>
+                  <p>Verification Expires</p>
+                  <FormikField
+                    name="verificationExpires"
+                    type="text"
+                    readOnly
+                  />
+                </div>
+              </DefaultRow>
+              <DefaultRow>
+                <div>
+                  <p>Password Reset Token</p>
+                  <FormikField name="passwordResetToken" type="text" readOnly />
+                </div>
+                <div>
+                  <p>Password Reset Expires</p>
+                  <FormikField
+                    name="passwordResetExpires"
+                    type="text"
+                    readOnly
+                  />
+                </div>
+              </DefaultRow>
+            </>
+          )}
           {renderButtons({ isSubmitting })}
         </Form>
       )}

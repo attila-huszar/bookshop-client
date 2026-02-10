@@ -6,7 +6,7 @@ import { Button, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { formatDate } from '@/helpers'
 import { authorSchema } from '@/validation'
-import { Author, AuthorUpdate } from '@/types'
+import { Author } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   DefaultRow,
@@ -40,7 +40,8 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
     try {
       let result
       if (editedItem) {
-        result = await dispatch(updateAuthor(values as AuthorUpdate))
+        const { createdAt, updatedAt, ...authorValues } = values
+        result = await dispatch(updateAuthor(authorValues))
       } else {
         const { id, ...authorWithoutId } = values
         result = await dispatch(addAuthor(authorWithoutId))

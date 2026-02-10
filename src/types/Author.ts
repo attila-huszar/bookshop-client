@@ -10,4 +10,6 @@ export type Author = {
   updatedAt?: string
 }
 
-export type AuthorUpdate = { id: number } & Partial<Omit<Author, 'id'>>
+export type AuthorUpdate = { id: number } & Partial<
+  Omit<Author, 'id' | 'createdAt' | 'updatedAt'>
+>

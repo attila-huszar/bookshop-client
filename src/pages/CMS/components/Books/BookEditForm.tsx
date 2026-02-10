@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import { log } from '@/services'
 import { formatDate } from '@/helpers'
 import { bookSchema, validateImageFile } from '@/validation'
-import { BookUpdate, BookWithAuthorId } from '@/types'
+import { BookWithAuthorId } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
 import {
   BookGenreRow,
@@ -111,7 +111,8 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
     try {
       let result
       if (editedItem) {
-        result = await dispatch(updateBook(values as BookUpdate))
+        const { createdAt, updatedAt, ...bookValues } = values
+        result = await dispatch(updateBook(bookValues))
       } else {
         const { id, ...bookWithoutId } = values
         result = await dispatch(addBook(bookWithoutId))

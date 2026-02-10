@@ -59,7 +59,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
     try {
       let result
       if (editedItem) {
-        const { createdAt, updatedAt, paidAt, ...orderValues } = values
+        const { id, createdAt, updatedAt, ...orderValues } = values
         result = await dispatch(updateOrder(orderValues))
       } else {
         const { id, ...orderWithoutId } = values
