@@ -146,6 +146,10 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Email</p>
               <FormikField name="email" placeholder="Email" type="email" />
             </div>
+            <div>
+              <p>Phone</p>
+              <FormikField name="phone" placeholder="Phone" type="text" />
+            </div>
           </DefaultRow>
           <SectionHeader>Shipping Address</SectionHeader>
           <DefaultRow>

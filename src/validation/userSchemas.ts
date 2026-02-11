@@ -65,8 +65,7 @@ export const searchSchema = Yup.string().required('Required')
 export const accountBasicSchema = Yup.object().shape({
   firstName: nameSchema,
   lastName: nameSchema,
-  phone: phoneSchema.optional(),
-  country: countrySchema,
+  phone: phoneSchema.nullable().optional(),
 })
 
 export const accountPasswordSchema = Yup.object().shape({

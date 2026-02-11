@@ -155,13 +155,13 @@ export function Account() {
                     firstName,
                     lastName,
                     email,
-                    phone,
+                    phone: phone || '',
                   }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
                   onSubmit={handleUserInfoSubmit}
                   onReset={handleUserInfoReset}>
-                  {({ dirty, submitForm }) => (
+                  {({ dirty }) => (
                     <Form>
                       <GeneralLine>
                         <div>
@@ -211,12 +211,8 @@ export function Account() {
                           </Button>
                           <Button
                             $size="sm"
-                            type="button"
-                            disabled={userIsUpdating || !dirty}
-                            onClick={() => {
-                              if (dirty) void submitForm()
-                              else setEditingUserInfo(false)
-                            }}>
+                            type="submit"
+                            disabled={userIsUpdating || !dirty}>
                             {userIsUpdating ? 'Saving...' : 'Save'}
                           </Button>
                         </ButtonWrapper>
@@ -253,7 +249,7 @@ export function Account() {
                 validationSchema={addressSchema}
                 onSubmit={handleAddressSubmit}
                 onReset={handleAddressReset}>
-                {({ dirty, submitForm }) => (
+                {({ dirty }) => (
                   <Form>
                     <AddressLine>
                       <div>
@@ -320,12 +316,8 @@ export function Account() {
                         </Button>
                         <Button
                           $size="sm"
-                          type="button"
-                          disabled={userIsUpdating || !dirty}
-                          onClick={() => {
-                            if (dirty) void submitForm()
-                            else setEditingAddress(false)
-                          }}>
+                          type="submit"
+                          disabled={userIsUpdating || !dirty}>
                           {userIsUpdating ? 'Saving...' : 'Save'}
                         </Button>
                       </ButtonWrapper>

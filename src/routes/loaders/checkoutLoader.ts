@@ -3,8 +3,11 @@ import { ROUTE } from '@/routes'
 import { paymentRetrieve, store } from '@/store'
 import { getPaymentId, sessionStorageAdapter } from '@/helpers'
 import { paymentSessionKey } from '@/constants'
+import { authLoader } from './authLoader'
 
 export const checkoutLoader = async () => {
+  await authLoader()
+
   const paymentSession = sessionStorageAdapter.get<string>(paymentSessionKey)
   if (!paymentSession) {
     return redirect(ROUTE.HOME)

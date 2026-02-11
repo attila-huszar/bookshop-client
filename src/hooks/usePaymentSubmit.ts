@@ -4,13 +4,7 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors'
-import type { PaymentIntentShipping } from '@/types'
 import { useMessages } from './useMessages'
-
-type UsePaymentSubmitParams = {
-  receiptEmail: string
-  shipping: PaymentIntentShipping | null
-}
 
 type UsePaymentSubmitReturn = {
   handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
@@ -19,10 +13,7 @@ type UsePaymentSubmitReturn = {
   isLoading: boolean
 }
 
-export function usePaymentSubmit({
-  receiptEmail,
-  shipping,
-}: UsePaymentSubmitParams): UsePaymentSubmitReturn {
+export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
@@ -45,20 +36,11 @@ export function usePaymentSubmit({
       return
     }
 
-    if (!shipping) {
-      setMessage(
-        'Shipping information is missing. Please complete the address form.',
-      )
-      setIsLoading(false)
-      return
-    }
-
     try {
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: receiptEmail,
-          shipping,
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
         },
         redirect: 'if_required',

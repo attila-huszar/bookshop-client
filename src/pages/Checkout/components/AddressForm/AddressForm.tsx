@@ -2,36 +2,9 @@ import { AddressElement } from '@stripe/react-stripe-js'
 import { userSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { defaultCountry, googleMapsKey } from '@/constants'
-import type { PaymentIntentShipping, StripeAddressChange } from '@/types'
 
-type AddressFormProps = {
-  onAddressChange: (shipping: PaymentIntentShipping | null) => void
-}
-
-export function AddressForm({ onAddressChange }: AddressFormProps) {
+export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
-
-  const handleAddressChange = (event: StripeAddressChange) => {
-    if (!event.complete || !event.value) {
-      onAddressChange(null)
-      return
-    }
-
-    const { name, phone, address } = event.value
-
-    onAddressChange({
-      name,
-      phone,
-      address: {
-        line1: address.line1,
-        line2: address.line2 ?? '',
-        city: address.city,
-        state: address.state,
-        postal_code: address.postal_code,
-        country: address.country,
-      },
-    })
-  }
 
   const addressOptions: Parameters<typeof AddressElement>[0]['options'] = {
     mode: 'shipping',
@@ -63,9 +36,5 @@ export function AddressForm({ onAddressChange }: AddressFormProps) {
     }
   }
 
-  return (
-    <form>
-      <AddressElement options={addressOptions} onChange={handleAddressChange} />
-    </form>
-  )
+  return <AddressElement options={addressOptions} className="stripe-form" />
 }
