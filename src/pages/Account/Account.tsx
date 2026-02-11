@@ -40,18 +40,13 @@ export function Account() {
 
   if (!userData) return null
 
-  const handleUserInfoSubmit = async (values: Omit<UserUpdate, 'uuid'>) => {
-    const updateData: UserUpdate = {
-      uuid: userData.uuid,
-      ...values,
-    }
-    await dispatch(updateUserProfile(updateData))
+  const handleUserInfoSubmit = async (values: UserUpdate) => {
+    await dispatch(updateUserProfile(values))
     setEditingUserInfo(false)
   }
 
   const handleAddressSubmit = async (values: StripeAddress) => {
     const updateData: UserUpdate = {
-      uuid: userData.uuid,
       address: {
         line1: values.line1,
         line2: values.line2,

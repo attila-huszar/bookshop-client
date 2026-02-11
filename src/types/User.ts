@@ -1,8 +1,6 @@
 import type { StripeAddress } from './'
 
 export type User = {
-  uuid: string
-  role: UserRole
   firstName: string
   lastName: string
   email: string
@@ -10,10 +8,12 @@ export type User = {
   phone: string
   address: StripeAddress
   avatar: string
+  role: UserRole
 }
 
 export type UserWithMetadata = User & {
   id: number
+  uuid: string
   verified: boolean
   verificationToken: string | null
   verificationExpires: string | null
@@ -51,10 +51,8 @@ export type LoginResponse = {
   firstName: string
 }
 
-export type UserUpdate = { uuid: string } & Partial<
-  Omit<User, 'uuid' | 'createdAt' | 'updatedAt'>
-> & {
-    password?: string
-  }
+export type UserUpdate = Partial<User> & {
+  password?: string
+}
 
 export type CountryData = Record<string, string>

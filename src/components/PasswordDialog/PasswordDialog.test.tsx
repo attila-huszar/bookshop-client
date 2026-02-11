@@ -20,7 +20,7 @@ vi.mock('@/store', () => ({
 }))
 
 describe('PasswordDialog', () => {
-  const email = 'test-uuid'
+  const email = 'test.email@example.com'
   const mockDispatch = vi.fn()
 
   beforeEach(() => {
