@@ -23,7 +23,8 @@ export default createGlobalStyle`
     --secondary-hover: #f0f8ff;
     --secondary-faded: #daedfd;
     --white: #fdfdfd;
-    --whitesmoke: #f7f7f7;
+    --white-smoke: #f5f5f5;
+    --pearly-white: #f8f6f2;
     --hover-grey: #f9f9f9;
     --light-grey: #eaeaea;
     --mid-grey: #a7a7a7;

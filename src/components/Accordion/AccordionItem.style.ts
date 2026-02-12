@@ -21,7 +21,7 @@ export const Header = styled.div<AccordionItemTypes>`
   }
 
   &:hover {
-    background-color: var(--whitesmoke);
+    background-color: var(--pearly-white);
   }
 `
 

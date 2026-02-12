@@ -11,6 +11,7 @@ export const SelectedOption = styled.div<FormTypes>`
   align-items: center;
   gap: 0.5rem;
   height: 3rem;
+  cursor: pointer;
 
   & > div {
     display: flex;

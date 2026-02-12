@@ -114,7 +114,7 @@ export const TotalPrice = styled.div`
   margin: 2rem 0;
   padding: 1rem 2rem;
   border-radius: 10px;
-  background-color: var(--whitesmoke);
+  background-color: var(--pearly-white);
   text-align: right;
 
   div {

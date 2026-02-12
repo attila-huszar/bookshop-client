@@ -100,7 +100,7 @@ export const SectionHeader = styled.h3`
 
 export const MetadataBlock = styled.div`
   padding: 0.75rem;
-  background: var(--whitesmoke);
+  background: var(--pearly-white);
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
 

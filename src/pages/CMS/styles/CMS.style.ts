@@ -82,7 +82,7 @@ export const StyledTable = styled.div`
     }
 
     th {
-      background: var(--whitesmoke);
+      background: var(--pearly-white);
       font-size: 0.75rem;
       font-weight: 600;
       text-align: left;

@@ -55,19 +55,21 @@ export const baseInputStyles = css<FormTypes>`
 
     ${({ disabled }) =>
     disabled &&
-    `
-        background-color: var(--whitesmoke);
-        cursor: not-allowed;
-        color: var(--black);
-      `}
+    `background-color: var(--light-grey);
+    color: var(--black);
+    cursor: not-allowed;
+    `}
+
+    ${({ readOnly }) =>
+    readOnly && `background-color: var(--white-smoke); color: var(--black); `}
 `
 
 export const Input = styled.input<FormTypes>`
   ${baseInputStyles}
   height: 3rem;
 
-  &:read-only {
-    background-color: var(--whitesmoke);
+  &[type='file'] {
+    align-content: center;
   }
 `
 
@@ -78,7 +80,6 @@ export const Select = styled.select<FormTypes>`
 
   &:disabled {
     color: var(--black);
-    background-color: var(--whitesmoke);
   }
 `
 

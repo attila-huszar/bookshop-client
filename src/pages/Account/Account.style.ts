@@ -23,7 +23,7 @@ export const Details = styled.div`
   padding: 1rem 1.5rem;
   border: 1px solid var(--light-grey);
   border-radius: 10px;
-  background-color: var(--whitesmoke);
+  background-color: var(--pearly-white);
 
   > h5 {
     margin-bottom: 1rem;

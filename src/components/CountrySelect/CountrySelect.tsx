@@ -29,19 +29,19 @@ export function CountrySelect({
 }: CountrySelectProps) {
   const { setFieldValue, getFieldMeta, submitCount } =
     useFormikContext<Record<string, unknown>>()
-  const [countries, setCountries] = useState<CountryData>({})
-  const meta = getFieldMeta(fieldName)
-  const formCountry =
-    typeof meta.value === 'string'
-      ? meta.value.toLowerCase()
-      : initial.toLowerCase()
-  const [selectedCountry, setSelectedCountry] = useState(formCountry)
   const [isOpen, setIsOpen] = useState(false)
+  const [countries, setCountries] = useState<CountryData>({})
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
+  const meta = getFieldMeta(fieldName)
+  const selectedCountry =
+    typeof meta.value === 'string'
+      ? meta.value.toLowerCase()
+      : initial.toLowerCase()
+  const hasSelection = Boolean(selectedCountry)
   const countryName = countries[selectedCountry]
 
   useClickOutside(dropdownRef, () => setIsOpen(false))
@@ -87,7 +87,6 @@ export function CountrySelect({
 
   const onSelect = (code: string) => {
     if (readOnly) return
-    setSelectedCountry(code)
     void setFieldValue(fieldName, code, false)
     setIsOpen(false)
   }
@@ -103,12 +102,14 @@ export function CountrySelect({
         $error={shouldShowError && errorMessage}
         readOnly={readOnly}>
         <div>
-          <CountryFlag
-            src={getFlagUrl(selectedCountry)}
-            alt={`${countryName} flag`}
-            loading="lazy"
-          />
-          <CountryName>{countryName}</CountryName>
+          {hasSelection && (
+            <CountryFlag
+              src={getFlagUrl(selectedCountry)}
+              alt={`${countryName} flag`}
+              loading="lazy"
+            />
+          )}
+          <CountryName>{countryName ?? 'Select country...'}</CountryName>
         </div>
         <CaretDownIcon />
       </SelectedOption>
