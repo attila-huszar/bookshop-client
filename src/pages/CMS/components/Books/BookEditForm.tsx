@@ -1,6 +1,6 @@
 import { ChangeEvent, FC, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { Form, Formik, FormikHelpers, FormikState } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import { uploadProductImage } from '@/api'
 import { addBook, updateBook } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
@@ -14,9 +14,10 @@ import {
   BookGenreRow,
   BookSettingsRow,
   BookTitleRow,
-  DefaultRow,
   FormButtons,
+  FullRow,
   MetadataBlock,
+  Row,
   SectionHeader,
 } from '../../styles'
 
@@ -132,24 +133,13 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
     }
   }
 
-  const renderButtons = ({ isSubmitting }: Partial<FormikState<unknown>>) => (
-    <FormButtons>
-      <Button type="reset" onClick={onClose} $size="sm" $inverted>
-        Cancel
-      </Button>
-      <Button type="submit" $size="sm">
-        {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
-      </Button>
-    </FormButtons>
-  )
-
   return (
     <Formik
       key="books"
       initialValues={editedItem ?? initialBookValues}
       validationSchema={bookSchema}
       onSubmit={handleSubmit}>
-      {({ values, isSubmitting, setFieldValue }) => (
+      {({ values, dirty, isSubmitting, setFieldValue }) => (
         <Form>
           {editedItem && (
             <>
@@ -205,7 +195,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
               />
             </div>
           </BookTitleRow>
-          <DefaultRow>
+          <FullRow>
             <div>
               <p>Description</p>
               <FormikField
@@ -215,7 +205,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 rows={4}
               />
             </div>
-          </DefaultRow>
+          </FullRow>
           <BookGenreRow>
             <div>
               <p>Genre</p>
@@ -226,7 +216,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <FormikField name="rating" placeholder="Rating" type="number" />
             </div>
           </BookGenreRow>
-          <DefaultRow>
+          <Row>
             <div>
               <p>Price</p>
               <FormikField name="price" placeholder="Price" type="number" />
@@ -257,7 +247,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 )
               })()}
             </div>
-          </DefaultRow>
+          </Row>
           <BookSettingsRow>
             <div style={{ position: 'relative' }}>
               <p>Image URL</p>
@@ -318,7 +308,19 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <FormikField name="newRelease" type="checkbox" />
             </div>
           </BookSettingsRow>
-          {renderButtons({ isSubmitting })}
+          <FormButtons>
+            <Button
+              type="reset"
+              onClick={onClose}
+              $size="sm"
+              $inverted
+              disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
+              {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+            </Button>
+          </FormButtons>
         </Form>
       )}
     </Formik>

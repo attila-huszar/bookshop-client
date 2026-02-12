@@ -1,23 +1,24 @@
-import { useEffect } from 'react'
+import { RefObject, useEffect } from 'react'
 
-type Props = {
-  ref: React.RefObject<HTMLElement | null>
-  state: boolean
-  setter: (state: boolean) => void
-}
-
-export const useClickOutside = ({ ref, state, setter }: Props): void => {
+export const useClickOutside = (
+  ref: RefObject<HTMLElement | null>,
+  onOutsideClick: () => void,
+): void => {
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (state && !ref.current?.contains(event.target as Node)) {
-        setter(false)
+    const handler = (event: MouseEvent) => {
+      const element = ref.current
+      const target = event.target as Node | null
+      if (!element || !target) return
+
+      if (!element.contains(target)) {
+        onOutsideClick()
       }
     }
 
-    document.addEventListener('mouseup', handleClickOutside)
+    document.addEventListener('pointerdown', handler)
 
     return () => {
-      document.removeEventListener('mouseup', handleClickOutside)
+      document.removeEventListener('pointerdown', handler)
     }
-  }, [ref, state, setter])
+  }, [ref, onOutsideClick])
 }

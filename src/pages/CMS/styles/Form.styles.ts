@@ -16,15 +16,27 @@ export const StyledEditDialog = styled.dialog`
   box-shadow: var(--shadow);
 `
 
-export const FormRow = styled.div`
+export const DefaultRow = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
 `
 
-export const DefaultRow = styled(FormRow)`
+export const Row = styled(DefaultRow)`
   > div {
-    flex-grow: 1;
+    flex: 1 1 50%;
+  }
+`
+
+export const FullRow = styled(DefaultRow)`
+  > div {
+    flex: 1;
+  }
+`
+
+export const UserRoleRow = styled(DefaultRow)`
+  > div:first-child {
+    flex: 1;
   }
 
   > div.centered-checkbox {
@@ -34,7 +46,7 @@ export const DefaultRow = styled(FormRow)`
   }
 `
 
-export const OrderItemRow = styled(FormRow)`
+export const OrderItemRow = styled(DefaultRow)`
   > div:not(:first-child) {
     flex-grow: 1;
   }
@@ -53,7 +65,7 @@ export const FormButtons = styled.div`
 export const AddressBlock = styled.div`
   padding: 0.25rem 0.5rem 0;
   border: 1px solid var(--light-grey);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
   > p {
@@ -61,10 +73,10 @@ export const AddressBlock = styled.div`
   }
 `
 
-export const ItemBlock = styled.div`
+export const OrderItemBlock = styled.div`
   padding: 0.25rem 0.5rem 0;
   border: 1px solid var(--light-grey);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
   > p {
@@ -89,7 +101,7 @@ export const SectionHeader = styled.h3`
 export const MetadataBlock = styled.div`
   padding: 0.75rem;
   background: var(--whitesmoke);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
   display: grid;
@@ -112,7 +124,7 @@ export const MetadataBlock = styled.div`
   }
 `
 
-export const BookTitleRow = styled(FormRow)`
+export const BookTitleRow = styled(DefaultRow)`
   > div:not(:nth-child(3)) {
     flex-grow: 1;
   }
@@ -136,7 +148,7 @@ export const BookTitleRow = styled(FormRow)`
   }
 `
 
-export const BookGenreRow = styled(FormRow)`
+export const BookGenreRow = styled(DefaultRow)`
   > div:first-child {
     flex-grow: 1;
   }
@@ -146,7 +158,7 @@ export const BookGenreRow = styled(FormRow)`
   }
 `
 
-export const BookSettingsRow = styled(FormRow)`
+export const BookSettingsRow = styled(DefaultRow)`
   > div:first-child {
     flex-grow: 1;
   }

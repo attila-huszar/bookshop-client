@@ -10,12 +10,16 @@ const statusEmojiMap: Record<PaymentIntentStatus, string> = {
   requires_capture: '🔒',
 }
 
-export const formatPaymentStatus = (status: PaymentIntentStatus): string => {
-  const emoji = statusEmojiMap[status] || '❓'
+export const formatPaymentStatus = (
+  status: PaymentIntentStatus | undefined,
+): string => {
+  const emoji = status ? statusEmojiMap[status] : '❓'
   const formattedStatus = status
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+    ? status
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    : 'Unknown'
 
   return `${emoji} ${formattedStatus}`
 }

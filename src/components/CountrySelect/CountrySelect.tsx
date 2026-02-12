@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFormikContext } from 'formik'
 import { getCountryCodes } from '@/api'
-import { userSelector } from '@/store'
-import { useAppSelector, useClickOutside } from '@/hooks'
+import { useClickOutside } from '@/hooks'
 import { defaultCountry } from '@/constants'
 import type { CountryData } from '@/types'
 import { CaretDownIcon } from '@/assets/svg'
@@ -28,13 +27,15 @@ export function CountrySelect({
   fieldName = 'country',
   readOnly = false,
 }: CountrySelectProps) {
-  const { userData } = useAppSelector(userSelector)
-  const { values, setFieldValue, getFieldMeta, submitCount } =
-    useFormikContext<Record<string, string>>()
+  const { setFieldValue, getFieldMeta, submitCount } =
+    useFormikContext<Record<string, unknown>>()
   const [countries, setCountries] = useState<CountryData>({})
-  const [selectedCountry, setSelectedCountry] = useState(
-    values[fieldName] ?? userData?.country ?? initial,
-  )
+  const meta = getFieldMeta(fieldName)
+  const formCountry =
+    typeof meta.value === 'string'
+      ? meta.value.toLowerCase()
+      : initial.toLowerCase()
+  const [selectedCountry, setSelectedCountry] = useState(formCountry)
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -43,7 +44,7 @@ export function CountrySelect({
 
   const countryName = countries[selectedCountry]
 
-  useClickOutside({ ref: dropdownRef, state: isOpen, setter: setIsOpen })
+  useClickOutside(dropdownRef, () => setIsOpen(false))
 
   useEffect(() => {
     if (isOpen && listRef.current) {
@@ -91,7 +92,6 @@ export function CountrySelect({
     setIsOpen(false)
   }
 
-  const meta = getFieldMeta(fieldName)
   const shouldShowError = meta.touched && submitCount > 0
   const errorMessage = meta.error
 
@@ -101,7 +101,7 @@ export function CountrySelect({
         onClick={onInputClick}
         $valid={shouldShowError && !errorMessage}
         $error={shouldShowError && errorMessage}
-        disabled={readOnly}>
+        readOnly={readOnly}>
         <div>
           <CountryFlag
             src={getFlagUrl(selectedCountry)}

@@ -10,6 +10,7 @@ export const SelectedOption = styled.div<FormTypes>`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  height: 3rem;
 
   & > div {
     display: flex;
@@ -37,7 +38,7 @@ export const DropdownList = styled.div`
   right: 0;
   background-color: #fff;
   border: 1px solid lightgrey;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   margin-top: 4px;
   padding: 0;
   z-index: 10;

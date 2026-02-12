@@ -9,7 +9,7 @@ import { Dropdown, DropdownList, MenuItem, StyledMenu } from './Menu.style'
 export function Menu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
+  useClickOutside(menuRef, () => setMenuOpen(false))
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)

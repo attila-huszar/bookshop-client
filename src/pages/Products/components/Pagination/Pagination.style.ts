@@ -14,7 +14,7 @@ export const PageSelectButton = styled.button`
   font-size: 0.875rem;
   background: none;
   border: 2px solid var(--light-black);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: all 0.2s ease-out;
 

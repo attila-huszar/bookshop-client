@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { toast } from 'react-hot-toast'
-import { Form, Formik, FormikHelpers, FormikState } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import { addAuthor, updateAuthor } from '@/store'
 import { Button, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
@@ -9,9 +9,10 @@ import { authorSchema } from '@/validation'
 import { Author } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
-  DefaultRow,
   FormButtons,
+  FullRow,
   MetadataBlock,
+  Row,
   SectionHeader,
 } from '../../styles'
 
@@ -61,24 +62,13 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
     }
   }
 
-  const renderButtons = ({ isSubmitting }: Partial<FormikState<unknown>>) => (
-    <FormButtons>
-      <Button type="reset" onClick={onClose} $size="sm" $inverted>
-        Cancel
-      </Button>
-      <Button type="submit" $size="sm">
-        {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
-      </Button>
-    </FormButtons>
-  )
-
   return (
     <Formik
       key="authors"
       initialValues={editedItem ?? initialAuthorValues}
       validationSchema={authorSchema}
       onSubmit={handleSubmit}>
-      {({ isSubmitting }) => (
+      {({ dirty, isSubmitting }) => (
         <Form>
           {editedItem && (
             <>
@@ -107,7 +97,7 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
               </MetadataBlock>
             </>
           )}
-          <DefaultRow>
+          <Row>
             <div>
               <p>Name</p>
               <FormikField name="name" placeholder="Name" type="text" />
@@ -124,8 +114,8 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Homeland</p>
               <FormikField name="homeland" placeholder="Homeland" type="text" />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <Row>
             <div>
               <p>Birth</p>
               <FormikField name="birthYear" placeholder="Birth" type="text" />
@@ -134,8 +124,8 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Death</p>
               <FormikField name="deathYear" placeholder="Death" type="text" />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <FullRow>
             <div>
               <p>Biography</p>
               <FormikField
@@ -145,8 +135,20 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 rows={4}
               />
             </div>
-          </DefaultRow>
-          {renderButtons({ isSubmitting })}
+          </FullRow>
+          <FormButtons>
+            <Button
+              type="reset"
+              onClick={onClose}
+              $size="sm"
+              $inverted
+              disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
+              {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+            </Button>
+          </FormButtons>
         </Form>
       )}
     </Formik>

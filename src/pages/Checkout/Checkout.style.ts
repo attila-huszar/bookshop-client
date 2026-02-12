@@ -54,7 +54,7 @@ export const StyledCheckout = styled.section`
   }
 
   #email {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     margin-bottom: 16px;
     padding: 12px;
     border: 1px solid rgba(50, 50, 93, 0.1);

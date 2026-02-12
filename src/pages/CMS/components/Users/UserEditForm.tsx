@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { toast } from 'react-hot-toast'
-import { Form, Formik, FormikHelpers, FormikState } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import { addUser, updateUser } from '@/store'
 import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
@@ -10,10 +10,12 @@ import { UserRole, UserWithMetadata } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   AddressBlock,
-  DefaultRow,
   FormButtons,
+  FullRow,
   MetadataBlock,
+  Row,
   SectionHeader,
+  UserRoleRow,
 } from '../../styles'
 
 const initialUserValues: UserWithMetadata = {
@@ -88,24 +90,13 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
     }
   }
 
-  const renderButtons = ({ isSubmitting }: Partial<FormikState<unknown>>) => (
-    <FormButtons>
-      <Button type="reset" onClick={onClose} $size="sm" $inverted>
-        Cancel
-      </Button>
-      <Button type="submit" $size="sm">
-        {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
-      </Button>
-    </FormButtons>
-  )
-
   return (
     <Formik
       key="users"
       initialValues={editedItem ?? initialUserValues}
       validationSchema={userSchema}
       onSubmit={handleSubmit}>
-      {({ isSubmitting }) => (
+      {({ dirty, isSubmitting }) => (
         <Form>
           {editedItem && (
             <>
@@ -134,7 +125,7 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               </MetadataBlock>
             </>
           )}
-          <DefaultRow>
+          <Row>
             <div>
               <p>First Name</p>
               <FormikField
@@ -151,8 +142,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 type="text"
               />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <Row>
             <div>
               <p>Email</p>
               <FormikField name="email" placeholder="Email" type="email" />
@@ -161,8 +152,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Phone</p>
               <FormikField name="phone" placeholder="Phone" type="text" />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <Row>
             <div>
               <p>Country at Registration</p>
               <CountrySelect fieldName="country" />
@@ -171,8 +162,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Avatar URL</p>
               <FormikField name="avatar" placeholder="Avatar URL" type="text" />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <UserRoleRow>
             <div>
               <p>Role</p>
               <FormikField name="role" type="select">
@@ -189,10 +180,10 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 <FormikField name="verified" type="checkbox" />
               </div>
             </div>
-          </DefaultRow>
+          </UserRoleRow>
           <AddressBlock>
             <p>Address</p>
-            <DefaultRow>
+            <Row>
               <div>
                 <p>Line 1</p>
                 <FormikField
@@ -209,8 +200,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                   type="text"
                 />
               </div>
-            </DefaultRow>
-            <DefaultRow>
+            </Row>
+            <Row>
               <div>
                 <p>City</p>
                 <FormikField
@@ -227,8 +218,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                   type="text"
                 />
               </div>
-            </DefaultRow>
-            <DefaultRow>
+            </Row>
+            <Row>
               <div>
                 <p>Postal Code</p>
                 <FormikField
@@ -241,18 +232,18 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 <p>Country</p>
                 <CountrySelect fieldName="address.country" />
               </div>
-            </DefaultRow>
+            </Row>
           </AddressBlock>
           {editedItem && (
             <>
               <SectionHeader>Read-Only Metadata</SectionHeader>
-              <DefaultRow>
+              <FullRow>
                 <div>
                   <p>UUID</p>
                   <FormikField name="uuid" type="text" readOnly />
                 </div>
-              </DefaultRow>
-              <DefaultRow>
+              </FullRow>
+              <Row>
                 <div>
                   <p>Verification Token</p>
                   <FormikField name="verificationToken" type="text" readOnly />
@@ -265,8 +256,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                     readOnly
                   />
                 </div>
-              </DefaultRow>
-              <DefaultRow>
+              </Row>
+              <Row>
                 <div>
                   <p>Password Reset Token</p>
                   <FormikField name="passwordResetToken" type="text" readOnly />
@@ -279,10 +270,22 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
                     readOnly
                   />
                 </div>
-              </DefaultRow>
+              </Row>
             </>
           )}
-          {renderButtons({ isSubmitting })}
+          <FormButtons>
+            <Button
+              type="reset"
+              onClick={onClose}
+              $size="sm"
+              $inverted
+              disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
+              {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+            </Button>
+          </FormButtons>
         </Form>
       )}
     </Formik>

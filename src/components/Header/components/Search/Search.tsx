@@ -30,8 +30,7 @@ export function Search() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
-  const initialValues = { search: '' }
-  useClickOutside({ ref: searchRef, state: searchOpen, setter: setSearchOpen })
+  useClickOutside(searchRef, () => setSearchOpen(false))
 
   async function getSearchResults(searchString: string) {
     if (searchString.length > 1) {
@@ -113,7 +112,7 @@ export function Search() {
   return (
     <StyledForm ref={searchRef}>
       <Formik
-        initialValues={initialValues}
+        initialValues={{ search: '' }}
         validationSchema={searchSchema}
         onSubmit={handleSubmit}>
         {({ values, handleChange, handleBlur, resetForm }) => (

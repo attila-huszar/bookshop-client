@@ -31,7 +31,7 @@ export const countrySchema = Yup.string()
 
 export const addressSchema = Yup.object().shape({
   line1: Yup.string().required('Required'),
-  line2: Yup.string(),
+  line2: Yup.string().nullable(),
   city: Yup.string().required('Required'),
   state: Yup.string().required('Required'),
   postal_code: Yup.string().required('Required'),
@@ -86,7 +86,7 @@ export const userSchema = Yup.object().shape({
   firstName: nameSchema,
   lastName: nameSchema,
   role: Yup.mixed<UserRole>().oneOf(Object.values(UserRole), 'Invalid role'),
-  phone: phoneSchema,
-  avatar: avatarSchema,
+  phone: phoneSchema.nullable(),
+  avatar: avatarSchema.nullable(),
   address: addressSchema,
 })

@@ -72,7 +72,7 @@ export const DropdownList = styled.ul`
   font-size: 0.775rem;
   list-style: none;
   background-color: var(--white);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   z-index: 10;
   overflow-y: auto;
 
@@ -81,11 +81,11 @@ export const DropdownList = styled.ul`
   }
 
   li:first-child {
-    border-radius: 5px 5px 0 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
   }
 
   li:last-child {
-    border-radius: 0 0 5px 5px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
   & a {

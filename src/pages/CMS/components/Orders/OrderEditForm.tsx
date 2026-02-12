@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { toast } from 'react-hot-toast'
-import { Form, Formik, FormikHelpers, FormikState } from 'formik'
-import { addOrder, updateOrder } from '@/store'
+import { Form, Formik, FormikHelpers } from 'formik'
+import { updateOrder } from '@/store'
 import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { formatDate, formatPaymentStatus } from '@/helpers'
@@ -10,11 +10,11 @@ import { Order } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   AddressBlock,
-  DefaultRow,
   FormButtons,
-  ItemBlock,
   MetadataBlock,
+  OrderItemBlock,
   OrderItemRow,
+  Row,
   SectionHeader,
 } from '../../styles'
 
@@ -30,14 +30,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
 
   const handleSubmit = async (values: Order, actions: FormikHelpers<Order>) => {
     try {
-      let result
-      if (editedItem) {
-        const { id, createdAt, updatedAt, ...orderValues } = values
-        result = await dispatch(updateOrder(orderValues))
-      } else {
-        const { id, ...orderWithoutId } = values
-        result = await dispatch(addOrder(orderWithoutId))
-      }
+      const { id, createdAt, updatedAt, paidAt, ...orderValues } = values
+      const result = await dispatch(updateOrder(orderValues))
 
       if (result?.meta?.requestStatus === 'fulfilled') {
         actions.resetForm()
@@ -53,24 +47,13 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
     }
   }
 
-  const renderButtons = ({ isSubmitting }: Partial<FormikState<unknown>>) => (
-    <FormButtons>
-      <Button type="reset" onClick={onClose} $size="sm" $inverted>
-        Cancel
-      </Button>
-      <Button type="submit" $size="sm">
-        {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
-      </Button>
-    </FormButtons>
-  )
-
   return (
     <Formik
       key="orders"
       initialValues={editedItem}
       validationSchema={orderSchema}
       onSubmit={handleSubmit}>
-      {({ isSubmitting }) => (
+      {({ dirty, isSubmitting }) => (
         <Form>
           <SectionHeader>Order Information</SectionHeader>
           <MetadataBlock>
@@ -92,13 +75,14 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
             </div>
           </MetadataBlock>
           <SectionHeader>Payment Details</SectionHeader>
-          <DefaultRow>
+          <Row>
             <div>
               <p>Payment ID</p>
               <FormikField
                 name="paymentId"
                 placeholder="Payment ID"
                 type="text"
+                readOnly
               />
             </div>
             <div>
@@ -111,8 +95,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 readOnly
               />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <Row>
             <div>
               <p>Total</p>
               <FormikField name="total" placeholder="Total" type="number" />
@@ -121,9 +105,9 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Currency</p>
               <FormikField name="currency" placeholder="Currency" type="text" />
             </div>
-          </DefaultRow>
+          </Row>
           <SectionHeader>Customer Information</SectionHeader>
-          <DefaultRow>
+          <Row>
             <div>
               <p>First Name</p>
               <FormikField
@@ -140,8 +124,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 type="text"
               />
             </div>
-          </DefaultRow>
-          <DefaultRow>
+          </Row>
+          <Row>
             <div>
               <p>Email</p>
               <FormikField name="email" placeholder="Email" type="email" />
@@ -150,9 +134,9 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
               <p>Phone</p>
               <FormikField name="phone" placeholder="Phone" type="text" />
             </div>
-          </DefaultRow>
+          </Row>
           <SectionHeader>Shipping Address</SectionHeader>
-          <DefaultRow>
+          <Row>
             <div>
               <p>Name</p>
               <FormikField
@@ -169,10 +153,10 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 type="text"
               />
             </div>
-          </DefaultRow>
+          </Row>
           <AddressBlock>
             <p>Address</p>
-            <DefaultRow>
+            <Row>
               <div>
                 <p>Line 1</p>
                 <FormikField
@@ -189,8 +173,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                   type="text"
                 />
               </div>
-            </DefaultRow>
-            <DefaultRow>
+            </Row>
+            <Row>
               <div>
                 <p>City</p>
                 <FormikField
@@ -207,8 +191,8 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                   type="text"
                 />
               </div>
-            </DefaultRow>
-            <DefaultRow>
+            </Row>
+            <Row>
               <div>
                 <p>Postal Code</p>
                 <FormikField
@@ -221,10 +205,10 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 <p>Country</p>
                 <CountrySelect fieldName="shipping.address.country" />
               </div>
-            </DefaultRow>
+            </Row>
           </AddressBlock>
           <SectionHeader>Order Items</SectionHeader>
-          <ItemBlock>
+          <OrderItemBlock>
             <p>Items</p>
             {editedItem.items?.map((item, idx) => (
               <div key={item.id}>
@@ -254,7 +238,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                     />
                   </div>
                 </OrderItemRow>
-                <DefaultRow>
+                <Row>
                   <div>
                     <p>Price</p>
                     <FormikField
@@ -279,11 +263,23 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                       type="number"
                     />
                   </div>
-                </DefaultRow>
+                </Row>
               </div>
             ))}
-          </ItemBlock>
-          {renderButtons({ isSubmitting })}
+          </OrderItemBlock>
+          <FormButtons>
+            <Button
+              type="reset"
+              onClick={onClose}
+              $size="sm"
+              $inverted
+              disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
+              {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+            </Button>
+          </FormButtons>
         </Form>
       )}
     </Formik>
