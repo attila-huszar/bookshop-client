@@ -28,7 +28,7 @@ export const Details = styled.div`
 export const Image = styled.img`
   height: 100%;
   min-width: 11.25rem;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   object-fit: cover;
 `
 

@@ -1,19 +1,19 @@
-import type { Address } from '@stripe/stripe-js'
+import type { StripeAddress } from './'
 
 export type User = {
-  id: number
-  uuid: string
-  role: UserRole
   firstName: string
   lastName: string
   email: string
   country: string
   phone: string
-  address: Address
+  address: StripeAddress
   avatar: string
+  role: UserRole
 }
 
 export type UserWithMetadata = User & {
+  id: number
+  uuid: string
   verified: boolean
   verificationToken: string | null
   verificationExpires: string | null
@@ -51,8 +51,8 @@ export type LoginResponse = {
   firstName: string
 }
 
-export type UserUpdate = Partial<User> & { password?: string }
-
-export type UserFormValues = Omit<User, 'id' | 'uuid'>
+export type UserUpdate = Partial<User> & {
+  password?: string
+}
 
 export type CountryData = Record<string, string>

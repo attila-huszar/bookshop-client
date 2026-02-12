@@ -1,5 +1,5 @@
+import { baseRequest, PATH } from '.'
 import type { Book, FilterActive, Filters } from '@/types'
-import { baseRequest, PATH } from './'
 
 export const getBooks = async ({
   currentPage,

@@ -5,14 +5,18 @@ import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
-  orderClear,
-  orderCreate,
-  orderSelector,
+  paymentClear,
+  paymentCreate,
+  paymentSelector,
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { calcSubtotalOrDiscount, enforceMinMax } from '@/helpers'
-import { paymentSessionKey } from '@/constants'
+import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
+import {
+  defaultCurrencySymbol,
+  maxItemQuantity,
+  paymentSessionKey,
+} from '@/constants'
 import type { Cart } from '@/types'
 import {
   BinIcon,
@@ -49,42 +53,47 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading } = useAppSelector(cartSelector)
-  const { order, orderIsLoading, orderCreateError } =
-    useAppSelector(orderSelector)
+  const { payment, paymentIsLoading, paymentCreateError } =
+    useAppSelector(paymentSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const paymentSession =
-      order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
-
-    if (paymentSession) {
+    if (payment?.session) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [order?.paymentSession, navigate])
+  }, [payment?.session, navigate])
 
   useEffect(() => {
-    if (orderIsLoading) {
+    if (paymentIsLoading) {
       ref.current?.showModal()
     } else {
       ref.current?.close()
     }
-  }, [orderIsLoading])
+  }, [paymentIsLoading])
 
   useEffect(() => {
-    if (orderCreateError) {
-      toast.error(orderCreateError, {
-        id: 'order-error',
+    if (paymentCreateError) {
+      toast.error(paymentCreateError, {
+        id: 'payment-error',
       })
     }
-  }, [orderCreateError])
+  }, [paymentCreateError])
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const subtotal = calcSubtotalOrDiscount(cartItems, 'subtotal')
-  const discount = calcSubtotalOrDiscount(cartItems, 'discount')
+  const price = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  )
+
+  const discountPrice = cartItems.reduce((acc, item) => {
+    return acc + item.discountPrice * item.quantity
+  }, 0)
+
+  const discount = price - discountPrice
 
   const handleRemoveQuantity = (item: Cart) => {
     if (item.quantity > 0) {
@@ -93,7 +102,7 @@ export function Cart() {
   }
 
   const handleAddQuantity = (item: Cart) => {
-    if (item.quantity < 50) {
+    if (item.quantity < maxItemQuantity) {
       addQuantity(item)
     }
   }
@@ -107,8 +116,9 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartItems.length && !orderIsLoading) {
-      const existingSession = sessionStorage.getItem(paymentSessionKey)
+    if (cartItems.length && !paymentIsLoading) {
+      const existingSession =
+        sessionStorageAdapter.get<string>(paymentSessionKey)
 
       if (existingSession) {
         void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
@@ -120,14 +130,14 @@ export function Cart() {
           })),
         }
 
-        void dispatch(orderCreate(orderRequest))
+        void dispatch(paymentCreate(orderRequest))
       }
     }
   }
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(orderClear())
+    dispatch(paymentClear())
   }
 
   const navigateToBooks = () => {
@@ -180,7 +190,7 @@ export function Cart() {
                   type="number"
                   inputMode="numeric"
                   min={1}
-                  max={50}
+                  max={maxItemQuantity}
                 />
                 <IconButton
                   onClick={() => handleAddQuantity(item)}
@@ -189,7 +199,7 @@ export function Cart() {
                   $size="sm"
                   $iconSize="sm"
                   $color="var(--grey)"
-                  disabled={item.quantity >= 50}
+                  disabled={item.quantity >= maxItemQuantity}
                 />
               </Quantity>
               <PriceItem>
@@ -224,20 +234,26 @@ export function Cart() {
           {!!discount && (
             <div>
               <h4>Subtotal:</h4>
-              <h4>$ {subtotal.toFixed(2)}</h4>
+              <h4>
+                {defaultCurrencySymbol} {price.toFixed(2)}
+              </h4>
               <h4>Discount:</h4>
-              <h4>$ -{discount.toFixed(2)}</h4>
+              <h4>
+                {defaultCurrencySymbol} -{discount.toFixed(2)}
+              </h4>
             </div>
           )}
           <div>
             <p>Total:</p>
-            <p>$ {(subtotal - discount).toFixed(2)}</p>
+            <p>
+              {defaultCurrencySymbol} {discountPrice.toFixed(2)}
+            </p>
           </div>
         </TotalPrice>
         <ButtonWrapper>
           <Button
             onClick={navigateToBooks}
-            disabled={orderIsLoading}
+            disabled={paymentIsLoading}
             $size="lg"
             $textSize="lg"
             $inverted>
@@ -246,7 +262,7 @@ export function Cart() {
           <IconButton
             icon={<BinIcon />}
             onClick={handleCartClear}
-            disabled={orderIsLoading}
+            disabled={paymentIsLoading}
             title="Reset Cart"
             $size="lg"
             $color="var(--mid-grey)"
@@ -254,8 +270,8 @@ export function Cart() {
           />
           <Button
             onClick={handleCheckout}
-            disabled={orderIsLoading}
-            $icon={orderIsLoading ? <SpinnerIcon /> : <CartIcon />}
+            disabled={paymentIsLoading}
+            $icon={paymentIsLoading ? <SpinnerIcon /> : <CartIcon />}
             $size="lg"
             $textSize="lg"
             $shadow>

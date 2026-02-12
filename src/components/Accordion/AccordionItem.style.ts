@@ -9,7 +9,7 @@ export const Header = styled.div<AccordionItemTypes>`
   justify-content: space-between;
   height: 2rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.3s ease-out;
 
@@ -21,7 +21,7 @@ export const Header = styled.div<AccordionItemTypes>`
   }
 
   &:hover {
-    background-color: var(--whitesmoke);
+    background-color: var(--pearly-white);
   }
 `
 
@@ -44,7 +44,7 @@ export const Content = styled.div`
     margin: 0.25rem auto 0;
     padding: 0.25rem 0.5rem;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     cursor: pointer;
   }
 `

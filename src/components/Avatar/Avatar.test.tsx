@@ -9,8 +9,8 @@ describe('Avatar', () => {
   const size = 40
 
   it('should render default icon when imgUrl is not provided', () => {
-    const { container } = render(<Avatar imgUrl="" />, { wrapper: Providers })
-    expect(container.querySelector('svg')).toBeInTheDocument()
+    render(<Avatar imgUrl="" />, { wrapper: Providers })
+    expect(screen.getByTestId('default-avatar-icon')).toBeInTheDocument()
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 

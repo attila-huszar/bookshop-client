@@ -1,58 +1,46 @@
-import { PaymentIntent } from '@stripe/stripe-js'
-import type { CartLocalStorage } from './Cart'
-
-export enum OrderStatus {
-  Pending = 'PENDING',
-  Paid = 'PAID',
-  Captured = 'CAPTURED',
-  Canceled = 'CANCELED',
-}
+import { PaymentIntentShipping, PaymentIntentStatus } from './'
+import type { MinimalCart } from './Cart'
 
 export type Order = {
   id: number
   paymentId: string
-  paymentIntentStatus: PaymentIntent.Status
-  orderStatus: OrderStatus
+  paymentStatus: PaymentIntentStatus
   total: number
   currency: string
   items: OrderItem[]
   firstName: string | null
   lastName: string | null
   email: string | null
-  shipping: PaymentIntent.Shipping | null
+  shipping: PaymentIntentShipping | null
+  paidAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export type OrderItem = {
   id: number
+  author: string | null
   title: string
   price: number
   discount: number
   quantity: number
 }
 
-export type OrderCreate = {
-  items: CartLocalStorage[]
-}
-
-export type OrderInStore = {
-  paymentSession: string
-  amount: number
-}
-
-export type OrderUpdate = Pick<
-  Order,
-  | 'paymentIntentStatus'
-  | 'orderStatus'
-  | 'firstName'
-  | 'lastName'
-  | 'email'
-  | 'shipping'
+export type OrderUpdate = { paymentId: string } & Partial<
+  Omit<Order, 'paymentId' | 'id' | 'createdAt' | 'updatedAt' | 'paidAt'>
 >
+
+export type PaymentIntentRequest = {
+  items: MinimalCart[]
+}
 
 export type PaymentIntentResponse = {
   client_secret: string
   amount: number
-  status: PaymentIntent.Status
+  status: PaymentIntentStatus
 }
 
-export type OrderFormValues = Omit<Order, 'id'>
+export type PaymentSession = {
+  session: string
+  amount: number
+}

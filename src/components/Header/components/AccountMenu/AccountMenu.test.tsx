@@ -4,7 +4,7 @@ import { Providers } from '@/setupTests'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { useAppDispatch, useAppSelector, useLocalStorage } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { AccountMenu } from './AccountMenu'
 
 describe('AccountMenu component', () => {
@@ -23,11 +23,6 @@ describe('AccountMenu component', () => {
         email: 'july@test.com',
         avatar: 'avatar_url',
       },
-    })
-    vi.mocked(useLocalStorage).mockReturnValue({
-      getFromLocalStorage: vi.fn(),
-      setToLocalStorage: vi.fn(),
-      removeFromLocalStorage: mockRemoveFromLocalStorage,
     })
     mockRemoveFromLocalStorage.mockClear()
     vi.spyOn(toast, 'success').mockImplementation(() => '')

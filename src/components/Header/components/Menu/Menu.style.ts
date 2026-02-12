@@ -13,7 +13,7 @@ export const Dropdown = styled.div<MenuTypes>`
   top: 3rem;
   left: 0;
   width: 12rem;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   transition: all 0.2s ease;
 
@@ -26,7 +26,7 @@ export const DropdownList = styled.ul`
   font-size: 1.25rem;
   list-style: none;
   background-color: #eaeaea;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   z-index: 10;
   overflow: hidden;
@@ -36,11 +36,11 @@ export const DropdownList = styled.ul`
   }
 
   li:first-child {
-    border-radius: 5px 5px 0 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
   }
 
   li:last-child {
-    border-radius: 0 0 5px 5px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
   & a {

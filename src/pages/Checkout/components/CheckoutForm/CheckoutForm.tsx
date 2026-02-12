@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   LinkAuthenticationElement,
@@ -6,42 +6,33 @@ import {
   useElements,
   useStripe,
 } from '@stripe/react-stripe-js'
-import { type StripePaymentElementOptions } from '@stripe/stripe-js'
 import { ROUTE } from '@/routes'
 import {
   cartClear,
-  orderCancel,
-  orderClear,
-  orderRetrieve,
-  orderSelector,
+  paymentCancel,
+  paymentClear,
+  paymentSelector,
   userSelector,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getPaymentId } from '@/helpers'
-import { defaultCurrency, paymentSessionKey } from '@/constants'
+import { defaultCurrency } from '@/constants'
+import type { StripePaymentElementOptions } from '@/types'
 
 export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { order } = useAppSelector(orderSelector)
-  const [receiptEmail, setReceiptEmail] = useState(userData?.email ?? '')
+  const { payment } = useAppSelector(paymentSelector)
+  const [guestEmail, setGuestEmail] = useState('')
+  const receiptEmail = userData?.email ?? guestEmail
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const { isLoading, message, handleSubmit } = usePaymentSubmit({
-    receiptEmail,
-  })
+  const { handleSubmit, message, setMessage, isLoading } =
+    usePaymentSubmit(receiptEmail)
 
-  useEffect(() => {
-    const paymentSession = sessionStorage.getItem(paymentSessionKey)
-    if (paymentSession && !order) {
-      const paymentId = getPaymentId(paymentSession)
-      void dispatch(orderRetrieve(paymentId))
-    }
-  }, [order, dispatch])
-
-  if (!order) {
+  if (!payment) {
     return (
       <div>
         <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
@@ -56,34 +47,42 @@ export function CheckoutForm() {
     )
   }
 
-  const paymentId = getPaymentId(order.paymentSession)
+  const paymentId = getPaymentId(payment.session)
 
   const orderForm = {
     num: paymentId?.slice(-6).toUpperCase(),
-    amount: (order.amount / 100).toFixed(2),
+    amount: (payment.amount / 100).toFixed(2),
   }
 
   const handleCancel = async () => {
-    await dispatch(orderCancel(paymentId))
-    dispatch(orderClear())
+    await dispatch(paymentCancel(paymentId))
+    dispatch(paymentClear())
     dispatch(cartClear())
     void navigate(`/${ROUTE.CART}`, { replace: true })
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
-    layout: 'tabs',
+    layout: 'accordion',
     business: {
-      name: 'Book Shop',
+      name: 'Bookshop',
     },
-    terms: {
-      card: 'auto',
-      googlePay: 'auto',
-      paypal: 'auto',
+    defaultValues: {
+      billingDetails: {
+        email: receiptEmail,
+        name: userData
+          ? `${userData.firstName} ${userData.lastName}`
+          : undefined,
+        address: userData?.address ?? undefined,
+        phone: userData?.phone ?? undefined,
+      },
     },
   }
 
   return (
-    <form id="payment-form" onSubmit={(e) => void handleSubmit(e)}>
+    <form
+      className="stripe-form"
+      id="payment-form"
+      onSubmit={(e) => void handleSubmit(e)}>
       <div>
         <p>Order #{orderForm.num}</p>
         <span>
@@ -93,10 +92,17 @@ export function CheckoutForm() {
       {!userData?.email && (
         <LinkAuthenticationElement
           options={{ defaultValues: { email: receiptEmail } }}
-          onChange={(e) => setReceiptEmail(e.value.email)}
+          onChange={(e) => {
+            setGuestEmail(e.value.email)
+            setMessage(null)
+          }}
         />
       )}
-      <PaymentElement id="payment-element" options={paymentElementOptions} />
+      <PaymentElement
+        id="payment-element"
+        options={paymentElementOptions}
+        onChange={() => setMessage(null)}
+      />
       <button
         type="submit"
         disabled={isLoading || !stripe || !elements}

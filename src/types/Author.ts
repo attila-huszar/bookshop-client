@@ -6,6 +6,10 @@ export type Author = {
   deathYear: string
   homeland: string
   biography: string
+  createdAt?: string
+  updatedAt?: string
 }
 
-export type AuthorFormValues = Omit<Author, 'id'>
+export type AuthorUpdate = { id: number } & Partial<
+  Omit<Author, 'id' | 'createdAt' | 'updatedAt'>
+>

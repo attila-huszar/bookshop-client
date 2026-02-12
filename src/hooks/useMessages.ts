@@ -1,7 +1,7 @@
-import type { PaymentIntent, StripeError } from '@stripe/stripe-js'
+import { PaymentIntentStatus, StripeError } from '@/types'
 
 type UseMessagesReturn = {
-  getMessage: (status: PaymentIntent.Status) => string
+  getMessage: (status: PaymentIntentStatus) => string
   getErrorMessage: (error: StripeError) => string
 }
 
@@ -47,7 +47,7 @@ export function useMessages(): UseMessagesReturn {
     }
   }
 
-  const getMessage = (status: PaymentIntent.Status): string => {
+  const getMessage = (status: PaymentIntentStatus): string => {
     switch (status) {
       case 'succeeded':
         return 'Success! Your payment has been processed. A confirmation email will arrive shortly.'

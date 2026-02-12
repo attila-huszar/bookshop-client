@@ -2,9 +2,10 @@ import { useOutletContext } from 'react-router'
 import { cmsOrdersSelector } from '@/store'
 import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
+import { formatDate, formatPaymentStatus } from '@/helpers'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../CMS.style'
+import { StyledTable } from '../../styles/CMS.style'
 
 export const Orders = () => {
   const { orders, ordersLoading, ordersError } =
@@ -56,14 +57,12 @@ export const Orders = () => {
             </th>
             <th>ID</th>
             <th>PaymentID</th>
-            <th>Payment Status</th>
-            <th>Order Status</th>
+            <th>Status</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Address</th>
-            <th>Items</th>
             <th>Total</th>
-            <th>Curr</th>
+            <th>Created</th>
+            <th>Paid At</th>
             <th style={{ width: 40, padding: 0 }}></th>
           </tr>
         </thead>
@@ -104,20 +103,18 @@ export const Orders = () => {
                     {order.paymentId}
                   </p>
                 </td>
-                <td>{order.paymentIntentStatus}</td>
-                <td>{order.orderStatus}</td>
+                <td>{formatPaymentStatus(order.paymentStatus)}</td>
                 <td>
                   {[order.firstName, order.lastName].filter(Boolean).join(' ')}
                 </td>
                 <td>{order.email}</td>
-                <td>
-                  {order.shipping?.address &&
-                    Object.values(order.shipping.address)
-                      .filter(Boolean)
-                      .join(', ')}
-                </td>
-                <td>{order.items.map((item) => item.title).join(', ')}</td>
                 <td>{order.total}</td>
+                <td style={{ fontSize: '0.75rem' }}>
+                  {formatDate(order.createdAt)}
+                </td>
+                <td style={{ fontSize: '0.75rem' }}>
+                  {order.paidAt ? formatDate(order.paidAt) : '—'}
+                </td>
                 <td style={{ padding: 0 }}>
                   <IconButton
                     onClick={(e) => {

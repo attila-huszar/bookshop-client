@@ -1,24 +1,24 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
-import { cartClear, orderClear, orderSelector } from '@/store'
+import { cartClear, paymentClear, paymentSelector } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
-import { paymentSessionKey } from '@/constants'
+import { PaymentIntentStatus } from '@/types'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 import logo from '@/assets/image/logo.png'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
-const successStatuses = ['succeeded', 'requires_capture']
-const warningStatuses = [
+const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
+const warningStatuses: PaymentIntentStatus[] = [
   'requires_payment_method',
   'requires_confirmation',
   'requires_action',
   'canceled',
 ]
 
-const getAnimation = (status: string) => {
+const getAnimation = (status: PaymentIntentStatus) => {
   if (successStatuses.includes(status)) return checkmarkAnim
   if (warningStatuses.includes(status)) return exclamationAnim
   return clockAnim
@@ -27,17 +27,13 @@ const getAnimation = (status: string) => {
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { order } = useAppSelector(orderSelector)
-
-  const paymentSession =
-    order?.paymentSession ?? sessionStorage.getItem(paymentSessionKey)
-
-  const { status } = usePaymentStatus(paymentSession)
+  const { payment } = useAppSelector(paymentSelector)
+  const { status } = usePaymentStatus(payment?.session)
 
   useEffect(() => {
     if (successStatuses.includes(status.intent)) {
       dispatch(cartClear())
-      dispatch(orderClear())
+      dispatch(paymentClear())
     }
   }, [dispatch, status.intent])
 

@@ -31,10 +31,10 @@ export const ImageWrapper = styled.div`
   padding: 3rem;
   background-color: #f4f4ff;
   border: 1px solid #e5e5e5;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
 
   img {
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     box-shadow:
       rgba(0, 0, 0, 0.19) 0px 10px 20px,
       rgba(0, 0, 0, 0.23) 0px 6px 6px;

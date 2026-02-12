@@ -1,5 +1,4 @@
 import * as Yup from 'yup'
-import { OrderStatus } from '@/types'
 import {
   addressSchema,
   emailSchema,
@@ -7,13 +6,10 @@ import {
   phoneSchema,
 } from './userSchemas'
 
-export const orderStatusSchema = Yup.string()
-  .oneOf(Object.values(OrderStatus), 'Invalid order status')
-  .required('Required')
-
 export const orderItemSchema = Yup.object().shape({
   id: Yup.number().integer().positive().required('Required'),
   title: Yup.string().required('Required'),
+  author: Yup.string().nullable(),
   price: Yup.number().positive('Must be positive').required('Required'),
   discount: Yup.number()
     .min(0, 'Min 0%')
@@ -26,11 +22,15 @@ export const orderItemSchema = Yup.object().shape({
 })
 
 export const orderSchema = Yup.object().shape({
-  orderStatus: orderStatusSchema,
   firstName: nameSchema,
   lastName: nameSchema,
   email: emailSchema,
-  phone: phoneSchema.optional(),
-  address: addressSchema,
-  items: Yup.array().of(orderItemSchema).required(),
+  shipping: Yup.object()
+    .shape({
+      name: nameSchema,
+      address: addressSchema,
+      phone: phoneSchema.optional(),
+    })
+    .required('Shipping information is required'),
+  items: Yup.array().of(orderItemSchema).required('Order items are required'),
 })

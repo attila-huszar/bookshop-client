@@ -6,10 +6,10 @@ export const InputWrapper = styled.div`
 
 export const baseInputStyles = css<FormTypes>`
   width: 100%;
-  padding: 0.75rem 0.75rem;
+  padding-inline: 0.75rem;
   font-size: 1rem;
   border: 1px solid lightgrey;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   background-color: #fff;
 
   &:focus,
@@ -55,34 +55,38 @@ export const baseInputStyles = css<FormTypes>`
 
     ${({ disabled }) =>
     disabled &&
-    `
-        background-color: var(--whitesmoke);
-        cursor: not-allowed;
-        color: var(--black);
-      `}
+    `background-color: var(--light-grey);
+    color: var(--black);
+    cursor: not-allowed;
+    `}
+
+    ${({ readOnly }) =>
+    readOnly && `background-color: var(--white-smoke); color: var(--black); `}
 `
 
 export const Input = styled.input<FormTypes>`
   ${baseInputStyles}
+  height: 3rem;
 
-  &:read-only {
-    background-color: var(--whitesmoke);
+  &[type='file'] {
+    align-content: center;
   }
 `
 
 export const Select = styled.select<FormTypes>`
   ${baseInputStyles}
+  height: 3rem;
   padding-right: 3rem;
 
   &:disabled {
     color: var(--black);
-    background-color: var(--whitesmoke);
   }
 `
 
 export const Textarea = styled.textarea<FormTypes>`
   ${baseInputStyles}
-
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   resize: vertical;
 `
 
@@ -96,7 +100,7 @@ export const ErrorMessage = styled.div<{
   padding: 0.5rem 0.75rem;
   color: rgb(120, 27, 0);
   background-color: rgb(255, 245, 245);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   font-size: 0.875rem;
   user-select: none;
   z-index: 1;
@@ -142,5 +146,4 @@ export type FormTypes = React.DetailedHTMLProps<
 > & {
   $valid: boolean
   $error: boolean | string | undefined
-  disabled?: boolean
 }

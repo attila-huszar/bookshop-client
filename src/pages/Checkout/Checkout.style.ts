@@ -7,15 +7,11 @@ export const StyledCheckout = styled.section`
   gap: 2rem;
   margin: 2rem 0;
 
-  h3 {
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
-
-  form {
+  .stripe-form {
+    @media only screen and (min-width: 600px) {
+      min-width: 500px;
+    }
     height: fit-content;
-    width: 30vw;
-    min-width: 500px;
     padding: 20px 40px;
     border-radius: 10px;
     background-color: var(--white);
@@ -58,7 +54,7 @@ export const StyledCheckout = styled.section`
   }
 
   #email {
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     margin-bottom: 16px;
     padding: 12px;
     border: 1px solid rgba(50, 50, 93, 0.1);
@@ -78,7 +74,7 @@ export const StyledCheckout = styled.section`
   }
 
   #payment-element {
-    margin: 0.75rem 0;
+    margin: 1rem 0;
   }
 
   button {
@@ -92,13 +88,26 @@ export const StyledCheckout = styled.section`
     font-weight: 600;
     cursor: pointer;
     display: block;
-    transition: all 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      filter 0.2s ease;
     box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
     width: 100%;
   }
 
   button:hover {
-    filter: contrast(115%);
+    filter: brightness(1.05);
+    box-shadow: 0px 8px 12px 0px rgba(0, 0, 0, 0.12);
+  }
+
+  button:active {
+    box-shadow: 0px 3px 4.5px 0px rgba(0, 0, 0, 0.1);
+  }
+
+  button:focus-visible {
+    outline: 3px solid rgba(84, 105, 212, 0.4);
+    outline-offset: 2px;
   }
 
   button:disabled {
@@ -166,13 +175,6 @@ export const StyledCheckout = styled.section`
     100% {
       -webkit-transform: rotate(360deg);
       transform: rotate(360deg);
-    }
-  }
-
-  @media only screen and (max-width: 600px) {
-    form {
-      width: 80vw;
-      min-width: initial;
     }
   }
 `

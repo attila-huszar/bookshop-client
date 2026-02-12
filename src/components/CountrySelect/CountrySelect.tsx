@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFormikContext } from 'formik'
 import { getCountryCodes } from '@/api'
-import { userSelector } from '@/store'
-import { useAppSelector, useClickOutside } from '@/hooks'
+import { useClickOutside } from '@/hooks'
+import { defaultCountry } from '@/constants'
 import type { CountryData } from '@/types'
 import { CaretDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles'
@@ -17,30 +17,34 @@ import {
 } from './CountrySelect.style'
 
 interface CountrySelectProps {
-  defaultCountry: string
+  initial?: string
+  fieldName?: string
   readOnly?: boolean
 }
 
 export function CountrySelect({
-  defaultCountry,
+  initial = defaultCountry,
+  fieldName = 'country',
   readOnly = false,
 }: CountrySelectProps) {
-  const { userData } = useAppSelector(userSelector)
-  const { values, setFieldValue, getFieldMeta, submitCount } =
-    useFormikContext<Record<string, string>>()
-  const [countries, setCountries] = useState<CountryData>({})
+  const { setFieldValue, getFieldMeta, submitCount } =
+    useFormikContext<Record<string, unknown>>()
   const [isOpen, setIsOpen] = useState(false)
+  const [countries, setCountries] = useState<CountryData>({})
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const countryCode = isNonEmpty(values.country)
-    ? values.country
-    : (userData?.country ?? defaultCountry)
-  const countryName = countries[countryCode]
+  const meta = getFieldMeta(fieldName)
+  const selectedCountry =
+    typeof meta.value === 'string'
+      ? meta.value.toLowerCase()
+      : initial.toLowerCase()
+  const hasSelection = Boolean(selectedCountry)
+  const countryName = countries[selectedCountry]
 
-  useClickOutside({ ref: dropdownRef, state: isOpen, setter: setIsOpen })
+  useClickOutside(dropdownRef, () => setIsOpen(false))
 
   useEffect(() => {
     if (isOpen && listRef.current) {
@@ -83,11 +87,10 @@ export function CountrySelect({
 
   const onSelect = (code: string) => {
     if (readOnly) return
-    void setFieldValue('country', code)
+    void setFieldValue(fieldName, code, false)
     setIsOpen(false)
   }
 
-  const meta = getFieldMeta('country')
   const shouldShowError = meta.touched && submitCount > 0
   const errorMessage = meta.error
 
@@ -97,14 +100,16 @@ export function CountrySelect({
         onClick={onInputClick}
         $valid={shouldShowError && !errorMessage}
         $error={shouldShowError && errorMessage}
-        disabled={readOnly}>
+        readOnly={readOnly}>
         <div>
-          <CountryFlag
-            src={getFlagUrl(countryCode)}
-            alt={`${countryName} flag`}
-            loading="lazy"
-          />
-          <CountryName>{countryName}</CountryName>
+          {hasSelection && (
+            <CountryFlag
+              src={getFlagUrl(selectedCountry)}
+              alt={`${countryName} flag`}
+              loading="lazy"
+            />
+          )}
+          <CountryName>{countryName ?? 'Select country...'}</CountryName>
         </div>
         <CaretDownIcon />
       </SelectedOption>
@@ -124,8 +129,8 @@ export function CountrySelect({
                 <OptionItem
                   key={code}
                   onClick={() => onSelect(code)}
-                  $selected={code === countryCode}
-                  aria-selected={code === countryCode}>
+                  $selected={code === selectedCountry}
+                  aria-selected={code === selectedCountry}>
                   <CountryFlag
                     src={getFlagUrl(code)}
                     alt={`${countryName} flag`}
@@ -147,8 +152,4 @@ export function CountrySelect({
       )}
     </InputWrapper>
   )
-}
-
-function isNonEmpty(s?: string | null): s is string {
-  return typeof s === 'string' && s.trim().length > 0
 }

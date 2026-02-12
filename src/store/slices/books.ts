@@ -7,8 +7,8 @@ import {
   fetchBooksBySearch,
   fetchBookSearchOptions,
 } from '@/store/thunks/books'
-import { addBooksToCache } from '@/helpers'
 import { BookState, Filters } from '@/types'
+import { addBooksToCache } from '../utils'
 
 const initialState: BookState = {
   books: [],

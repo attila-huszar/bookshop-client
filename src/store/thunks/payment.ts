@@ -1,21 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { deletePaymentIntent, getPaymentIntent, postOrder } from '@/api'
+import { deletePaymentIntent, getPaymentIntent, postPaymentIntent } from '@/api'
 import { log } from '@/services'
-import { OrderCreate } from '@/types'
+import { PaymentIntentRequest, PaymentSession } from '@/types'
 
-export const orderCreate = createAsyncThunk(
-  'order/orderCreate',
-  async (
-    order: OrderCreate,
-  ): Promise<{ paymentSession: string; amount: number }> => {
+export const paymentCreate = createAsyncThunk(
+  'payment/paymentCreate',
+  async (payment: PaymentIntentRequest): Promise<PaymentSession> => {
     try {
-      const { paymentSession, amount } = await postOrder(order)
+      const { session, amount } = await postPaymentIntent(payment)
 
-      if (!paymentSession) {
-        throw new Error('Invalid response from server: missing paymentSession')
+      if (!session) {
+        throw new Error('Invalid response from server: missing session')
       }
 
-      return { paymentSession, amount }
+      return { session, amount }
     } catch (error) {
       void log.error('Order creation failed', { error })
       throw error
@@ -23,16 +21,16 @@ export const orderCreate = createAsyncThunk(
   },
 )
 
-export const orderRetrieve = createAsyncThunk(
-  'order/orderRetrieve',
+export const paymentRetrieve = createAsyncThunk(
+  'payment/paymentRetrieve',
   async (paymentId: string) => {
     const {
-      client_secret: paymentSession,
+      client_secret: session,
       amount,
       status,
     } = await getPaymentIntent(paymentId)
 
-    if (!paymentSession) {
+    if (!session) {
       throw new Error(
         'Invalid response from payment service: missing client secret',
       )
@@ -49,12 +47,12 @@ export const orderRetrieve = createAsyncThunk(
       )
     }
 
-    return { paymentSession, status, amount }
+    return { session, status, amount }
   },
 )
 
-export const orderCancel = createAsyncThunk(
-  'order/orderCancel',
+export const paymentCancel = createAsyncThunk(
+  'payment/paymentCancel',
   async (paymentId: string) => {
     try {
       await deletePaymentIntent(paymentId)

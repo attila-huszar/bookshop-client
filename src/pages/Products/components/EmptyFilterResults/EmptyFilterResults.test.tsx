@@ -58,13 +58,13 @@ describe('EmptyFilterResults', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(fetchBooks())
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setBooksFilterDiscount('allBooks'),
-      )
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
     })
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
+    expect(mockDispatch).toHaveBeenCalledWith(
+      setBooksFilterDiscount('allBooks'),
+    )
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
+    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
   })
 })

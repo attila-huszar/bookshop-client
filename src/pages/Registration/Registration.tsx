@@ -93,7 +93,7 @@ export function Registration() {
               autoComplete="new-password"
             />
             <p>Country</p>
-            <CountrySelect defaultCountry={country} />
+            <CountrySelect initial={country} />
             <p>Upload Avatar</p>
             <FormikField name="avatar" type="file" />
             <ButtonWrapper>

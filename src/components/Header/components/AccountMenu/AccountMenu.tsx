@@ -21,7 +21,7 @@ export function AccountMenu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { userData } = useAppSelector(userSelector)
 
-  useClickOutside({ ref: menuRef, state: menuOpen, setter: setMenuOpen })
+  useClickOutside(menuRef, () => setMenuOpen(false))
 
   const isAdmin = userData?.role === UserRole.Admin
 

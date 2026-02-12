@@ -5,7 +5,7 @@ import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
 import { cmsReducer } from './slices/cms'
 import { newsReducer } from './slices/news'
-import { orderReducer } from './slices/order'
+import { paymentReducer } from './slices/payment'
 import { userReducer } from './slices/user'
 
 export const store = configureStore({
@@ -15,7 +15,7 @@ export const store = configureStore({
     news: newsReducer,
     user: userReducer,
     cart: cartReducer,
-    order: orderReducer,
+    payment: paymentReducer,
     cms: cmsReducer,
   },
   middleware: (getDefaultMiddleware) => {

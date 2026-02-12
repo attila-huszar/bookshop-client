@@ -1,6 +1,7 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { paymentSessionKey } from '@/constants'
-import type { Cart, CartLocalStorage } from '@/types'
+import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
+import { cartKey, paymentSessionKey } from '@/constants'
+import { MinimalCart } from '@/types'
 import {
   cartAdd,
   cartClear,
@@ -9,9 +10,9 @@ import {
   cartQuantitySet,
   cartRemove,
 } from './slices/cart'
-import { orderClear } from './slices/order'
+import { paymentClear } from './slices/payment'
 import { AppDispatch, RootState } from './store'
-import { orderCreate } from './thunks/order'
+import { paymentCreate } from './thunks/payment'
 
 export const cartToLocalStorage = createListenerMiddleware()
 
@@ -29,59 +30,19 @@ cartToLocalStorageTyped({
     cartQuantitySet,
     cartClear,
   ),
-  effect: (action) => {
-    if (action.payload) {
-      const cartFromLocalStorage: CartLocalStorage[] = JSON.parse(
-        localStorage.getItem('cart') ?? '[]',
-      ) as CartLocalStorage[]
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState()
+    const cartItems = state.cart.cartItems
 
-      let cartToLocalStorage: CartLocalStorage[] = []
-
-      const payload = action.payload as Cart
-      const { cartItem, newQuantity } = payload as unknown as {
-        cartItem: Cart
-        newQuantity: number
-      }
-
-      switch (action.type) {
-        case cartAdd.type:
-          cartToLocalStorage = [
-            ...cartFromLocalStorage,
-            { id: payload.id, quantity: 1 },
-          ]
-          break
-        case cartRemove.type:
-          cartToLocalStorage = cartFromLocalStorage.filter(
-            (item) => item.id !== payload.id,
-          )
-          break
-        case cartQuantityAdd.type:
-          cartToLocalStorage = cartFromLocalStorage.map((item) =>
-            item.id === payload.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item,
-          )
-          break
-        case cartQuantityRemove.type:
-          cartToLocalStorage = cartFromLocalStorage.map((item) =>
-            item.id === payload.id
-              ? { ...item, quantity: item.quantity - 1 }
-              : item,
-          )
-          break
-        case cartQuantitySet.type:
-          cartToLocalStorage = cartFromLocalStorage.map((item) =>
-            item.id === cartItem.id ? { ...item, quantity: newQuantity } : item,
-          )
-          break
-        default:
-          break
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cartToLocalStorage))
-    } else {
-      localStorage.removeItem('cart')
+    if (cartItems.length === 0) {
+      localStorageAdapter.remove(cartKey)
+      return
     }
+
+    const minimalCartItems: MinimalCart[] = cartItems.map(
+      ({ title, price, discount, discountPrice, imgUrl, ...rest }) => rest,
+    )
+    localStorageAdapter.set(cartKey, minimalCartItems)
   },
 })
 
@@ -91,15 +52,15 @@ const clientSecretToLocalStorageTyped =
   clientSecretToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
 
 clientSecretToLocalStorageTyped({
-  actionCreator: orderCreate.fulfilled,
+  actionCreator: paymentCreate.fulfilled,
   effect: (action) => {
-    sessionStorage.setItem(paymentSessionKey, action.payload.paymentSession)
+    sessionStorageAdapter.set(paymentSessionKey, action.payload.session)
   },
 })
 
 clientSecretToLocalStorageTyped({
-  actionCreator: orderClear,
+  matcher: isAnyOf(paymentClear),
   effect: () => {
-    sessionStorage.removeItem(paymentSessionKey)
+    sessionStorageAdapter.remove(paymentSessionKey)
   },
 })

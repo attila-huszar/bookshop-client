@@ -4,7 +4,7 @@ import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../CMS.style'
+import { StyledTable } from '../../styles/CMS.style'
 
 export const Users = () => {
   const { users, usersLoading, usersError } = useAppSelector(cmsUsersSelector)
@@ -103,7 +103,8 @@ export const Users = () => {
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>
-                  {user.address && Object.values(user.address).join(', ')}
+                  {user.address &&
+                    Object.values(user.address).filter(Boolean).join(', ')}
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   {user.avatar && (

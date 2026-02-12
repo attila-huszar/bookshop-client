@@ -23,7 +23,8 @@ export default createGlobalStyle`
     --secondary-hover: #f0f8ff;
     --secondary-faded: #daedfd;
     --white: #fdfdfd;
-    --whitesmoke: #f7f7f7;
+    --white-smoke: #f5f5f5;
+    --pearly-white: #f8f6f2;
     --hover-grey: #f9f9f9;
     --light-grey: #eaeaea;
     --mid-grey: #a7a7a7;
@@ -32,6 +33,8 @@ export default createGlobalStyle`
     --light-black: #555555;
     --black: #0F0F0F;
     --orange: #ff4500;
+
+    --border-radius: 6px;
     --shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
   }
 

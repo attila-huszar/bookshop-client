@@ -49,7 +49,6 @@ export function FormikField({
           type="file"
           accept="image/*"
           {...props}
-          disabled={props.disabled ?? props.readOnly ?? false}
           $valid={shouldShowError && !fileMeta.error}
           $error={shouldShowError && fileMeta.error}
         />
@@ -71,7 +70,6 @@ export function FormikField({
               <Select
                 {...field}
                 {...props}
-                disabled={props.disabled ?? props.readOnly ?? false}
                 $valid={shouldShowError && !meta.error}
                 $error={shouldShowError && meta.error}>
                 {children}
@@ -101,7 +99,6 @@ export function FormikField({
               <Textarea
                 {...field}
                 {...props}
-                disabled={props.disabled ?? props.readOnly ?? false}
                 $valid={shouldShowError && !meta.error}
                 $error={shouldShowError && meta.error}>
                 {children}
@@ -127,11 +124,10 @@ export function FormikField({
               ref={formikRef}
               {...field}
               {...props}
-              disabled={props.disabled ?? props.readOnly ?? false}
               $valid={shouldShowError && !meta.error}
               $error={shouldShowError && meta.error}
             />
-            {!!props.name && /password/i.test(props.name) && (
+            {showPassword !== undefined && (
               <PasswordEye
                 type="button"
                 onClick={() => setShowPassword?.((prev) => !prev)}>
@@ -139,8 +135,7 @@ export function FormikField({
               </PasswordEye>
             )}
             {shouldShowError && meta.error && (
-              <ErrorMessage
-                $passwordError={!!props.name && /password/i.test(props.name)}>
+              <ErrorMessage $passwordError={showPassword !== undefined}>
                 {meta.error}
               </ErrorMessage>
             )}

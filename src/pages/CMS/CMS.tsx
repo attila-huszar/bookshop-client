@@ -1,22 +1,43 @@
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { Outlet, useLocation, useNavigate } from 'react-router'
-import { AsyncThunkAction } from '@reduxjs/toolkit'
-import {
-  AppDispatch,
-  deleteAuthors,
-  deleteBooks,
-  deleteOrders,
-  deleteUsers,
-  RootState,
-} from '@/store'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { deleteAuthors, deleteBooks, deleteOrders, deleteUsers } from '@/store'
 import { Button, ConfirmDialog, ExtraSpace } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { SelectContext } from '@/types'
-import { Author, BookWithAuthorId, Order, User } from '@/types'
+import {
+  Author,
+  BookWithAuthorId,
+  Order,
+  User,
+  UserWithMetadata,
+} from '@/types'
 import { LogoutIcon } from '@/assets/svg'
-import { MainContainer, MenuButtons, StyledCMS } from './CMS.style'
-import { EditDialog, Tabs } from './components'
+import {
+  AuthorEditForm,
+  BookEditForm,
+  OrderEditForm,
+  UserEditForm,
+} from './components'
+import {
+  MainContainer,
+  MenuButtons,
+  StyledCMS,
+  StyledEditDialog,
+  StyledTabs,
+} from './styles'
+
+const TABS = [
+  { label: 'Orders', value: 'orders' },
+  { label: 'Books', value: 'books' },
+  { label: 'Authors', value: 'authors' },
+  { label: 'Users', value: 'users' },
+] as const
+
+export type TabValue = (typeof TABS)[number]['value']
+
+const isValidTab = (tab: string): tab is keyof SelectContext =>
+  TABS.some((t) => t.value === tab)
 
 export const CMS = () => {
   const navigate = useNavigate()
@@ -37,34 +58,31 @@ export const CMS = () => {
   const editRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
-  const getActiveTab = (pathname: string): keyof SelectContext => {
-    const tab = pathname.split('/').pop()
-    switch (tab) {
-      case 'orders':
-      case 'books':
-      case 'authors':
-      case 'users':
-        return tab
-      default:
-        return 'orders'
+  useEffect(() => {
+    if (isEditDialogOpen) {
+      editRef.current?.showModal()
+    } else {
+      editRef.current?.close()
     }
-  }
+  }, [isEditDialogOpen])
 
-  const activeTab = getActiveTab(location.pathname)
+  const activeTab = useMemo(() => {
+    const tab = location.pathname.split('/').pop()
+    if (tab && isValidTab(tab)) {
+      return tab
+    }
+    return 'orders'
+  }, [location.pathname])
 
-  const actionMap: Record<
-    keyof SelectContext,
-    AsyncThunkAction<
-      unknown,
-      unknown,
-      { state: RootState; dispatch: AppDispatch }
-    > | null
-  > = {
-    orders: deleteOrders(selectedItems.orders),
-    books: deleteBooks(selectedItems.books),
-    authors: deleteAuthors(selectedItems.authors),
-    users: deleteUsers(selectedItems.users),
-  }
+  const actionMap = useMemo(
+    () => ({
+      orders: deleteOrders(selectedItems.orders),
+      books: deleteBooks(selectedItems.books),
+      authors: deleteAuthors(selectedItems.authors),
+      users: deleteUsers(selectedItems.users),
+    }),
+    [selectedItems],
+  )
 
   const handleDeleteClick = () => {
     if (!selectedItems[activeTab].length) {
@@ -97,16 +115,25 @@ export const CMS = () => {
     setConfirmDialogOpen(false)
   }
 
+  const handleDialogClose = () => {
+    setIsEditDialogOpen(false)
+    setEditedItem(null)
+  }
+
   return (
     <StyledCMS>
       <ExtraSpace />
       <MainContainer>
         <MenuButtons>
           <Button
-            onClick={() => setIsEditDialogOpen(true)}
+            onClick={() => {
+              setEditedItem(null)
+              setIsEditDialogOpen(true)
+            }}
             $size="smMd"
             $color="secondary"
-            type="button">
+            type="button"
+            disabled={activeTab === 'orders'}>
             Add
           </Button>
           <Button
@@ -127,25 +154,52 @@ export const CMS = () => {
             {userData?.firstName}
           </Button>
         </MenuButtons>
-        <Tabs />
+        <StyledTabs>
+          {TABS.map((tab) => (
+            <NavLink to={`/cms/${tab.value}`} key={tab.value}>
+              {tab.label}
+            </NavLink>
+          ))}
+        </StyledTabs>
         <Outlet
           context={{
             selectedItems,
             setSelectedItems,
             setIsEditDialogOpen,
-            editedItem,
             setEditedItem,
           }}
         />
       </MainContainer>
-      <EditDialog
-        ref={editRef}
-        isDialogOpen={isEditDialogOpen}
-        setIsDialogOpen={setIsEditDialogOpen}
-        activeTab={activeTab}
-        editedItem={editedItem}
-        setEditedItem={setEditedItem}
-      />
+      {isEditDialogOpen && (
+        <StyledEditDialog
+          ref={editRef}
+          onCancel={() => setIsEditDialogOpen(false)}>
+          {activeTab === 'books' && (
+            <BookEditForm
+              editedItem={editedItem as BookWithAuthorId | null}
+              onClose={handleDialogClose}
+            />
+          )}
+          {activeTab === 'authors' && (
+            <AuthorEditForm
+              editedItem={editedItem as Author | null}
+              onClose={handleDialogClose}
+            />
+          )}
+          {activeTab === 'orders' && (
+            <OrderEditForm
+              editedItem={editedItem as Order | null}
+              onClose={handleDialogClose}
+            />
+          )}
+          {activeTab === 'users' && (
+            <UserEditForm
+              editedItem={editedItem as UserWithMetadata | null}
+              onClose={handleDialogClose}
+            />
+          )}
+        </StyledEditDialog>
+      )}
       <ConfirmDialog
         ref={confirmRef}
         isDialogOpen={isConfirmDialogOpen}

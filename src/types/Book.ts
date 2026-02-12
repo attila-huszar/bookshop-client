@@ -12,8 +12,12 @@ export type Book = {
   discountPrice: number
   topSellers: boolean
   newRelease: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }
 
-export type BookFormValues = Omit<BookWithAuthorId, 'id'>
+export type BookUpdate = { id: number } & Partial<
+  Omit<Book, 'id' | 'createdAt' | 'updatedAt'>
+>
