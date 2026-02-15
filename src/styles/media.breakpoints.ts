@@ -8,7 +8,7 @@ export const breakpoints = {
   xl: 1536,
 } as const
 
-type Breakpoint = keyof typeof breakpoints
+export type Breakpoint = keyof typeof breakpoints
 
 const max = (bp: Breakpoint) => `${breakpoints[bp] - 0.05}px`
 const min = (bp: Breakpoint) => `${breakpoints[bp]}px`

@@ -1,16 +1,20 @@
 import { RefObject, useEffect } from 'react'
 
 export const useClickOutside = (
-  ref: RefObject<HTMLElement | null>,
+  refs: RefObject<HTMLElement | null> | RefObject<HTMLElement | null>[],
   onOutsideClick: () => void,
 ): void => {
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      const element = ref.current
       const target = event.target as Node | null
-      if (!element || !target) return
+      if (!target) return
 
-      if (!element.contains(target)) {
+      const refArray = Array.isArray(refs) ? refs : [refs]
+      const isClickInside = refArray.some((ref) =>
+        ref.current?.contains(target),
+      )
+
+      if (!isClickInside) {
         onOutsideClick()
       }
     }
@@ -20,5 +24,5 @@ export const useClickOutside = (
     return () => {
       document.removeEventListener('pointerdown', handler)
     }
-  }, [ref, onOutsideClick])
+  }, [refs, onOutsideClick])
 }

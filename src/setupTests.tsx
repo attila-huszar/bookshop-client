@@ -22,6 +22,7 @@ vi.mock('@/hooks', () => ({
   useLocalStorage: vi.fn(),
   useClickOutside: vi.fn(),
   useDebounce: vi.fn(),
+  useBreakpoints: vi.fn().mockReturnValue({ isMobile: false }),
   useCart: vi.fn().mockReturnValue({
     cartItems: [],
     addToCart: vi.fn(),

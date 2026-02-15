@@ -1,7 +1,12 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledAccount = styled.main`
   padding: 0 6.25rem 4rem;
+
+  ${media.down('sm')`
+    padding: 0 1rem 4rem;
+  `}
 
   > h2 {
     text-align: center;

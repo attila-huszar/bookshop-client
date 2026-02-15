@@ -1,4 +1,5 @@
 import { createGlobalStyle } from 'styled-components'
+import { media } from './media.breakpoints'
 
 export const GlobalStyle = createGlobalStyle`
   * {
@@ -40,6 +41,10 @@ export const GlobalStyle = createGlobalStyle`
 
   #root {
     margin: 0 1.5rem 1.5rem;
+
+    ${media.down('sm')`
+      margin: 0 1rem 1rem;
+    `}
   }
 
   body {

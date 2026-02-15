@@ -1,11 +1,32 @@
-import { styled } from 'styled-components'
+import { css, styled } from 'styled-components'
+import { media } from '@/styles'
 import { MenuTypes } from './Menu.types'
 
 export const StyledMenu = styled.div`
   position: relative;
 `
 
-export const Dropdown = styled.div<MenuTypes>`
+export const Backdrop = styled.div<{ $show: boolean }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out;
+
+  ${({ $show }) =>
+    $show &&
+    `
+    opacity: 1;
+    visibility: visible;
+  `}
+`
+
+export const MenuPanel = styled.div<MenuTypes>`
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
@@ -16,11 +37,37 @@ export const Dropdown = styled.div<MenuTypes>`
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   transition: all 0.2s ease;
+  z-index: 100;
+  background-color: var(--white);
 
-  ${({ $show }) => $show && 'grid-template-rows: 1fr; opacity: 1;'}
+  ${media.down('sm')`
+    position: fixed;
+    top: 0;
+    left: 1rem;
+    width: 60vw;
+    height: 100vh;
+    border-radius: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    opacity: 1;
+    grid-template-rows: 1fr;
+    box-shadow: none;
+  `}
+
+  ${({ $show }) => css`
+    ${$show &&
+    `
+    grid-template-rows: 1fr;
+    opacity: 1;
+  `}
+
+    ${media.down('sm')`
+    transform: ${$show ? 'translateX(-1rem)' : 'translateX(calc(-100% - 2rem))'};
+  `}
+  `}
 `
 
-export const DropdownList = styled.ul`
+export const MenuList = styled.ul`
   margin: 0;
   padding: 0;
   font-size: 1.25rem;
@@ -31,16 +78,31 @@ export const DropdownList = styled.ul`
   z-index: 10;
   overflow: hidden;
 
-  li:hover {
-    background-color: lightgray;
-  }
-
   li:first-child {
     border-radius: var(--border-radius) var(--border-radius) 0 0;
   }
 
   li:last-child {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+  }
+
+  ${media.down('sm')`
+    height: 100%;
+    border-radius: 0;
+    padding-top: 4rem;
+    background-color: var(--white);
+
+    li:first-child {
+      border-radius: 0;
+    }
+
+    li:last-child {
+      border-radius: 0;
+    }
+  `}
+
+  li:hover {
+    background-color: lightgray;
   }
 
   & a {

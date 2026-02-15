@@ -7,12 +7,7 @@ import { Avatar, Button } from '@/components'
 import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { UserRole } from '@/types'
 import { AccountIcon, CMSIcon, LogoutIcon, ProfileIcon } from '@/assets/svg'
-import {
-  Dropdown,
-  DropdownList,
-  MenuItem,
-  StyledMenu,
-} from '../Menu/Menu.style'
+import { MenuItem, MenuList, MenuPanel, StyledMenu } from '../Menu/Menu.style'
 
 export function AccountMenu() {
   const navigate = useNavigate()
@@ -66,8 +61,8 @@ export function AccountMenu() {
         onClick={toggleMenu}
         title={userData.firstName}
       />
-      <Dropdown $show={menuOpen}>
-        <DropdownList>
+      <MenuPanel $show={menuOpen}>
+        <MenuList>
           <li>
             <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
               <MenuItem>
@@ -94,8 +89,8 @@ export function AccountMenu() {
               </MenuItem>
             </Link>
           </li>
-        </DropdownList>
-      </Dropdown>
+        </MenuList>
+      </MenuPanel>
     </StyledMenu>
   )
 }

@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledHeader = styled.header`
   position: sticky;
@@ -15,4 +16,10 @@ export const StyledHeader = styled.header`
   background-color: #ffffff85;
   backdrop-filter: blur(10px);
   z-index: 3;
+
+  ${media.down('sm')`
+    min-width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+  `}
 `

@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledFooter = styled.footer`
   display: grid;
@@ -13,6 +14,16 @@ export const StyledFooter = styled.footer`
   a:hover {
     color: var(--primary-color);
   }
+
+  ${media.down('sm')`
+    min-width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    gap: 2rem;
+    text-align: center;
+  `}
 `
 
 export const LeftSection = styled.section`

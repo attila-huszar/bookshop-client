@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`
@@ -9,11 +10,20 @@ export const StyledReleases = styled.section`
   max-width: var(--max-width);
   padding: 3rem 6.25rem 2.5rem;
   overflow-x: clip;
+
+  ${media.down('sm')`
+    padding: 3rem 1rem 2.5rem;
+    flex-direction: column;
+  `}
 `
 
 export const Welcome = styled.div`
   width: 50%;
   z-index: 1;
+
+  ${media.down('sm')`
+    width: 100%;
+  `}
 
   h2 {
     margin-bottom: 2rem;

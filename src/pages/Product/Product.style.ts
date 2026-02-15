@@ -1,7 +1,12 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledProduct = styled.main`
   padding: 0 6.25rem;
+
+  ${media.down('sm')`
+    padding: 0 1rem;
+  `}
 `
 
 export const Breadcrumb = styled.button`
