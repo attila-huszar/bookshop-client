@@ -1,3 +1,4 @@
-export { default as GlobalStyle, sliderStyles } from './Global.style'
-export * from './Form.style'
-export * from './Media'
+export * from './global.styles'
+export * from './form.styles'
+export * from './slider.styles'
+export * from './media.breakpoints'
