@@ -28,17 +28,21 @@ export function BasketButton() {
     cartItems.length ? cartItems : safeStoredCart,
   )
 
+  const handleCartClick = () => {
+    void navigate(ROUTE.CART)
+  }
+
   return (
     <StyledBasketButton>
       {isMobile ? (
         <IconButton
-          onClick={() => void navigate(`/${ROUTE.CART}`)}
+          onClick={handleCartClick}
           icon={<CartIcon />}
           title={isCheckingOut ? 'Checkout' : 'Basket'}
         />
       ) : (
         <Button
-          onClick={() => void navigate(`/${ROUTE.CART}`)}
+          onClick={handleCartClick}
           $size="smMd"
           $icon={<CartIcon />}
           title={isCheckingOut ? 'Checkout' : 'Basket'}>

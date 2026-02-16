@@ -23,8 +23,9 @@ export const ExtraSpace = styled.div`
     bottom: -1.5rem;
     height: 1.5rem;
     width: 1.5rem;
-    border-top-left-radius: 20px;
-    box-shadow: -20px -20px 0 20px var(--primary-color);
+    border-top-left-radius: var(--corner-cut);
+    box-shadow: calc(-1 * var(--corner-cut)) calc(-1 * var(--corner-cut)) 0
+      var(--corner-cut) var(--primary-color);
 
     ${media.down('sm')`
       height: 1rem;
@@ -40,8 +41,9 @@ export const ExtraSpace = styled.div`
     right: 0;
     height: 1.5rem;
     width: 1.5rem;
-    border-top-right-radius: 20px;
-    box-shadow: 20px -20px 0 20px var(--primary-color);
+    border-top-right-radius: var(--corner-cut);
+    box-shadow: var(--corner-cut) calc(-1 * var(--corner-cut)) 0
+      var(--corner-cut) var(--primary-color);
 
     ${media.down('sm')`
       height: 1rem;

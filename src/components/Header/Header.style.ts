@@ -18,8 +18,11 @@ export const StyledHeader = styled.header`
   z-index: 3;
 
   ${media.down('sm')`
+    top: 1rem;
+    height: 4rem;
     min-width: 100%;
     max-width: 100%;
-    padding: 0 1rem;
+    padding: 0 0.75rem;
+    gap: 0.75rem;
   `}
 `

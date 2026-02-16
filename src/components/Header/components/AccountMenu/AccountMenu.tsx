@@ -3,8 +3,13 @@ import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import { logout, userSelector } from '@/store'
-import { Avatar, Button } from '@/components'
-import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
+import { Avatar, Button, IconButton } from '@/components'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useBreakpoints,
+  useClickOutside,
+} from '@/hooks'
 import { UserRole } from '@/types'
 import { AccountIcon, CMSIcon, LogoutIcon, ProfileIcon } from '@/assets/svg'
 import { MenuItem, MenuList, MenuPanel, StyledMenu } from '../Menu/Menu.style'
@@ -12,9 +17,10 @@ import { MenuItem, MenuList, MenuPanel, StyledMenu } from '../Menu/Menu.style'
 export function AccountMenu() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const menuRef = useRef<HTMLDivElement>(null)
+  const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
   const { userData } = useAppSelector(userSelector)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useClickOutside(menuRef, () => setMenuOpen(false))
 
@@ -22,6 +28,10 @@ export function AccountMenu() {
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
+  }
+
+  const handleLoginClick = () => {
+    void navigate(ROUTE.LOGIN)
   }
 
   const handleLogout = () => {
@@ -42,9 +52,15 @@ export function AccountMenu() {
   }
 
   if (!userData) {
-    return (
+    return isMobile ? (
+      <IconButton
+        onClick={handleLoginClick}
+        icon={<AccountIcon />}
+        title="Login/Register"
+      />
+    ) : (
       <Button
-        onClick={() => void navigate(ROUTE.LOGIN)}
+        onClick={handleLoginClick}
         title="Login/Register"
         $icon={<AccountIcon />}
         $size="smMd"

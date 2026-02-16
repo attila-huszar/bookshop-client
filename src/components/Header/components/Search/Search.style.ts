@@ -3,7 +3,6 @@ import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
   flex-shrink: 1;
-  width: 20rem;
   margin-right: auto;
 
   form {
@@ -22,6 +21,18 @@ export const SearchField = styled.input`
   border-radius: 10px;
   outline: none;
   background-color: var(--light-grey);
+
+  &::-webkit-input-placeholder {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &::placeholder {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `
 
 export const Dropdown = styled.div<SearchTypes>`
