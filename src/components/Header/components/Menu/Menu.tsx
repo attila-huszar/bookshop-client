@@ -1,24 +1,19 @@
 import { useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link } from 'react-router'
 import { IconButton } from '@/components'
 import { useBreakpoints, useClickOutside } from '@/hooks'
 import { menuLinks } from '@/constants'
 import { MenuIcon } from '@/assets/svg'
-import {
-  Backdrop,
-  MenuItem,
-  MenuList,
-  MenuPanel,
-  StyledMenu,
-} from './Menu.style'
+import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
+import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
+import { MenuItem, MenuList, StyledMenu } from './Menu.style'
 
 export function Menu() {
+  const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
-  const { isMobile } = useBreakpoints()
 
   useClickOutside(
     isMobile ? [menuRef, drawerRef] : [menuRef, dropdownRef],
@@ -44,29 +39,18 @@ export function Menu() {
     </MenuList>
   )
 
-  if (isMobile) {
-    return (
-      <StyledMenu ref={menuRef}>
-        <IconButton onClick={toggleMenu} icon={<MenuIcon />} title="Menu" />
-        {createPortal(
-          <>
-            <Backdrop $show={menuOpen} onClick={() => setMenuOpen(false)} />
-            <MenuPanel $show={menuOpen} ref={drawerRef}>
-              {menuList}
-            </MenuPanel>
-          </>,
-          document.body,
-        )}
-      </StyledMenu>
-    )
-  }
-
   return (
     <StyledMenu ref={menuRef}>
       <IconButton onClick={toggleMenu} icon={<MenuIcon />} title="Menu" />
-      <MenuPanel $show={menuOpen} ref={dropdownRef}>
-        {menuList}
-      </MenuPanel>
+      {isMobile ? (
+        <MenuDrawer show={menuOpen} onClose={toggleMenu} drawerRef={drawerRef}>
+          {menuList}
+        </MenuDrawer>
+      ) : (
+        <MenuDropdown show={menuOpen} dropdownRef={dropdownRef}>
+          {menuList}
+        </MenuDropdown>
+      )}
     </StyledMenu>
   )
 }
