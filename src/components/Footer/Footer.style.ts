@@ -20,9 +20,8 @@ export const StyledFooter = styled.footer`
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 2rem 1rem;
+    padding: 2rem 1.5rem;
     gap: 2rem;
-    text-align: center;
   `}
 `
 
@@ -36,11 +35,14 @@ export const RightSection = styled.section`
   align-self: center;
 
   p {
-    text-wrap: balance;
+    text-wrap: pretty;
   }
 `
 
 export const BottomSection = styled.section`
   grid-area: 2 / 1 / 3 / 3;
-  border-top: 1px #0d08421a solid;
+
+  ${media.up('sm')`
+    border-top: 1px var(--light-grey) solid;
+  `}
 `

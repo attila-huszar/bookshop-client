@@ -7,7 +7,7 @@ export const StyledTopSellers = styled.section`
   padding: 2.5rem 6.25rem;
 
   ${media.down('sm')`
-    padding: 2.5rem 1rem;
+    padding: 2.5rem 1.5rem;
   `}
 
   h2 {

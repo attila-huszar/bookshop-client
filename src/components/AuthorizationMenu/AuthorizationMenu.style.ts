@@ -5,18 +5,15 @@ export const StyledAuthorizationMenu = styled.main`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 6.25rem 4rem;
+  padding: 2rem 6.25rem 4rem;
+  width: 100%;
 
   ${media.down('sm')`
-    padding: 0 1rem 4rem;
-
-    form {
-      width: 100%;
-    }
+    padding: 2rem 1.5rem 4rem;
   `}
 
   form {
-    width: 30rem;
+    width: min(100%, 30rem);
 
     > div {
       margin-bottom: 1rem;
@@ -27,8 +24,9 @@ export const StyledAuthorizationMenu = styled.main`
 export const FormChangeLinks = styled.div`
   display: flex;
   justify-content: space-evenly;
-  width: 30rem;
+  width: min(100%, 30rem);
   margin-bottom: 2rem;
+  gap: 0.5rem;
 
   a {
     padding: 0.5rem 1.5rem;
@@ -45,4 +43,11 @@ export const FormChangeLinks = styled.div`
   a.active {
     background-color: var(--light-grey);
   }
+
+  ${media.down('sm')`
+    a {
+      padding: 0.5rem 1rem;
+      font-size: 1.25rem;
+    }
+  `}
 `

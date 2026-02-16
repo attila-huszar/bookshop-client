@@ -1,11 +1,14 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledCart = styled.main`
-  padding: 0 10rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-inline: 6.25rem;
 
-  h2 {
-    margin-bottom: 2rem;
-  }
+  ${media.down('sm')`
+    padding: 0 1.5rem;`}
 `
 
 export const CartGrid = styled.div`

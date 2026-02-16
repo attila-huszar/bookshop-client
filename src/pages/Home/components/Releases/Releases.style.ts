@@ -12,7 +12,7 @@ export const StyledReleases = styled.section`
   overflow-x: clip;
 
   ${media.down('sm')`
-    padding: 3rem 1rem 2.5rem;
+    padding: 3rem 1.5rem 2.5rem;
     flex-direction: column;
   `}
 `

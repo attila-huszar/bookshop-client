@@ -19,9 +19,10 @@ export const StyledDrawerPanel = styled.div<{ $show: boolean }>`
 `
 
 export const DrawerCloseButton = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 1rem 1rem 0;
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 101;
 `
 
 export const Backdrop = styled.div<{ $show: boolean }>`
