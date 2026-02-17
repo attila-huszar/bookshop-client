@@ -1,20 +1,28 @@
+import { useState } from 'react'
 import { booksSelector } from '@/store'
 import { Card } from '@/components'
 import { useAppSelector } from '@/hooks'
+import { FilterIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter, Pagination } from './components'
-import { StyledProducts } from './Products.style'
+import {
+  FilterBackdrop,
+  FilterFloatingButton,
+  ProductsGrid,
+  StyledProducts,
+} from './Products.style'
 
 export function Products() {
   const { booksOnCurrentPage } = useAppSelector(booksSelector)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   const renderBooks = () =>
     booksOnCurrentPage.length ? (
       <>
-        <div>
+        <ProductsGrid>
           {booksOnCurrentPage.map((book) => (
             <Card key={book.id} book={book} />
           ))}
-        </div>
+        </ProductsGrid>
         <Pagination />
       </>
     ) : (
@@ -24,7 +32,20 @@ export function Products() {
   return (
     <StyledProducts>
       <section>{renderBooks()}</section>
-      <Filter />
+      <Filter
+        isMobileOpen={isFilterOpen}
+        onMobileClose={() => setIsFilterOpen(false)}
+      />
+      <FilterFloatingButton
+        type="button"
+        onClick={() => setIsFilterOpen((prev) => !prev)}
+        aria-label={isFilterOpen ? 'Close filters' : 'Open filters'}>
+        <FilterIcon />
+      </FilterFloatingButton>
+      <FilterBackdrop
+        $visible={isFilterOpen}
+        onClick={() => setIsFilterOpen(false)}
+      />
     </StyledProducts>
   )
 }

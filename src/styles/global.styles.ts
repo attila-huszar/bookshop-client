@@ -2,6 +2,14 @@ import { createGlobalStyle } from 'styled-components'
 import { media } from './media.breakpoints'
 
 export const GlobalStyle = createGlobalStyle`
+  html,
+  body,
+  #root {
+    ${media.down('sm')`
+      overflow-x: hidden;
+    `}
+  }
+
   * {
     margin: 0;
     padding: 0;
