@@ -58,9 +58,20 @@ const fetchRecommendedBooks = createAsyncThunk(
   'books/fetchRecommendedBooks',
   async (count: number, listenerApi) => {
     const state = listenerApi.getState() as RootState
-    const totalBooks = state.books.booksTotal
+    let totalBooks = state.books.booksTotal
     const randomBooks: Book[] = []
-    const randomIdxs = generateUniqueRndNums(count, totalBooks)
+
+    if (totalBooks <= 0) {
+      const { total } = await getBooks({ currentPage: 1, itemsPerPage: 1 })
+      totalBooks = total
+    }
+
+    if (totalBooks <= 0) {
+      return randomBooks
+    }
+
+    const safeCount = Math.min(count, totalBooks)
+    const randomIdxs = generateUniqueRndNums(safeCount, totalBooks)
 
     for (const idx of randomIdxs) {
       const existingBook = state.books.books.find((book) => book.id === idx)

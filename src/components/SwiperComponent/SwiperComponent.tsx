@@ -18,9 +18,7 @@ export function SwiperComponent({ children }: Props) {
       slidesPerView={'auto'}
       spaceBetween={50}>
       {children.map((child, idx) => (
-        <SwiperSlide key={idx} style={{ width: 'fit-content' }}>
-          {child}
-        </SwiperSlide>
+        <SwiperSlide key={idx}>{child}</SwiperSlide>
       ))}
     </Swiper>
   )

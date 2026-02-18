@@ -23,6 +23,10 @@ export const Welcome = styled.div`
 
   ${media.down('sm')`
     width: 100%;
+
+    > button {
+      width: 100%;
+    }
   `}
 
   h2 {
@@ -112,6 +116,8 @@ export const MobileImageCard = styled.div`
     line-height: 1.2;
     color: var(--grey);
     text-align: center;
+    hyphens: auto;
+    overflow-wrap: break-word;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

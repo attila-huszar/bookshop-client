@@ -3,7 +3,7 @@ import { media } from '@/styles'
 
 export const StyledCard = styled.div`
   height: 17.5rem;
-  width: min(30rem, 100%);
+  width: 30rem;
   border-radius: 10px;
   transition: background-color 0.3s ease-out;
 
