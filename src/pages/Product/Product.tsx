@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { ROUTE } from '@/routes'
 import { booksSelector } from '@/store'
 import { Alert, Button, Price, Recommended } from '@/components'
-import { useAppSelector, useCart } from '@/hooks'
+import { useAppSelector, useBreakpoints, useCart } from '@/hooks'
 import type { Book } from '@/types'
 import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import {
@@ -22,6 +22,7 @@ export function Product() {
   const [searchParams] = useSearchParams()
   const id = searchParams.get('id')
   const { cartItems, addToCart } = useCart()
+  const { isMobile } = useBreakpoints()
 
   const { books, booksError } = useAppSelector(booksSelector)
 
@@ -82,8 +83,8 @@ export function Product() {
               <Button
                 onClick={() => handleCartAction(book)}
                 $icon={!isBookInCart && <CartAddIcon />}
-                $size="lg"
-                $textSize="lg">
+                $size={isMobile ? 'md' : 'lg'}
+                $textSize={isMobile ? 'md' : 'lg'}>
                 {isBookInCart ? 'View in Basket' : 'Add to Basket'}
               </Button>
             </ButtonWrapper>

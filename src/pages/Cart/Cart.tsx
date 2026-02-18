@@ -10,7 +10,12 @@ import {
   paymentSelector,
 } from '@/store'
 import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useBreakpoints,
+  useCart,
+} from '@/hooks'
 import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
 import {
   defaultCurrencySymbol,
@@ -32,6 +37,7 @@ import {
   ButtonWrapper,
   CartGrid,
   EmptyCart,
+  HeaderRow,
   ImageWrapper,
   LabelPrice,
   LabelQuantity,
@@ -55,6 +61,7 @@ export function Cart() {
   const { cartIsLoading } = useAppSelector(cartSelector)
   const { payment, paymentIsLoading, paymentCreateError } =
     useAppSelector(paymentSelector)
+  const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -153,13 +160,15 @@ export function Cart() {
       <StyledCart>
         <h2>Cart</h2>
         <CartGrid>
-          <p>Books in basket</p>
-          <LabelQuantity>Quantity</LabelQuantity>
-          <LabelPrice>Price</LabelPrice>
-          <LabelPrice>Total</LabelPrice>
-          {cartItems.map((item: Cart) => (
+          <HeaderRow>
+            <p>Books in basket</p>
+            <LabelQuantity>Quantity</LabelQuantity>
+            <LabelPrice>Price</LabelPrice>
+            <LabelPrice>Total</LabelPrice>
+          </HeaderRow>
+          {cartItems.map((item: Cart, index) => (
             <Fragment key={item.id}>
-              <Book>
+              <Book $hasSeparator={index > 0}>
                 <Link to={`/${ROUTE.BOOK}?id=${item.id}`}>
                   <ImageWrapper>
                     <img
@@ -254,8 +263,8 @@ export function Cart() {
           <Button
             onClick={navigateToBooks}
             disabled={paymentIsLoading}
-            $size="lg"
-            $textSize="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $textSize={isMobile ? 'sm' : 'lg'}
             $inverted>
             Back to Shop
           </Button>
@@ -264,7 +273,8 @@ export function Cart() {
             onClick={handleCartClear}
             disabled={paymentIsLoading}
             title="Reset Cart"
-            $size="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $iconSize={isMobile ? 'sm' : 'md'}
             $color="var(--mid-grey)"
             $outline
           />
@@ -272,8 +282,8 @@ export function Cart() {
             onClick={handleCheckout}
             disabled={paymentIsLoading}
             $icon={paymentIsLoading ? <SpinnerIcon /> : <CartIcon />}
-            $size="lg"
-            $textSize="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $textSize={isMobile ? 'sm' : 'lg'}
             $shadow>
             Checkout
           </Button>

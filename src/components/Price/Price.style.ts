@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledPriceCard = styled.div`
   font-size: 1.125rem;
@@ -19,6 +20,15 @@ export const StyledPriceProduct = styled.div`
     display: flex;
     gap: 2rem;
   }
+
+  ${media.down('sm')`
+    align-self: flex-start;
+    font-size: 1.125rem;
+
+    p {
+      gap: 1rem;
+    }
+  `}
 `
 
 export const StyledPriceCart = styled.div`
@@ -31,6 +41,10 @@ export const StyledPriceCart = styled.div`
     display: grid;
     justify-items: end;
   }
+
+  ${media.down('sm')`
+    margin-right: 0;
+  `}
 `
 
 export const Currency = styled.span`
