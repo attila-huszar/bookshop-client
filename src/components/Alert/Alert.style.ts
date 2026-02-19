@@ -13,7 +13,7 @@ export const StyledAlert = styled.div<{ $fullScreen?: boolean }>`
   p {
     margin-bottom: 0.5rem;
     text-align: center;
-    text-wrap: balance;
+    text-wrap: pretty;
   }
 
   p:first-child {

@@ -125,7 +125,7 @@ export const MenuItem = styled.div`
 
 export const TextBold = styled.p`
   font-weight: 700;
-  text-wrap: balance;
+  text-wrap: pretty;
 `
 
 export const NoResults = styled.li`

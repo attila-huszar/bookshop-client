@@ -38,7 +38,7 @@ export function AccountMenu() {
   }
 
   const handleLoginClick = () => {
-    void navigate(ROUTE.LOGIN)
+    void navigate(`/${ROUTE.LOGIN}`)
   }
 
   const handleLogout = () => {

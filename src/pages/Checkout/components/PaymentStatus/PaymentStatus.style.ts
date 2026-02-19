@@ -15,7 +15,7 @@ export const StyledPaymentStatus = styled.section`
     font-size: 1.25rem;
     font-weight: 700;
     text-align: center;
-    text-wrap: balance;
+    text-wrap: pretty;
   }
 `
 

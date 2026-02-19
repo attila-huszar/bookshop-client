@@ -1,3 +1,4 @@
+import { ReactElement } from 'react'
 import { Navigation } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Book, News } from '@/types'
@@ -7,7 +8,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 
 type Props = {
-  children: React.ReactElement<Book>[] | React.ReactElement<News>[]
+  children: ReactElement<Book | News>[]
 }
 
 export function SwiperComponent({ children }: Props) {

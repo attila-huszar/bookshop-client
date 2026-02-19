@@ -29,7 +29,7 @@ export function BasketButton() {
   )
 
   const handleCartClick = () => {
-    void navigate(ROUTE.CART)
+    void navigate(`/${ROUTE.CART}`)
   }
 
   return (

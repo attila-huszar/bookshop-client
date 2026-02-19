@@ -18,7 +18,7 @@ export const StyledConfirmDialog = styled.dialog`
 
   > p {
     text-align: center;
-    text-wrap: balance;
+    text-wrap: pretty;
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
   }

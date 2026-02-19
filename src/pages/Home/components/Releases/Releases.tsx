@@ -31,7 +31,7 @@ export function Releases() {
           everyone.
         </p>
         <Button
-          onClick={() => void navigate(ROUTE.BOOKS)}
+          onClick={() => void navigate(`/${ROUTE.BOOKS}`)}
           $shadow
           $size="wide"
           $textSize="lg">
