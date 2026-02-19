@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { getUserCountry } from '@/api'
 import { register } from '@/store'
-import {
-  AuthorizationMenu,
-  Button,
-  CountrySelect,
-  FormikField,
-  IconButton,
-} from '@/components'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
+import { Button } from '@/components/Button/Button'
+import { IconButton } from '@/components/Button/IconButton'
+import { CountrySelect } from '@/components/CountrySelect/CountrySelect'
+import { FormikField } from '@/components/FormikField/FormikField'
 import { useAppDispatch } from '@/hooks'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'

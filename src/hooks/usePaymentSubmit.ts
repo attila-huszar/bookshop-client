@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
-import { handleError } from '@/errors'
+import { handleError } from '@/errors/handleError'
 import { useMessages } from './useMessages'
 
 type UsePaymentSubmitReturn = {

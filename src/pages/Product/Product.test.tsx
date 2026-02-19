@@ -70,6 +70,6 @@ describe('Product Page', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Error Alert')).toBeInTheDocument()
+    expect(screen.getByText('Book not found')).toBeInTheDocument()
   })
 })

@@ -1,18 +1,25 @@
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { toast } from 'react-hot-toast'
 import { type Location, Navigate, useLocation } from 'react-router'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { paymentSelector } from '@/store'
-import { InfoDialog } from '@/components'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
+import { Loading } from '@/components/Loading/Loading'
 import { useAppSelector } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentSessionKey, stripeKey } from '@/constants'
-import { handleError } from '@/errors'
+import { handleError } from '@/errors/handleError'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
-import { AddressForm, CheckoutForm, PaymentStatus } from './components'
+import { AddressForm, CheckoutForm } from './components'
+
+const PaymentStatus = lazy(() =>
+  import('./components/PaymentStatus/PaymentStatus').then((m) => ({
+    default: m.PaymentStatus,
+  })),
+)
 
 const stripePromise = loadStripe(stripeKey)
 
@@ -83,7 +90,9 @@ export function Checkout() {
         fallbackRender={(props) => <StripeErrorFallback {...props} />}>
         <Elements stripe={stripePromise} options={options}>
           {showPaymentStatus ? (
-            <PaymentStatus />
+            <Suspense fallback={<Loading message="Loading payment status" />}>
+              <PaymentStatus />
+            </Suspense>
           ) : (
             <>
               <AddressForm />

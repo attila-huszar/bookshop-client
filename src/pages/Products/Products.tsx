@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { booksSelector } from '@/store'
-import { Card } from '@/components'
+import { Card } from '@/components/Card/Card'
 import { useAppSelector } from '@/hooks'
 import { FilterIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter, Pagination } from './components'

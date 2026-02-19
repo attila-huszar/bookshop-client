@@ -7,6 +7,17 @@ import { store } from './store'
 
 globalThis.React = React
 
+export const Providers = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={store}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
+)
+
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = vi.fn()
+  HTMLDialogElement.prototype.close = vi.fn()
+})
+
 vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
   return {
@@ -51,13 +62,7 @@ vi.mock('@/services', () => ({
   },
 }))
 
-export const Providers = ({ children }: { children: React.ReactNode }) => (
-  <Provider store={store}>
-    <BrowserRouter>{children}</BrowserRouter>
-  </Provider>
-)
-
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn()
-  HTMLDialogElement.prototype.close = vi.fn()
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true,
 })

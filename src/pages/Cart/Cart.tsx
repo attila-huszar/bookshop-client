@@ -9,7 +9,11 @@ import {
   paymentCreate,
   paymentSelector,
 } from '@/store'
-import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
+import { Button } from '@/components/Button/Button'
+import { IconButton } from '@/components/Button/IconButton'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
+import { Loading } from '@/components/Loading/Loading'
+import { Price } from '@/components/Price/Price'
 import {
   useAppDispatch,
   useAppSelector,
