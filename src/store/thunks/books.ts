@@ -40,51 +40,50 @@ export const fetchBooksByAuthor = createAsyncThunk(
   getBooksByAuthor,
 )
 
-export const fetchBooksByProperty = createAsyncThunk(
-  'books/fetchBooksByProperty',
-  async (
-    property: 'newRelease' | 'topSellers' | 'recommended',
-    { dispatch },
-  ) => {
-    if (property === 'recommended') {
-      return await dispatch(fetchRecommendedBooks(4)).unwrap()
-    }
+export const fetchBooksByProperty = createAsyncThunk<
+  Book[],
+  'newRelease' | 'topSellers' | 'recommended',
+  { state: RootState }
+>('books/fetchBooksByProperty', async (property, { dispatch }) => {
+  if (property === 'recommended') {
+    return await dispatch(fetchRecommendedBooks(4)).unwrap()
+  }
 
-    return getBooksByProperty(property)
-  },
-)
+  return getBooksByProperty(property)
+})
 
-const fetchRecommendedBooks = createAsyncThunk(
-  'books/fetchRecommendedBooks',
-  async (count: number, listenerApi) => {
-    const state = listenerApi.getState() as RootState
-    let totalBooks = state.books.booksTotal
-    const randomBooks: Book[] = []
+const fetchRecommendedBooks = createAsyncThunk<
+  Book[],
+  number,
+  { state: RootState }
+>('books/fetchRecommendedBooks', async (count: number, { getState }) => {
+  const state = getState()
+  let totalBooks = state.books.booksTotal
+  const randomBooks: Book[] = []
 
-    if (totalBooks <= 0) {
-      const { total } = await getBooks({ currentPage: 1, itemsPerPage: 1 })
-      totalBooks = total
-    }
+  if (totalBooks <= 0) {
+    const { total } = await getBooks({ currentPage: 1, itemsPerPage: 1 })
+    totalBooks = total
+  }
 
-    if (totalBooks <= 0) {
-      return randomBooks
-    }
-
-    const safeCount = Math.min(count, totalBooks)
-    const randomIdxs = generateUniqueRndNums(safeCount, totalBooks)
-
-    for (const idx of randomIdxs) {
-      const existingBook = state.books.books.find((book) => book.id === idx)
-      if (existingBook) {
-        randomBooks.push(existingBook)
-      } else {
-        const book = await getBookById(idx)
-        if (book) randomBooks.push(book)
-      }
-    }
+  if (totalBooks <= 0) {
     return randomBooks
-  },
-)
+  }
+
+  const safeCount = Math.min(count, totalBooks)
+  const randomIdxs = generateUniqueRndNums(safeCount, totalBooks)
+
+  for (const idx of randomIdxs) {
+    const existingBook = state.books.books.find((book) => book.id === idx)
+    if (existingBook) {
+      randomBooks.push(existingBook)
+    } else {
+      const book = await getBookById(idx)
+      if (book) randomBooks.push(book)
+    }
+  }
+  return randomBooks
+})
 
 export const fetchBookSearchOptions = createAsyncThunk(
   'books/fetchBookSearchOptions',

@@ -9,6 +9,7 @@ import {
   paymentCreate,
   paymentSelector,
 } from '@/store'
+import { Alert } from '@/components/Alert/Alert'
 import { Button } from '@/components/Button/Button'
 import { IconButton } from '@/components/Button/IconButton'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
@@ -62,7 +63,7 @@ export function Cart() {
     removeQuantity,
     setQuantity,
   } = useCart()
-  const { cartIsLoading } = useAppSelector(cartSelector)
+  const { cartIsLoading, cartError } = useAppSelector(cartSelector)
   const { payment, paymentIsLoading, paymentCreateError } =
     useAppSelector(paymentSelector)
   const { isMobile } = useBreakpoints()
@@ -157,6 +158,19 @@ export function Cart() {
 
   if (cartIsLoading) {
     return <Loading message="Loading Cart" />
+  }
+
+  if (cartError) {
+    return (
+      <StyledCart>
+        <h2>Cart</h2>
+        <Alert
+          message="Failed to load your cart. Please try again."
+          error={cartError}
+          backButton
+        />
+      </StyledCart>
+    )
   }
 
   if (cartItems.length) {

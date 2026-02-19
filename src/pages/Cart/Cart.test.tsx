@@ -106,6 +106,27 @@ describe('Cart component', () => {
     expect(screen.getByText(/loading cart/i)).toBeInTheDocument()
   })
 
+  it('should display cart error when cart fetch fails', () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: {
+          ...mockCartState,
+          cartError: 'Failed to fetch cart items',
+        },
+        payment: mockPaymentState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    render(<Cart />, { wrapper: Providers })
+
+    expect(
+      screen.getByText(/failed to load your cart\. please try again\./i),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Failed to fetch cart items')).toBeInTheDocument()
+  })
+
   it('should display empty cart message when cart is empty', async () => {
     vi.mocked(useCart).mockReturnValue({
       cartItems: [] as CartType[],
