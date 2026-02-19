@@ -1,7 +1,7 @@
 import { Providers } from '@/setupTests'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { useAppSelector } from '@/hooks'
+import { useAppSelector, useCart } from '@/hooks'
 import { Products } from './Products'
 
 vi.mock('./components', () => ({
@@ -10,7 +10,20 @@ vi.mock('./components', () => ({
   Pagination: vi.fn(() => <div>Pagination component</div>),
 }))
 
+const createUseCartMock = (): ReturnType<typeof useCart> => ({
+  cartItems: [],
+  addToCart: vi.fn(),
+  removeFromCart: vi.fn(),
+  addQuantity: vi.fn(),
+  removeQuantity: vi.fn(),
+  setQuantity: vi.fn(),
+})
+
 describe('Products Page', () => {
+  beforeEach(() => {
+    vi.mocked(useCart).mockReturnValue(createUseCartMock())
+  })
+
   it('should render books and pagination when books are present', async () => {
     const booksOnCurrentPage = [
       { id: 1, title: 'Test Book 1' },

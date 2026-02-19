@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { cartToLocalStorage, clientSecretToLocalStorage } from './middlewares'
+import { cartToLocalStorage, paymentToSessionStorage } from './middlewares'
 import { authorsReducer } from './slices/authors'
 import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
@@ -8,25 +8,29 @@ import { newsReducer } from './slices/news'
 import { paymentReducer } from './slices/payment'
 import { userReducer } from './slices/user'
 
-export const store = configureStore({
-  reducer: {
-    books: booksReducer,
-    authors: authorsReducer,
-    news: newsReducer,
-    user: userReducer,
-    cart: cartReducer,
-    payment: paymentReducer,
-    cms: cmsReducer,
-  },
-  middleware: (getDefaultMiddleware) => {
-    const middlewares = [
-      cartToLocalStorage.middleware,
-      clientSecretToLocalStorage.middleware,
-    ]
+const reducer = {
+  books: booksReducer,
+  authors: authorsReducer,
+  news: newsReducer,
+  user: userReducer,
+  cart: cartReducer,
+  payment: paymentReducer,
+  cms: cmsReducer,
+}
 
-    return getDefaultMiddleware().concat(middlewares)
-  },
-})
+const middlewares = [
+  cartToLocalStorage.middleware,
+  paymentToSessionStorage.middleware,
+]
+
+export const createAppStore = () =>
+  configureStore({
+    reducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(middlewares),
+  })
+
+export const store = createAppStore()
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

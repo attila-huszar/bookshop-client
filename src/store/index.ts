@@ -1,4 +1,4 @@
-export { store } from './store'
+export { createAppStore, store } from './store'
 export type { RootState, AppDispatch } from './store'
 export * from './slices/books'
 export * from './slices/authors'

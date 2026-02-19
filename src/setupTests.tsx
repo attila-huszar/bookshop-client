@@ -3,19 +3,27 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router'
 import { vi } from 'vitest'
-import { store } from './store'
+import { createAppStore } from './store'
 
 globalThis.React = React
 
-export const Providers = ({ children }: { children: React.ReactNode }) => (
-  <Provider store={store}>
-    <BrowserRouter>{children}</BrowserRouter>
-  </Provider>
-)
+export const Providers = ({ children }: { children: React.ReactNode }) => {
+  const store = React.useMemo(() => createAppStore(), [])
+
+  return (
+    <Provider store={store}>
+      <BrowserRouter>{children}</BrowserRouter>
+    </Provider>
+  )
+}
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = vi.fn()
   HTMLDialogElement.prototype.close = vi.fn()
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
 })
 
 vi.mock(import('react-router'), async (importOriginal) => {
@@ -31,18 +39,10 @@ vi.mock(import('react-router'), async (importOriginal) => {
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
-  useLocalStorage: vi.fn(),
+  useCart: vi.fn(),
   useClickOutside: vi.fn(),
   useDebounce: vi.fn(),
   useBreakpoints: vi.fn().mockReturnValue({ isMobile: false }),
-  useCart: vi.fn().mockReturnValue({
-    cartItems: [],
-    addToCart: vi.fn(),
-    removeFromCart: vi.fn(),
-    addQuantity: vi.fn(),
-    removeQuantity: vi.fn(),
-    setQuantity: vi.fn(),
-  }),
 }))
 
 vi.mock('react-hot-toast', () => ({

@@ -46,19 +46,19 @@ cartToLocalStorageTyped({
   },
 })
 
-export const clientSecretToLocalStorage = createListenerMiddleware()
+export const paymentToSessionStorage = createListenerMiddleware()
 
-const clientSecretToLocalStorageTyped =
-  clientSecretToLocalStorage.startListening.withTypes<RootState, AppDispatch>()
+const paymentToSessionStorageTyped =
+  paymentToSessionStorage.startListening.withTypes<RootState, AppDispatch>()
 
-clientSecretToLocalStorageTyped({
+paymentToSessionStorageTyped({
   actionCreator: paymentCreate.fulfilled,
   effect: (action) => {
     sessionStorageAdapter.set(paymentSessionKey, action.payload.session)
   },
 })
 
-clientSecretToLocalStorageTyped({
+paymentToSessionStorageTyped({
   matcher: isAnyOf(paymentClear),
   effect: () => {
     sessionStorageAdapter.remove(paymentSessionKey)
