@@ -18,8 +18,7 @@ export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
     bottom: 5rem;
     top: auto;
     z-index: 40;
-    width: calc(100vw - 2rem);
-    max-width: 22rem;
+    width: 20rem;
     max-height: 70vh;
     overflow-y: auto;
     transform: translateY(${$mobileOpen ? '0' : '1rem'});
@@ -78,6 +77,10 @@ export const GenreCheckBoxes = styled.div`
   input {
     margin-right: 0.375rem;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const DiscountRadioButtons = styled.div`
@@ -86,6 +89,10 @@ export const DiscountRadioButtons = styled.div`
   input {
     margin-right: 0.5rem;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const InputFields = styled.div`
@@ -98,11 +105,19 @@ export const InputFields = styled.div`
     width: 4rem;
     text-align: center;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const Rating = styled.div`
   display: flex;
   justify-content: space-between;
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const ButtonWrapper = styled.div`

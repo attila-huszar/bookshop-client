@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
@@ -78,6 +79,8 @@ export const ClearButton = styled.button`
 `
 
 export const DropdownList = styled.ul`
+  container-type: inline-size;
+  container-name: search-results;
   max-height: 14rem;
   margin-top: 6px;
   padding: 0;
@@ -87,6 +90,10 @@ export const DropdownList = styled.ul`
   border-radius: var(--border-radius);
   z-index: 10;
   overflow-y: auto;
+
+  ${media.down('sm')`
+    max-height: 50vh;
+  `}
 
   li:hover {
     background-color: var(--secondary-hover);
@@ -114,12 +121,39 @@ export const MenuItem = styled.div`
   cursor: pointer;
 
   img {
-    height: auto;
+    height: 3rem;
+    width: 2rem;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   svg {
+    flex-shrink: 0;
     margin-left: auto;
     color: var(--grey);
+  }
+
+  @container search-results (max-width: 12rem) {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    height: auto;
+    padding: 0.5rem;
+
+    p {
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+  }
+
+  @container search-results (max-width: 14rem) {
+    svg {
+      display: none;
+    }
   }
 `
 
