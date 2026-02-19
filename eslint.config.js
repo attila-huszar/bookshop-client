@@ -1,4 +1,5 @@
 import js from '@eslint/js'
+import vitest from '@vitest/eslint-plugin'
 import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
 import reactCompiler from 'eslint-plugin-react-compiler'
@@ -17,6 +18,10 @@ export default defineConfig(
   prettierConfig,
   {
     files: ['**/*.{ts,tsx}'],
+    extends: [
+      ...tseslint.configs.recommendedTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
+    ],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -32,30 +37,8 @@ export default defineConfig(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       prettier,
+      vitest,
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-      'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx'],
-      },
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-        },
-      },
-    },
-    linterOptions: {
-      reportUnusedDisableDirectives: 'warn',
-    },
-  },
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-    ],
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-compiler/react-compiler': 'error',
@@ -78,10 +61,19 @@ export default defineConfig(
       '@typescript-eslint/consistent-generic-constructors': 'off',
       'prettier/prettier': 'warn',
     },
+    linterOptions: {
+      reportUnusedDisableDirectives: 'warn',
+    },
   },
   {
     files: ['src/**/*.test.{ts,tsx}'],
+    languageOptions: {
+      globals: vitest.environments.env.globals,
+    },
     extends: [testingLibrary.configs['flat/react']],
+    rules: {
+      ...vitest.configs.recommended.rules,
+    },
   },
   {
     files: ['**/*.js'],

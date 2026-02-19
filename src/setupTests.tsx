@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom'
+import React from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router'
 import { vi } from 'vitest'
 import { store } from './store'
 
-declare const global: typeof globalThis
+globalThis.React = React
 
 vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
@@ -55,8 +56,6 @@ export const Providers = ({ children }: { children: React.ReactNode }) => (
     <BrowserRouter>{children}</BrowserRouter>
   </Provider>
 )
-
-global.scrollTo = vi.fn()
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = vi.fn()
