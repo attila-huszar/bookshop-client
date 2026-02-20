@@ -52,9 +52,17 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
       }
 
       if (paymentIntent) {
-        void navigate(`/${ROUTE.CHECKOUT}`, {
+        const searchParams = new URLSearchParams()
+        if (paymentIntent.client_secret) {
+          searchParams.set(
+            'payment_intent_client_secret',
+            paymentIntent.client_secret,
+          )
+        }
+        searchParams.set('redirect_status', paymentIntent.status)
+
+        void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
           replace: true,
-          state: { showPaymentStatus: true },
         })
       }
     } catch (error) {
