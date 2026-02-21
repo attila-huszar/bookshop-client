@@ -50,7 +50,7 @@ describe('AccountMenu component', () => {
     const loginButton = screen.getByTitle('Login/Register')
     await userEvent.click(loginButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('login')
+    expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
 
   it('should handle logout when clicking logout', async () => {

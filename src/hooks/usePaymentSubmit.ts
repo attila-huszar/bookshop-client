@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
-import { handleError } from '@/errors'
+import { handleError } from '@/errors/handleError'
 import { useMessages } from './useMessages'
 
 type UsePaymentSubmitReturn = {
@@ -52,9 +52,17 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
       }
 
       if (paymentIntent) {
-        void navigate(`/${ROUTE.CHECKOUT}`, {
+        const searchParams = new URLSearchParams()
+        if (paymentIntent.client_secret) {
+          searchParams.set(
+            'payment_intent_client_secret',
+            paymentIntent.client_secret,
+          )
+        }
+        searchParams.set('redirect_status', paymentIntent.status)
+
+        void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
           replace: true,
-          state: { showPaymentStatus: true },
         })
       }
     } catch (error) {

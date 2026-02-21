@@ -1,10 +1,30 @@
 import '@testing-library/jest-dom'
+import React from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router'
 import { vi } from 'vitest'
-import { store } from './store'
+import { createAppStore } from './store'
 
-declare const global: typeof globalThis
+globalThis.React = React
+
+export const Providers = ({ children }: { children: React.ReactNode }) => {
+  const store = React.useMemo(() => createAppStore(), [])
+
+  return (
+    <Provider store={store}>
+      <BrowserRouter>{children}</BrowserRouter>
+    </Provider>
+  )
+}
+
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = vi.fn()
+  HTMLDialogElement.prototype.close = vi.fn()
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
 
 vi.mock(import('react-router'), async (importOriginal) => {
   const actual = await importOriginal()
@@ -19,17 +39,10 @@ vi.mock(import('react-router'), async (importOriginal) => {
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
-  useLocalStorage: vi.fn(),
+  useCart: vi.fn(),
   useClickOutside: vi.fn(),
   useDebounce: vi.fn(),
-  useCart: vi.fn().mockReturnValue({
-    cartItems: [],
-    addToCart: vi.fn(),
-    removeFromCart: vi.fn(),
-    addQuantity: vi.fn(),
-    removeQuantity: vi.fn(),
-    setQuantity: vi.fn(),
-  }),
+  useBreakpoints: vi.fn().mockReturnValue({ isMobile: false }),
 }))
 
 vi.mock('react-hot-toast', () => ({
@@ -49,15 +62,7 @@ vi.mock('@/services', () => ({
   },
 }))
 
-export const Providers = ({ children }: { children: React.ReactNode }) => (
-  <Provider store={store}>
-    <BrowserRouter>{children}</BrowserRouter>
-  </Provider>
-)
-
-global.scrollTo = vi.fn()
-
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn()
-  HTMLDialogElement.prototype.close = vi.fn()
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true,
 })

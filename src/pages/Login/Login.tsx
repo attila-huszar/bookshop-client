@@ -3,13 +3,11 @@ import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { fetchUserProfile, login } from '@/store'
-import {
-  AuthorizationMenu,
-  Button,
-  ForgotPassword,
-  FormikField,
-  IconButton,
-} from '@/components'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
+import { Button } from '@/components/Button/Button'
+import { IconButton } from '@/components/Button/IconButton'
+import { ForgotPassword } from '@/components/ForgotPassword/ForgotPassword'
+import { FormikField } from '@/components/FormikField/FormikField'
 import { useAppDispatch } from '@/hooks'
 import { loginSchema } from '@/validation'
 import { loginInitialValues } from '@/constants'

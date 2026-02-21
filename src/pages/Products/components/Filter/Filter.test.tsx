@@ -10,12 +10,13 @@ import {
   setBooksFilterPublishYear,
   setBooksFilterRating,
 } from '@/store'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppDispatch, useAppSelector, useBreakpoints } from '@/hooks'
 import { Filter } from './Filter'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
+  useBreakpoints: vi.fn(),
 }))
 
 vi.mock('@/store', () => ({
@@ -34,6 +35,11 @@ describe('Filter', () => {
 
   beforeEach(() => {
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
+    vi.mocked(useBreakpoints).mockReturnValue({
+      width: 1024,
+      isMobile: false,
+      isTablet: false,
+    })
     vi.mocked(useAppSelector).mockReturnValue({
       booksFilters: {
         active: {

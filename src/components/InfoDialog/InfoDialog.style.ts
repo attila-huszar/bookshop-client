@@ -1,9 +1,11 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledInfoDialog = styled.dialog`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  padding: 1.5rem 1rem;
   border: none;
   outline: none;
   border-radius: 10px;
@@ -15,28 +17,11 @@ export const StyledInfoDialog = styled.dialog`
     background: rgba(0, 0, 0, 0.35);
   }
 
-  > button {
-    height: 2.5rem !important;
-    width: 12rem !important;
-    padding: 0 !important;
-    margin: 0 auto 2rem !important;
-    font-family: 'Montserrat', sans-serif !important;
-    font-size: 0.875rem !important;
-    font-weight: 700 !important;
-    color: #fff !important;
-    background: var(--primary-color) !important;
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 10px !important;
-    outline: 3px solid var(--primary-color) !important;
-    outline-offset: -3px !important;
-    cursor: pointer;
-    transition: all 0.2s ease-out;
+  & > button {
+    margin: 1rem auto 0;
   }
 
-  > button:hover {
-    color: var(--primary-color) !important;
-    background-color: #fff !important;
-    filter: none !important;
-  }
+  ${media.down('sm')`
+    width: 85%;
+  `}
 `

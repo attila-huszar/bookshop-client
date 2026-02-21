@@ -37,6 +37,66 @@ export default defineConfig(({ mode }) => {
           }
         : undefined,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return
+
+            if (
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/scheduler/')
+            ) {
+              return 'react-vendor'
+            }
+
+            if (id.includes('/node_modules/react-router/')) {
+              return 'router-vendor'
+            }
+
+            if (
+              id.includes('/node_modules/@reduxjs/') ||
+              id.includes('/node_modules/react-redux/') ||
+              id.includes('/node_modules/redux/')
+            ) {
+              return 'redux-vendor'
+            }
+
+            if (
+              id.includes('/node_modules/formik/') ||
+              id.includes('/node_modules/yup/')
+            ) {
+              return 'form-vendor'
+            }
+
+            if (
+              id.includes('/node_modules/@stripe/') ||
+              id.includes('/node_modules/stripe/')
+            ) {
+              return 'stripe-vendor'
+            }
+
+            if (id.includes('/node_modules/swiper/')) {
+              return 'swiper-vendor'
+            }
+
+            if (
+              id.includes('/node_modules/lottie-react/') ||
+              id.includes('/node_modules/lottie-web/')
+            ) {
+              return 'lottie-vendor'
+            }
+
+            if (id.includes('/node_modules/styled-components/')) {
+              return 'styled-vendor'
+            }
+
+            return 'vendor'
+          },
+        },
+      },
+    },
     test: {
       restoreMocks: true,
       globals: true,

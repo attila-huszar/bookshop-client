@@ -1,39 +1,19 @@
 import { styled } from 'styled-components'
-import { MenuTypes } from './Menu.types'
+import { media } from '@/styles'
 
 export const StyledMenu = styled.div`
   position: relative;
 `
 
-export const Dropdown = styled.div<MenuTypes>`
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  position: absolute;
-  top: 3rem;
-  left: 0;
-  width: 12rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  transition: all 0.2s ease;
-
-  ${({ $show }) => $show && 'grid-template-rows: 1fr; opacity: 1;'}
-`
-
-export const DropdownList = styled.ul`
+export const MenuList = styled.ul`
   margin: 0;
   padding: 0;
   font-size: 1.25rem;
   list-style: none;
   background-color: #eaeaea;
   border-radius: var(--border-radius);
-  cursor: pointer;
   z-index: 10;
   overflow: hidden;
-
-  li:hover {
-    background-color: lightgray;
-  }
 
   li:first-child {
     border-radius: var(--border-radius) var(--border-radius) 0 0;
@@ -43,8 +23,28 @@ export const DropdownList = styled.ul`
     border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
+  ${media.down('sm')`
+    height: 100%;
+    border-radius: 0;
+    padding-top: 4rem;
+    background-color: var(--white);
+
+    li:first-child {
+      border-radius: 0;
+    }
+
+    li:last-child {
+      border-radius: 0;
+    }
+  `}
+
+  li:hover {
+    background-color: lightgray;
+  }
+
   & a {
     display: block;
+    cursor: pointer;
   }
 `
 

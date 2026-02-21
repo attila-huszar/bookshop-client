@@ -29,7 +29,12 @@ import {
   StyledFilter,
 } from './Filter.style'
 
-export function Filter() {
+type FilterProps = {
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
+}
+
+export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   const { booksFilters } = useAppSelector(booksSelector)
   const dispatch = useAppDispatch()
 
@@ -78,6 +83,7 @@ export function Filter() {
         rating: booksFilters.active.rating,
       }),
     )
+    if (isMobileOpen) onMobileClose?.()
   }
 
   const handleFormReset = () => {
@@ -88,6 +94,7 @@ export function Filter() {
     dispatch(setBooksFilterDiscount('allBooks'))
     dispatch(setBooksFilterPublishYear([]))
     dispatch(setBooksFilterRating(0.5))
+    if (isMobileOpen) onMobileClose?.()
   }
 
   const handleGenreChange = (e: InputEvent) => {
@@ -115,7 +122,7 @@ export function Filter() {
   }
 
   return (
-    <StyledFilter>
+    <StyledFilter $mobileOpen={isMobileOpen}>
       <FilterOptions draggable="false">
         <Formik
           initialValues={filterInitialValues}

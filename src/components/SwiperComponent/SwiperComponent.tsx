@@ -1,3 +1,4 @@
+import { ReactElement } from 'react'
 import { Navigation } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Book, News } from '@/types'
@@ -7,7 +8,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 
 type Props = {
-  children: React.ReactElement<Book>[] | React.ReactElement<News>[]
+  children: ReactElement<Book | News>[]
 }
 
 export function SwiperComponent({ children }: Props) {
@@ -18,9 +19,7 @@ export function SwiperComponent({ children }: Props) {
       slidesPerView={'auto'}
       spaceBetween={50}>
       {children.map((child, idx) => (
-        <SwiperSlide key={idx} style={{ width: 'fit-content' }}>
-          {child}
-        </SwiperSlide>
+        <SwiperSlide key={idx}>{child}</SwiperSlide>
       ))}
     </Swiper>
   )

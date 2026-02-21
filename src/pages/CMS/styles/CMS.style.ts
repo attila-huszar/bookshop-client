@@ -1,9 +1,16 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledCMS = styled.section`
   min-width: var(--min-width);
   max-width: var(--max-width);
   margin: 0 auto;
+
+  ${media.down('sm')`
+    min-width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+  `}
 `
 
 export const MainContainer = styled.div`

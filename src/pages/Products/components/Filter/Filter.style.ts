@@ -1,7 +1,8 @@
 import { styled } from 'styled-components'
 import { StyleTypes } from '@/components/Button/Button.types'
+import { media } from '@/styles'
 
-export const StyledFilter = styled.aside`
+export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
   position: sticky;
   top: 7.5rem;
   bottom: 0;
@@ -10,11 +11,32 @@ export const StyledFilter = styled.aside`
   padding: 0.375rem;
   border-radius: 10px;
   background-color: var(--light-grey);
+
+  ${({ $mobileOpen }) => media.down('sm')`
+    position: fixed;
+    right: 1rem;
+    bottom: 5rem;
+    top: auto;
+    z-index: 40;
+    width: 20rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    transform: translateY(${$mobileOpen ? '0' : '1rem'});
+    opacity: ${$mobileOpen ? 1 : 0};
+    visibility: ${$mobileOpen ? 'visible' : 'hidden'};
+    pointer-events: ${$mobileOpen ? 'auto' : 'none'};
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  `}
 `
 
 export const FilterOptions = styled.div`
   width: 12rem;
   user-select: none;
+
+  ${media.down('sm')`
+    width: auto;
+  `}
 
   & > div:not(:last-child) {
     margin-bottom: 2rem;
@@ -55,6 +77,10 @@ export const GenreCheckBoxes = styled.div`
   input {
     margin-right: 0.375rem;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const DiscountRadioButtons = styled.div`
@@ -63,6 +89,10 @@ export const DiscountRadioButtons = styled.div`
   input {
     margin-right: 0.5rem;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const InputFields = styled.div`
@@ -75,11 +105,19 @@ export const InputFields = styled.div`
     width: 4rem;
     text-align: center;
   }
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const Rating = styled.div`
   display: flex;
   justify-content: space-between;
+
+  ${media.down('sm')`
+    padding-inline: 0.25rem;
+  `}
 `
 
 export const ButtonWrapper = styled.div`

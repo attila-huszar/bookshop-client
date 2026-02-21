@@ -1,9 +1,10 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
   flex-shrink: 1;
-  width: 20rem;
+  width: 24rem;
   margin-right: auto;
 
   form {
@@ -22,6 +23,18 @@ export const SearchField = styled.input`
   border-radius: 10px;
   outline: none;
   background-color: var(--light-grey);
+
+  &::-webkit-input-placeholder {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &::placeholder {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `
 
 export const Dropdown = styled.div<SearchTypes>`
@@ -66,6 +79,8 @@ export const ClearButton = styled.button`
 `
 
 export const DropdownList = styled.ul`
+  container-type: inline-size;
+  container-name: search-results;
   max-height: 14rem;
   margin-top: 6px;
   padding: 0;
@@ -75,6 +90,10 @@ export const DropdownList = styled.ul`
   border-radius: var(--border-radius);
   z-index: 10;
   overflow-y: auto;
+
+  ${media.down('sm')`
+    max-height: 50vh;
+  `}
 
   li:hover {
     background-color: var(--secondary-hover);
@@ -102,18 +121,45 @@ export const MenuItem = styled.div`
   cursor: pointer;
 
   img {
-    height: auto;
+    height: 3rem;
+    width: 2rem;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   svg {
+    flex-shrink: 0;
     margin-left: auto;
     color: var(--grey);
+  }
+
+  @container search-results (max-width: 12rem) {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    height: auto;
+    padding: 0.5rem;
+
+    p {
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+  }
+
+  @container search-results (max-width: 14rem) {
+    svg {
+      display: none;
+    }
   }
 `
 
 export const TextBold = styled.p`
   font-weight: 700;
-  text-wrap: balance;
+  text-wrap: pretty;
 `
 
 export const NoResults = styled.li`

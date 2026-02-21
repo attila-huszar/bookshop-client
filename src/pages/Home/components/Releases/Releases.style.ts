@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`
@@ -9,11 +10,24 @@ export const StyledReleases = styled.section`
   max-width: var(--max-width);
   padding: 3rem 6.25rem 2.5rem;
   overflow-x: clip;
+
+  ${media.down('sm')`
+    padding: 3rem 1.5rem 2.5rem;
+    flex-direction: column;
+  `}
 `
 
 export const Welcome = styled.div`
   width: 50%;
   z-index: 1;
+
+  ${media.down('sm')`
+    width: 100%;
+
+    > button {
+      width: 100%;
+    }
+  `}
 
   h2 {
     margin-bottom: 2rem;
@@ -29,6 +43,10 @@ export const ImageWrapper = styled.div`
   display: grid;
   align-items: center;
   margin-left: -9rem;
+
+  ${media.down('sm')`
+    display: none;
+  `}
 `
 
 export const ImageItem = styled.div<ReleasesTypes>`
@@ -44,8 +62,7 @@ export const ImageItem = styled.div<ReleasesTypes>`
   ${({ $idx }) =>
     ($idx === 0 && 'height: 18rem; right: -80%; &:hover { z-index: 2; }') ||
     ($idx === 1 && 'height: 20rem; right: -40%; z-index: 1;') ||
-    ($idx === 2 && 'height: 18rem; &:hover { z-index: 2; }') ||
-    ($idx > 2 && 'display: none;')}
+    ($idx === 2 && 'height: 18rem; &:hover { z-index: 2; }')}
 
   img {
     height: 100%;
@@ -64,5 +81,46 @@ export const MirrorImg = styled.div`
     filter: blur(3px);
     transform-origin: bottom;
     mask-image: linear-gradient(to bottom, transparent 90%, black 100%);
+  }
+`
+
+export const MobileImageWrapper = styled.div`
+  display: none;
+
+  ${media.down('sm')`
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  `}
+`
+
+export const MobileImageCard = styled.div`
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+  }
+
+  p {
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: var(--grey);
+    text-align: center;
+    hyphens: auto;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 `

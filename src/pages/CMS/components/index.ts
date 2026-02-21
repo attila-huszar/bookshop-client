@@ -1,4 +1,4 @@
-export * from './Users'
-export * from './Books'
-export * from './Authors'
-export * from './Orders'
+export { UserEditForm } from './Users/UserEditForm'
+export { BookEditForm } from './Books/BookEditForm'
+export { AuthorEditForm } from './Authors/AuthorEditForm'
+export { OrderEditForm } from './Orders/OrderEditForm'

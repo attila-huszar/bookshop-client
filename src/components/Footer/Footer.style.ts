@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledFooter = styled.footer`
   display: grid;
@@ -13,6 +14,15 @@ export const StyledFooter = styled.footer`
   a:hover {
     color: var(--primary-color);
   }
+
+  ${media.down('sm')`
+    min-width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  `}
 `
 
 export const LeftSection = styled.section`
@@ -25,11 +35,14 @@ export const RightSection = styled.section`
   align-self: center;
 
   p {
-    text-wrap: balance;
+    text-wrap: pretty;
   }
 `
 
 export const BottomSection = styled.section`
   grid-area: 2 / 1 / 3 / 3;
-  border-top: 1px #0d08421a solid;
+
+  ${media.up('sm')`
+    border-top: 1px var(--light-grey) solid;
+  `}
 `

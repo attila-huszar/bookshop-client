@@ -1,7 +1,12 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledAccount = styled.main`
   padding: 0 6.25rem 4rem;
+
+  ${media.down('sm')`
+    padding: 0 1rem;
+  `}
 
   > h2 {
     text-align: center;
@@ -35,9 +40,18 @@ export const Details = styled.div`
 
   > button {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 0.75rem;
+    right: 0.75rem;
   }
+
+  ${media.down('sm')`
+    padding: 1rem;
+
+    > div {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  `}
 `
 
 export const AvatarPanel = styled.div`
@@ -51,6 +65,10 @@ export const AvatarPanel = styled.div`
 export const General = styled.div`
   margin-left: 2rem;
   width: 100%;
+
+  ${media.down('sm')`
+    margin-left: 0;
+  `}
 `
 
 export const GeneralLine = styled.div`
@@ -61,6 +79,11 @@ export const GeneralLine = styled.div`
     width: 100%;
     margin-bottom: 1rem;
   }
+
+  ${media.down('sm')`
+    flex-direction: column;
+    gap: 0;
+  `}
 `
 
 export const Address = styled.div`
@@ -99,6 +122,13 @@ export const Address = styled.div`
   option[hidden] {
     color: var(--grey);
   }
+
+  ${media.down('sm')`
+    input[name='postal_code'],
+    select[name='country'] {
+      width: 100%;
+    }
+  `}
 `
 
 export const AddressLine = styled.div`
@@ -126,6 +156,39 @@ export const AddressLine = styled.div`
       width: calc(100% - 1.5rem);
     }
   }
+
+  ${media.down('sm')`
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+    width: 100%;
+
+    > div {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    &:first-child {
+      > div {
+        width: 100%;
+      }
+    }
+
+    &:nth-child(2) {
+      > div:nth-child(-n + 2) {
+        width: 100%;
+      }
+    }
+
+    &:nth-child(3) {
+      width: 100%;
+      margin-bottom: 0;
+
+      > div {
+        width: 100%;
+      }
+    }
+  `}
 `
 
 export const ButtonWrapper = styled.div`
@@ -134,4 +197,10 @@ export const ButtonWrapper = styled.div`
   right: 1.5rem;
   display: flex;
   gap: 1rem;
+
+  ${media.down('sm')`
+    position: static;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  `}
 `

@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledCard = styled.div`
   height: 17.5rem;
@@ -16,6 +17,16 @@ export const StyledCard = styled.div`
     width: 100%;
     padding: 1rem;
   }
+
+  ${media.down('sm')`
+    width: 100%;
+    height: auto;
+
+    a {
+      flex-direction: column;
+      padding: 0.75rem;
+    }
+  `}
 `
 
 export const Details = styled.div`
@@ -23,6 +34,12 @@ export const Details = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 4rem 0 0 2rem;
+  min-width: 0;
+
+  ${media.down('sm')`
+    padding: 1rem 0 0;
+    gap: 0.75rem;
+  `}
 `
 
 export const Image = styled.img`
@@ -30,6 +47,12 @@ export const Image = styled.img`
   min-width: 11.25rem;
   border-radius: var(--border-radius);
   object-fit: cover;
+
+  ${media.down('sm')`
+    width: 100%;
+    height: 12rem;
+    min-width: 0;
+  `}
 `
 
 export const Title = styled.p`

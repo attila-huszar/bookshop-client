@@ -112,6 +112,7 @@ export const ButtonWrapper = styled.div`
   align-items: center;
   position: relative;
   margin-top: 2rem;
+  gap: 0.75rem;
 
   button[type='reset'] {
     position: absolute;

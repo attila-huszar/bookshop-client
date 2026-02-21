@@ -9,8 +9,18 @@ import {
   paymentCreate,
   paymentSelector,
 } from '@/store'
-import { Button, IconButton, InfoDialog, Loading, Price } from '@/components'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { Alert } from '@/components/Alert/Alert'
+import { Button } from '@/components/Button/Button'
+import { IconButton } from '@/components/Button/IconButton'
+import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
+import { Loading } from '@/components/Loading/Loading'
+import { Price } from '@/components/Price/Price'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useBreakpoints,
+  useCart,
+} from '@/hooks'
 import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
 import {
   defaultCurrencySymbol,
@@ -32,6 +42,7 @@ import {
   ButtonWrapper,
   CartGrid,
   EmptyCart,
+  HeaderRow,
   ImageWrapper,
   LabelPrice,
   LabelQuantity,
@@ -52,9 +63,10 @@ export function Cart() {
     removeQuantity,
     setQuantity,
   } = useCart()
-  const { cartIsLoading } = useAppSelector(cartSelector)
+  const { cartIsLoading, cartError } = useAppSelector(cartSelector)
   const { payment, paymentIsLoading, paymentCreateError } =
     useAppSelector(paymentSelector)
+  const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -148,18 +160,33 @@ export function Cart() {
     return <Loading message="Loading Cart" />
   }
 
+  if (cartError) {
+    return (
+      <StyledCart>
+        <h2>Cart</h2>
+        <Alert
+          message="Failed to load your cart. Please try again."
+          error={cartError}
+          backButton
+        />
+      </StyledCart>
+    )
+  }
+
   if (cartItems.length) {
     return (
       <StyledCart>
         <h2>Cart</h2>
         <CartGrid>
-          <p>Books in basket</p>
-          <LabelQuantity>Quantity</LabelQuantity>
-          <LabelPrice>Price</LabelPrice>
-          <LabelPrice>Total</LabelPrice>
-          {cartItems.map((item: Cart) => (
+          <HeaderRow>
+            <p>Books in basket</p>
+            <LabelQuantity>Quantity</LabelQuantity>
+            <LabelPrice>Price</LabelPrice>
+            <LabelPrice>Total</LabelPrice>
+          </HeaderRow>
+          {cartItems.map((item: Cart, index) => (
             <Fragment key={item.id}>
-              <Book>
+              <Book $hasSeparator={index > 0}>
                 <Link to={`/${ROUTE.BOOK}?id=${item.id}`}>
                   <ImageWrapper>
                     <img
@@ -254,8 +281,8 @@ export function Cart() {
           <Button
             onClick={navigateToBooks}
             disabled={paymentIsLoading}
-            $size="lg"
-            $textSize="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $textSize={isMobile ? 'sm' : 'lg'}
             $inverted>
             Back to Shop
           </Button>
@@ -264,7 +291,8 @@ export function Cart() {
             onClick={handleCartClear}
             disabled={paymentIsLoading}
             title="Reset Cart"
-            $size="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $iconSize={isMobile ? 'sm' : 'md'}
             $color="var(--mid-grey)"
             $outline
           />
@@ -272,8 +300,8 @@ export function Cart() {
             onClick={handleCheckout}
             disabled={paymentIsLoading}
             $icon={paymentIsLoading ? <SpinnerIcon /> : <CartIcon />}
-            $size="lg"
-            $textSize="lg"
+            $size={isMobile ? 'sm' : 'lg'}
+            $textSize={isMobile ? 'sm' : 'lg'}
             $shadow>
             Checkout
           </Button>

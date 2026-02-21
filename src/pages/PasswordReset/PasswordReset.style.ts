@@ -1,10 +1,19 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledPasswordReset = styled.section`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 6.25rem 4rem;
+
+  ${media.down('sm')`
+    padding: 0 1rem 4rem;
+
+    form {
+      width: 100%;
+    }
+  `}
 
   h2 {
     margin-bottom: 1rem;

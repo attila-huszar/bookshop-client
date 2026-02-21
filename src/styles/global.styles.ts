@@ -1,6 +1,7 @@
 import { createGlobalStyle } from 'styled-components'
+import { media } from './media.breakpoints'
 
-export default createGlobalStyle`
+export const GlobalStyle = createGlobalStyle`
   * {
     margin: 0;
     padding: 0;
@@ -35,11 +36,16 @@ export default createGlobalStyle`
     --orange: #ff4500;
 
     --border-radius: 6px;
+    --corner-cut: 1.25rem;
     --shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
   }
 
   #root {
     margin: 0 1.5rem 1.5rem;
+
+    ${media.down('sm')`
+      margin: 0 1rem 1rem;
+    `}
   }
 
   body {
@@ -61,15 +67,3 @@ export default createGlobalStyle`
     -moz-appearance: textfield;
   }
 `
-
-export const sliderStyles = {
-  track: {
-    backgroundColor: 'var(--primary-color)',
-  },
-  handle: {
-    opacity: 1,
-    border: 'none',
-    backgroundColor: 'var(--primary-color)',
-  },
-  rail: { backgroundColor: 'var(--grey)' },
-}

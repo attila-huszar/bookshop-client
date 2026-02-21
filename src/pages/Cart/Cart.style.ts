@@ -1,11 +1,19 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledCart = styled.main`
-  padding: 0 10rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-inline: 6.25rem;
 
-  h2 {
-    margin-bottom: 2rem;
-  }
+  ${media.down('sm')`
+    padding-inline: 1.5rem;
+  `}
+
+  ${media.down('sm')`
+    padding-inline: 1rem;
+  `}
 `
 
 export const CartGrid = styled.div`
@@ -14,8 +22,25 @@ export const CartGrid = styled.div`
   grid-template-columns: 8fr 2fr 2fr 2fr 1fr;
   align-items: center;
   column-gap: 0.5rem;
-  row-gap: 1.5rem;
-  min-width: 38rem;
+  row-gap: 1rem;
+  min-width: 0;
+
+  ${media.up('sm')`
+    min-width: 38rem;
+  `}
+
+  ${media.down('sm')`
+    grid-template-columns: auto auto auto auto;
+    column-gap: 0.25rem;
+  `}
+`
+
+export const HeaderRow = styled.div`
+  display: contents;
+
+  ${media.down('sm')`
+    display: none;
+  `}
 `
 
 export const LabelQuantity = styled.p`
@@ -26,13 +51,14 @@ export const LabelPrice = styled.p`
   text-align: right;
 `
 
-export const Book = styled.div`
+export const Book = styled.div<{ $hasSeparator: boolean }>`
   grid-column: 1/2;
 
   a {
     display: flex;
     align-items: center;
     gap: 2rem;
+    margin-top: ${({ $hasSeparator }) => ($hasSeparator ? '1rem' : '0')};
     margin-right: clamp(0.125rem, 2vw, 5rem);
     font-size: 1.125rem;
 
@@ -42,15 +68,24 @@ export const Book = styled.div`
     }
   }
 
-  &:not(:nth-child(5))::before {
+  &::before {
     content: '';
-    display: block;
+    display: ${({ $hasSeparator }) => ($hasSeparator ? 'block' : 'none')};
     position: absolute;
-    margin-top: -0.75rem;
     height: 1px;
     width: 100%;
     background-color: var(--light-grey);
   }
+
+  ${media.down('sm')`
+    grid-column: 1 / -1;
+
+    a {
+      margin-right: 0;
+      gap: 1rem;
+      font-size: 1rem;
+    }
+  `}
 `
 
 export const ImageWrapper = styled.div`
@@ -73,6 +108,16 @@ export const ImageWrapper = styled.div`
       rgba(0, 0, 0, 0.19) 0px 5px 10px,
       rgba(0, 0, 0, 0.23) 0px 3px 3px;
   }
+
+  ${media.down('sm')`
+    height: 6.75rem;
+    width: 5.5rem;
+
+    img {
+      height: 5.5rem;
+      width: 4rem;
+    }
+  `}
 `
 
 export const Quantity = styled.div`
@@ -89,28 +134,47 @@ export const Quantity = styled.div`
     font-size: 1rem;
     text-align: center;
   }
+
+  ${media.down('sm')`
+    grid-column: 1 / 2;
+    justify-content: start;
+  `}
 `
 
 export const PriceItem = styled.div`
   grid-column: 3/4;
   display: flex;
   justify-content: end;
+
+  ${media.down('sm')`
+    grid-column: 2 / 3;
+    justify-content: end;
+  `}
 `
 
 export const PriceTotal = styled.div`
   grid-column: 4/5;
   display: flex;
   justify-content: end;
+
+  ${media.down('sm')`
+    grid-column: 3 / 4;
+  `}
 `
 
 export const RemoveItem = styled.div`
   grid-column: 5/6;
   display: flex;
   justify-content: end;
+
+  ${media.down('sm')`
+    grid-column: 4 / 5;
+  `}
 `
 
 export const TotalPrice = styled.div`
-  min-width: 38rem;
+  min-width: 0;
+  width: 100%;
   margin: 2rem 0;
   padding: 1rem 2rem;
   border-radius: 10px;
@@ -139,6 +203,18 @@ export const TotalPrice = styled.div`
     font-size: 1.25rem;
     font-weight: 700;
   }
+
+  ${media.up('sm')`
+    min-width: 38rem;
+  `}
+
+  ${media.down('sm')`
+    padding: 1rem;
+
+    div {
+      column-gap: 0.5rem;
+    }
+  `}
 `
 
 export const ButtonWrapper = styled.div`
@@ -146,6 +222,11 @@ export const ButtonWrapper = styled.div`
   justify-content: end;
   flex-wrap: wrap;
   gap: 2rem;
+
+  ${media.down('sm')`
+    justify-content: center;
+    gap: 0.75rem;
+  `}
 `
 
 export const EmptyCart = styled.div`

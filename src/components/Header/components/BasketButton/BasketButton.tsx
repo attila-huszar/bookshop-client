@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import { cartSelector, paymentSelector } from '@/store'
-import { Button } from '@/components'
-import { useAppSelector } from '@/hooks'
+import { Button, IconButton } from '@/components'
+import { useAppSelector, useBreakpoints } from '@/hooks'
 import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
 import { cartKey, paymentSessionKey } from '@/constants'
 import { MinimalCart } from '@/types'
@@ -12,6 +12,7 @@ import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 export function BasketButton() {
   const { cartItems } = useAppSelector(cartSelector)
   const { payment } = useAppSelector(paymentSelector)
+  const { isMobile } = useBreakpoints()
   const navigate = useNavigate()
 
   const storedPayment = sessionStorageAdapter.get(paymentSessionKey)
@@ -27,15 +28,27 @@ export function BasketButton() {
     cartItems.length ? cartItems : safeStoredCart,
   )
 
+  const handleCartClick = () => {
+    void navigate(`/${ROUTE.CART}`)
+  }
+
   return (
     <StyledBasketButton>
-      <Button
-        onClick={() => void navigate(`/${ROUTE.CART}`)}
-        $size="smMd"
-        $icon={<CartIcon />}
-        title={isCheckingOut ? 'Checkout' : 'Basket'}>
-        {isCheckingOut ? 'Checkout' : 'Basket'}
-      </Button>
+      {isMobile ? (
+        <IconButton
+          onClick={handleCartClick}
+          icon={<CartIcon />}
+          title={isCheckingOut ? 'Checkout' : 'Basket'}
+        />
+      ) : (
+        <Button
+          onClick={handleCartClick}
+          $size="smMd"
+          $icon={<CartIcon />}
+          title={isCheckingOut ? 'Checkout' : 'Basket'}>
+          {isCheckingOut ? 'Checkout' : 'Basket'}
+        </Button>
+      )}
       {cartCount > 0 && <CartItemCount>{cartCount}</CartItemCount>}
     </StyledBasketButton>
   )
