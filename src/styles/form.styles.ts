@@ -1,4 +1,5 @@
 import { css, styled } from 'styled-components'
+import { media } from './media.breakpoints'
 
 export const InputWrapper = styled.div`
   position: relative;
@@ -110,19 +111,12 @@ export const ButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
   margin-top: 2rem;
-  gap: 0.75rem;
+  gap: 3rem;
 
-  button[type='reset'] {
-    position: absolute;
-    left: 10%;
-  }
-
-  button[type='button'] {
-    position: absolute;
-    right: 10%;
-  }
+  ${media.down('sm')`
+      gap: 1.5rem;
+  `}
 `
 
 export const PasswordEye = styled.button`

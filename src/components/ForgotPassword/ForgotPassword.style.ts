@@ -1,25 +1,14 @@
 import { styled } from 'styled-components'
+import { StyledDialog } from '@/styles'
 
-export const StyledForgotPassword = styled.dialog`
-  margin: 10rem auto 0;
-  padding: 1.5rem 4rem;
-  background-color: #fff;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
-
+export const StyledForgotPassword = styled(StyledDialog)`
   h2 {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     text-align: center;
   }
 
-  form {
-    width: auto;
-  }
-
-  > :nth-child(2),
-  input {
-    width: 24rem;
+  > form {
+    width: 100%;
   }
 
   > :nth-child(2) {

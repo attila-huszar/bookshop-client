@@ -128,7 +128,7 @@ export const Books = () => {
                       setEditedItem(book)
                     }}
                     icon={<EditIcon />}
-                    $iconSize="sm"
+                    $size="sm"
                   />
                 </td>
               </tr>

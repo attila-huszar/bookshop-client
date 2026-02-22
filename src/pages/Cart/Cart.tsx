@@ -206,7 +206,6 @@ export function Cart() {
                   icon={<MinusIcon />}
                   title="Remove quantity"
                   $size="sm"
-                  $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity <= 1}
                 />
@@ -224,7 +223,6 @@ export function Cart() {
                   icon={<PlusIcon />}
                   title="Add quantity"
                   $size="sm"
-                  $iconSize="sm"
                   $color="var(--grey)"
                   disabled={item.quantity >= maxItemQuantity}
                 />
@@ -249,7 +247,6 @@ export function Cart() {
                   icon={<BinIcon />}
                   title="Remove from cart"
                   $size="sm"
-                  $iconSize="sm"
                   $color="var(--orange)"
                 />
               </RemoveItem>
@@ -292,7 +289,6 @@ export function Cart() {
             disabled={paymentIsLoading}
             title="Reset Cart"
             $size={isMobile ? 'sm' : 'lg'}
-            $iconSize={isMobile ? 'sm' : 'md'}
             $color="var(--mid-grey)"
             $outline
           />

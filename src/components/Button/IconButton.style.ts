@@ -12,7 +12,7 @@ const iconHeight = {
   xs: '1rem',
   sm: '1.25rem',
   md: '1.5rem',
-  lg: '2rem',
+  lg: '1.875rem',
 }
 
 export const StyledIconButton = styled.button<StyleTypes>`
@@ -35,7 +35,7 @@ export const StyledIconButton = styled.button<StyleTypes>`
   }
 
   svg {
-    height: ${({ $iconSize = 'md' }) => iconHeight[$iconSize]};
+    height: ${({ $size = 'md' }) => iconHeight[$size]};
     border-radius: ${({ $round }) => ($round ? '999px' : undefined)};
 
     ${({ $flipH }) => $flipH && 'transform: scaleX(-1);'}

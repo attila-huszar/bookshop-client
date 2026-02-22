@@ -7,7 +7,7 @@ import { IconButton } from '@/components/Button/IconButton'
 import { FormikField } from '@/components/FormikField/FormikField'
 import { forgotPasswordSchema } from '@/validation'
 import { handleError } from '@/errors/handleError'
-import { BackIcon } from '@/assets/svg'
+import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledForgotPassword } from './ForgotPassword.style'
 
@@ -73,16 +73,17 @@ export function ForgotPassword({ ref }: Props) {
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
-                $iconSize="lg"
+                $size="lg"
                 $color="var(--mid-grey)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
                 onClick={handleClose}
               />
-              <Button type="submit" $size="sm" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Email'}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <SpinnerIcon height={28} /> : 'Send Email'}
               </Button>
+              <div style={{ width: '3rem' }} />
             </ButtonWrapper>
           </Form>
         )}

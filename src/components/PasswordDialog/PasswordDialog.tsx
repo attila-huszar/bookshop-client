@@ -7,7 +7,7 @@ import { Button, FormikField, IconButton } from '@/components'
 import { useAppDispatch } from '@/hooks'
 import { accountPasswordSchema } from '@/validation'
 import { passwordChangeInitialValues } from '@/constants'
-import { BackIcon } from '@/assets/svg'
+import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledPasswordDialog } from './PasswordDialog.style'
 
@@ -122,15 +122,17 @@ export function PasswordDialog({ email, ref }: Props) {
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
-                $iconSize="lg"
+                $size="lg"
                 $color="var(--mid-grey)"
                 type="reset"
                 title="Back"
+                disabled={isSubmitting}
                 onClick={handleClose}
               />
-              <Button type="submit" $size="sm" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit'}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <SpinnerIcon height={28} /> : 'Submit'}
               </Button>
+              <div style={{ width: '3rem' }} />
             </ButtonWrapper>
           </Form>
         )}

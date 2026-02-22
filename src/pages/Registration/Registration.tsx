@@ -97,7 +97,7 @@ export function Registration() {
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
-                $iconSize="lg"
+                $size="lg"
                 $color="var(--mid-grey)"
                 type="reset"
                 title="Back"
@@ -107,6 +107,7 @@ export function Registration() {
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? <SpinnerIcon height={28} /> : 'Register'}
               </Button>
+              <div style={{ width: '3rem' }} />
             </ButtonWrapper>
           </Form>
         )}

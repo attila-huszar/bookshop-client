@@ -5,11 +5,11 @@ export const StyledAuthorizationMenu = styled.main`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 6.25rem 4rem;
   width: 100%;
+  padding: 4rem 0;
 
   ${media.down('sm')`
-    padding: 2rem 1.5rem 4rem;
+    padding: 2rem 1.5rem;
   `}
 
   form {
