@@ -283,7 +283,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 onClick={handleProductImageClick}
                 title="Upload Image"
                 icon={<UploadIcon />}
-                $iconSize="lg"
+                $size="lg"
               />
               <input
                 type="file"

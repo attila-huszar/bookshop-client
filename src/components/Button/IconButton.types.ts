@@ -1,6 +1,5 @@
 export type StyleTypes = {
   $size?: 'xs' | 'sm' | 'md' | 'lg'
-  $iconSize?: 'xs' | 'sm' | 'md' | 'lg'
   $color?: string
   $outline?: boolean
   $round?: boolean

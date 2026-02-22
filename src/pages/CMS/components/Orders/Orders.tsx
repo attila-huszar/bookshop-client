@@ -123,7 +123,7 @@ export const Orders = () => {
                       setEditedItem(order)
                     }}
                     icon={<EditIcon />}
-                    $iconSize="sm"
+                    $size="sm"
                   />
                 </td>
               </tr>

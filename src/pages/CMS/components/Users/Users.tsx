@@ -140,7 +140,7 @@ export const Users = () => {
                       setEditedItem(user)
                     }}
                     icon={<EditIcon />}
-                    $iconSize="sm"
+                    $size="sm"
                   />
                 </td>
               </tr>

@@ -75,7 +75,7 @@ export function Login() {
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
-                $iconSize="lg"
+                $size="lg"
                 $color="var(--mid-grey)"
                 type="reset"
                 title="Back"
@@ -87,7 +87,7 @@ export function Login() {
               </Button>
               <IconButton
                 icon={<QuestionIcon />}
-                $iconSize="lg"
+                $size="lg"
                 $color="var(--mid-grey)"
                 type="button"
                 title="Forgot Password?"

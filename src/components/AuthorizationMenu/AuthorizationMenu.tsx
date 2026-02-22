@@ -1,3 +1,4 @@
+import { PropsWithChildren } from 'react'
 import { NavLink } from 'react-router'
 import { ROUTE } from '@/routes'
 import {
@@ -5,7 +6,7 @@ import {
   StyledAuthorizationMenu,
 } from './AuthorizationMenu.style'
 
-export function AuthorizationMenu({ children }: React.PropsWithChildren) {
+export function AuthorizationMenu({ children }: PropsWithChildren) {
   return (
     <StyledAuthorizationMenu>
       <FormChangeLinks>
