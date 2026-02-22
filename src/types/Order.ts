@@ -1,4 +1,4 @@
-import { PaymentIntentShipping, PaymentIntentStatus } from './'
+import { PaymentIntent, PaymentIntentShipping, PaymentIntentStatus } from './'
 import type { MinimalCart } from './Cart'
 
 export type Order = {
@@ -34,13 +34,29 @@ export type PaymentIntentRequest = {
   items: MinimalCart[]
 }
 
-export type PaymentIntentResponse = {
-  client_secret: string
-  amount: number
-  status: PaymentIntentStatus
-}
+export type PaymentIntentResponse = Pick<
+  PaymentIntent,
+  | 'id'
+  | 'client_secret'
+  | 'amount'
+  | 'status'
+  | 'currency'
+  | 'receipt_email'
+  | 'shipping'
+  | 'created'
+>
 
 export type PaymentSession = {
   session: string
   amount: number
+}
+
+export type OrderSyncResult = {
+  paymentId: string
+  paymentStatus: PaymentIntentStatus
+  amount: number
+  currency: string
+  receiptEmail: string | null
+  shipping: PaymentIntentShipping | null
+  finalizedAt: string | null
 }

@@ -1,13 +1,13 @@
-import { ChangeEvent, Fragment, useEffect, useRef } from 'react'
+import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
-  paymentClear,
   paymentCreate,
   paymentSelector,
+  paymentStateReset,
 } from '@/store'
 import { Alert } from '@/components/Alert/Alert'
 import { Button } from '@/components/Button/Button'
@@ -69,6 +69,8 @@ export function Cart() {
   const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
+  const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
+  const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
 
   useEffect(() => {
     if (payment?.session) {
@@ -77,12 +79,12 @@ export function Cart() {
   }, [payment?.session, navigate])
 
   useEffect(() => {
-    if (paymentIsLoading) {
+    if (isCheckoutBusy) {
       ref.current?.showModal()
     } else {
       ref.current?.close()
     }
-  }, [paymentIsLoading])
+  }, [isCheckoutBusy])
 
   useEffect(() => {
     if (paymentCreateError) {
@@ -128,28 +130,37 @@ export function Cart() {
   }
 
   const handleCheckout = () => {
-    if (cartItems.length && !paymentIsLoading) {
-      const existingSession =
-        sessionStorageAdapter.get<string>(paymentSessionKey)
+    if (isCheckoutBusy) return
 
-      if (existingSession) {
-        void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
-      } else {
-        const orderRequest = {
-          items: cartItems.map((item) => ({
-            id: item.id,
-            quantity: item.quantity,
-          })),
-        }
+    if (!cartItems.length) {
+      toast.error('Cart is empty', { id: 'cart-empty' })
+      return
+    }
 
-        void dispatch(paymentCreate(orderRequest))
+    setIsCheckoutTransitioning(true)
+    const existingSession = sessionStorageAdapter.get<string>(paymentSessionKey)
+
+    if (existingSession) {
+      void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+    } else {
+      const orderRequest = {
+        items: cartItems.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
       }
+
+      void dispatch(paymentCreate(orderRequest))
+        .unwrap()
+        .catch(() => {
+          setIsCheckoutTransitioning(false)
+        })
     }
   }
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(paymentClear())
+    dispatch(paymentStateReset())
   }
 
   const navigateToBooks = () => {
@@ -280,7 +291,7 @@ export function Cart() {
         <ButtonWrapper>
           <Button
             onClick={navigateToBooks}
-            disabled={paymentIsLoading}
+            disabled={isCheckoutBusy}
             $size={isMobile ? 'sm' : 'lg'}
             $textSize={isMobile ? 'sm' : 'lg'}
             $inverted>
@@ -289,7 +300,7 @@ export function Cart() {
           <IconButton
             icon={<BinIcon />}
             onClick={handleCartClear}
-            disabled={paymentIsLoading}
+            disabled={isCheckoutBusy}
             title="Reset Cart"
             $size={isMobile ? 'sm' : 'lg'}
             $iconSize={isMobile ? 'sm' : 'md'}
@@ -298,15 +309,22 @@ export function Cart() {
           />
           <Button
             onClick={handleCheckout}
-            disabled={paymentIsLoading}
-            $icon={paymentIsLoading ? <SpinnerIcon /> : <CartIcon />}
+            disabled={isCheckoutBusy}
+            $icon={isCheckoutBusy ? <SpinnerIcon /> : <CartIcon />}
             $size={isMobile ? 'sm' : 'lg'}
             $textSize={isMobile ? 'sm' : 'lg'}
             $shadow>
-            Checkout
+            {isCheckoutBusy ? 'Creating checkout session...' : 'Checkout'}
           </Button>
         </ButtonWrapper>
-        <InfoDialog dialogRef={ref} message="Checking out" />
+        <InfoDialog
+          dialogRef={ref}
+          message={
+            paymentIsLoading
+              ? 'Creating checkout session...'
+              : 'Checkout session ready. Redirecting...'
+          }
+        />
       </StyledCart>
     )
   }

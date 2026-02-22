@@ -1,8 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
-import { cartClear, paymentClear, paymentSelector } from '@/store'
+import {
+  cartClear,
+  orderSyncAfterWebhook,
+  paymentSelector,
+  paymentSessionReset,
+} from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
+import { getPaymentId } from '@/helpers'
 import { PaymentIntentStatus } from '@/types'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
@@ -27,15 +33,40 @@ const getAnimation = (status: PaymentIntentStatus) => {
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { payment } = useAppSelector(paymentSelector)
+  const { payment, orderSyncIsLoading, orderSyncError, orderSyncResult } =
+    useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.session)
+  const orderSyncTriggeredRef = useRef(false)
+
+  const paymentId = useMemo(
+    () => getPaymentId(payment?.session),
+    [payment?.session],
+  )
 
   useEffect(() => {
-    if (successStatuses.includes(status.intent)) {
+    orderSyncTriggeredRef.current = false
+  }, [paymentId])
+
+  useEffect(() => {
+    if (!paymentId) return
+    if (!successStatuses.includes(status.intent)) return
+    if (orderSyncResult || orderSyncTriggeredRef.current) return
+
+    orderSyncTriggeredRef.current = true
+    void dispatch(orderSyncAfterWebhook(paymentId))
+  }, [dispatch, orderSyncResult, paymentId, status.intent])
+
+  useEffect(() => {
+    if (orderSyncResult) {
       dispatch(cartClear())
-      dispatch(paymentClear())
+      dispatch(paymentSessionReset())
     }
-  }, [dispatch, status.intent])
+  }, [dispatch, orderSyncResult])
+
+  const orderNumber = orderSyncResult?.paymentId.slice(-6).toUpperCase()
+  const orderAmount = orderSyncResult
+    ? `${(orderSyncResult.amount / 100).toFixed(2)} ${orderSyncResult.currency}`
+    : null
 
   return (
     <StyledPaymentStatus>
@@ -47,6 +78,10 @@ export function PaymentStatus() {
         <Lottie animationData={getAnimation(status.intent)} loop={false} />
       </LottieWrapper>
       <p>{status.message}</p>
+      {orderSyncIsLoading && <p>Syncing your order details...</p>}
+      {orderSyncError && <p>{orderSyncError}</p>}
+      {orderNumber && <p>Order #{orderNumber}</p>}
+      {orderAmount && <p>Total: {orderAmount}</p>}
       <button onClick={() => void navigate('/')} type="button">
         Back to Shop
       </button>

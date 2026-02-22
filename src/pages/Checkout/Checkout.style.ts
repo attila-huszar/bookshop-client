@@ -65,7 +65,8 @@ export const StyledCheckout = styled.section`
     box-sizing: border-box;
   }
 
-  #payment-message {
+  #payment-message,
+  #cancel-message {
     color: var(--light-black);
     font-size: 16px;
     line-height: 20px;

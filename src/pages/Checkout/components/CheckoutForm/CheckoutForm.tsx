@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import {
   LinkAuthenticationElement,
@@ -10,8 +11,8 @@ import { ROUTE } from '@/routes'
 import {
   cartClear,
   paymentCancel,
-  paymentClear,
   paymentSelector,
+  paymentStateReset,
   userSelector,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
@@ -24,13 +25,21 @@ export function CheckoutForm() {
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
   const { payment } = useAppSelector(paymentSelector)
-  const [guestEmail, setGuestEmail] = useState('')
-  const receiptEmail = userData?.email ?? guestEmail
+  const [linkEmail, setLinkEmail] = useState('')
+  const [cancelError, setCancelError] = useState<string | null>(null)
+  const [isCanceling, setIsCanceling] = useState(false)
+  const receiptEmail = (userData?.email ?? linkEmail).trim()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const { handleSubmit, message, setMessage, isLoading } =
-    usePaymentSubmit(receiptEmail)
+  const {
+    handleSubmit,
+    retryPayment,
+    canRetry,
+    message,
+    setMessage,
+    isLoading,
+  } = usePaymentSubmit(receiptEmail)
 
   if (!payment) {
     return (
@@ -55,10 +64,34 @@ export function CheckoutForm() {
   }
 
   const handleCancel = async () => {
-    await dispatch(paymentCancel(paymentId))
-    dispatch(paymentClear())
-    dispatch(cartClear())
-    void navigate(`/${ROUTE.CART}`, { replace: true })
+    setCancelError(null)
+
+    if (!paymentId) {
+      const errorMessage =
+        'Unable to cancel checkout right now: missing payment ID.'
+      setCancelError(errorMessage)
+      toast.error(errorMessage, { id: 'checkout-cancel-error' })
+      return
+    }
+
+    setIsCanceling(true)
+
+    try {
+      await dispatch(paymentCancel(paymentId)).unwrap()
+      dispatch(paymentStateReset())
+      dispatch(cartClear())
+      void navigate(`/${ROUTE.CART}`, { replace: true })
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to cancel checkout right now. Please try again.'
+
+      setCancelError(errorMessage)
+      toast.error(errorMessage, { id: 'checkout-cancel-error' })
+    } finally {
+      setIsCanceling(false)
+    }
   }
 
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -66,14 +99,9 @@ export function CheckoutForm() {
     business: {
       name: 'Bookshop',
     },
-    defaultValues: {
+    fields: {
       billingDetails: {
-        email: receiptEmail,
-        name: userData
-          ? `${userData.firstName} ${userData.lastName}`
-          : undefined,
-        address: userData?.address ?? undefined,
-        phone: userData?.phone ?? undefined,
+        email: 'never',
       },
     },
   }
@@ -82,7 +110,10 @@ export function CheckoutForm() {
     <form
       className="stripe-form"
       id="payment-form"
-      onSubmit={(e) => void handleSubmit(e)}>
+      onSubmit={(e) => {
+        setCancelError(null)
+        void handleSubmit(e)
+      }}>
       <div>
         <p>Order #{orderForm.num}</p>
         <span>
@@ -91,17 +122,21 @@ export function CheckoutForm() {
       </div>
       {!userData?.email && (
         <LinkAuthenticationElement
-          options={{ defaultValues: { email: receiptEmail } }}
+          options={{ defaultValues: { email: linkEmail } }}
           onChange={(e) => {
-            setGuestEmail(e.value.email)
+            setLinkEmail(e.value.email)
             setMessage(null)
+            setCancelError(null)
           }}
         />
       )}
       <PaymentElement
         id="payment-element"
         options={paymentElementOptions}
-        onChange={() => setMessage(null)}
+        onChange={() => {
+          setMessage(null)
+          setCancelError(null)
+        }}
       />
       <button
         type="submit"
@@ -111,18 +146,41 @@ export function CheckoutForm() {
           {isLoading ? (
             <div className="spinner" id="spinner"></div>
           ) : (
-            `Pay ${orderForm.amount} ${defaultCurrency}`
+            `${canRetry && message ? 'Retry Payment' : 'Pay'} ${orderForm.amount} ${defaultCurrency}`
           )}
         </span>
       </button>
+      {canRetry && message && (
+        <>
+          <div style={{ marginBottom: '1rem' }}></div>
+          <button
+            type="button"
+            onClick={() => void retryPayment()}
+            disabled={isLoading || !stripe || !elements}
+            style={{ backgroundColor: 'var(--mid-grey)' }}>
+            <span>Retry Payment Now</span>
+          </button>
+        </>
+      )}
       <div style={{ marginBottom: '1rem' }}></div>
       <button
         type="button"
         onClick={() => void handleCancel()}
-        disabled={isLoading}
+        disabled={isLoading || isCanceling}
         style={{ backgroundColor: 'var(--grey)' }}>
-        <span>Cancel Checkout</span>
+        <span>
+          {isCanceling
+            ? 'Canceling checkout...'
+            : cancelError
+              ? 'Retry Cancel Checkout'
+              : 'Cancel Checkout'}
+        </span>
       </button>
+      {cancelError && (
+        <div id="cancel-message" style={{ marginTop: '1rem' }}>
+          {cancelError}
+        </div>
+      )}
       {message && (
         <div id="payment-message" style={{ marginTop: '1rem' }}>
           {message}

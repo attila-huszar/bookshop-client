@@ -10,6 +10,7 @@ type PaymentStatus = {
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 5000
+const ABSOLUTE_TIMEOUT = 30000
 
 const getUnknownErrorMessage = (error: unknown): string => {
   if (error instanceof Error && error.message) return error.message
@@ -29,11 +30,25 @@ export function usePaymentStatus(session: string | null | undefined) {
     if (!stripe || !session) return
 
     const timeoutIds: ReturnType<typeof setTimeout>[] = []
+    let absoluteTimeoutId: ReturnType<typeof setTimeout> | null = null
+    let isSettled = false
+    let hasTimedOut = false
+
+    const markSettled = () => {
+      isSettled = true
+      if (absoluteTimeoutId) {
+        clearTimeout(absoluteTimeoutId)
+      }
+    }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
+      if (hasTimedOut || isSettled) return
+
       try {
         const { paymentIntent, error } =
           await stripe.retrievePaymentIntent(session)
+
+        if (hasTimedOut || isSettled) return
 
         if (error) {
           throw new Error(error.message ?? 'Failed to retrieve payment intent')
@@ -44,13 +59,20 @@ export function usePaymentStatus(session: string | null | undefined) {
           message: getMessage(paymentIntent.status),
         })
 
-        if (paymentIntent.status === 'processing' && attempt < MAX_RETRIES) {
+        if (paymentIntent.status !== 'processing') {
+          markSettled()
+          return
+        }
+
+        if (attempt < MAX_RETRIES) {
           const timeoutId = setTimeout(() => {
             void retrievePaymentStatus(attempt + 1)
           }, RETRY_DELAY * attempt)
           timeoutIds.push(timeoutId)
         }
       } catch (error) {
+        if (hasTimedOut || isSettled) return
+
         if (attempt < MAX_RETRIES) {
           setStatus({
             intent: 'processing',
@@ -65,9 +87,22 @@ export function usePaymentStatus(session: string | null | undefined) {
             intent: 'requires_payment_method',
             message: `Error retrieving payment intent after multiple attempts: ${getUnknownErrorMessage(error)}`,
           })
+          markSettled()
         }
       }
     }
+
+    absoluteTimeoutId = setTimeout(() => {
+      if (isSettled) return
+      hasTimedOut = true
+      setStatus({
+        intent: 'requires_payment_method',
+        message:
+          'Payment confirmation is taking longer than expected (30s). Please refresh this page or check back in a moment.',
+      })
+      markSettled()
+    }, ABSOLUTE_TIMEOUT)
+    timeoutIds.push(absoluteTimeoutId)
 
     void retrievePaymentStatus()
 

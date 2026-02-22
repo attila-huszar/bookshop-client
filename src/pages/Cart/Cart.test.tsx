@@ -82,6 +82,9 @@ describe('Cart component', () => {
       return selector(mockState as Parameters<typeof selector>[0])
     })
 
+    mockDispatch.mockImplementation(() => ({
+      unwrap: vi.fn().mockResolvedValue(undefined),
+    }))
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
 
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)

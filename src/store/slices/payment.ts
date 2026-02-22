@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import {
+  orderSyncAfterWebhook,
   paymentCancel,
   paymentCreate,
   paymentRetrieve,
@@ -12,13 +13,26 @@ const initialState: PaymentState = {
   paymentCreateError: null,
   paymentRetrieveError: null,
   paymentCancelError: null,
+  orderSyncIsLoading: false,
+  orderSyncError: null,
+  orderSyncResult: null,
 }
 
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
   reducers: {
-    paymentClear: (state) => {
+    paymentStateReset: (state) => {
+      state.payment = null
+      state.paymentIsLoading = false
+      state.paymentCreateError = null
+      state.paymentRetrieveError = null
+      state.paymentCancelError = null
+      state.orderSyncIsLoading = false
+      state.orderSyncError = null
+      state.orderSyncResult = null
+    },
+    paymentSessionReset: (state) => {
       state.payment = null
       state.paymentIsLoading = false
       state.paymentCreateError = null
@@ -31,6 +45,9 @@ const paymentSlice = createSlice({
       .addCase(paymentCreate.pending, (state) => {
         state.paymentIsLoading = true
         state.paymentCreateError = null
+        state.orderSyncIsLoading = false
+        state.orderSyncError = null
+        state.orderSyncResult = null
       })
       .addCase(paymentCreate.fulfilled, (state, action) => {
         state.payment = {
@@ -39,12 +56,18 @@ const paymentSlice = createSlice({
         }
         state.paymentIsLoading = false
         state.paymentCreateError = null
+        state.orderSyncIsLoading = false
+        state.orderSyncError = null
+        state.orderSyncResult = null
       })
       .addCase(paymentCreate.rejected, (state, action) => {
         state.payment = null
         state.paymentIsLoading = false
         state.paymentCreateError =
           action.error.message ?? 'Failed to create payment'
+        state.orderSyncIsLoading = false
+        state.orderSyncError = null
+        state.orderSyncResult = null
       })
       .addCase(paymentRetrieve.pending, (state) => {
         state.paymentIsLoading = true
@@ -74,14 +97,30 @@ const paymentSlice = createSlice({
         state.paymentCreateError = null
         state.paymentRetrieveError = null
         state.paymentCancelError = null
+        state.orderSyncIsLoading = false
+        state.orderSyncError = null
+        state.orderSyncResult = null
       })
       .addCase(paymentCancel.rejected, (state, action) => {
         state.paymentIsLoading = false
         state.paymentCancelError =
           action.error.message ?? 'Failed to cancel payment'
       })
+      .addCase(orderSyncAfterWebhook.pending, (state) => {
+        state.orderSyncIsLoading = true
+        state.orderSyncError = null
+      })
+      .addCase(orderSyncAfterWebhook.fulfilled, (state, action) => {
+        state.orderSyncIsLoading = false
+        state.orderSyncError = null
+        state.orderSyncResult = action.payload
+      })
+      .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
+        state.orderSyncIsLoading = false
+        state.orderSyncError = action.error.message ?? 'Failed to sync order'
+      })
   },
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const { paymentClear } = paymentSlice.actions
+export const { paymentStateReset, paymentSessionReset } = paymentSlice.actions
