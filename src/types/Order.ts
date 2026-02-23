@@ -47,7 +47,8 @@ export type PaymentIntentResponse = Pick<
 >
 
 export type PaymentSession = {
-  session: string
+  paymentId: string
+  paymentToken: string
   amount: number
 }
 

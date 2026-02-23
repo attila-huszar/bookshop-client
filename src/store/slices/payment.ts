@@ -51,7 +51,8 @@ const paymentSlice = createSlice({
       })
       .addCase(paymentCreate.fulfilled, (state, action) => {
         state.payment = {
-          session: action.payload.session,
+          paymentId: action.payload.paymentId,
+          paymentToken: action.payload.paymentToken,
           amount: action.payload.amount,
         }
         state.paymentIsLoading = false
@@ -75,7 +76,8 @@ const paymentSlice = createSlice({
       })
       .addCase(paymentRetrieve.fulfilled, (state, action) => {
         state.payment = {
-          session: action.payload.session,
+          paymentId: action.payload.paymentId,
+          paymentToken: action.payload.paymentToken,
           amount: action.payload.amount,
         }
         state.paymentIsLoading = false

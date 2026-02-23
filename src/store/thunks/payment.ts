@@ -22,13 +22,18 @@ export const paymentCreate = createAsyncThunk(
   'payment/paymentCreate',
   async (payment: PaymentIntentRequest): Promise<PaymentSession> => {
     try {
-      const { session, amount } = await postPaymentIntent(payment)
+      const { paymentId, paymentToken, amount } =
+        await postPaymentIntent(payment)
 
-      if (!session) {
-        throw new Error('Invalid response from server: missing session')
+      if (!paymentToken) {
+        throw new Error('Invalid response from server: missing payment token')
       }
 
-      return { session, amount }
+      if (!paymentId) {
+        throw new Error('Invalid response from server: missing payment ID')
+      }
+
+      return { paymentId, paymentToken, amount }
     } catch (error) {
       void log.error('Order creation failed', { error })
       throw error
@@ -46,12 +51,12 @@ export const paymentRetrieve = createAsyncThunk(
     allowSucceeded?: boolean
   }) => {
     const {
-      client_secret: session,
+      client_secret: paymentToken,
       amount,
       status,
     } = await getPaymentIntent(paymentId)
 
-    if (!session) {
+    if (!paymentToken) {
       throw new Error(
         'Invalid response from payment service: missing client secret',
       )
@@ -70,7 +75,7 @@ export const paymentRetrieve = createAsyncThunk(
       )
     }
 
-    return { session, status, amount }
+    return { paymentId, paymentToken, status, amount }
   },
 )
 

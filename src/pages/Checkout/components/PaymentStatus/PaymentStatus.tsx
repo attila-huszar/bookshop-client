@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
 import {
@@ -8,7 +8,6 @@ import {
   paymentSessionReset,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
-import { getPaymentId } from '@/helpers'
 import { PaymentIntentStatus } from '@/types'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
@@ -35,13 +34,10 @@ export function PaymentStatus() {
   const dispatch = useAppDispatch()
   const { payment, orderSyncIsLoading, orderSyncError, orderSyncResult } =
     useAppSelector(paymentSelector)
-  const { status } = usePaymentStatus(payment?.session)
+  const { status } = usePaymentStatus(payment?.paymentToken)
   const orderSyncTriggeredRef = useRef(false)
 
-  const paymentId = useMemo(
-    () => getPaymentId(payment?.session),
-    [payment?.session],
-  )
+  const paymentId = payment?.paymentId ?? ''
 
   useEffect(() => {
     orderSyncTriggeredRef.current = false

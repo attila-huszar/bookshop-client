@@ -113,12 +113,6 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
 
       if (paymentIntent) {
         const searchParams = new URLSearchParams()
-        if (paymentIntent.client_secret) {
-          searchParams.set(
-            'payment_intent_client_secret',
-            paymentIntent.client_secret,
-          )
-        }
         searchParams.set('redirect_status', paymentIntent.status)
 
         void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {

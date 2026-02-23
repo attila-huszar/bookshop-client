@@ -4,7 +4,7 @@ import { cartSelector, paymentSelector } from '@/store'
 import { Button, IconButton } from '@/components'
 import { useAppSelector, useBreakpoints } from '@/hooks'
 import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentSessionKey } from '@/constants'
+import { cartKey, paymentIdKey } from '@/constants'
 import { MinimalCart } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
@@ -15,7 +15,7 @@ export function BasketButton() {
   const { isMobile } = useBreakpoints()
   const navigate = useNavigate()
 
-  const storedPayment = sessionStorageAdapter.get(paymentSessionKey)
+  const storedPayment = sessionStorageAdapter.get(paymentIdKey)
   const isCheckingOut = !!(payment ?? storedPayment)
 
   const calculateCartQuantity = (items: MinimalCart[] | null): number =>

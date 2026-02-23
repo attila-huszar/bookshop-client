@@ -16,7 +16,6 @@ import {
   userSelector,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
-import { getPaymentId } from '@/helpers'
 import { defaultCurrency } from '@/constants'
 import type { StripePaymentElementOptions } from '@/types'
 
@@ -56,7 +55,7 @@ export function CheckoutForm() {
     )
   }
 
-  const paymentId = getPaymentId(payment.session)
+  const paymentId = payment.paymentId
 
   const orderForm = {
     num: paymentId?.slice(-6).toUpperCase(),

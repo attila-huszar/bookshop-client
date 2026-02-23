@@ -25,7 +25,7 @@ import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
 import {
   defaultCurrencySymbol,
   maxItemQuantity,
-  paymentSessionKey,
+  paymentIdKey,
 } from '@/constants'
 import type { Cart } from '@/types'
 import {
@@ -73,10 +73,10 @@ export function Cart() {
   const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
 
   useEffect(() => {
-    if (payment?.session) {
+    if (payment?.paymentToken) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     }
-  }, [payment?.session, navigate])
+  }, [payment?.paymentToken, navigate])
 
   useEffect(() => {
     if (isCheckoutBusy) {
@@ -138,9 +138,9 @@ export function Cart() {
     }
 
     setIsCheckoutTransitioning(true)
-    const existingSession = sessionStorageAdapter.get<string>(paymentSessionKey)
+    const existingPaymentId = sessionStorageAdapter.get<string>(paymentIdKey)
 
-    if (existingSession) {
+    if (existingPaymentId) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     } else {
       const orderRequest = {
