@@ -6,13 +6,10 @@ import { paymentIdKey } from '@/constants'
 import { authLoader } from './authLoader'
 
 export const checkoutLoader = async ({ request }: { request: Request }) => {
-  await authLoader()
-
   const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
   if (!paymentId) {
     return redirect(ROUTE.HOME)
   }
-
   const requestURL = new URL(request.url)
   const hasPaymentIntent = requestURL.searchParams.has('payment_intent')
   const hasClientSecret = requestURL.searchParams.has(
@@ -33,13 +30,20 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
 
   const isStripeReturn = requestURL.searchParams.has('redirect_status')
 
+  await authLoader()
+
   const state = store.getState()
   const currentPayment = state.payment?.payment
   if (currentPayment?.paymentToken) return null
 
   try {
     await store
-      .dispatch(paymentRetrieve({ paymentId, allowSucceeded: isStripeReturn }))
+      .dispatch(
+        paymentRetrieve({
+          paymentId,
+          allowSucceeded: isStripeReturn,
+        }),
+      )
       .unwrap()
     return null
   } catch {

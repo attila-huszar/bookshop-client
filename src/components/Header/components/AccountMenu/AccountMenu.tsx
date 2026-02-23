@@ -21,7 +21,7 @@ export function AccountMenu() {
   const dispatch = useAppDispatch()
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
-  const { userData } = useAppSelector(userSelector)
+  const { accessToken, userData } = useAppSelector(userSelector)
   const menuRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
@@ -31,6 +31,7 @@ export function AccountMenu() {
     () => setMenuOpen(false),
   )
 
+  const isAuthenticated = !!(accessToken && userData)
   const isAdmin = userData?.role === UserRole.Admin
 
   const toggleMenu = () => {
@@ -58,7 +59,7 @@ export function AccountMenu() {
       })
   }
 
-  if (!userData) {
+  if (!isAuthenticated || !userData) {
     return isMobile ? (
       <IconButton
         onClick={handleLoginClick}

@@ -76,7 +76,7 @@ export function CheckoutForm() {
     setIsCanceling(true)
 
     try {
-      await dispatch(paymentCancel(paymentId)).unwrap()
+      await dispatch(paymentCancel({ paymentId })).unwrap()
       dispatch(paymentStateReset())
       dispatch(cartClear())
       void navigate(`/${ROUTE.CART}`, { replace: true })

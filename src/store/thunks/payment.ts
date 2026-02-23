@@ -51,12 +51,12 @@ export const paymentRetrieve = createAsyncThunk(
     allowSucceeded?: boolean
   }) => {
     const {
-      client_secret: paymentToken,
+      client_secret: retrievedPaymentToken,
       amount,
       status,
     } = await getPaymentIntent(paymentId)
 
-    if (!paymentToken) {
+    if (!retrievedPaymentToken) {
       throw new Error(
         'Invalid response from payment service: missing client secret',
       )
@@ -75,13 +75,17 @@ export const paymentRetrieve = createAsyncThunk(
       )
     }
 
-    return { paymentId, paymentToken, status, amount }
+    return { paymentId, paymentToken: retrievedPaymentToken, status, amount }
   },
 )
 
 export const paymentCancel = createAsyncThunk(
   'payment/paymentCancel',
-  async (paymentId: string) => {
+  async ({
+    paymentId,
+  }: {
+    paymentId: string
+  }) => {
     if (!paymentId) {
       void log.warn('Failed to cancel Stripe payment intent: missing paymentId')
       throw new Error(
@@ -108,9 +112,12 @@ export const paymentCancel = createAsyncThunk(
   },
 )
 
-export const orderSyncAfterWebhook = createAsyncThunk<OrderSyncResult, string>(
+export const orderSyncAfterWebhook = createAsyncThunk<
+  OrderSyncResult,
+  { paymentId: string }
+>(
   'payment/orderSyncAfterWebhook',
-  async (paymentId: string): Promise<OrderSyncResult> => {
+  async ({ paymentId }): Promise<OrderSyncResult> => {
     if (!paymentId) {
       throw new Error('Missing payment ID for order sync')
     }

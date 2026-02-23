@@ -133,7 +133,7 @@ const routes: RouteObject[] = [
       },
       {
         element: <ProtectedRoute />,
-        loader: authLoader,
+        loader: () => authLoader({ loginRequired: true }),
         children: [
           {
             path: ROUTE.ACCOUNT,

@@ -37,7 +37,7 @@ export function PaymentStatus() {
   const { status } = usePaymentStatus(payment?.paymentToken)
   const orderSyncTriggeredRef = useRef(false)
 
-  const paymentId = payment?.paymentId ?? ''
+  const paymentId = payment?.paymentId
 
   useEffect(() => {
     orderSyncTriggeredRef.current = false
@@ -49,7 +49,7 @@ export function PaymentStatus() {
     if (orderSyncResult || orderSyncTriggeredRef.current) return
 
     orderSyncTriggeredRef.current = true
-    void dispatch(orderSyncAfterWebhook(paymentId))
+    void dispatch(orderSyncAfterWebhook({ paymentId }))
   }, [dispatch, orderSyncResult, paymentId, status.intent])
 
   useEffect(() => {
