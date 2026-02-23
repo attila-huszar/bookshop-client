@@ -52,7 +52,7 @@ export type PaymentSession = {
   amount: number
 }
 
-export type OrderSyncResult = {
+export type OrderSyncResponse = {
   paymentId: string
   paymentStatus: PaymentIntentStatus
   amount: number
@@ -60,4 +60,5 @@ export type OrderSyncResult = {
   receiptEmail: string | null
   shipping: PaymentIntentShipping | null
   finalizedAt: string | null
+  webhookUpdatedAt: string | null
 }

@@ -15,7 +15,7 @@ const initialState: PaymentState = {
   paymentCancelError: null,
   orderSyncIsLoading: false,
   orderSyncError: null,
-  orderSyncResult: null,
+  orderSync: null,
 }
 
 const paymentSlice = createSlice({
@@ -30,7 +30,7 @@ const paymentSlice = createSlice({
       state.paymentCancelError = null
       state.orderSyncIsLoading = false
       state.orderSyncError = null
-      state.orderSyncResult = null
+      state.orderSync = null
     },
     paymentSessionReset: (state) => {
       state.payment = null
@@ -47,7 +47,7 @@ const paymentSlice = createSlice({
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
-        state.orderSyncResult = null
+        state.orderSync = null
       })
       .addCase(paymentCreate.fulfilled, (state, action) => {
         state.payment = {
@@ -59,7 +59,7 @@ const paymentSlice = createSlice({
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
-        state.orderSyncResult = null
+        state.orderSync = null
       })
       .addCase(paymentCreate.rejected, (state, action) => {
         state.payment = null
@@ -68,7 +68,7 @@ const paymentSlice = createSlice({
           action.error.message ?? 'Failed to create payment'
         state.orderSyncIsLoading = false
         state.orderSyncError = null
-        state.orderSyncResult = null
+        state.orderSync = null
       })
       .addCase(paymentRetrieve.pending, (state) => {
         state.paymentIsLoading = true
@@ -101,7 +101,7 @@ const paymentSlice = createSlice({
         state.paymentCancelError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
-        state.orderSyncResult = null
+        state.orderSync = null
       })
       .addCase(paymentCancel.rejected, (state, action) => {
         state.paymentIsLoading = false
@@ -115,7 +115,7 @@ const paymentSlice = createSlice({
       .addCase(orderSyncAfterWebhook.fulfilled, (state, action) => {
         state.orderSyncIsLoading = false
         state.orderSyncError = null
-        state.orderSyncResult = action.payload
+        state.orderSync = action.payload
       })
       .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
         state.orderSyncIsLoading = false

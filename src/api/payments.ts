@@ -1,5 +1,6 @@
 import { authRequest, PATH } from '.'
 import type {
+  OrderSyncResponse,
   PaymentIntentRequest,
   PaymentIntentResponse,
   PaymentSession,
@@ -28,6 +29,15 @@ export const deletePaymentIntent = async (
 ): Promise<PaymentIntentResponse> => {
   const response = await authRequest.delete<PaymentIntentResponse>(
     `${PATH.payments}/${paymentId}`,
+  )
+  return await response.json()
+}
+
+export const getOrderSyncStatus = async (
+  paymentId: string,
+): Promise<OrderSyncResponse> => {
+  const response = await authRequest.get<OrderSyncResponse>(
+    `${PATH.payments}/${paymentId}/order-sync`,
   )
   return await response.json()
 }

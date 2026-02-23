@@ -32,7 +32,7 @@ const getAnimation = (status: PaymentIntentStatus) => {
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { payment, orderSyncIsLoading, orderSyncError, orderSyncResult } =
+  const { payment, orderSyncIsLoading, orderSyncError, orderSync } =
     useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
   const orderSyncTriggeredRef = useRef(false)
@@ -46,22 +46,22 @@ export function PaymentStatus() {
   useEffect(() => {
     if (!paymentId) return
     if (!successStatuses.includes(status.intent)) return
-    if (orderSyncResult || orderSyncTriggeredRef.current) return
+    if (orderSync || orderSyncTriggeredRef.current) return
 
     orderSyncTriggeredRef.current = true
     void dispatch(orderSyncAfterWebhook({ paymentId }))
-  }, [dispatch, orderSyncResult, paymentId, status.intent])
+  }, [dispatch, orderSync, paymentId, status.intent])
 
   useEffect(() => {
-    if (orderSyncResult) {
+    if (orderSync) {
       dispatch(cartClear())
       dispatch(paymentSessionReset())
     }
-  }, [dispatch, orderSyncResult])
+  }, [dispatch, orderSync])
 
-  const orderNumber = orderSyncResult?.paymentId.slice(-6).toUpperCase()
-  const orderAmount = orderSyncResult
-    ? `${(orderSyncResult.amount / 100).toFixed(2)} ${orderSyncResult.currency}`
+  const orderNumber = orderSync?.paymentId.slice(-6).toUpperCase()
+  const orderAmount = orderSync
+    ? `${(orderSync.amount / 100).toFixed(2)} ${orderSync.currency}`
     : null
 
   return (

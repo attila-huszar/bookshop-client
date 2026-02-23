@@ -6,7 +6,7 @@ import type {
   Filters,
   News,
   Order,
-  OrderSyncResult,
+  OrderSyncResponse,
   PaymentSession,
   User,
   UserWithMetadata,
@@ -66,7 +66,7 @@ export type PaymentState = {
   paymentCancelError: string | null
   orderSyncIsLoading: boolean
   orderSyncError: string | null
-  orderSyncResult: OrderSyncResult | null
+  orderSync: OrderSyncResponse | null
 }
 
 export type CMSState = {
