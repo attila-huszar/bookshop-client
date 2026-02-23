@@ -1,4 +1,4 @@
-import { redirect } from 'react-router'
+import { replace } from 'react-router'
 import { ROUTE } from '@/routes'
 import { paymentRetrieve, store } from '@/store'
 import { sessionStorageAdapter } from '@/helpers'
@@ -8,7 +8,7 @@ import { authLoader } from './authLoader'
 export const checkoutLoader = async ({ request }: { request: Request }) => {
   const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
   if (!paymentId) {
-    return redirect(ROUTE.HOME)
+    return replace(ROUTE.HOME)
   }
   const requestURL = new URL(request.url)
   const hasPaymentIntent = requestURL.searchParams.has('payment_intent')
@@ -21,7 +21,7 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
     requestURL.searchParams.delete('payment_intent_client_secret')
 
     const sanitizedSearch = requestURL.searchParams.toString()
-    return redirect(
+    return replace(
       sanitizedSearch
         ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
         : `/${ROUTE.CHECKOUT}`,
@@ -48,6 +48,6 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
     return null
   } catch {
     sessionStorageAdapter.remove(paymentIdKey)
-    return redirect(ROUTE.HOME)
+    return replace(ROUTE.HOME)
   }
 }
