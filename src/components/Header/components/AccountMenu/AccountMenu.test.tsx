@@ -18,6 +18,7 @@ describe('AccountMenu component', () => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
     vi.mocked(useAppSelector).mockReturnValue({
+      accessToken: 'mock-token',
       userData: {
         firstName: 'July',
         email: 'july@test.com',
@@ -44,7 +45,10 @@ describe('AccountMenu component', () => {
   })
 
   it('should call navigate to login when not logged in', async () => {
-    vi.mocked(useAppSelector).mockReturnValue({ userData: null })
+    vi.mocked(useAppSelector).mockReturnValue({
+      accessToken: null,
+      userData: null,
+    })
     render(<AccountMenu />, { wrapper: Providers })
 
     const loginButton = screen.getByTitle('Login/Register')

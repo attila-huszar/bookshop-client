@@ -30,6 +30,7 @@ describe('PasswordReset Component', () => {
       hash: '',
       state: null,
       key: 'default',
+      unstable_mask: undefined,
     })
     vi.mocked(postVerifyPasswordReset).mockResolvedValue({
       token: 'valid-token',
@@ -50,6 +51,7 @@ describe('PasswordReset Component', () => {
       hash: '',
       state: null,
       key: 'default',
+      unstable_mask: undefined,
     })
 
     render(<PasswordReset />)
@@ -69,6 +71,7 @@ describe('PasswordReset Component', () => {
       hash: '',
       state: null,
       key: 'default',
+      unstable_mask: undefined,
     })
     vi.mocked(postVerifyPasswordReset).mockRejectedValue(
       new Error('Invalid token'),
@@ -90,6 +93,7 @@ describe('PasswordReset Component', () => {
       hash: '',
       state: null,
       key: 'default',
+      unstable_mask: undefined,
     })
     vi.mocked(postVerifyPasswordReset).mockResolvedValue({
       token: 'valid-token',
