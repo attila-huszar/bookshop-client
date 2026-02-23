@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
-import Lottie from 'lottie-react'
+import Lottie, { type LottieOptions } from 'lottie-react'
 import {
   cartClear,
   orderSyncAfterWebhook,
@@ -8,7 +8,7 @@ import {
   paymentSessionReset,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
-import { PaymentIntentStatus } from '@/types'
+import { OrderSyncResponse, PaymentIntentStatus } from '@/types'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
@@ -23,21 +23,58 @@ const warningStatuses: PaymentIntentStatus[] = [
   'canceled',
 ]
 
-const getAnimation = ({
-  isOrderConfirmed,
-  hasSyncTimeout,
-  hasHardSyncError,
-  status,
-}: {
-  isOrderConfirmed: boolean
-  hasSyncTimeout: boolean
-  hasHardSyncError: boolean
-  status: PaymentIntentStatus
-}) => {
-  if (isOrderConfirmed) return checkmarkAnim
-  if (hasHardSyncError && !hasSyncTimeout) return exclamationAnim
-  if (warningStatuses.includes(status)) return exclamationAnim
-  return clockAnim
+const getPaymentDisplayProps = (
+  orderSync: OrderSyncResponse | null,
+  orderSyncError: string | null,
+  intent: PaymentIntentStatus,
+  statusMessage: string,
+) => {
+  const isOrderConfirmed = Boolean(orderSync)
+  const isStripeSuccess = successStatuses.includes(intent)
+
+  const errorStr = (orderSyncError ?? '').toLowerCase()
+  const hasSyncTimeout = errorStr.includes('timed out')
+  const hasHardSyncError = Boolean(orderSyncError) && !hasSyncTimeout
+  const isWarning = warningStatuses.includes(intent)
+
+  if (isOrderConfirmed) {
+    return {
+      animation: checkmarkAnim,
+      isLooping: false,
+      primaryMsg: 'Order confirmed. A confirmation email is on the way.',
+      secondaryMsg: null,
+    }
+  }
+
+  if (isStripeSuccess) {
+    let secondaryMsg = 'This usually takes only a few seconds.'
+    let animation: LottieOptions['animationData'] = clockAnim
+    let isLooping = true
+
+    if (hasSyncTimeout) {
+      secondaryMsg =
+        'Still processing in the background. Please check back shortly or refresh this page.'
+    } else if (hasHardSyncError) {
+      secondaryMsg =
+        'We are still processing your order details. Please refresh in a moment.'
+      animation = exclamationAnim
+      isLooping = false
+    }
+
+    return {
+      animation,
+      isLooping,
+      primaryMsg: 'Payment received. We are finalizing your order details now.',
+      secondaryMsg,
+    }
+  }
+
+  return {
+    animation: isWarning ? exclamationAnim : clockAnim,
+    isLooping: !isWarning,
+    primaryMsg: statusMessage,
+    secondaryMsg: null,
+  }
 }
 
 export function PaymentStatus() {
@@ -46,65 +83,38 @@ export function PaymentStatus() {
   const { payment, orderSyncIsLoading, orderSyncError, orderSync } =
     useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
-  const orderSyncTriggeredRef = useRef(false)
+  const lastSyncedPaymentId = useRef<string | null>(null)
 
   const paymentId = payment?.paymentId
   const isStripeSuccess = successStatuses.includes(status.intent)
   const isOrderConfirmed = Boolean(orderSync)
-  const hasSyncTimeout = (orderSyncError ?? '')
-    .toLowerCase()
-    .includes('timed out')
-  const hasHardSyncError = Boolean(orderSyncError) && !hasSyncTimeout
-
-  const primaryMessage = isOrderConfirmed
-    ? 'Order confirmed. A confirmation email is on the way.'
-    : isStripeSuccess
-      ? 'Payment received. We are finalizing your order details now.'
-      : status.message
-
-  const secondaryMessage =
-    isStripeSuccess && !isOrderConfirmed
-      ? hasSyncTimeout
-        ? 'Still processing in the background. Please check back shortly or refresh this page.'
-        : hasHardSyncError
-          ? 'We are still processing your order details. Please refresh in a moment.'
-          : 'This usually takes only a few seconds.'
-      : null
 
   useEffect(() => {
-    orderSyncTriggeredRef.current = false
-  }, [paymentId])
+    if (
+      paymentId &&
+      isStripeSuccess &&
+      !isOrderConfirmed &&
+      lastSyncedPaymentId.current !== paymentId
+    ) {
+      lastSyncedPaymentId.current = paymentId
+      void dispatch(orderSyncAfterWebhook({ paymentId }))
+    }
+  }, [dispatch, isStripeSuccess, isOrderConfirmed, paymentId])
 
   useEffect(() => {
-    if (!paymentId) return
-    if (!isStripeSuccess) return
-    if (orderSync || orderSyncTriggeredRef.current) return
-
-    orderSyncTriggeredRef.current = true
-    void dispatch(orderSyncAfterWebhook({ paymentId }))
-  }, [dispatch, isStripeSuccess, orderSync, paymentId])
-
-  useEffect(() => {
-    if (orderSync) {
+    if (isOrderConfirmed) {
       dispatch(cartClear())
       dispatch(paymentSessionReset())
     }
-  }, [dispatch, orderSync])
+  }, [dispatch, isOrderConfirmed])
 
-  const orderNumber = orderSync?.paymentId.slice(-6).toUpperCase()
-  const orderAmount = orderSync
-    ? `${(orderSync.amount / 100).toFixed(2)} ${orderSync.currency}`
-    : null
-  const isPendingAnimation =
-    !isOrderConfirmed &&
-    !(hasHardSyncError && !hasSyncTimeout) &&
-    !warningStatuses.includes(status.intent)
-  const animationData = getAnimation({
-    isOrderConfirmed,
-    hasSyncTimeout,
-    hasHardSyncError,
-    status: status.intent,
-  })
+  const { animation, isLooping, primaryMsg, secondaryMsg } =
+    getPaymentDisplayProps(
+      orderSync,
+      orderSyncError,
+      status.intent,
+      status.message,
+    )
 
   return (
     <StyledPaymentStatus>
@@ -113,15 +123,21 @@ export function PaymentStatus() {
         <h1>Book Shop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie animationData={animationData} loop={isPendingAnimation} />
+        <Lottie animationData={animation} loop={isLooping} />
       </LottieWrapper>
-      <p>{primaryMessage}</p>
+      <p>{primaryMsg}</p>
       {isStripeSuccess && !isOrderConfirmed && orderSyncIsLoading && (
         <p>Preparing your order confirmation...</p>
       )}
-      {secondaryMessage && <p>{secondaryMessage}</p>}
-      {orderNumber && <p>Order #{orderNumber}</p>}
-      {orderAmount && <p>Total: {orderAmount}</p>}
+      {secondaryMsg && <p>{secondaryMsg}</p>}
+      {orderSync && (
+        <>
+          <p>Order #{orderSync.paymentId.slice(-6).toUpperCase()}</p>
+          <p>
+            Total: {(orderSync.amount / 100).toFixed(2)} {orderSync.currency}
+          </p>
+        </>
+      )}
       <button onClick={() => void navigate('/')} type="button">
         Back to Shop
       </button>
