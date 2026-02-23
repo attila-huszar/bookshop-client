@@ -81,11 +81,7 @@ export const paymentRetrieve = createAsyncThunk(
 
 export const paymentCancel = createAsyncThunk(
   'payment/paymentCancel',
-  async ({
-    paymentId,
-  }: {
-    paymentId: string
-  }) => {
+  async ({ paymentId }: { paymentId: string }) => {
     if (!paymentId) {
       void log.warn('Failed to cancel Stripe payment intent: missing paymentId')
       throw new Error(

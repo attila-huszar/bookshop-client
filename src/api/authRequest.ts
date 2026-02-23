@@ -23,10 +23,7 @@ export const authRequest = baseRequest.extend({
       async (request, options, response) => {
         const authRetryAttempted = options.context.authRetryAttempted === true
 
-        if (
-          response.status === httpError.Unauthorized &&
-          !authRetryAttempted
-        ) {
+        if (response.status === httpError.Unauthorized && !authRetryAttempted) {
           try {
             refreshPromise ??= store.dispatch(fetchAuthTokens())
             await refreshPromise

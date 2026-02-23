@@ -1,11 +1,13 @@
-import { Author, BookWithAuthorId, Order, User } from './'
+import { Author, BookWithAuthorId, Order, UserWithMetadata } from './'
 
 export type CMSOutletContext = {
   selectedItems: SelectContext
   setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
   setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
   setEditedItem: React.Dispatch<
-    React.SetStateAction<BookWithAuthorId | Author | Order | User | null>
+    React.SetStateAction<
+      BookWithAuthorId | Author | Order | UserWithMetadata | null
+    >
   >
 }
 

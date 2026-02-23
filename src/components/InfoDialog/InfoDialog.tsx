@@ -1,5 +1,15 @@
+import { RefObject } from 'react'
 import { Alert, Button, Loading } from '@/components'
+import { useClickOutside } from '@/hooks'
 import { StyledInfoDialog } from './InfoDialog.style'
+
+type InfoDialogProps = {
+  dialogRef: RefObject<HTMLDialogElement | null>
+  message: string
+  error?: string | null
+  reloadButton?: boolean
+  backButton?: boolean
+}
 
 export function InfoDialog({
   dialogRef,
@@ -7,13 +17,9 @@ export function InfoDialog({
   error,
   reloadButton,
   backButton,
-}: {
-  dialogRef?: React.RefObject<HTMLDialogElement | null>
-  message: string
-  error?: string | null
-  reloadButton?: boolean
-  backButton?: boolean
-}) {
+}: InfoDialogProps) {
+  useClickOutside(dialogRef, () => dialogRef?.current?.close())
+
   return (
     <StyledInfoDialog ref={dialogRef}>
       {error ? (
