@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
-import { PaymentIntentStatus } from '@/types'
+import type { PaymentIntentStatus } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
 type PaymentStatus = {
@@ -12,18 +12,16 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 5000
 const ABSOLUTE_TIMEOUT = 30000
 
-const getUnknownErrorMessage = (error: unknown): string => {
-  if (error instanceof Error && error.message) return error.message
-  return 'Unknown error'
-}
-
 export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
-  const { getMessage } = useMessages()
-
+  const {
+    getPaymentIntentStatusMessage,
+    getCheckoutStatusMessage,
+    getUnknownErrorMessage,
+  } = useMessages()
   const [status, setStatus] = useState<PaymentStatus>({
     intent: 'processing',
-    message: getMessage('processing'),
+    message: getPaymentIntentStatusMessage('processing'),
   })
 
   useEffect(() => {
@@ -41,6 +39,8 @@ export function usePaymentStatus(session: string | null | undefined) {
       }
     }
 
+    const checkoutStripeStatusMessages = getCheckoutStatusMessage()
+
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       if (hasTimedOut || isSettled) return
 
@@ -56,7 +56,7 @@ export function usePaymentStatus(session: string | null | undefined) {
 
         setStatus({
           intent: paymentIntent.status,
-          message: getMessage(paymentIntent.status),
+          message: getPaymentIntentStatusMessage(paymentIntent.status),
         })
 
         if (paymentIntent.status !== 'processing') {
@@ -76,7 +76,7 @@ export function usePaymentStatus(session: string | null | undefined) {
         if (attempt < MAX_RETRIES) {
           setStatus({
             intent: 'processing',
-            message: `Error retrieving payment status. Retrying... (${attempt}/${MAX_RETRIES})`,
+            message: checkoutStripeStatusMessages.retry(attempt, MAX_RETRIES),
           })
           const timeoutId = setTimeout(() => {
             void retrievePaymentStatus(attempt + 1)
@@ -85,7 +85,9 @@ export function usePaymentStatus(session: string | null | undefined) {
         } else {
           setStatus({
             intent: 'requires_payment_method',
-            message: `Error retrieving payment intent after multiple attempts: ${getUnknownErrorMessage(error)}`,
+            message: checkoutStripeStatusMessages.failure(
+              getUnknownErrorMessage(error),
+            ),
           })
           markSettled()
         }
@@ -97,8 +99,9 @@ export function usePaymentStatus(session: string | null | undefined) {
       hasTimedOut = true
       setStatus({
         intent: 'requires_payment_method',
-        message:
-          'Payment confirmation is taking longer than expected (30s). Please refresh this page or check back in a moment.',
+        message: checkoutStripeStatusMessages.absoluteTimeout(
+          ABSOLUTE_TIMEOUT / 1000,
+        ),
       })
       markSettled()
     }, ABSOLUTE_TIMEOUT)
@@ -109,7 +112,13 @@ export function usePaymentStatus(session: string | null | undefined) {
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [session, stripe, getMessage])
+  }, [
+    getCheckoutStatusMessage,
+    getPaymentIntentStatusMessage,
+    getUnknownErrorMessage,
+    session,
+    stripe,
+  ])
 
   return { status }
 }

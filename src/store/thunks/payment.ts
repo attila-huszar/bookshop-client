@@ -9,7 +9,10 @@ import {
 import { log } from '@/services'
 import { defaultCurrency } from '@/constants'
 import {
+  OrderSyncIssueCode,
+  orderSyncPendingCode,
   OrderSyncResponse,
+  OrderSyncStatusResponse,
   PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentSession,
@@ -22,6 +25,23 @@ const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
 const retryableOrderSyncHttpStatuses = new Set([
   408, 425, 429, 500, 502, 503, 504,
 ])
+const timeoutOrderSyncHttpStatuses = new Set([408, 504])
+const retryableOrderSyncPaymentStatuses: PaymentIntentStatus[] = [
+  'processing',
+  'requires_payment_method',
+  'requires_confirmation',
+  'requires_action',
+]
+
+class OrderSyncStatusError extends Error {
+  code: OrderSyncIssueCode
+
+  constructor(code: OrderSyncIssueCode, message: string) {
+    super(message)
+    this.name = 'OrderSyncStatusError'
+    this.code = code
+  }
+}
 
 const wait = async (ms: number): Promise<void> =>
   await new Promise((resolve) => {
@@ -34,16 +54,78 @@ const getOrderSyncRetryDelay = (attempt: number): number => {
   return Math.min(exponentialDelay, ORDER_SYNC_RETRY_MAX_DELAY_MS)
 }
 
-const parseOrderSyncError = (error: unknown) => {
-  const message = error instanceof Error ? error.message : 'Unknown error'
-  const status = error instanceof HTTPError ? error.response.status : 0
+const getOrderSyncIssueCodeFromStatus = (
+  status: number,
+): OrderSyncIssueCode => {
+  if (status === 401 || status === 403) return 'unauthorized'
+  if (timeoutOrderSyncHttpStatuses.has(status)) return 'timeout'
+  if (retryableOrderSyncHttpStatuses.has(status)) return 'retryable'
+  return 'unknown'
+}
+
+const getOrderSyncApiErrorMessage = (payload: unknown): string | null => {
+  if (!payload || typeof payload !== 'object') return null
+
+  const possibleMessage = (payload as Record<string, unknown>).error
+  return typeof possibleMessage === 'string' ? possibleMessage : null
+}
+
+const parseOrderSyncError = async (
+  error: unknown,
+): Promise<{
+  message: string
+  code: OrderSyncIssueCode
+  retryable: boolean
+}> => {
+  if (error instanceof TimeoutError) {
+    return {
+      message: 'Order sync request timed out',
+      code: 'timeout',
+      retryable: true,
+    }
+  }
+
+  if (error instanceof TypeError) {
+    return {
+      message: error.message || 'Network error while syncing order status',
+      code: 'retryable',
+      retryable: true,
+    }
+  }
+
+  if (error instanceof HTTPError) {
+    const status = error.response.status
+    let message = error.message
+
+    try {
+      const rawResponse = (await error.response.clone().json()) as unknown
+      const apiMessage = getOrderSyncApiErrorMessage(rawResponse)
+      if (apiMessage) {
+        message = apiMessage
+      }
+    } catch {
+      // Best effort only: if parsing fails, use the original error message.
+    }
+
+    return {
+      message,
+      code: getOrderSyncIssueCodeFromStatus(status),
+      retryable: retryableOrderSyncHttpStatuses.has(status),
+    }
+  }
+
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      code: 'unknown',
+      retryable: false,
+    }
+  }
 
   return {
-    message,
-    retryable:
-      error instanceof TimeoutError ||
-      error instanceof TypeError ||
-      retryableOrderSyncHttpStatuses.has(status),
+    message: 'Unknown error',
+    code: 'unknown',
+    retryable: false,
   }
 }
 
@@ -144,32 +226,59 @@ export const orderSyncAfterWebhook = createAsyncThunk<
   'payment/orderSyncAfterWebhook',
   async ({ paymentId }): Promise<OrderSyncResponse> => {
     if (!paymentId) {
-      throw new Error('Missing payment ID for order sync')
+      throw new OrderSyncStatusError(
+        'unknown',
+        'Missing payment ID for order sync',
+      )
     }
 
     let lastStatus: PaymentIntentStatus | null = null
     let lastRetryError: string | null = null
 
     for (let attempt = 1; attempt <= MAX_ORDER_SYNC_RETRIES; attempt++) {
-      let orderSyncStatus: OrderSyncResponse
+      let orderSyncStatus: OrderSyncStatusResponse
 
       try {
         orderSyncStatus = await getOrderSyncStatus(paymentId)
       } catch (error) {
-        const parsedError = parseOrderSyncError(error)
+        const parsedError = await parseOrderSyncError(error)
 
-        if (parsedError.retryable && attempt < MAX_ORDER_SYNC_RETRIES) {
+        if (parsedError.retryable) {
           lastRetryError = parsedError.message
-          await wait(getOrderSyncRetryDelay(attempt))
-          continue
+
+          if (attempt < MAX_ORDER_SYNC_RETRIES) {
+            await wait(getOrderSyncRetryDelay(attempt))
+            continue
+          }
+
+          break
         }
 
-        throw new Error(`Unable to sync order status: ${parsedError.message}`)
+        throw new OrderSyncStatusError(
+          parsedError.code,
+          `Unable to sync order status: ${parsedError.message}`,
+        )
       }
 
       const status = orderSyncStatus.paymentStatus
       lastStatus = status
       lastRetryError = null
+
+      const shouldRetryByContract =
+        'code' in orderSyncStatus &&
+        orderSyncStatus.code === orderSyncPendingCode
+      const shouldRetryByFallbackStatus =
+        retryableOrderSyncPaymentStatuses.includes(status)
+      const shouldRetry = shouldRetryByContract || shouldRetryByFallbackStatus
+
+      if (shouldRetry && attempt < MAX_ORDER_SYNC_RETRIES) {
+        await wait(getOrderSyncRetryDelay(attempt))
+        continue
+      }
+
+      if (shouldRetry) {
+        break
+      }
 
       if (successStatuses.includes(status)) {
         return {
@@ -185,27 +294,28 @@ export const orderSyncAfterWebhook = createAsyncThunk<
       }
 
       if (status === 'canceled') {
-        throw new Error('Payment was canceled before order sync.')
+        return {
+          paymentId: orderSyncStatus.paymentId ?? paymentId,
+          paymentStatus: status,
+          amount: orderSyncStatus.amount,
+          currency: orderSyncStatus.currency?.toUpperCase() ?? defaultCurrency,
+          receiptEmail: orderSyncStatus.receiptEmail,
+          shipping: orderSyncStatus.shipping,
+          finalizedAt: orderSyncStatus.finalizedAt,
+          webhookUpdatedAt: orderSyncStatus.webhookUpdatedAt,
+        }
       }
 
-      const shouldRetry =
-        status === 'processing' ||
-        status === 'requires_payment_method' ||
-        status === 'requires_confirmation' ||
-        status === 'requires_action'
-
-      if (shouldRetry && attempt < MAX_ORDER_SYNC_RETRIES) {
-        await wait(getOrderSyncRetryDelay(attempt))
-        continue
+      return {
+        paymentId: orderSyncStatus.paymentId ?? paymentId,
+        paymentStatus: status,
+        amount: orderSyncStatus.amount,
+        currency: orderSyncStatus.currency?.toUpperCase() ?? defaultCurrency,
+        receiptEmail: orderSyncStatus.receiptEmail,
+        shipping: orderSyncStatus.shipping,
+        finalizedAt: orderSyncStatus.finalizedAt,
+        webhookUpdatedAt: orderSyncStatus.webhookUpdatedAt,
       }
-
-      if (shouldRetry) {
-        break
-      }
-
-      throw new Error(
-        `Order is not finalized yet (status: ${status}). Please refresh and try again.`,
-      )
     }
 
     const timeoutSuffix = lastStatus
@@ -214,7 +324,8 @@ export const orderSyncAfterWebhook = createAsyncThunk<
         ? ` (last retry error: ${lastRetryError})`
         : ''
 
-    throw new Error(
+    throw new OrderSyncStatusError(
+      'timeout',
       `Order sync timed out${timeoutSuffix}. Please refresh and verify your order.`,
     )
   },

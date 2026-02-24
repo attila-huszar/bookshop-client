@@ -1,5 +1,9 @@
-import { PaymentIntent, PaymentIntentShipping, PaymentIntentStatus } from './'
 import type { MinimalCart } from './Cart'
+import type {
+  PaymentIntent,
+  PaymentIntentShipping,
+  PaymentIntentStatus,
+} from './Stripe'
 
 export type Order = {
   id: number
@@ -62,3 +66,18 @@ export type OrderSyncResponse = {
   finalizedAt: string | null
   webhookUpdatedAt: string | null
 }
+
+export const orderSyncPendingCode = 'ORDER_SYNC_PENDING' as const
+export type OrderSyncPendingCode = typeof orderSyncPendingCode
+
+export type OrderSyncStatusResponse =
+  | OrderSyncResponse
+  | (OrderSyncResponse & {
+      code: OrderSyncPendingCode
+    })
+
+export type OrderSyncIssueCode =
+  | 'timeout'
+  | 'retryable'
+  | 'unauthorized'
+  | 'unknown'

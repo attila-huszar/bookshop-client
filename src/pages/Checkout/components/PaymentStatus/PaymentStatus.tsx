@@ -7,8 +7,14 @@ import {
   paymentSelector,
   paymentSessionReset,
 } from '@/store'
-import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
-import { OrderSyncResponse, PaymentIntentStatus } from '@/types'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useMessages,
+  usePaymentStatus,
+} from '@/hooks'
+import type { OrderSyncIssueCode } from '@/types/Order'
+import type { PaymentIntentStatus } from '@/types/Stripe'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
@@ -23,49 +29,70 @@ const warningStatuses: PaymentIntentStatus[] = [
   'canceled',
 ]
 
+type CheckoutPrimaryMessages = ReturnType<
+  ReturnType<typeof useMessages>['getCheckoutPrimaryMessage']
+>
+type CheckoutSecondaryMessageGetter = ReturnType<
+  typeof useMessages
+>['getCheckoutSecondaryMessage']
+
 const getPaymentDisplayProps = (
-  orderSync: OrderSyncResponse | null,
-  orderSyncError: string | null,
+  isOrderConfirmed: boolean,
+  orderSyncIssueCode: OrderSyncIssueCode | null,
+  syncedPaymentStatus: PaymentIntentStatus | null,
   intent: PaymentIntentStatus,
   statusMessage: string,
+  primaryMessages: CheckoutPrimaryMessages,
+  secondaryMessages: CheckoutSecondaryMessageGetter,
 ) => {
-  const isOrderConfirmed = Boolean(orderSync)
   const isStripeSuccess = successStatuses.includes(intent)
 
-  const errorStr = (orderSyncError ?? '').toLowerCase()
-  const hasSyncTimeout = errorStr.includes('timed out')
-  const hasHardSyncError = Boolean(orderSyncError) && !hasSyncTimeout
+  const hasHardSyncError =
+    orderSyncIssueCode !== null && orderSyncIssueCode !== 'timeout'
   const isWarning = warningStatuses.includes(intent)
 
   if (isOrderConfirmed) {
     return {
       animation: checkmarkAnim,
       isLooping: false,
-      primaryMsg: 'Order confirmed. A confirmation email is on the way.',
+      primaryMsg: primaryMessages.orderConfirmed,
       secondaryMsg: null,
     }
   }
 
   if (isStripeSuccess) {
-    let secondaryMsg =
-      'This usually takes only a few seconds. You can safely leave this page.'
+    const secondaryMsg = secondaryMessages(
+      orderSyncIssueCode,
+      syncedPaymentStatus,
+    )
     let animation: LottieOptions['animationData'] = clockAnim
     let isLooping = true
+    let primaryMsg = primaryMessages.paymentReceived
 
-    if (hasSyncTimeout) {
-      secondaryMsg =
-        'Still processing in the background. You can leave this page and check back shortly.'
-    } else if (hasHardSyncError) {
-      secondaryMsg =
-        'We are still processing your order details in the background. You can leave this page and check back in a moment.'
+    if (hasHardSyncError) {
       animation = exclamationAnim
       isLooping = false
+    }
+
+    if (syncedPaymentStatus === 'canceled') {
+      animation = exclamationAnim
+      isLooping = false
+      primaryMsg = primaryMessages.paymentCanceled
+    } else if (
+      syncedPaymentStatus &&
+      !successStatuses.includes(syncedPaymentStatus)
+    ) {
+      animation = exclamationAnim
+      isLooping = false
+      primaryMsg = statusMessage
+    } else if (orderSyncIssueCode === 'unauthorized') {
+      primaryMsg = primaryMessages.paymentVerificationIssue
     }
 
     return {
       animation,
       isLooping,
-      primaryMsg: 'Payment received. We are finalizing your order details now.',
+      primaryMsg,
       secondaryMsg,
     }
   }
@@ -81,14 +108,26 @@ const getPaymentDisplayProps = (
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { payment, orderSyncIsLoading, orderSyncError, orderSync } =
+  const {
+    getPaymentIntentStatusMessage,
+    getCheckoutPrimaryMessage: getCheckoutPaymentStatusMessages,
+    getCheckoutSecondaryMessage: getCheckoutPaymentStatusSecondaryMessages,
+  } = useMessages()
+  const { payment, orderSyncIsLoading, orderSyncIssueCode, orderSync } =
     useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
   const lastSyncedPaymentId = useRef<string | null>(null)
 
   const paymentId = payment?.paymentId
   const isStripeSuccess = successStatuses.includes(status.intent)
-  const isOrderConfirmed = Boolean(orderSync)
+  const syncedPaymentStatus = orderSync?.paymentStatus ?? null
+  const isOrderConfirmed = Boolean(
+    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
+  )
+  const paymentStatusMessages = getCheckoutPaymentStatusMessages()
+  const effectiveStatusMessage = syncedPaymentStatus
+    ? getPaymentIntentStatusMessage(syncedPaymentStatus)
+    : status.message
 
   useEffect(() => {
     if (
@@ -111,10 +150,13 @@ export function PaymentStatus() {
 
   const { animation, isLooping, primaryMsg, secondaryMsg } =
     getPaymentDisplayProps(
-      orderSync,
-      orderSyncError,
+      isOrderConfirmed,
+      orderSyncIssueCode,
+      syncedPaymentStatus,
       status.intent,
-      status.message,
+      effectiveStatusMessage,
+      paymentStatusMessages,
+      getCheckoutPaymentStatusSecondaryMessages,
     )
 
   return (
@@ -128,7 +170,7 @@ export function PaymentStatus() {
       </LottieWrapper>
       <p>{primaryMsg}</p>
       {isStripeSuccess && !isOrderConfirmed && orderSyncIsLoading && (
-        <p>Preparing your order confirmation...</p>
+        <p>{paymentStatusMessages.syncInProgress}</p>
       )}
       {secondaryMsg && <p>{secondaryMsg}</p>}
       {orderSync && (

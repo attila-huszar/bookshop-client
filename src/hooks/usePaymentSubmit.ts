@@ -4,7 +4,7 @@ import { AddressElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors/handleError'
-import { ConfirmPaymentShipping, StripeErrorType } from '@/types'
+import type { ConfirmPaymentShipping, StripeErrorType } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
 type UsePaymentSubmitReturn = {
@@ -33,14 +33,16 @@ const isRetryableStripeErrorType = (
 ): errorType is RetryableStripeErrorType =>
   retryableStripeErrorTypeSet.has(errorType)
 
-export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
+export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
-  const { getErrorMessage } = useMessages()
+  const { getCheckoutStatusMessage, getPaymentErrorMessage } = useMessages()
   const [message, setMessage] = useState<string | null>(null)
   const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const paymentSubmitMessages = getCheckoutStatusMessage()
 
   const getShippingFromAddressElement = async () => {
     if (!elements) return undefined
@@ -49,7 +51,7 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
     if (!addressElement) return undefined
 
     const { complete, value } = await addressElement.getValue()
-    if (!complete || !value?.name) return undefined
+    if (!complete) return undefined
 
     const shipping: ConfirmPaymentShipping = {
       name: value.name,
@@ -63,7 +65,6 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
         country: value.address.country,
       },
     }
-
     return shipping
   }
 
@@ -71,18 +72,15 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
     setMessage(null)
     setCanRetry(false)
     setIsLoading(true)
-    const normalizedReceiptEmail = receiptEmail.trim()
 
     if (!stripe || !elements) {
-      setMessage(
-        'Payment system is not ready. Please wait a moment and try again.',
-      )
+      setMessage(paymentSubmitMessages.systemNotReady)
       setIsLoading(false)
       return
     }
 
-    if (!normalizedReceiptEmail) {
-      setMessage('Please provide your email to continue with checkout.')
+    if (!email) {
+      setMessage(paymentSubmitMessages.missingEmail)
       setIsLoading(false)
       return
     }
@@ -93,11 +91,9 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          receipt_email: normalizedReceiptEmail,
+          receipt_email: email,
           payment_method_data: {
-            billing_details: {
-              email: normalizedReceiptEmail,
-            },
+            billing_details: { email },
           },
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
           ...(shipping && { shipping }),
@@ -106,7 +102,7 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
       })
 
       if (error) {
-        setMessage(getErrorMessage(error))
+        setMessage(getPaymentErrorMessage(error))
         setCanRetry(isRetryableStripeErrorType(error.type))
         return
       }
@@ -122,7 +118,7 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
     } catch (error) {
       const formattedError = await handleError({
         error,
-        message: 'Failed to process payment. Please try again.',
+        message: paymentSubmitMessages.failed,
       })
       setMessage(formattedError.message)
       setCanRetry(true)

@@ -1,4 +1,7 @@
-import { Author, BookWithAuthorId, Order, UserWithMetadata } from './'
+import type { Author } from './Author'
+import type { BookWithAuthorId } from './Book'
+import type { Order } from './Order'
+import type { UserWithMetadata } from './User'
 
 export type CMSOutletContext = {
   selectedItems: SelectContext

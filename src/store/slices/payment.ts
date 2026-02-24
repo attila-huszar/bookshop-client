@@ -6,6 +6,7 @@ import {
   paymentRetrieve,
 } from '@/store/thunks/payment'
 import { PaymentState } from '@/types'
+import { isOrderSyncIssueCode } from '../utils'
 
 const initialState: PaymentState = {
   payment: null,
@@ -15,6 +16,7 @@ const initialState: PaymentState = {
   paymentCancelError: null,
   orderSyncIsLoading: false,
   orderSyncError: null,
+  orderSyncIssueCode: null,
   orderSync: null,
 }
 
@@ -30,6 +32,7 @@ const paymentSlice = createSlice({
       state.paymentCancelError = null
       state.orderSyncIsLoading = false
       state.orderSyncError = null
+      state.orderSyncIssueCode = null
       state.orderSync = null
     },
     paymentSessionReset: (state) => {
@@ -47,6 +50,7 @@ const paymentSlice = createSlice({
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
         state.orderSync = null
       })
       .addCase(paymentCreate.fulfilled, (state, action) => {
@@ -59,6 +63,7 @@ const paymentSlice = createSlice({
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
         state.orderSync = null
       })
       .addCase(paymentCreate.rejected, (state, action) => {
@@ -68,6 +73,7 @@ const paymentSlice = createSlice({
           action.error.message ?? 'Failed to create payment'
         state.orderSyncIsLoading = false
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
         state.orderSync = null
       })
       .addCase(paymentRetrieve.pending, (state) => {
@@ -101,6 +107,7 @@ const paymentSlice = createSlice({
         state.paymentCancelError = null
         state.orderSyncIsLoading = false
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
         state.orderSync = null
       })
       .addCase(paymentCancel.rejected, (state, action) => {
@@ -111,15 +118,20 @@ const paymentSlice = createSlice({
       .addCase(orderSyncAfterWebhook.pending, (state) => {
         state.orderSyncIsLoading = true
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
       })
       .addCase(orderSyncAfterWebhook.fulfilled, (state, action) => {
         state.orderSyncIsLoading = false
         state.orderSyncError = null
+        state.orderSyncIssueCode = null
         state.orderSync = action.payload
       })
       .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
         state.orderSyncIsLoading = false
         state.orderSyncError = action.error.message ?? 'Failed to sync order'
+        state.orderSyncIssueCode = isOrderSyncIssueCode(action.error.code)
+          ? action.error.code
+          : 'unknown'
       })
   },
 })

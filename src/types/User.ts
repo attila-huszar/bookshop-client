@@ -1,4 +1,4 @@
-import type { StripeAddress } from './'
+import type { StripeAddress } from './Stripe'
 
 export type User = {
   firstName: string
