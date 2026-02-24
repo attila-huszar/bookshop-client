@@ -3,9 +3,14 @@ import { useStripe } from '@stripe/react-stripe-js'
 import type { PaymentIntentStatus } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
-type PaymentStatus = {
+export type PaymentStatusMessageOverride =
+  | { type: 'retry'; attempt: number; maxRetries: number }
+  | { type: 'failure'; details: string }
+  | { type: 'timeout'; timeoutSeconds: number }
+
+export type PaymentStatusState = {
   intent: PaymentIntentStatus
-  message: string
+  messageOverride: PaymentStatusMessageOverride | null
 }
 
 const MAX_RETRIES = 3
@@ -14,14 +19,10 @@ const ABSOLUTE_TIMEOUT = 30000
 
 export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
-  const {
-    getPaymentIntentStatusMessage,
-    getCheckoutStatusMessage,
-    getUnknownErrorMessage,
-  } = useMessages()
-  const [status, setStatus] = useState<PaymentStatus>({
+  const { getUnknownErrorMessage } = useMessages()
+  const [status, setStatus] = useState<PaymentStatusState>({
     intent: 'processing',
-    message: getPaymentIntentStatusMessage('processing'),
+    messageOverride: null,
   })
 
   useEffect(() => {
@@ -39,7 +40,12 @@ export function usePaymentStatus(session: string | null | undefined) {
       }
     }
 
-    const checkoutStripeStatusMessages = getCheckoutStatusMessage()
+    const scheduleRetry = (attempt: number) => {
+      const timeoutId = setTimeout(() => {
+        void retrievePaymentStatus(attempt + 1)
+      }, RETRY_DELAY * attempt)
+      timeoutIds.push(timeoutId)
+    }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
       if (hasTimedOut || isSettled) return
@@ -56,7 +62,7 @@ export function usePaymentStatus(session: string | null | undefined) {
 
         setStatus({
           intent: paymentIntent.status,
-          message: getPaymentIntentStatusMessage(paymentIntent.status),
+          messageOverride: null,
         })
 
         if (paymentIntent.status !== 'processing') {
@@ -65,10 +71,7 @@ export function usePaymentStatus(session: string | null | undefined) {
         }
 
         if (attempt < MAX_RETRIES) {
-          const timeoutId = setTimeout(() => {
-            void retrievePaymentStatus(attempt + 1)
-          }, RETRY_DELAY * attempt)
-          timeoutIds.push(timeoutId)
+          scheduleRetry(attempt)
         }
       } catch (error) {
         if (hasTimedOut || isSettled) return
@@ -76,18 +79,20 @@ export function usePaymentStatus(session: string | null | undefined) {
         if (attempt < MAX_RETRIES) {
           setStatus({
             intent: 'processing',
-            message: checkoutStripeStatusMessages.retry(attempt, MAX_RETRIES),
+            messageOverride: {
+              type: 'retry',
+              attempt,
+              maxRetries: MAX_RETRIES,
+            },
           })
-          const timeoutId = setTimeout(() => {
-            void retrievePaymentStatus(attempt + 1)
-          }, RETRY_DELAY * attempt)
-          timeoutIds.push(timeoutId)
+          scheduleRetry(attempt)
         } else {
           setStatus({
             intent: 'requires_payment_method',
-            message: checkoutStripeStatusMessages.failure(
-              getUnknownErrorMessage(error),
-            ),
+            messageOverride: {
+              type: 'failure',
+              details: getUnknownErrorMessage(error),
+            },
           })
           markSettled()
         }
@@ -99,9 +104,10 @@ export function usePaymentStatus(session: string | null | undefined) {
       hasTimedOut = true
       setStatus({
         intent: 'requires_payment_method',
-        message: checkoutStripeStatusMessages.absoluteTimeout(
-          ABSOLUTE_TIMEOUT / 1000,
-        ),
+        messageOverride: {
+          type: 'timeout',
+          timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
+        },
       })
       markSettled()
     }, ABSOLUTE_TIMEOUT)
@@ -112,13 +118,7 @@ export function usePaymentStatus(session: string | null | undefined) {
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [
-    getCheckoutStatusMessage,
-    getPaymentIntentStatusMessage,
-    getUnknownErrorMessage,
-    session,
-    stripe,
-  ])
+  }, [getUnknownErrorMessage, session, stripe])
 
   return { status }
 }

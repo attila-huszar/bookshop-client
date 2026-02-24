@@ -37,12 +37,13 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
-  const { getCheckoutStatusMessage, getPaymentErrorMessage } = useMessages()
+  const { getCheckoutText, getPaymentErrorMessage } = useMessages()
   const [message, setMessage] = useState<string | null>(null)
   const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const paymentSubmitMessages = getCheckoutStatusMessage()
+  const checkoutText = getCheckoutText()
+  const submitText = checkoutText.submit
 
   const getShippingFromAddressElement = async () => {
     if (!elements) return undefined
@@ -74,13 +75,13 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
     setIsLoading(true)
 
     if (!stripe || !elements) {
-      setMessage(paymentSubmitMessages.systemNotReady)
+      setMessage(submitText.notReady)
       setIsLoading(false)
       return
     }
 
     if (!email) {
-      setMessage(paymentSubmitMessages.missingEmail)
+      setMessage(submitText.missingEmail)
       setIsLoading(false)
       return
     }
@@ -118,7 +119,7 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
     } catch (error) {
       const formattedError = await handleError({
         error,
-        message: paymentSubmitMessages.failed,
+        message: submitText.submitFailed,
       })
       setMessage(formattedError.message)
       setCanRetry(true)
