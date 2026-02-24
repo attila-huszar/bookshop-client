@@ -3,7 +3,10 @@ import { ROUTE } from '@/routes'
 import { paymentRetrieve, store } from '@/store'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
+import { PaymentIntentStatus } from '@/types'
 import { authLoader } from './authLoader'
+
+const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
 
 export const checkoutLoader = async ({ request }: { request: Request }) => {
   const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
@@ -21,11 +24,15 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
     requestURL.searchParams.delete('payment_intent_client_secret')
 
     const sanitizedSearch = requestURL.searchParams.toString()
-    return replace(
-      sanitizedSearch
-        ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
-        : `/${ROUTE.CHECKOUT}`,
-    )
+    const sanitizedPath = sanitizedSearch
+      ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
+      : `/${ROUTE.CHECKOUT}`
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(window.history.state, '', sanitizedPath)
+    }
+
+    return replace(sanitizedPath)
   }
 
   const isStripeReturn = requestURL.searchParams.has('redirect_status')
@@ -34,17 +41,25 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
 
   const state = store.getState()
   const currentPayment = state.payment?.payment
-  if (currentPayment?.paymentToken) return null
+  const shouldRetrievePayment = !currentPayment?.paymentToken || !isStripeReturn
+  if (!shouldRetrievePayment) return null
 
   try {
-    await store
+    const retrievedPayment = await store
       .dispatch(
         paymentRetrieve({
           paymentId,
-          allowSucceeded: isStripeReturn,
+          allowSucceeded: true,
         }),
       )
       .unwrap()
+
+    if (!isStripeReturn && successStatuses.includes(retrievedPayment.status)) {
+      requestURL.searchParams.set('redirect_status', retrievedPayment.status)
+
+      return replace(`/${ROUTE.CHECKOUT}?${requestURL.searchParams.toString()}`)
+    }
+
     return null
   } catch {
     sessionStorageAdapter.remove(paymentIdKey)

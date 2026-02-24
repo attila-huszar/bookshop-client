@@ -47,16 +47,17 @@ const getPaymentDisplayProps = (
   }
 
   if (isStripeSuccess) {
-    let secondaryMsg = 'This usually takes only a few seconds.'
+    let secondaryMsg =
+      'This usually takes only a few seconds. You can safely leave this page.'
     let animation: LottieOptions['animationData'] = clockAnim
     let isLooping = true
 
     if (hasSyncTimeout) {
       secondaryMsg =
-        'Still processing in the background. Please check back shortly or refresh this page.'
+        'Still processing in the background. You can leave this page and check back shortly.'
     } else if (hasHardSyncError) {
       secondaryMsg =
-        'We are still processing your order details. Please refresh in a moment.'
+        'We are still processing your order details in the background. You can leave this page and check back in a moment.'
       animation = exclamationAnim
       isLooping = false
     }
