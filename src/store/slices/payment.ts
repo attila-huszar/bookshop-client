@@ -6,7 +6,6 @@ import {
   paymentRetrieve,
 } from '@/store/thunks/payment'
 import { PaymentState } from '@/types'
-import { isOrderSyncIssueCode } from '../utils'
 
 const initialState: PaymentState = {
   payment: null,
@@ -129,9 +128,7 @@ const paymentSlice = createSlice({
       .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
         state.orderSyncIsLoading = false
         state.orderSyncError = action.error.message ?? 'Failed to sync order'
-        state.orderSyncIssueCode = isOrderSyncIssueCode(action.error.code)
-          ? action.error.code
-          : 'unknown'
+        state.orderSyncIssueCode = action.error.code ?? 'unknown'
       })
   },
 })

@@ -81,3 +81,4 @@ export type OrderSyncIssueCode =
   | 'retryable'
   | 'unauthorized'
   | 'unknown'
+  | (string & {})

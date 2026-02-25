@@ -1,5 +1,4 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { HTTPError, TimeoutError } from 'ky'
 import {
   deletePaymentIntent,
   getOrderSyncStatus,
@@ -7,10 +6,15 @@ import {
   postPaymentIntent,
 } from '@/api'
 import { log } from '@/services'
-import { defaultCurrency } from '@/constants'
+import { wait } from '@/helpers'
+import {
+  defaultCurrency,
+  MAX_ORDER_SYNC_RETRIES,
+  retryableStatuses,
+  successStatuses,
+} from '@/constants'
 import { OrderSyncStatusError } from '@/errors'
 import {
-  OrderSyncIssueCode,
   orderSyncPendingCode,
   OrderSyncResponse,
   OrderSyncStatusResponse,
@@ -18,94 +22,7 @@ import {
   PaymentIntentStatus,
   PaymentSession,
 } from '@/types'
-
-const MAX_ORDER_SYNC_RETRIES = 7
-const ORDER_SYNC_RETRY_BASE_DELAY_MS = 1000
-const ORDER_SYNC_RETRY_MAX_DELAY_MS = 8000
-const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
-const retryableOrderSyncHttpStatuses = new Set([
-  408, 425, 429, 500, 502, 503, 504,
-])
-const timeoutOrderSyncHttpStatuses = new Set([408, 504])
-const retryableOrderSyncPaymentStatuses: PaymentIntentStatus[] = [
-  'processing',
-  'requires_payment_method',
-  'requires_confirmation',
-  'requires_action',
-]
-
-const wait = async (ms: number): Promise<void> =>
-  await new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-
-const getOrderSyncRetryDelay = (attempt: number): number => {
-  const exponentialDelay =
-    ORDER_SYNC_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
-  return Math.min(exponentialDelay, ORDER_SYNC_RETRY_MAX_DELAY_MS)
-}
-
-const getOrderSyncIssueCodeFromStatus = (
-  status: number,
-): OrderSyncIssueCode => {
-  if (status === 401 || status === 403) return 'unauthorized'
-  if (timeoutOrderSyncHttpStatuses.has(status)) return 'timeout'
-  if (retryableOrderSyncHttpStatuses.has(status)) return 'retryable'
-  return 'unknown'
-}
-const hasStringError = (v: unknown): v is { error: string } =>
-  typeof v === 'object' &&
-  v !== null &&
-  typeof (v as { error?: unknown }).error === 'string'
-
-const getOrderSyncApiErrorMessage = (payload: unknown): string | null =>
-  hasStringError(payload) ? payload.error : null
-
-const parseOrderSyncError = async (
-  error: unknown,
-): Promise<{
-  message: string
-  code: OrderSyncIssueCode
-  retryable: boolean
-}> => {
-  if (error instanceof TimeoutError) {
-    return {
-      message: 'Order sync request timed out',
-      code: 'timeout',
-      retryable: true,
-    }
-  }
-
-  if (error instanceof TypeError) {
-    return {
-      message: error.message || 'Network error while syncing order status',
-      code: 'retryable',
-      retryable: true,
-    }
-  }
-
-  if (error instanceof HTTPError) {
-    const { response, message: fallbackMessage } = error
-    const { status } = response
-
-    const apiMessage = await response
-      .json<unknown>()
-      .then(getOrderSyncApiErrorMessage)
-      .catch(() => null)
-
-    return {
-      message: apiMessage ?? fallbackMessage,
-      code: getOrderSyncIssueCodeFromStatus(status),
-      retryable: retryableOrderSyncHttpStatuses.has(status),
-    }
-  }
-
-  return {
-    message: error instanceof Error ? error.message : 'Unknown error',
-    code: 'unknown',
-    retryable: false,
-  }
-}
+import { getOrderSyncRetryDelay, parseOrderSyncError } from '../utils'
 
 export const paymentCreate = createAsyncThunk(
   'payment/paymentCreate',
@@ -245,8 +162,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
       const shouldRetryByContract =
         'code' in orderSyncStatus &&
         orderSyncStatus.code === orderSyncPendingCode
-      const shouldRetryByFallbackStatus =
-        retryableOrderSyncPaymentStatuses.includes(status)
+      const shouldRetryByFallbackStatus = retryableStatuses.includes(status)
       const shouldRetry = shouldRetryByContract || shouldRetryByFallbackStatus
 
       if (shouldRetry && attempt < MAX_ORDER_SYNC_RETRIES) {

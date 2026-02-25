@@ -49,6 +49,9 @@ const getCheckoutStatusDetail = (
 
     case 'unknown':
       return '⚠️ We could not confirm your final order state yet. Please refresh this page in a moment.'
+
+    default:
+      return '⚠️ We encountered an issue confirming your order. Please contact support if this issue persists.'
   }
 }
 
