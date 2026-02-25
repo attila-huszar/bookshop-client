@@ -127,8 +127,8 @@ const paymentSlice = createSlice({
       })
       .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
         state.orderSyncIsLoading = false
-        state.orderSyncError = action.error.message ?? 'Failed to sync order'
-        state.orderSyncIssueCode = action.error.code ?? 'unknown'
+        state.orderSyncError = action.payload?.message ?? 'Failed to sync order'
+        state.orderSyncIssueCode = action.payload?.code ?? 'unknown'
       })
   },
 })

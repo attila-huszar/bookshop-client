@@ -8,8 +8,8 @@ import {
 import { log } from '@/services'
 import { wait } from '@/helpers'
 import { MAX_ORDER_SYNC_RETRIES, retryableStatuses } from '@/constants'
-import { OrderSyncStatusError } from '@/errors'
 import {
+  OrderSyncIssueCode,
   orderSyncPendingCode,
   OrderSyncResponse,
   OrderSyncStatusResponse,
@@ -111,15 +111,16 @@ export const paymentCancel = createAsyncThunk(
 
 export const orderSyncAfterWebhook = createAsyncThunk<
   OrderSyncResponse,
-  { paymentId: string }
+  { paymentId: string },
+  { rejectValue: { code: OrderSyncIssueCode; message: string } }
 >(
   'payment/orderSyncAfterWebhook',
-  async ({ paymentId }): Promise<OrderSyncResponse> => {
+  async ({ paymentId }, { rejectWithValue }) => {
     if (!paymentId) {
-      throw new OrderSyncStatusError(
-        'unknown',
-        'Missing payment ID for order sync',
-      )
+      return rejectWithValue({
+        code: 'unknown',
+        message: 'Missing payment ID for order sync',
+      })
     }
 
     let lastStatus: PaymentIntentStatus | null = null
@@ -144,10 +145,10 @@ export const orderSyncAfterWebhook = createAsyncThunk<
           break
         }
 
-        throw new OrderSyncStatusError(
-          parsedError.code,
-          `Unable to sync order status: ${parsedError.message}`,
-        )
+        return rejectWithValue({
+          code: parsedError.code,
+          message: `Unable to sync order status: ${parsedError.message}`,
+        })
       }
 
       const status = orderSyncStatus.paymentStatus
@@ -177,9 +178,9 @@ export const orderSyncAfterWebhook = createAsyncThunk<
         ? ` (last retry error: ${lastRetryError})`
         : ''
 
-    throw new OrderSyncStatusError(
-      'timeout',
-      `Order sync timed out${timeoutSuffix}. Please refresh and verify your order.`,
-    )
+    return rejectWithValue({
+      code: 'timeout',
+      message: `Order sync timed out${timeoutSuffix}. Please refresh and verify your order.`,
+    })
   },
 )
