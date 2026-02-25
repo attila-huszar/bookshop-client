@@ -16,22 +16,14 @@ type UsePaymentSubmitReturn = {
   isLoading: boolean
 }
 
-const retryableStripeErrorTypes = [
+const retryableStripeErrorTypes: StripeErrorType[] = [
   'api_connection_error',
   'api_error',
   'rate_limit_error',
-] satisfies StripeErrorType[]
+]
 
-type RetryableStripeErrorType = (typeof retryableStripeErrorTypes)[number]
-
-const retryableStripeErrorTypeSet: Set<StripeErrorType> = new Set(
-  retryableStripeErrorTypes,
-)
-
-const isRetryableStripeErrorType = (
-  errorType: StripeErrorType,
-): errorType is RetryableStripeErrorType =>
-  retryableStripeErrorTypeSet.has(errorType)
+const isRetryableStripeError = (errorType: StripeErrorType): boolean =>
+  retryableStripeErrorTypes.includes(errorType)
 
 export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
@@ -42,8 +34,7 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const checkoutText = getCheckoutText()
-  const submitText = checkoutText.submit
+  const { submit: submitText } = getCheckoutText()
 
   const submitPayment = async (): Promise<void> => {
     setMessage(null)
@@ -77,7 +68,7 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
 
       if (error) {
         setMessage(getPaymentErrorMessage(error))
-        setCanRetry(isRetryableStripeErrorType(error.type))
+        setCanRetry(isRetryableStripeError(error.type))
         return
       }
 

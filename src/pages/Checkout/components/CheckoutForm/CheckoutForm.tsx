@@ -9,7 +9,6 @@ import {
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import {
-  cartClear,
   paymentCancel,
   paymentSelector,
   paymentStateReset,
@@ -58,7 +57,7 @@ export function CheckoutForm() {
   const paymentId = payment.paymentId
 
   const orderForm = {
-    num: paymentId?.slice(-6).toUpperCase(),
+    num: paymentId.slice(-6).toUpperCase(),
     amount: (payment.amount / 100).toFixed(2),
   }
 
@@ -78,7 +77,6 @@ export function CheckoutForm() {
     try {
       await dispatch(paymentCancel({ paymentId })).unwrap()
       dispatch(paymentStateReset())
-      dispatch(cartClear())
       void navigate(`/${ROUTE.CART}`, { replace: true })
     } catch (error) {
       const errorMessage =
@@ -150,18 +148,14 @@ export function CheckoutForm() {
         </span>
       </button>
       {canRetry && message && (
-        <>
-          <div style={{ marginBottom: '1rem' }}></div>
-          <button
-            type="button"
-            onClick={() => void retryPayment()}
-            disabled={isLoading || !stripe || !elements}
-            style={{ backgroundColor: 'var(--mid-grey)' }}>
-            <span>Retry Payment Now</span>
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={() => void retryPayment()}
+          disabled={isLoading || !stripe || !elements}
+          style={{ backgroundColor: 'var(--mid-grey)' }}>
+          <span>Retry Payment Now</span>
+        </button>
       )}
-      <div style={{ marginBottom: '1rem' }}></div>
       <button
         type="button"
         onClick={() => void handleCancel()}

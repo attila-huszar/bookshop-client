@@ -7,12 +7,7 @@ import {
 } from '@/api'
 import { log } from '@/services'
 import { wait } from '@/helpers'
-import {
-  defaultCurrency,
-  MAX_ORDER_SYNC_RETRIES,
-  retryableStatuses,
-  successStatuses,
-} from '@/constants'
+import { MAX_ORDER_SYNC_RETRIES, retryableStatuses } from '@/constants'
 import { OrderSyncStatusError } from '@/errors'
 import {
   orderSyncPendingCode,
@@ -170,41 +165,9 @@ export const orderSyncAfterWebhook = createAsyncThunk<
         continue
       }
 
-      if (successStatuses.includes(status)) {
-        return {
-          paymentId: orderSyncStatus.paymentId ?? paymentId,
-          paymentStatus: status,
-          amount: orderSyncStatus.amount,
-          currency: orderSyncStatus.currency?.toUpperCase() ?? defaultCurrency,
-          receiptEmail: orderSyncStatus.receiptEmail,
-          shipping: orderSyncStatus.shipping,
-          finalizedAt: orderSyncStatus.finalizedAt,
-          webhookUpdatedAt: orderSyncStatus.webhookUpdatedAt,
-        }
-      }
-
-      if (status === 'canceled') {
-        return {
-          paymentId: orderSyncStatus.paymentId ?? paymentId,
-          paymentStatus: status,
-          amount: orderSyncStatus.amount,
-          currency: orderSyncStatus.currency?.toUpperCase() ?? defaultCurrency,
-          receiptEmail: orderSyncStatus.receiptEmail,
-          shipping: orderSyncStatus.shipping,
-          finalizedAt: orderSyncStatus.finalizedAt,
-          webhookUpdatedAt: orderSyncStatus.webhookUpdatedAt,
-        }
-      }
-
       return {
-        paymentId: orderSyncStatus.paymentId ?? paymentId,
+        ...orderSyncStatus,
         paymentStatus: status,
-        amount: orderSyncStatus.amount,
-        currency: orderSyncStatus.currency?.toUpperCase() ?? defaultCurrency,
-        receiptEmail: orderSyncStatus.receiptEmail,
-        shipping: orderSyncStatus.shipping,
-        finalizedAt: orderSyncStatus.finalizedAt,
-        webhookUpdatedAt: orderSyncStatus.webhookUpdatedAt,
       }
     }
 

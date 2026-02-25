@@ -2,11 +2,12 @@ import { AddressElement } from '@stripe/react-stripe-js'
 import { userSelector } from '@/store'
 import { useAppSelector } from '@/hooks'
 import { defaultCountry, googleMapsKey } from '@/constants'
+import type { StripeAddressElementOptions } from '@/types'
 
 export function AddressForm() {
   const { userData } = useAppSelector(userSelector)
 
-  const addressOptions: Parameters<typeof AddressElement>[0]['options'] = {
+  const addressOptions: StripeAddressElementOptions = {
     mode: 'shipping',
     fields: { phone: 'always' },
     ...(userData && {

@@ -6,6 +6,7 @@ import type {
 
 export type {
   PaymentIntent,
+  StripeAddressElementOptions,
   StripeElementsOptions,
   StripeError,
   StripeErrorType,

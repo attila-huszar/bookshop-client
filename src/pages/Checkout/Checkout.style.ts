@@ -23,6 +23,9 @@ export const StyledCheckout = styled.section`
 
   #payment-form {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 
     > :first-child {
       position: absolute;
