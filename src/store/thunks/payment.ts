@@ -8,6 +8,7 @@ import {
 } from '@/api'
 import { log } from '@/services'
 import { defaultCurrency } from '@/constants'
+import { OrderSyncStatusError } from '@/errors'
 import {
   OrderSyncIssueCode,
   orderSyncPendingCode,
@@ -33,16 +34,6 @@ const retryableOrderSyncPaymentStatuses: PaymentIntentStatus[] = [
   'requires_action',
 ]
 
-class OrderSyncStatusError extends Error {
-  code: OrderSyncIssueCode
-
-  constructor(code: OrderSyncIssueCode, message: string) {
-    super(message)
-    this.name = 'OrderSyncStatusError'
-    this.code = code
-  }
-}
-
 const wait = async (ms: number): Promise<void> =>
   await new Promise((resolve) => {
     setTimeout(resolve, ms)
@@ -62,13 +53,13 @@ const getOrderSyncIssueCodeFromStatus = (
   if (retryableOrderSyncHttpStatuses.has(status)) return 'retryable'
   return 'unknown'
 }
+const hasStringError = (v: unknown): v is { error: string } =>
+  typeof v === 'object' &&
+  v !== null &&
+  typeof (v as { error?: unknown }).error === 'string'
 
-const getOrderSyncApiErrorMessage = (payload: unknown): string | null => {
-  if (!payload || typeof payload !== 'object') return null
-
-  const possibleMessage = (payload as Record<string, unknown>).error
-  return typeof possibleMessage === 'string' ? possibleMessage : null
-}
+const getOrderSyncApiErrorMessage = (payload: unknown): string | null =>
+  hasStringError(payload) ? payload.error : null
 
 const parseOrderSyncError = async (
   error: unknown,
@@ -94,36 +85,23 @@ const parseOrderSyncError = async (
   }
 
   if (error instanceof HTTPError) {
-    const status = error.response.status
-    let message = error.message
+    const { response, message: fallbackMessage } = error
+    const { status } = response
 
-    try {
-      const rawResponse = (await error.response.clone().json()) as unknown
-      const apiMessage = getOrderSyncApiErrorMessage(rawResponse)
-      if (apiMessage) {
-        message = apiMessage
-      }
-    } catch {
-      // Best effort only: if parsing fails, use the original error message.
-    }
+    const apiMessage = await response
+      .json<unknown>()
+      .then(getOrderSyncApiErrorMessage)
+      .catch(() => null)
 
     return {
-      message,
+      message: apiMessage ?? fallbackMessage,
       code: getOrderSyncIssueCodeFromStatus(status),
       retryable: retryableOrderSyncHttpStatuses.has(status),
     }
   }
 
-  if (error instanceof Error) {
-    return {
-      message: error.message,
-      code: 'unknown',
-      retryable: false,
-    }
-  }
-
   return {
-    message: 'Unknown error',
+    message: error instanceof Error ? error.message : 'Unknown error',
     code: 'unknown',
     retryable: false,
   }
