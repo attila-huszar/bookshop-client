@@ -36,25 +36,16 @@ export function PaymentStatus() {
   const isOrderConfirmed = Boolean(
     syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
   )
-  const checkoutText = getCheckoutText()
-  const statusText = checkoutText.status
-  const statusDetail = statusText.detail(
-    orderSyncIssueCode,
-    syncedPaymentStatus,
-  )
-  const statusLine = getEffectiveStatusLine(
-    syncedPaymentStatus,
-    status,
-    statusText,
-  )
+  const { status: statusText } = getCheckoutText()
 
   useEffect(() => {
-    if (
-      paymentId &&
+    const shouldSyncOrder =
+      !!paymentId &&
       isStripeSuccess &&
       !isOrderConfirmed &&
       lastSyncedPaymentId.current !== paymentId
-    ) {
+
+    if (shouldSyncOrder) {
       lastSyncedPaymentId.current = paymentId
       void dispatch(orderSyncAfterWebhook({ paymentId }))
     }
@@ -72,9 +63,9 @@ export function PaymentStatus() {
     orderSyncIssueCode,
     syncedPaymentStatus,
     intent: status.intent,
-    statusLine,
+    statusLine: getEffectiveStatusLine(syncedPaymentStatus, status, statusText),
     statusText,
-    statusDetail,
+    statusDetail: statusText.detail(orderSyncIssueCode, syncedPaymentStatus),
   })
 
   return (
@@ -91,14 +82,6 @@ export function PaymentStatus() {
         <p>{statusText.syncingOrder}</p>
       )}
       {detail && <p>{detail}</p>}
-      {orderSync && (
-        <>
-          <p>Order #{orderSync.paymentId.slice(-6).toUpperCase()}</p>
-          <p>
-            Total: {(orderSync.amount / 100).toFixed(2)} {orderSync.currency}
-          </p>
-        </>
-      )}
       <button onClick={() => void navigate('/')} type="button">
         Back to Shop
       </button>

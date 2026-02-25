@@ -21,7 +21,7 @@ export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
   const { getUnknownErrorMessage } = useMessages()
   const [status, setStatus] = useState<PaymentStatusState>({
-    intent: 'processing',
+    intent: 'requires_payment_method',
     messageOverride: null,
   })
 
@@ -41,9 +41,12 @@ export function usePaymentStatus(session: string | null | undefined) {
     }
 
     const scheduleRetry = (attempt: number) => {
-      const timeoutId = setTimeout(() => {
-        void retrievePaymentStatus(attempt + 1)
-      }, RETRY_DELAY * attempt)
+      const timeoutId = setTimeout(
+        () => {
+          void retrievePaymentStatus(attempt + 1)
+        },
+        RETRY_DELAY * 2 ** (attempt - 1),
+      )
       timeoutIds.push(timeoutId)
     }
 

@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledPaymentStatus = styled.section`
   display: flex;
@@ -17,6 +18,15 @@ export const StyledPaymentStatus = styled.section`
     text-align: center;
     text-wrap: pretty;
   }
+
+  ${media.down('sm')`
+    width: 100%;
+    padding: 2rem 1.5rem;
+
+    p {
+      font-size: 1rem;
+    }
+  `}
 `
 
 export const Logo = styled.div`
@@ -30,9 +40,22 @@ export const Logo = styled.div`
     height: auto;
     width: 4rem;
   }
+
+  ${media.down('sm')`
+    font-size: 1.25rem;
+
+    img {
+      width: 3rem;
+    }
+  `}
 `
 
 export const LottieWrapper = styled.div`
   width: 200px;
   height: 200px;
+
+  ${media.down('sm')`
+    width: 150px;
+    height: 150px;
+  `}
 `

@@ -49,7 +49,8 @@ export const parseOrderSyncError = async (
     const { status } = response
 
     const apiMessage = await response
-      .json<unknown>()
+      .clone()
+      .json()
       .then((payload) => (hasStringError(payload) ? payload.error : null))
       .catch(() => null)
 

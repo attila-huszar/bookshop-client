@@ -170,10 +170,6 @@ export const orderSyncAfterWebhook = createAsyncThunk<
         continue
       }
 
-      if (shouldRetry) {
-        break
-      }
-
       if (successStatuses.includes(status)) {
         return {
           paymentId: orderSyncStatus.paymentId ?? paymentId,

@@ -1,10 +1,10 @@
 import { SubmitEvent, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { AddressElement, useElements, useStripe } from '@stripe/react-stripe-js'
+import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors/handleError'
-import type { ConfirmPaymentShipping, StripeErrorType } from '@/types/Stripe'
+import type { StripeErrorType } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
 type UsePaymentSubmitReturn = {
@@ -45,30 +45,6 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const checkoutText = getCheckoutText()
   const submitText = checkoutText.submit
 
-  const getShippingFromAddressElement = async () => {
-    if (!elements) return undefined
-
-    const addressElement = elements.getElement(AddressElement)
-    if (!addressElement) return undefined
-
-    const { complete, value } = await addressElement.getValue()
-    if (!complete) return undefined
-
-    const shipping: ConfirmPaymentShipping = {
-      name: value.name,
-      phone: value.phone,
-      address: {
-        line1: value.address.line1,
-        line2: value.address.line2 ?? undefined,
-        city: value.address.city,
-        state: value.address.state,
-        postal_code: value.address.postal_code,
-        country: value.address.country,
-      },
-    }
-    return shipping
-  }
-
   const submitPayment = async (): Promise<void> => {
     setMessage(null)
     setCanRetry(false)
@@ -87,8 +63,6 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
     }
 
     try {
-      const shipping = await getShippingFromAddressElement()
-
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -97,7 +71,6 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
             billing_details: { email },
           },
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
-          ...(shipping && { shipping }),
         },
         redirect: 'if_required',
       })
