@@ -150,6 +150,10 @@ export const orderSyncAfterWebhook = createAsyncThunk<
         continue
       }
 
+      if (shouldRetry) {
+        break
+      }
+
       return {
         ...orderSyncStatus,
         paymentStatus: status,
