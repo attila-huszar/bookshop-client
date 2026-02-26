@@ -7,12 +7,10 @@ import {
 } from '@/api'
 import { log } from '@/services'
 import { wait } from '@/helpers'
-import { MAX_ORDER_SYNC_RETRIES, retryableStatuses } from '@/constants'
+import { ORDER_SYNC_MAX_RETRIES } from '@/constants'
 import {
   OrderSyncIssueCode,
-  orderSyncPendingCode,
   OrderSyncResponse,
-  OrderSyncStatusResponse,
   PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentSession,
@@ -124,26 +122,17 @@ export const orderSyncAfterWebhook = createAsyncThunk<
     }
 
     let lastStatus: PaymentIntentStatus | null = null
-    let lastRetryError: string | null = null
 
-    for (let attempt = 1; attempt <= MAX_ORDER_SYNC_RETRIES; attempt++) {
-      let orderSyncStatus: OrderSyncStatusResponse
+    for (let attempt = 1; attempt <= ORDER_SYNC_MAX_RETRIES; attempt++) {
+      let orderSyncStatus: OrderSyncResponse
+      let orderSyncHttpStatus: number
 
       try {
-        orderSyncStatus = await getOrderSyncStatus(paymentId)
+        const orderSyncResponse = await getOrderSyncStatus(paymentId)
+        orderSyncStatus = orderSyncResponse.data
+        orderSyncHttpStatus = orderSyncResponse.status
       } catch (error) {
         const parsedError = await parseOrderSyncError(error)
-
-        if (parsedError.retryable) {
-          lastRetryError = parsedError.message
-
-          if (attempt < MAX_ORDER_SYNC_RETRIES) {
-            await wait(getOrderSyncRetryDelay(attempt))
-            continue
-          }
-
-          break
-        }
 
         return rejectWithValue({
           code: parsedError.code,
@@ -153,15 +142,10 @@ export const orderSyncAfterWebhook = createAsyncThunk<
 
       const status = orderSyncStatus.paymentStatus
       lastStatus = status
-      lastRetryError = null
 
-      const shouldRetryByContract =
-        'code' in orderSyncStatus &&
-        orderSyncStatus.code === orderSyncPendingCode
-      const shouldRetryByFallbackStatus = retryableStatuses.includes(status)
-      const shouldRetry = shouldRetryByContract || shouldRetryByFallbackStatus
+      const shouldRetry = orderSyncHttpStatus === 202
 
-      if (shouldRetry && attempt < MAX_ORDER_SYNC_RETRIES) {
+      if (shouldRetry && attempt < ORDER_SYNC_MAX_RETRIES) {
         await wait(getOrderSyncRetryDelay(attempt))
         continue
       }
@@ -172,11 +156,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
       }
     }
 
-    const timeoutSuffix = lastStatus
-      ? ` (last status: ${lastStatus}${lastRetryError ? `, last retry error: ${lastRetryError}` : ''})`
-      : lastRetryError
-        ? ` (last retry error: ${lastRetryError})`
-        : ''
+    const timeoutSuffix = lastStatus ? ` (last status: ${lastStatus})` : ''
 
     return rejectWithValue({
       code: 'timeout',

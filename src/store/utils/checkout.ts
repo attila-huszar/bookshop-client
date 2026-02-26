@@ -1,24 +1,58 @@
 import { HTTPError, TimeoutError } from 'ky'
-import { hasStringError } from '@/helpers'
 import {
   ORDER_SYNC_RETRY_BASE_DELAY_MS,
   ORDER_SYNC_RETRY_MAX_DELAY_MS,
-  retryableHttpStatuses,
-  timeoutHttpStatuses,
+  RETRYABLE_STATUS_CODES,
+  TIMEOUT_STATUS_CODES,
+  UNAUTHORIZED_STATUS_CODES,
 } from '@/constants'
 import type { OrderSyncIssueCode } from '@/types'
 
 const getOrderSyncIssueCode = (status: number): OrderSyncIssueCode => {
-  if (status === 401 || status === 403) return 'unauthorized'
-  if (timeoutHttpStatuses.has(status)) return 'timeout'
-  if (retryableHttpStatuses.has(status)) return 'retryable'
+  if (UNAUTHORIZED_STATUS_CODES.includes(status)) return 'unauthorized'
+  if (TIMEOUT_STATUS_CODES.includes(status)) return 'timeout'
+  if (RETRYABLE_STATUS_CODES.includes(status)) return 'retryable'
   return 'unknown'
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const extractJsonMessage = (text: string): string | null => {
+  const trimmedText = text.trim()
+  if (!trimmedText) return null
+
+  try {
+    const parsed: unknown = JSON.parse(trimmedText)
+    if (!isRecord(parsed)) return trimmedText
+
+    for (const key of ['error', 'message', 'detail']) {
+      const value = parsed[key]
+      if (typeof value === 'string' && value.trim()) return value
+    }
+
+    return trimmedText
+  } catch {
+    return trimmedText
+  }
+}
+
+const extractHttpErrorMessage = async (
+  response: Response,
+): Promise<string | null> => {
+  try {
+    const text = await response.clone().text()
+    return extractJsonMessage(text)
+  } catch {
+    return null
+  }
+}
+
 export const getOrderSyncRetryDelay = (attempt: number): number => {
-  const exponentialDelay =
+  const exponential =
     ORDER_SYNC_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
-  return Math.min(exponentialDelay, ORDER_SYNC_RETRY_MAX_DELAY_MS)
+
+  return Math.min(exponential, ORDER_SYNC_RETRY_MAX_DELAY_MS)
 }
 
 export const parseOrderSyncError = async (
@@ -26,13 +60,11 @@ export const parseOrderSyncError = async (
 ): Promise<{
   message: string
   code: OrderSyncIssueCode
-  retryable: boolean
 }> => {
   if (error instanceof TimeoutError) {
     return {
       message: 'Order sync request timed out',
       code: 'timeout',
-      retryable: true,
     }
   }
 
@@ -40,30 +72,22 @@ export const parseOrderSyncError = async (
     return {
       message: error.message || 'Network error while syncing order status',
       code: 'retryable',
-      retryable: true,
     }
   }
 
   if (error instanceof HTTPError) {
-    const { response, message: fallbackMessage } = error
-    const { status } = response
-
-    const apiMessage = await response
-      .clone()
-      .json()
-      .then((payload) => (hasStringError(payload) ? payload.error : null))
-      .catch(() => null)
+    const { response, message: fallback } = error
+    const apiMessage = await extractHttpErrorMessage(response)
 
     return {
-      message: apiMessage ?? fallbackMessage,
-      code: getOrderSyncIssueCode(status),
-      retryable: retryableHttpStatuses.has(status),
+      message: apiMessage ?? fallback,
+      code: getOrderSyncIssueCode(response.status),
     }
   }
 
   return {
-    message: error instanceof Error ? error.message : 'Unknown error',
+    message:
+      error instanceof Error && error.message ? error.message : 'Unknown error',
     code: 'unknown',
-    retryable: false,
   }
 }

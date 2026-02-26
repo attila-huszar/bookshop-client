@@ -1,3 +1,3 @@
 export { handleError } from './handleError'
-export { OrderSyncStatusError } from './OrderSyncStatusError'
+export { OrderSyncError } from './OrderSyncError'
 export { ParameterError } from './ParameterError'

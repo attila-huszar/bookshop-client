@@ -42,7 +42,7 @@ const getCheckoutStatusDetail = (
       return '⏳ Finalizing is taking longer than usual, but your payment is received. We are still processing in the background.'
 
     case 'retryable':
-      return '🔄 We hit a temporary confirmation issue. We are retrying in the background.'
+      return '🔄 We hit a temporary confirmation issue while finalizing your order. Please refresh in a moment.'
 
     case 'unauthorized':
       return '🔒 We could not verify your checkout session for this order. Please refresh and try again.'
