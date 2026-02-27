@@ -12,10 +12,10 @@ import type {
 } from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
-  accessToken: string
+  accessToken: string | null
 }> => {
   const response = await baseRequest.post<{
-    accessToken: string
+    accessToken: string | null
   }>(PATH.users.refresh, { credentials: 'include' })
   return await response.json()
 }
