@@ -6,6 +6,13 @@ export const successStatuses: PaymentIntentStatus[] = [
   'requires_capture',
 ]
 
+export const retryableStatuses: PaymentIntentStatus[] = [
+  'processing',
+  'requires_payment_method',
+  'requires_confirmation',
+  'requires_action',
+]
+
 export const orderSyncIssueCodes: OrderSyncIssueCode[] = [
   'timeout',
   'retryable',

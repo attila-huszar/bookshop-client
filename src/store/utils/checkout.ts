@@ -52,7 +52,11 @@ export const getOrderSyncRetryDelay = (attempt: number): number => {
   const exponential =
     ORDER_SYNC_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
 
-  return Math.min(exponential, ORDER_SYNC_RETRY_MAX_DELAY_MS)
+  const cappedDelay = Math.min(exponential, ORDER_SYNC_RETRY_MAX_DELAY_MS)
+
+  const jitter = cappedDelay * 0.2 * Math.random()
+
+  return cappedDelay + jitter
 }
 
 export const parseOrderSyncError = async (

@@ -6,8 +6,7 @@ import {
   postPaymentIntent,
 } from '@/api'
 import { log } from '@/services'
-import { wait } from '@/helpers'
-import { ORDER_SYNC_MAX_RETRIES } from '@/constants'
+import { ORDER_SYNC_MAX_RETRIES, retryableStatuses } from '@/constants'
 import {
   OrderSyncIssueCode,
   OrderSyncResponse,
@@ -16,6 +15,40 @@ import {
   PaymentSession,
 } from '@/types'
 import { getOrderSyncRetryDelay, parseOrderSyncError } from '../utils'
+
+const createAbortError = () =>
+  new DOMException('Order sync request aborted', 'AbortError')
+
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException && error.name === 'AbortError') ||
+  (error instanceof Error && error.name === 'AbortError')
+
+const throwIfAborted = (signal: AbortSignal): void => {
+  if (signal.aborted) {
+    throw createAbortError()
+  }
+}
+
+const waitForRetryOrAbort = async (
+  delayMs: number,
+  signal: AbortSignal,
+): Promise<void> => {
+  throwIfAborted(signal)
+
+  await new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, delayMs)
+
+    const onAbort = () => {
+      clearTimeout(timeoutId)
+      reject(createAbortError())
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
+}
 
 export const paymentCreate = createAsyncThunk(
   'payment/paymentCreate',
@@ -113,7 +146,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
   { rejectValue: { code: OrderSyncIssueCode; message: string } }
 >(
   'payment/orderSyncAfterWebhook',
-  async ({ paymentId }, { rejectWithValue }) => {
+  async ({ paymentId }, { rejectWithValue, signal }) => {
     if (!paymentId) {
       return rejectWithValue({
         code: 'unknown',
@@ -124,15 +157,30 @@ export const orderSyncAfterWebhook = createAsyncThunk<
     let lastStatus: PaymentIntentStatus | null = null
 
     for (let attempt = 1; attempt <= ORDER_SYNC_MAX_RETRIES; attempt++) {
+      throwIfAborted(signal)
+
       let orderSyncStatus: OrderSyncResponse
       let orderSyncHttpStatus: number
 
       try {
-        const orderSyncResponse = await getOrderSyncStatus(paymentId)
+        const orderSyncResponse = await getOrderSyncStatus(paymentId, signal)
         orderSyncStatus = orderSyncResponse.data
         orderSyncHttpStatus = orderSyncResponse.status
       } catch (error) {
+        if (isAbortError(error) || signal.aborted) {
+          throw error
+        }
+
         const parsedError = await parseOrderSyncError(error)
+        const canRetryTransientError =
+          (parsedError.code === 'retryable' ||
+            parsedError.code === 'timeout') &&
+          attempt < ORDER_SYNC_MAX_RETRIES
+
+        if (canRetryTransientError) {
+          await waitForRetryOrAbort(getOrderSyncRetryDelay(attempt), signal)
+          continue
+        }
 
         return rejectWithValue({
           code: parsedError.code,
@@ -143,10 +191,11 @@ export const orderSyncAfterWebhook = createAsyncThunk<
       const status = orderSyncStatus.paymentStatus
       lastStatus = status
 
-      const shouldRetry = orderSyncHttpStatus === 202
+      const shouldRetry =
+        orderSyncHttpStatus === 202 || retryableStatuses.includes(status)
 
       if (shouldRetry && attempt < ORDER_SYNC_MAX_RETRIES) {
-        await wait(getOrderSyncRetryDelay(attempt))
+        await waitForRetryOrAbort(getOrderSyncRetryDelay(attempt), signal)
         continue
       }
 

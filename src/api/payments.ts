@@ -1,5 +1,4 @@
 import { authRequest, PATH } from '.'
-import { ORDER_SYNC_RETRY_STATUS_CODES } from '@/constants'
 import type {
   OrderSyncResponse,
   PaymentIntentRequest,
@@ -36,16 +35,11 @@ export const deletePaymentIntent = async (
 
 export const getOrderSyncStatus = async (
   paymentId: string,
+  signal?: AbortSignal,
 ): Promise<{ status: number; data: OrderSyncResponse }> => {
   const response = await authRequest.get<OrderSyncResponse>(
     `${PATH.payments}/${paymentId}/order-sync`,
-    {
-      retry: {
-        limit: 3,
-        statusCodes: ORDER_SYNC_RETRY_STATUS_CODES,
-        retryOnTimeout: true,
-      },
-    },
+    { signal, retry: 0 },
   )
   const data = await response.json()
   return { status: response.status, data }
