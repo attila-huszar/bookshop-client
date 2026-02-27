@@ -310,7 +310,7 @@ export function Cart() {
             $size={isMobile ? 'sm' : 'lg'}
             $textSize={isMobile ? 'sm' : 'lg'}
             $shadow>
-            {isCheckoutBusy ? 'Creating checkout session...' : 'Checkout'}
+            {isCheckoutBusy ? 'Checking out' : 'Checkout'}
           </Button>
         </ButtonWrapper>
         <InfoDialog

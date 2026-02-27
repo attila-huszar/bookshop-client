@@ -122,7 +122,7 @@ export function CheckoutForm() {
           options={{ defaultValues: { email: linkEmail } }}
           onChange={(e) => {
             setLinkEmail(e.value.email)
-            setMessage(null)
+            setMessage({ text: null, type: 'neutral' })
             setCancelError(null)
           }}
         />
@@ -131,7 +131,7 @@ export function CheckoutForm() {
         id="payment-element"
         options={paymentElementOptions}
         onChange={() => {
-          setMessage(null)
+          setMessage({ text: null, type: 'neutral' })
           setCancelError(null)
         }}
       />
@@ -175,8 +175,10 @@ export function CheckoutForm() {
         </div>
       )}
       {message && (
-        <div id="payment-message" style={{ marginTop: '1rem' }}>
-          {message}
+        <div
+          id="payment-message"
+          className={message.type === 'error' ? 'error' : undefined}>
+          {message.text}
         </div>
       )}
     </form>

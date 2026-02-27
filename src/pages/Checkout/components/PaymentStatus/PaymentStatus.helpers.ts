@@ -42,7 +42,7 @@ const getStripeStatusLine = (
   }
 }
 
-export const getEffectiveStatusLine = (
+const getStatusLine = (
   syncedPaymentStatus: PaymentIntentStatus | null,
   status: PaymentStatusState,
   statusText: CheckoutStatusText,
@@ -54,43 +54,48 @@ export const getEffectiveStatusLine = (
   return getStripeStatusLine(status, statusText)
 }
 
-type StatusViewArgs = {
-  isOrderConfirmed: boolean
+type PaymentStatusViewArgs = {
+  status: PaymentStatusState
   orderSyncIssueCode: OrderSyncIssueCode | null
   syncedPaymentStatus: PaymentIntentStatus | null
-  intent: PaymentIntentStatus
-  statusLine: string
+  orderSyncAttempt: number
   statusText: CheckoutStatusText
-  statusDetail: string
 }
 
-export const getStatusView = ({
-  isOrderConfirmed,
+const toOptionalLine = (line: string): string | null => {
+  if (!line.trim()) return null
+  return line
+}
+
+export const getPaymentStatusView = ({
+  status,
   orderSyncIssueCode,
   syncedPaymentStatus,
-  intent,
-  statusLine,
+  orderSyncAttempt,
   statusText,
-  statusDetail,
-}: StatusViewArgs) => {
-  const isStripeSuccess = successStatuses.includes(intent)
+}: PaymentStatusViewArgs) => {
+  const isStripeSuccess = successStatuses.includes(status.intent)
   const hasHardSyncError =
     orderSyncIssueCode !== null && orderSyncIssueCode !== 'timeout'
-  const isWarning = warningStatuses.includes(intent)
+  const isWarning = warningStatuses.includes(status.intent)
+  const isOrderConfirmed = Boolean(
+    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
+  )
+  const statusLine = getStatusLine(syncedPaymentStatus, status, statusText)
 
   if (isOrderConfirmed) {
     return {
       animation: checkmarkAnim,
       isLooping: false,
-      headline: statusText.orderConfirmed,
-      detail: null,
+      primaryLine: statusText.orderConfirmed,
+      secondaryLine: null,
     }
   }
 
   if (isStripeSuccess) {
     let animation: LottieOptions['animationData'] = clockAnim
     let isLooping = true
-    let headline = statusText.paymentReceived
+    let primaryLine = statusText.paymentReceived
 
     if (hasHardSyncError) {
       animation = exclamationAnim
@@ -100,30 +105,41 @@ export const getStatusView = ({
     if (syncedPaymentStatus === 'canceled') {
       animation = exclamationAnim
       isLooping = false
-      headline = statusText.paymentCanceled
+      primaryLine = statusText.paymentCanceled
     } else if (
       syncedPaymentStatus &&
       !successStatuses.includes(syncedPaymentStatus)
     ) {
       animation = exclamationAnim
       isLooping = false
-      headline = statusLine
+      primaryLine = statusLine
     } else if (orderSyncIssueCode === 'unauthorized') {
-      headline = statusText.verificationIssue
+      primaryLine = statusText.verificationIssue
     }
+
+    const secondaryLine =
+      syncedPaymentStatus && !successStatuses.includes(syncedPaymentStatus)
+        ? null
+        : toOptionalLine(
+            statusText.detail(
+              orderSyncIssueCode,
+              syncedPaymentStatus,
+              orderSyncAttempt,
+            ),
+          )
 
     return {
       animation,
       isLooping,
-      headline,
-      detail: statusDetail,
+      primaryLine,
+      secondaryLine: secondaryLine === primaryLine ? null : secondaryLine,
     }
   }
 
   return {
     animation: isWarning ? exclamationAnim : clockAnim,
     isLooping: !isWarning,
-    headline: statusLine,
-    detail: null,
+    primaryLine: statusLine,
+    secondaryLine: null,
   }
 }

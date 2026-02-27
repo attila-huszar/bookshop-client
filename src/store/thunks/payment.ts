@@ -14,6 +14,7 @@ import {
   PaymentIntentStatus,
   PaymentSession,
 } from '@/types'
+import { setOrderSyncAttempt } from '../slices/payment'
 import { getOrderSyncRetryDelay, parseOrderSyncError } from '../utils'
 
 const createAbortError = () =>
@@ -146,7 +147,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
   { rejectValue: { code: OrderSyncIssueCode; message: string } }
 >(
   'payment/orderSyncAfterWebhook',
-  async ({ paymentId }, { rejectWithValue, signal }) => {
+  async ({ paymentId }, { rejectWithValue, signal, dispatch }) => {
     if (!paymentId) {
       return rejectWithValue({
         code: 'unknown',
@@ -157,6 +158,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
     let lastStatus: PaymentIntentStatus | null = null
 
     for (let attempt = 1; attempt <= ORDER_SYNC_MAX_RETRIES; attempt++) {
+      dispatch(setOrderSyncAttempt(attempt))
       throwIfAborted(signal)
 
       let orderSyncStatus: OrderSyncResponse

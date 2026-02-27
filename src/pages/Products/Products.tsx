@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { booksSelector } from '@/store'
+import { Alert } from '@/components/Alert/Alert'
 import { Card } from '@/components/Card/Card'
 import { useAppSelector } from '@/hooks'
 import { FilterIcon } from '@/assets/svg'
@@ -12,11 +13,15 @@ import {
 } from './Products.style'
 
 export function Products() {
-  const { booksOnCurrentPage } = useAppSelector(booksSelector)
+  const { booksOnCurrentPage, booksError } = useAppSelector(booksSelector)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  const renderBooks = () =>
-    booksOnCurrentPage.length ? (
+  const renderBooks = () => {
+    if (booksError) {
+      return <Alert message="Error loading books" error={booksError} />
+    }
+
+    return booksOnCurrentPage.length ? (
       <>
         <ProductsGrid>
           {booksOnCurrentPage.map((book) => (
@@ -28,6 +33,7 @@ export function Products() {
     ) : (
       <EmptyFilterResults />
     )
+  }
 
   return (
     <StyledProducts>

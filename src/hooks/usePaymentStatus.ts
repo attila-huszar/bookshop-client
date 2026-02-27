@@ -19,9 +19,9 @@ const ABSOLUTE_TIMEOUT = 30000
 
 export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
-  const { getUnknownErrorMessage } = useMessages()
+  const { getUnknownErrorDetails } = useMessages()
   const [status, setStatus] = useState<PaymentStatusState>({
-    intent: 'requires_payment_method',
+    intent: 'processing',
     messageOverride: null,
   })
 
@@ -32,6 +32,8 @@ export function usePaymentStatus(session: string | null | undefined) {
     let absoluteTimeoutId: ReturnType<typeof setTimeout> | null = null
     let isSettled = false
     let hasTimedOut = false
+
+    const isInactive = () => hasTimedOut || isSettled
 
     const markSettled = () => {
       isSettled = true
@@ -51,13 +53,13 @@ export function usePaymentStatus(session: string | null | undefined) {
     }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
-      if (hasTimedOut || isSettled) return
+      if (isInactive()) return
 
       try {
         const { paymentIntent, error } =
           await stripe.retrievePaymentIntent(session)
 
-        if (hasTimedOut || isSettled) return
+        if (isInactive()) return
 
         if (error) {
           throw new Error(error.message ?? 'Failed to retrieve payment intent')
@@ -77,7 +79,7 @@ export function usePaymentStatus(session: string | null | undefined) {
           scheduleRetry(attempt)
         }
       } catch (error) {
-        if (hasTimedOut || isSettled) return
+        if (isInactive()) return
 
         if (attempt < MAX_RETRIES) {
           setStatus({
@@ -94,7 +96,7 @@ export function usePaymentStatus(session: string | null | undefined) {
             intent: 'requires_payment_method',
             messageOverride: {
               type: 'failure',
-              details: getUnknownErrorMessage(error),
+              details: getUnknownErrorDetails(error),
             },
           })
           markSettled()
@@ -103,7 +105,7 @@ export function usePaymentStatus(session: string | null | undefined) {
     }
 
     absoluteTimeoutId = setTimeout(() => {
-      if (isSettled) return
+      if (isInactive()) return
       hasTimedOut = true
       setStatus({
         intent: 'requires_payment_method',
@@ -121,7 +123,7 @@ export function usePaymentStatus(session: string | null | undefined) {
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [getUnknownErrorMessage, session, stripe])
+  }, [getUnknownErrorDetails, session, stripe])
 
   return { status }
 }

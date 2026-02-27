@@ -7,12 +7,17 @@ import { handleError } from '@/errors/handleError'
 import type { StripeErrorType } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
+type SubmitMessage = {
+  text: string | null
+  type: 'neutral' | 'error'
+}
+
 type UsePaymentSubmitReturn = {
   handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
   retryPayment: () => Promise<void>
   canRetry: boolean
-  message: string | null
-  setMessage: (message: string | null) => void
+  message: SubmitMessage
+  setMessage: (message: SubmitMessage) => void
   isLoading: boolean
 }
 
@@ -29,27 +34,34 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
-  const { getCheckoutText, getPaymentErrorMessage } = useMessages()
-  const [message, setMessage] = useState<string | null>(null)
+  const { getCheckoutSubmitMessages, getStripePaymentErrorMessage } =
+    useMessages()
+  const [message, setMessage] = useState<SubmitMessage>({
+    text: null,
+    type: 'neutral',
+  })
   const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const { submit: submitText } = getCheckoutText()
+  const submitText = getCheckoutSubmitMessages()
+
+  const stopSubmitWithMessage = (text: string): void => {
+    setMessage({ text, type: 'error' })
+    setIsLoading(false)
+  }
 
   const submitPayment = async (): Promise<void> => {
-    setMessage(null)
+    setMessage({ text: null, type: 'neutral' })
     setCanRetry(false)
     setIsLoading(true)
 
     if (!stripe || !elements) {
-      setMessage(submitText.notReady)
-      setIsLoading(false)
+      stopSubmitWithMessage(submitText.notReady)
       return
     }
 
     if (!email) {
-      setMessage(submitText.missingEmail)
-      setIsLoading(false)
+      stopSubmitWithMessage(submitText.missingEmail)
       return
     }
 
@@ -67,7 +79,7 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
       })
 
       if (error) {
-        setMessage(getPaymentErrorMessage(error))
+        setMessage({ text: getStripePaymentErrorMessage(error), type: 'error' })
         setCanRetry(isRetryableStripeError(error.type))
         return
       }
@@ -85,7 +97,7 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
         error,
         message: submitText.submitFailed,
       })
-      setMessage(formattedError.message)
+      setMessage({ text: formattedError.message, type: 'error' })
       setCanRetry(true)
     } finally {
       setIsLoading(false)

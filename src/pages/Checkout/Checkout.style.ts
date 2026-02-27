@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { media } from '@/styles'
 
 export const StyledCheckout = styled.section`
   display: flex;
@@ -8,11 +9,14 @@ export const StyledCheckout = styled.section`
   margin: 2rem 0;
 
   .stripe-form {
-    @media only screen and (min-width: 600px) {
-      min-width: 500px;
-    }
+    width: 32rem;
+
+    ${media.down('sm')`
+      width: 85vw;
+    `}
+
     height: fit-content;
-    padding: 20px 40px;
+    padding: 1.5rem;
     border-radius: 10px;
     background-color: var(--white);
     box-shadow:
@@ -70,11 +74,18 @@ export const StyledCheckout = styled.section`
 
   #payment-message,
   #cancel-message {
-    color: var(--light-black);
-    font-size: 16px;
-    line-height: 20px;
-    padding-top: 1.5rem;
+    margin-top: 1rem;
+    font-size: 1rem;
     text-align: center;
+    color: var(--light-black);
+  }
+
+  #payment-message.error {
+    padding: 0.625rem 1rem;
+    color: rgb(120, 27, 0);
+    background-color: rgb(255, 245, 245);
+    border: 1px solid rgb(244, 129, 116);
+    border-radius: var(--border-radius);
   }
 
   #payment-element {

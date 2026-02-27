@@ -14,18 +14,14 @@ import {
   usePaymentStatus,
 } from '@/hooks'
 import logo from '@/assets/image/logo.png'
-import {
-  getEffectiveStatusLine,
-  getStatusView,
-  successStatuses,
-} from './PaymentStatus.helpers'
+import { getPaymentStatusView, successStatuses } from './PaymentStatus.helpers'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { getCheckoutText } = useMessages()
-  const { payment, orderSyncIsLoading, orderSyncIssueCode, orderSync } =
+  const { getCheckoutStatusMessages } = useMessages()
+  const { payment, orderSyncAttempt, orderSyncIssueCode, orderSync } =
     useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
   const lastSyncedPaymentId = useRef<string | null>(null)
@@ -36,19 +32,15 @@ export function PaymentStatus() {
   const isOrderConfirmed = Boolean(
     syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
   )
-  const { status: statusText } = getCheckoutText()
+
+  const statusText = getCheckoutStatusMessages()
 
   useEffect(() => {
-    const shouldSyncOrder =
-      !!paymentId &&
-      isStripeSuccess &&
-      !isOrderConfirmed &&
-      lastSyncedPaymentId.current !== paymentId
+    if (!paymentId || !isStripeSuccess || isOrderConfirmed) return
+    if (lastSyncedPaymentId.current === paymentId) return
 
-    if (shouldSyncOrder) {
-      lastSyncedPaymentId.current = paymentId
-      void dispatch(orderSyncAfterWebhook({ paymentId }))
-    }
+    lastSyncedPaymentId.current = paymentId
+    void dispatch(orderSyncAfterWebhook({ paymentId }))
   }, [dispatch, isStripeSuccess, isOrderConfirmed, paymentId])
 
   useEffect(() => {
@@ -58,15 +50,14 @@ export function PaymentStatus() {
     }
   }, [dispatch, isOrderConfirmed])
 
-  const { animation, isLooping, headline, detail } = getStatusView({
-    isOrderConfirmed,
-    orderSyncIssueCode,
-    syncedPaymentStatus,
-    intent: status.intent,
-    statusLine: getEffectiveStatusLine(syncedPaymentStatus, status, statusText),
-    statusText,
-    statusDetail: statusText.detail(orderSyncIssueCode, syncedPaymentStatus),
-  })
+  const { animation, isLooping, primaryLine, secondaryLine } =
+    getPaymentStatusView({
+      status,
+      orderSyncIssueCode,
+      syncedPaymentStatus,
+      orderSyncAttempt,
+      statusText,
+    })
 
   return (
     <StyledPaymentStatus>
@@ -77,11 +68,8 @@ export function PaymentStatus() {
       <LottieWrapper>
         <Lottie animationData={animation} loop={isLooping} />
       </LottieWrapper>
-      <p>{headline}</p>
-      {isStripeSuccess && !isOrderConfirmed && orderSyncIsLoading && (
-        <p>{statusText.syncingOrder}</p>
-      )}
-      {detail && <p>{detail}</p>}
+      <p>{primaryLine}</p>
+      {secondaryLine && <p>{secondaryLine}</p>}
       <button onClick={() => void navigate('/')} type="button">
         Back to Shop
       </button>

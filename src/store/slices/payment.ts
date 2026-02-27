@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import {
   orderSyncAfterWebhook,
   paymentCancel,
@@ -14,6 +14,7 @@ const initialState: PaymentState = {
   paymentRetrieveError: null,
   paymentCancelError: null,
   orderSyncIsLoading: false,
+  orderSyncAttempt: 0,
   orderSyncError: null,
   orderSyncIssueCode: null,
   orderSync: null,
@@ -30,6 +31,7 @@ const paymentSlice = createSlice({
       state.paymentRetrieveError = null
       state.paymentCancelError = null
       state.orderSyncIsLoading = false
+      state.orderSyncAttempt = 0
       state.orderSyncError = null
       state.orderSyncIssueCode = null
       state.orderSync = null
@@ -41,6 +43,9 @@ const paymentSlice = createSlice({
       state.paymentRetrieveError = null
       state.paymentCancelError = null
     },
+    setOrderSyncAttempt: (state, action: PayloadAction<number>) => {
+      state.orderSyncAttempt = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -48,6 +53,7 @@ const paymentSlice = createSlice({
         state.paymentIsLoading = true
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
         state.orderSync = null
@@ -61,6 +67,7 @@ const paymentSlice = createSlice({
         state.paymentIsLoading = false
         state.paymentCreateError = null
         state.orderSyncIsLoading = false
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
         state.orderSync = null
@@ -71,6 +78,7 @@ const paymentSlice = createSlice({
         state.paymentCreateError =
           action.error.message ?? 'Failed to create payment'
         state.orderSyncIsLoading = false
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
         state.orderSync = null
@@ -105,6 +113,7 @@ const paymentSlice = createSlice({
         state.paymentRetrieveError = null
         state.paymentCancelError = null
         state.orderSyncIsLoading = false
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
         state.orderSync = null
@@ -116,11 +125,13 @@ const paymentSlice = createSlice({
       })
       .addCase(orderSyncAfterWebhook.pending, (state) => {
         state.orderSyncIsLoading = true
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
       })
       .addCase(orderSyncAfterWebhook.fulfilled, (state, action) => {
         state.orderSyncIsLoading = false
+        state.orderSyncAttempt = 0
         state.orderSyncError = null
         state.orderSyncIssueCode = null
         state.orderSync = action.payload
@@ -134,4 +145,5 @@ const paymentSlice = createSlice({
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const { paymentStateReset, paymentSessionReset } = paymentSlice.actions
+export const { paymentStateReset, paymentSessionReset, setOrderSyncAttempt } =
+  paymentSlice.actions

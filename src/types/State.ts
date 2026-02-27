@@ -64,6 +64,7 @@ export type PaymentState = {
   paymentRetrieveError: string | null
   paymentCancelError: string | null
   orderSyncIsLoading: boolean
+  orderSyncAttempt: number
   orderSyncError: string | null
   orderSyncIssueCode: OrderSyncIssueCode | null
   orderSync: OrderSyncResponse | null

@@ -30,7 +30,10 @@ describe('Products Page', () => {
       { id: 2, title: 'Test Book 2' },
     ]
 
-    vi.mocked(useAppSelector).mockReturnValue({ booksOnCurrentPage })
+    vi.mocked(useAppSelector).mockReturnValue({
+      booksOnCurrentPage,
+      booksError: null,
+    })
 
     render(<Products />, { wrapper: Providers })
 
@@ -42,6 +45,7 @@ describe('Products Page', () => {
   it('should show EmptyFilterResults when no books are found', () => {
     vi.mocked(useAppSelector).mockReturnValue({
       booksOnCurrentPage: [],
+      booksError: null,
     })
 
     render(<Products />)
@@ -52,10 +56,23 @@ describe('Products Page', () => {
   it('should render the Filter component', () => {
     vi.mocked(useAppSelector).mockReturnValue({
       booksOnCurrentPage: [],
+      booksError: null,
     })
 
     render(<Products />)
 
     expect(screen.getByText('Filter component')).toBeInTheDocument()
+  })
+
+  it('should show alert when books request fails', () => {
+    vi.mocked(useAppSelector).mockReturnValue({
+      booksOnCurrentPage: [],
+      booksError: 'Failed to fetch books',
+    })
+
+    render(<Products />)
+
+    expect(screen.getByText(/error loading books/i)).toBeInTheDocument()
+    expect(screen.getByText(/failed to fetch books/i)).toBeInTheDocument()
   })
 })
