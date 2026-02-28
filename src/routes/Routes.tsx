@@ -15,6 +15,7 @@ import {
   checkoutLoader,
   cmsLoader,
   landingPageLoader,
+  ordersLoader,
   productLoader,
   shopLoader,
 } from './loaders'
@@ -42,6 +43,9 @@ const Cart = lazy(() =>
 const Account = lazy(() =>
   import('@/pages/Account/Account').then((m) => ({ default: m.Account })),
 )
+const Orders = lazy(() =>
+  import('@/pages/Orders/Orders').then((m) => ({ default: m.Orders })),
+)
 const VerifyEmail = lazy(() =>
   import('@/pages/VerifyEmail/VerifyEmail').then((m) => ({
     default: m.VerifyEmail,
@@ -59,22 +63,22 @@ const Checkout = lazy(() =>
 const CMS = lazy(() =>
   import('@/pages/CMS/CMS').then((m) => ({ default: m.CMS })),
 )
-const Orders = lazy(() =>
+const CMSOrders = lazy(() =>
   import('@/pages/CMS/components/Orders/Orders').then((m) => ({
     default: m.Orders,
   })),
 )
-const Books = lazy(() =>
+const CMSBooks = lazy(() =>
   import('@/pages/CMS/components/Books/Books').then((m) => ({
     default: m.Books,
   })),
 )
-const Authors = lazy(() =>
+const CMSAuthors = lazy(() =>
   import('@/pages/CMS/components/Authors/Authors').then((m) => ({
     default: m.Authors,
   })),
 )
-const Users = lazy(() =>
+const CMSUsers = lazy(() =>
   import('@/pages/CMS/components/Users/Users').then((m) => ({
     default: m.Users,
   })),
@@ -139,6 +143,11 @@ const routes: RouteObject[] = [
             path: ROUTE.ACCOUNT,
             element: <Account />,
           },
+          {
+            path: ROUTE.ORDERS,
+            element: <Orders />,
+            loader: ordersLoader,
+          },
         ],
       },
       {
@@ -170,22 +179,22 @@ const routes: RouteObject[] = [
         children: [
           {
             path: 'orders',
-            element: <Orders />,
+            element: <CMSOrders />,
             loader: () => cmsLoader('orders'),
           },
           {
             path: 'books',
-            element: <Books />,
+            element: <CMSBooks />,
             loader: () => cmsLoader('books'),
           },
           {
             path: 'authors',
-            element: <Authors />,
+            element: <CMSAuthors />,
             loader: () => cmsLoader('authors'),
           },
           {
             path: 'users',
-            element: <Users />,
+            element: <CMSUsers />,
             loader: () => cmsLoader('users'),
           },
           {

@@ -57,6 +57,12 @@ export type CartState = {
   cartError: string | null
 }
 
+export type OrdersState = {
+  orders: Order[]
+  ordersIsLoading: boolean
+  ordersError: string | null
+}
+
 export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean

@@ -22,7 +22,7 @@ export const Orders = () => {
   }
 
   if (!ordersLoading && orders.length === 0) {
-    return <Alert message="No orders found" />
+    return <Alert type="info" message="No orders found" />
   }
 
   const allSelected =

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
-import { logout, userSelector } from '@/store'
+import { logout, ordersClear, userSelector } from '@/store'
 import { Avatar, Button, IconButton } from '@/components'
 import {
   useAppDispatch,
@@ -11,7 +11,13 @@ import {
   useClickOutside,
 } from '@/hooks'
 import { UserRole } from '@/types'
-import { AccountIcon, CMSIcon, LogoutIcon, ProfileIcon } from '@/assets/svg'
+import {
+  AccountIcon,
+  CMSIcon,
+  LogoutIcon,
+  OrdersIcon,
+  ProfileIcon,
+} from '@/assets/svg'
 import { MenuItem, MenuList, StyledMenu } from '../Menu/Menu.style'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
@@ -44,6 +50,8 @@ export function AccountMenu() {
 
   const handleLogout = () => {
     toggleMenu()
+
+    dispatch(ordersClear())
 
     dispatch(logout())
       .unwrap()
@@ -85,6 +93,14 @@ export function AccountMenu() {
           <MenuItem>
             <ProfileIcon height="1.5rem" />
             <span>{userData.firstName}</span>
+          </MenuItem>
+        </Link>
+      </li>
+      <li>
+        <Link to={`/${ROUTE.ORDERS}`} onClick={toggleMenu}>
+          <MenuItem>
+            <OrdersIcon height="1.5rem" />
+            <span>Orders</span>
           </MenuItem>
         </Link>
       </li>

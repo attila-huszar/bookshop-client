@@ -41,6 +41,7 @@ describe('AccountMenu component', () => {
     expect(avatar).toBeInTheDocument()
 
     await userEvent.click(avatar)
+    expect(screen.getByText('Orders')).toBeInTheDocument()
     expect(screen.getByText('Logout')).toBeInTheDocument()
   })
 

@@ -5,6 +5,7 @@ import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
 import { cmsReducer } from './slices/cms'
 import { newsReducer } from './slices/news'
+import { ordersReducer } from './slices/orders'
 import { paymentReducer } from './slices/payment'
 import { userReducer } from './slices/user'
 
@@ -14,6 +15,7 @@ const reducer = {
   news: newsReducer,
   user: userReducer,
   cart: cartReducer,
+  orders: ordersReducer,
   payment: paymentReducer,
   cms: cmsReducer,
 }

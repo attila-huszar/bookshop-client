@@ -25,6 +25,7 @@ export type OrderItem = {
   id: number
   author: string | null
   title: string
+  imgUrl: string
   price: number
   discount: number
   quantity: number
