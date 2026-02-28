@@ -119,27 +119,27 @@ export function FormikField({
         const shouldShowError = meta.touched && form.submitCount > 0
 
         return (
-          <InputWrapper>
-            <Input
-              ref={formikRef}
-              {...field}
-              {...props}
-              $valid={shouldShowError && !meta.error}
-              $error={shouldShowError && meta.error}
-            />
-            {showPassword !== undefined && (
-              <PasswordEye
-                type="button"
-                onClick={() => setShowPassword?.((prev) => !prev)}>
-                {showPassword ? <EyeHideIcon /> : <EyeIcon />}
-              </PasswordEye>
-            )}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <InputWrapper>
+              <Input
+                ref={formikRef}
+                {...field}
+                {...props}
+                $valid={shouldShowError && !meta.error}
+                $error={shouldShowError && meta.error}
+              />
+              {showPassword !== undefined && (
+                <PasswordEye
+                  type="button"
+                  onClick={() => setShowPassword?.((prev) => !prev)}>
+                  {showPassword ? <EyeHideIcon /> : <EyeIcon />}
+                </PasswordEye>
+              )}
+            </InputWrapper>
             {shouldShowError && meta.error && (
-              <ErrorMessage $passwordError={showPassword !== undefined}>
-                {meta.error}
-              </ErrorMessage>
+              <ErrorMessage>{meta.error}</ErrorMessage>
             )}
-          </InputWrapper>
+          </div>
         )
       }}
     </Field>

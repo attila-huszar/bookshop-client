@@ -86,13 +86,16 @@ const cartSlice = createSlice({
     builder
       .addCase(fetchCartItems.pending, (state) => {
         state.cartIsLoading = true
+        state.cartError = null
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
         state.cartItems = action.payload
         state.cartIsLoading = false
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
-        state.cartError = action.error.message ?? 'Failed to fetch cart items'
+        if (action.payload !== 'stale-hydration') {
+          state.cartError = action.error.message ?? 'Failed to fetch cart items'
+        }
         state.cartIsLoading = false
       })
   },

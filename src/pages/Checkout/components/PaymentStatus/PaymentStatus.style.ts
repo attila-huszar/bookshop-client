@@ -34,7 +34,6 @@ export const Logo = styled.div`
   align-items: center;
   gap: 1rem;
   font-size: 1.5rem;
-  font-weight: 700;
 
   img {
     height: auto;
@@ -42,7 +41,7 @@ export const Logo = styled.div`
   }
 
   ${media.down('sm')`
-    font-size: 1.25rem;
+    font-size: 1rem;
 
     img {
       width: 3rem;

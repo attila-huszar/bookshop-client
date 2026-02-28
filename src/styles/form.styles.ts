@@ -91,20 +91,12 @@ export const Textarea = styled.textarea<FormTypes>`
   resize: vertical;
 `
 
-export const ErrorMessage = styled.div<{
-  $passwordError?: boolean
-}>`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: ${({ $passwordError }) => ($passwordError ? '3.25rem' : '0.5rem')};
-  padding: 0.5rem 0.75rem;
+export const ErrorMessage = styled.div`
+  padding: 0.25rem 0.75rem;
   color: rgb(120, 27, 0);
-  background-color: rgb(255, 245, 245);
-  border-radius: var(--border-radius);
   font-size: 0.875rem;
+  line-height: 1.25;
   user-select: none;
-  z-index: 1;
 `
 
 export const ButtonWrapper = styled.div`
@@ -121,8 +113,8 @@ export const ButtonWrapper = styled.div`
 
 export const PasswordEye = styled.button`
   position: absolute;
-  top: 50%;
   right: 1rem;
+  top: 50%;
   transform: translateY(-50%);
   display: flex;
   background: none;

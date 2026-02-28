@@ -63,7 +63,7 @@ export function PaymentStatus() {
     <StyledPaymentStatus>
       <Logo>
         <img src={logo} alt="logo" />
-        <h1>Book Shop</h1>
+        <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
         <Lottie animationData={animation} loop={isLooping} />
