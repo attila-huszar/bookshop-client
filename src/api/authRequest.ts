@@ -30,6 +30,7 @@ export const authRequest = baseRequest.extend({
 
           if (accessToken) {
             return authRequest(request, {
+              retry: options.retry,
               context: {
                 ...options.context,
                 authRetryAttempted: true,

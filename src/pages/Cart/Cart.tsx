@@ -137,12 +137,12 @@ export function Cart() {
       return
     }
 
-    setIsCheckoutTransitioning(true)
     const existingPaymentId = sessionStorageAdapter.get<string>(paymentIdKey)
 
     if (existingPaymentId) {
       void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
     } else {
+      setIsCheckoutTransitioning(true)
       const orderRequest = {
         items: cartItems.map((item) => ({
           id: item.id,
