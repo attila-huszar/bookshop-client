@@ -11,6 +11,7 @@ export const getPaymentIntent = async (
 ): Promise<PaymentIntentResponse> => {
   const response = await authRequest.get<PaymentIntentResponse>(
     `${PATH.payments}/${paymentId}`,
+    { credentials: 'include' },
   )
   return await response.json()
 }
@@ -20,6 +21,7 @@ export const postPaymentIntent = async (
 ): Promise<PaymentSession> => {
   const response = await authRequest.post<PaymentSession>(PATH.payments, {
     json: payment,
+    credentials: 'include',
   })
   return await response.json()
 }
@@ -29,6 +31,7 @@ export const deletePaymentIntent = async (
 ): Promise<PaymentIntentResponse> => {
   const response = await authRequest.delete<PaymentIntentResponse>(
     `${PATH.payments}/${paymentId}`,
+    { credentials: 'include' },
   )
   return await response.json()
 }
@@ -39,7 +42,7 @@ export const getOrderSyncStatus = async (
 ): Promise<{ status: number; data: OrderSyncResponse }> => {
   const response = await authRequest.get<OrderSyncResponse>(
     `${PATH.payments}/${paymentId}/order-sync`,
-    { signal, retry: 0 },
+    { credentials: 'include', signal, retry: 0 },
   )
   const data = await response.json()
   return { status: response.status, data }
