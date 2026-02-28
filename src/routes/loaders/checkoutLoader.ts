@@ -28,10 +28,6 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
       ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
       : `/${ROUTE.CHECKOUT}`
 
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(window.history.state, '', sanitizedPath)
-    }
-
     return replace(sanitizedPath)
   }
 

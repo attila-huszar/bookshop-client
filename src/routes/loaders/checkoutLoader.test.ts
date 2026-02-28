@@ -83,8 +83,6 @@ describe('checkoutLoader', () => {
   })
 
   it('sanitizes Stripe return params from URL', async () => {
-    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
-
     const result = await checkoutLoader({
       request: new Request(
         'http://localhost/checkout?payment_intent=pi_123&payment_intent_client_secret=secret_123&redirect_status=succeeded',
@@ -92,10 +90,6 @@ describe('checkoutLoader', () => {
     })
 
     expect(getResponseLocation(result)).toBe(
-      '/checkout?redirect_status=succeeded',
-    )
-    expect(replaceStateSpy).toHaveBeenCalled()
-    expect(replaceStateSpy.mock.calls.at(-1)?.[2]).toBe(
       '/checkout?redirect_status=succeeded',
     )
     expect(mockAuthLoader).not.toHaveBeenCalled()
