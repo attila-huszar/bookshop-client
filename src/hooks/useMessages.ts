@@ -1,76 +1,133 @@
-import { PaymentIntentStatus, StripeError } from '@/types'
+import type { OrderSyncIssueCode } from '@/types/Order'
+import type { PaymentIntentStatus, StripeError } from '@/types/Stripe'
 
-type UseMessagesReturn = {
-  getMessage: (status: PaymentIntentStatus) => string
-  getErrorMessage: (error: StripeError) => string
+const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
+  switch (status) {
+    case 'succeeded':
+      return '✅ Your payment was successful.'
+
+    case 'processing':
+      return '⏳ Your payment is processing.'
+
+    case 'requires_payment_method':
+      return '❌ We could not complete your payment. Please try another method.'
+
+    case 'requires_confirmation':
+      return '🧾 Please confirm your payment to continue.'
+
+    case 'requires_action':
+      return '🔐 Please complete the required verification.'
+
+    case 'requires_capture':
+      return '✅ Payment approved and awaiting capture.'
+
+    case 'canceled':
+      return '❌ Payment canceled.'
+  }
 }
 
-export function useMessages(): UseMessagesReturn {
+const getCheckoutSubmitMessages = () => ({
+  notReady:
+    'Payment form is still loading. Please wait a moment and try again.',
+  missingEmail:
+    'Email is required to continue checkout. Please enter your email and try again.',
+  submitFailed: 'We could not process your payment. Please try again.',
+})
+
+const getCheckoutStatusMessages = () => ({
+  retry: (attempt: number, maxRetries: number): string =>
+    `🔄 We are retrying payment status (${attempt}/${maxRetries})...`,
+  fetchFailed: (details: string): string =>
+    `⚠️ We could not retrieve payment status: ${details}. Please refresh this page. If the issue continues, contact support and include your payment ID.`,
+  timeout: (timeoutSeconds: number): string =>
+    `⏳ Payment confirmation is taking longer than expected (${timeoutSeconds}s). Please refresh shortly.`,
+  paymentReceived: '✅ Payment received. Thank you.',
+  paymentCanceled: '❌ Payment canceled. Your order was not finalized.',
+  verificationIssue:
+    '🔒 We could not verify your order status for this session. Please refresh.',
+  orderConfirmed: '✅ Order confirmed. Thank you for your purchase.',
+  intent: getPaymentIntentStatusLabel,
+  detail: getCheckoutOrderSyncDetailMessage,
+})
+
+const getCheckoutOrderSyncDetailMessage = (
+  orderSyncIssueCode: OrderSyncIssueCode | null,
+  syncedPaymentStatus: PaymentIntentStatus | null = null,
+  syncAttempt = 0,
+): string => {
+  const issueDetailByCode: Record<OrderSyncIssueCode, string> = {
+    timeout: '⏳ Finalization is taking longer than expected.',
+    retryable:
+      '🔄 Temporary issue while finalizing your order. Please refresh shortly.',
+    unauthorized: '',
+    unknown: '⚠️ We could not confirm your order status yet. Please refresh.',
+  }
+
+  if (syncedPaymentStatus === 'canceled') {
+    return '❌ No charge was captured for this payment.'
+  }
+
+  if (orderSyncIssueCode === null) {
+    if (syncAttempt < 3) return ''
+    if (syncAttempt >= 5) {
+      return '⏳ Finalizing is taking longer than usual, but your order is still processing. Thank you for your patience.'
+    }
+    return '🧾 We are finalizing your order.'
+  }
+
+  return issueDetailByCode[orderSyncIssueCode]
+}
+
+export type CheckoutSubmitText = ReturnType<typeof getCheckoutSubmitMessages>
+export type CheckoutStatusText = ReturnType<typeof getCheckoutStatusMessages>
+
+const getStripePaymentErrorMessage = (error: StripeError): string => {
+  switch (error.type) {
+    case 'card_error':
+      return (
+        error.message ??
+        'Your card was declined. Please check your card details or try a different payment method.'
+      )
+
+    case 'validation_error':
+      return (
+        error.message ?? 'Please check your payment information and try again.'
+      )
+
+    case 'rate_limit_error':
+      return 'Too many requests right now. Please wait a moment and try again.'
+
+    case 'api_connection_error':
+      return 'Unable to connect to payment services. Please check your internet connection.'
+
+    case 'api_error':
+      return 'Payment service is temporarily unavailable. Please try again in a moment.'
+
+    case 'authentication_error':
+      return 'Payment authentication failed. Please contact support if the issue continues.'
+
+    case 'invalid_request_error':
+      return 'Invalid payment request. Please refresh the page or contact support if the issue persists.'
+
+    case 'idempotency_error':
+      return 'This payment may already be processed. Please refresh and verify your order.'
+
+    default:
+      return error.message ?? 'An unexpected error occurred. Please try again.'
+  }
+}
+
+const getUnknownErrorDetails = (error: unknown): string => {
+  if (error instanceof Error && error.message) return error.message
+  return 'Unknown error'
+}
+
+export function useMessages() {
   // TODO: Add i18n
-
-  const getErrorMessage = (error: StripeError): string => {
-    switch (error.type) {
-      case 'card_error':
-        return (
-          error.message ??
-          'Your card was declined. Please check your card details or try a different payment method.'
-        )
-
-      case 'validation_error':
-        return (
-          error.message ??
-          'Please check your payment information and try again.'
-        )
-
-      case 'rate_limit_error':
-        return 'Too many requests. Please wait a moment and try again.'
-
-      case 'api_connection_error':
-        return 'Unable to connect to payment services. Please check your internet connection.'
-
-      case 'api_error':
-        return 'Payment system is temporarily unavailable. Please try again in a few moments.'
-
-      case 'authentication_error':
-        return 'Payment authentication failed. This issue has been logged. Please contact support.'
-
-      case 'invalid_request_error':
-        return 'Invalid payment request. Please refresh the page or contact support if the issue persists.'
-
-      case 'idempotency_error':
-        return 'This payment may have already been processed. Please refresh and verify your order.'
-
-      default:
-        return (
-          error.message ?? 'An unexpected error occurred. Please try again.'
-        )
-    }
+  return {
+    getCheckoutSubmitMessages,
+    getCheckoutStatusMessages,
+    getStripePaymentErrorMessage,
+    getUnknownErrorDetails,
   }
-
-  const getMessage = (status: PaymentIntentStatus): string => {
-    switch (status) {
-      case 'succeeded':
-        return 'Success! Your payment has been processed. A confirmation email will arrive shortly.'
-
-      case 'processing':
-        return "Your payment is currently processing. We'll update you as soon as it goes through."
-
-      case 'requires_payment_method':
-        return "Your payment didn't go through. Please verify your payment details or try a different method."
-
-      case 'requires_confirmation':
-        return 'We just need you to confirm the payment to finalize your order.'
-
-      case 'requires_action':
-        return 'Additional verification is needed. Please follow the prompts to authenticate your payment.'
-
-      case 'requires_capture':
-        return 'Payment approved! Your funds are reserved and will be charged once your order is ready to ship.'
-
-      case 'canceled':
-        return 'This payment was canceled. No charges were applied.'
-    }
-  }
-
-  return { getErrorMessage, getMessage }
 }

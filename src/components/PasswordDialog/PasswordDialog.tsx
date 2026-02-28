@@ -4,7 +4,7 @@ import { Form, Formik } from 'formik'
 import { postUserLogin } from '@/api'
 import { updateUserProfile } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
-import { useAppDispatch } from '@/hooks'
+import { useAppDispatch, useClickOutside } from '@/hooks'
 import { accountPasswordSchema } from '@/validation'
 import { passwordChangeInitialValues } from '@/constants'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
@@ -31,6 +31,8 @@ export function PasswordDialog({ email, ref }: Props) {
   const handleClose = () => {
     dialogRef.current?.close()
   }
+
+  useClickOutside(dialogRef, handleClose)
 
   const handleSubmit = async (
     values: {
@@ -78,6 +80,7 @@ export function PasswordDialog({ email, ref }: Props) {
       ref={dialogRef}
       role="dialog"
       aria-modal
+      onCancel={handleClose}
       aria-label="Change Password">
       <h2>Change Password</h2>
       <Formik

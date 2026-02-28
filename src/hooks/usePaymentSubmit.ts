@@ -4,35 +4,64 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
 import { baseURL } from '@/constants'
 import { handleError } from '@/errors/handleError'
+import type { StripeErrorType } from '@/types/Stripe'
 import { useMessages } from './useMessages'
+
+type SubmitMessage = {
+  text: string | null
+  type: 'neutral' | 'error'
+}
 
 type UsePaymentSubmitReturn = {
   handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
-  message: string | null
-  setMessage: (message: string | null) => void
+  retryPayment: () => Promise<void>
+  canRetry: boolean
+  message: SubmitMessage
+  setMessage: (message: SubmitMessage) => void
   isLoading: boolean
 }
 
-export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
+const retryableStripeErrorTypes: StripeErrorType[] = [
+  'api_connection_error',
+  'api_error',
+  'rate_limit_error',
+]
+
+const isRetryableStripeError = (errorType: StripeErrorType): boolean =>
+  retryableStripeErrorTypes.includes(errorType)
+
+export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
-  const { getErrorMessage } = useMessages()
-  const [message, setMessage] = useState<string | null>(null)
+  const { getCheckoutSubmitMessages, getStripePaymentErrorMessage } =
+    useMessages()
+  const [message, setMessage] = useState<SubmitMessage>({
+    text: null,
+    type: 'neutral',
+  })
+  const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (
-    event: SubmitEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    event.preventDefault()
-    setMessage(null)
+  const submitText = getCheckoutSubmitMessages()
+
+  const stopSubmitWithMessage = (text: string): void => {
+    setMessage({ text, type: 'error' })
+    setIsLoading(false)
+  }
+
+  const submitPayment = async (): Promise<void> => {
+    setMessage({ text: null, type: 'neutral' })
+    setCanRetry(false)
     setIsLoading(true)
 
     if (!stripe || !elements) {
-      setMessage(
-        'Payment system is not ready. Please wait a moment and try again.',
-      )
-      setIsLoading(false)
+      stopSubmitWithMessage(submitText.notReady)
+      return
+    }
+
+    if (!email) {
+      stopSubmitWithMessage(submitText.missingEmail)
       return
     }
 
@@ -40,25 +69,23 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          receipt_email: receiptEmail,
+          receipt_email: email,
+          payment_method_data: {
+            billing_details: { email },
+          },
           return_url: `${baseURL}/${ROUTE.CHECKOUT}`,
         },
         redirect: 'if_required',
       })
 
       if (error) {
-        setMessage(getErrorMessage(error))
+        setMessage({ text: getStripePaymentErrorMessage(error), type: 'error' })
+        setCanRetry(isRetryableStripeError(error.type))
         return
       }
 
       if (paymentIntent) {
         const searchParams = new URLSearchParams()
-        if (paymentIntent.client_secret) {
-          searchParams.set(
-            'payment_intent_client_secret',
-            paymentIntent.client_secret,
-          )
-        }
         searchParams.set('redirect_status', paymentIntent.status)
 
         void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
@@ -68,16 +95,31 @@ export function usePaymentSubmit(receiptEmail: string): UsePaymentSubmitReturn {
     } catch (error) {
       const formattedError = await handleError({
         error,
-        message: 'Failed to process payment. Please try again.',
+        message: submitText.submitFailed,
       })
-      setMessage(formattedError.message)
+      setMessage({ text: formattedError.message, type: 'error' })
+      setCanRetry(true)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleSubmit = async (
+    event: SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
+    event.preventDefault()
+    await submitPayment()
+  }
+
+  const retryPayment = async (): Promise<void> => {
+    if (isLoading) return
+    await submitPayment()
+  }
+
   return {
     handleSubmit,
+    retryPayment,
+    canRetry,
     message,
     setMessage,
     isLoading,

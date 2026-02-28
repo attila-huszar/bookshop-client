@@ -1,39 +1,65 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
-import { PaymentIntentStatus } from '@/types'
+import type { PaymentIntentStatus } from '@/types/Stripe'
 import { useMessages } from './useMessages'
 
-type PaymentStatus = {
+export type PaymentStatusMessageOverride =
+  | { type: 'retry'; attempt: number; maxRetries: number }
+  | { type: 'failure'; details: string }
+  | { type: 'timeout'; timeoutSeconds: number }
+
+export type PaymentStatusState = {
   intent: PaymentIntentStatus
-  message: string
+  messageOverride: PaymentStatusMessageOverride | null
 }
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 5000
-
-const getUnknownErrorMessage = (error: unknown): string => {
-  if (error instanceof Error && error.message) return error.message
-  return 'Unknown error'
-}
+const ABSOLUTE_TIMEOUT = 30000
 
 export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
-  const { getMessage } = useMessages()
-
-  const [status, setStatus] = useState<PaymentStatus>({
+  const { getUnknownErrorDetails } = useMessages()
+  const [status, setStatus] = useState<PaymentStatusState>({
     intent: 'processing',
-    message: getMessage('processing'),
+    messageOverride: null,
   })
 
   useEffect(() => {
     if (!stripe || !session) return
 
     const timeoutIds: ReturnType<typeof setTimeout>[] = []
+    let absoluteTimeoutId: ReturnType<typeof setTimeout> | null = null
+    let isSettled = false
+    let hasTimedOut = false
+
+    const isInactive = () => hasTimedOut || isSettled
+
+    const markSettled = () => {
+      isSettled = true
+      if (absoluteTimeoutId) {
+        clearTimeout(absoluteTimeoutId)
+      }
+    }
+
+    const scheduleRetry = (attempt: number) => {
+      const timeoutId = setTimeout(
+        () => {
+          void retrievePaymentStatus(attempt + 1)
+        },
+        RETRY_DELAY * 2 ** (attempt - 1),
+      )
+      timeoutIds.push(timeoutId)
+    }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
+      if (isInactive()) return
+
       try {
         const { paymentIntent, error } =
           await stripe.retrievePaymentIntent(session)
+
+        if (isInactive()) return
 
         if (error) {
           throw new Error(error.message ?? 'Failed to retrieve payment intent')
@@ -41,40 +67,63 @@ export function usePaymentStatus(session: string | null | undefined) {
 
         setStatus({
           intent: paymentIntent.status,
-          message: getMessage(paymentIntent.status),
+          messageOverride: null,
         })
 
-        if (paymentIntent.status === 'processing' && attempt < MAX_RETRIES) {
-          const timeoutId = setTimeout(() => {
-            void retrievePaymentStatus(attempt + 1)
-          }, RETRY_DELAY * attempt)
-          timeoutIds.push(timeoutId)
+        if (paymentIntent.status !== 'processing') {
+          markSettled()
+          return
+        }
+
+        if (attempt < MAX_RETRIES) {
+          scheduleRetry(attempt)
         }
       } catch (error) {
+        if (isInactive()) return
+
         if (attempt < MAX_RETRIES) {
           setStatus({
             intent: 'processing',
-            message: `Error retrieving payment status. Retrying... (${attempt}/${MAX_RETRIES})`,
+            messageOverride: {
+              type: 'retry',
+              attempt,
+              maxRetries: MAX_RETRIES,
+            },
           })
-          const timeoutId = setTimeout(() => {
-            void retrievePaymentStatus(attempt + 1)
-          }, RETRY_DELAY * attempt)
-          timeoutIds.push(timeoutId)
+          scheduleRetry(attempt)
         } else {
           setStatus({
             intent: 'requires_payment_method',
-            message: `Error retrieving payment intent after multiple attempts: ${getUnknownErrorMessage(error)}`,
+            messageOverride: {
+              type: 'failure',
+              details: getUnknownErrorDetails(error),
+            },
           })
+          markSettled()
         }
       }
     }
+
+    absoluteTimeoutId = setTimeout(() => {
+      if (isInactive()) return
+      hasTimedOut = true
+      setStatus({
+        intent: 'requires_payment_method',
+        messageOverride: {
+          type: 'timeout',
+          timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
+        },
+      })
+      markSettled()
+    }, ABSOLUTE_TIMEOUT)
+    timeoutIds.push(absoluteTimeoutId)
 
     void retrievePaymentStatus()
 
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [session, stripe, getMessage])
+  }, [getUnknownErrorDetails, session, stripe])
 
   return { status }
 }

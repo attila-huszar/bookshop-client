@@ -5,6 +5,7 @@ export const ROUTE = {
   LOGIN: 'login',
   REGISTER: 'register',
   ACCOUNT: 'account',
+  ORDERS: 'orders',
   CART: 'cart',
   CHECKOUT: 'checkout',
   VERIFICATION: 'verification',

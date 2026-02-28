@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router'
-import { WarningIcon } from '@/assets/svg'
+import { InfoIcon, WarningIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
 import { StyledAlert } from './Alert.style'
 
 type Props = {
+  type?: 'info' | 'warning'
   message?: string
   error?: string
   fullScreen?: boolean
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export function Alert({
+  type = 'warning',
   message = 'Something went wrong. Please try again later.',
   error,
   fullScreen = false,
@@ -29,7 +31,7 @@ export function Alert({
 
   return (
     <StyledAlert $fullScreen={fullScreen}>
-      <WarningIcon />
+      {type === 'warning' ? <WarningIcon /> : <InfoIcon />}
       <div>
         <p>{message}</p>
         {error && <p>{error}</p>}

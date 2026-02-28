@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import {
   addAuthor,
   addBook,
+  addUser,
   deleteAuthors,
   deleteBooks,
   deleteOrders,
@@ -12,6 +13,8 @@ import {
   listUsers,
   updateAuthor,
   updateBook,
+  updateOrder,
+  updateUser,
 } from '@/store/thunks/cms'
 import type { CMSState } from '@/types'
 
@@ -132,6 +135,19 @@ const cmsSlice = createSlice({
         state.authorsError = action.error.message ?? 'Failed to add author'
       })
 
+      .addCase(addUser.pending, (state) => {
+        state.usersLoading = true
+        state.usersError = null
+      })
+      .addCase(addUser.fulfilled, (state, action) => {
+        state.users.push(action.payload)
+        state.usersLoading = false
+      })
+      .addCase(addUser.rejected, (state, action) => {
+        state.usersLoading = false
+        state.usersError = action.error.message ?? 'Failed to add user'
+      })
+
       .addCase(deleteAuthors.pending, (state) => {
         state.authorsLoading = true
         state.authorsError = null
@@ -211,6 +227,42 @@ const cmsSlice = createSlice({
       .addCase(updateAuthor.rejected, (state, action) => {
         state.authorsLoading = false
         state.authorsError = action.error.message ?? 'Failed to update author'
+      })
+
+      .addCase(updateOrder.pending, (state) => {
+        state.ordersLoading = true
+        state.ordersError = null
+      })
+      .addCase(updateOrder.fulfilled, (state, action) => {
+        const index = state.orders.findIndex(
+          (order) => order.id === action.payload.id,
+        )
+        if (index !== -1) {
+          state.orders[index] = action.payload
+        }
+        state.ordersLoading = false
+      })
+      .addCase(updateOrder.rejected, (state, action) => {
+        state.ordersLoading = false
+        state.ordersError = action.error.message ?? 'Failed to update order'
+      })
+
+      .addCase(updateUser.pending, (state) => {
+        state.usersLoading = true
+        state.usersError = null
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        const index = state.users.findIndex(
+          (user) => user.id === action.payload.id,
+        )
+        if (index !== -1) {
+          state.users[index] = action.payload
+        }
+        state.usersLoading = false
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.usersLoading = false
+        state.usersError = action.error.message ?? 'Failed to update user'
       })
   },
 })

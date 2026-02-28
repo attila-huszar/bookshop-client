@@ -14,6 +14,7 @@ export const PATH = {
   books: P.books,
   authors: P.authors,
   news: P.news,
+  orders: P.orders,
   searchOptions: P.searchOptions,
   payments: P.payments,
   users: {

@@ -1,2 +1,2 @@
 export const cartKey = 'cart'
-export const paymentSessionKey = 'paymentSession'
+export const paymentIdKey = 'paymentId'

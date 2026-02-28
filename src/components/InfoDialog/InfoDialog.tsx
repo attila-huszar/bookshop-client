@@ -1,5 +1,14 @@
+import { RefObject } from 'react'
 import { Alert, Button, Loading } from '@/components'
 import { StyledInfoDialog } from './InfoDialog.style'
+
+type InfoDialogProps = {
+  dialogRef: RefObject<HTMLDialogElement | null>
+  message: string
+  error?: string | null
+  reloadButton?: boolean
+  backButton?: boolean
+}
 
 export function InfoDialog({
   dialogRef,
@@ -7,13 +16,7 @@ export function InfoDialog({
   error,
   reloadButton,
   backButton,
-}: {
-  dialogRef?: React.RefObject<HTMLDialogElement | null>
-  message: string
-  error?: string | null
-  reloadButton?: boolean
-  backButton?: boolean
-}) {
+}: InfoDialogProps) {
   return (
     <StyledInfoDialog ref={dialogRef}>
       {error ? (

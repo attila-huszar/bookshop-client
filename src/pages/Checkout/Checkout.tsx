@@ -9,7 +9,7 @@ import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { Loading } from '@/components/Loading/Loading'
 import { useAppSelector } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
-import { paymentSessionKey, stripeKey } from '@/constants'
+import { paymentIdKey, stripeKey } from '@/constants'
 import { handleError } from '@/errors/handleError'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
@@ -26,7 +26,7 @@ const stripePromise = loadStripe(stripeKey)
 function StripeErrorFallback({ error }: FallbackProps) {
   useEffect(() => {
     void handleError({ error })
-    sessionStorageAdapter.remove(paymentSessionKey)
+    sessionStorageAdapter.remove(paymentIdKey)
     toast('No Checkout Session found. Redirecting to home page...', {
       icon: '🔄',
       id: 'no-checkout-session',
@@ -43,9 +43,7 @@ export function Checkout() {
   const ref = useRef<HTMLDialogElement>(null)
 
   const searchParams = new URLSearchParams(location.search)
-  const isStripeReturn =
-    searchParams.has('payment_intent_client_secret') ||
-    searchParams.has('redirect_status')
+  const isStripeReturn = searchParams.has('redirect_status')
 
   useEffect(() => {
     if (paymentIsLoading || paymentRetrieveError) {
@@ -78,7 +76,7 @@ export function Checkout() {
   }
 
   const options: StripeElementsOptions = {
-    clientSecret: payment?.session,
+    clientSecret: payment?.paymentToken,
     appearance: { theme: 'stripe', variables: {} },
     loader: 'auto',
   }

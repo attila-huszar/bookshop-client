@@ -3,15 +3,9 @@ import { toast } from 'react-hot-toast'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { deleteAuthors, deleteBooks, deleteOrders, deleteUsers } from '@/store'
 import { Button, ConfirmDialog, ExtraSpace } from '@/components'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
 import { SelectContext } from '@/types'
-import {
-  Author,
-  BookWithAuthorId,
-  Order,
-  User,
-  UserWithMetadata,
-} from '@/types'
+import { Author, BookWithAuthorId, Order, UserWithMetadata } from '@/types'
 import { LogoutIcon } from '@/assets/svg'
 import {
   AuthorEditForm,
@@ -36,6 +30,12 @@ const TABS = [
 
 export type TabValue = (typeof TABS)[number]['value']
 
+type EditedItem = Author | BookWithAuthorId | Order | UserWithMetadata
+
+const getEditedItem = <T extends EditedItem>(
+  item: EditedItem | null,
+): T | null => item as T | null
+
 const isValidTab = (tab: string): tab is keyof SelectContext =>
   TABS.some((t) => t.value === tab)
 
@@ -52,17 +52,15 @@ export const CMS = () => {
     authors: [],
     users: [],
   })
-  const [editedItem, setEditedItem] = useState<
-    BookWithAuthorId | Author | Order | User | null
-  >(null)
-  const editRef = useRef<HTMLDialogElement>(null)
+  const [editedItem, setEditedItem] = useState<EditedItem | null>(null)
+  const editDialogRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     if (isEditDialogOpen) {
-      editRef.current?.showModal()
+      editDialogRef.current?.showModal()
     } else {
-      editRef.current?.close()
+      editDialogRef.current?.close()
     }
   }, [isEditDialogOpen])
 
@@ -83,6 +81,13 @@ export const CMS = () => {
     }),
     [selectedItems],
   )
+
+  const handleDialogClose = () => {
+    setIsEditDialogOpen(false)
+    setEditedItem(null)
+  }
+
+  useClickOutside(editDialogRef, handleDialogClose)
 
   const handleDeleteClick = () => {
     if (!selectedItems[activeTab].length) {
@@ -115,9 +120,39 @@ export const CMS = () => {
     setConfirmDialogOpen(false)
   }
 
-  const handleDialogClose = () => {
-    setIsEditDialogOpen(false)
-    setEditedItem(null)
+  const renderEditForm = () => {
+    switch (activeTab) {
+      case 'books':
+        return (
+          <BookEditForm
+            editedItem={getEditedItem<BookWithAuthorId>(editedItem)}
+            onClose={handleDialogClose}
+          />
+        )
+      case 'authors':
+        return (
+          <AuthorEditForm
+            editedItem={getEditedItem<Author>(editedItem)}
+            onClose={handleDialogClose}
+          />
+        )
+      case 'orders':
+        return (
+          <OrderEditForm
+            editedItem={getEditedItem<Order>(editedItem)}
+            onClose={handleDialogClose}
+          />
+        )
+      case 'users':
+        return (
+          <UserEditForm
+            editedItem={getEditedItem<UserWithMetadata>(editedItem)}
+            onClose={handleDialogClose}
+          />
+        )
+      default:
+        return null
+    }
   }
 
   return (
@@ -171,33 +206,8 @@ export const CMS = () => {
         />
       </MainContainer>
       {isEditDialogOpen && (
-        <StyledEditDialog
-          ref={editRef}
-          onCancel={() => setIsEditDialogOpen(false)}>
-          {activeTab === 'books' && (
-            <BookEditForm
-              editedItem={editedItem as BookWithAuthorId | null}
-              onClose={handleDialogClose}
-            />
-          )}
-          {activeTab === 'authors' && (
-            <AuthorEditForm
-              editedItem={editedItem as Author | null}
-              onClose={handleDialogClose}
-            />
-          )}
-          {activeTab === 'orders' && (
-            <OrderEditForm
-              editedItem={editedItem as Order | null}
-              onClose={handleDialogClose}
-            />
-          )}
-          {activeTab === 'users' && (
-            <UserEditForm
-              editedItem={editedItem as UserWithMetadata | null}
-              onClose={handleDialogClose}
-            />
-          )}
+        <StyledEditDialog ref={editDialogRef} onCancel={handleDialogClose}>
+          {renderEditForm()}
         </StyledEditDialog>
       )}
       <ConfirmDialog

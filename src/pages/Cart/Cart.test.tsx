@@ -8,7 +8,7 @@ import { ROUTE } from '@/routes'
 import { paymentCreate } from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
-import { paymentSessionKey } from '@/constants'
+import { paymentIdKey } from '@/constants'
 import type { Cart as CartType } from '@/types'
 import { Cart } from './Cart'
 
@@ -62,7 +62,7 @@ describe('Cart component', () => {
   ]
 
   beforeEach(() => {
-    sessionStorageAdapter.remove(paymentSessionKey)
+    sessionStorageAdapter.remove(paymentIdKey)
 
     vi.mocked(useCart).mockReturnValue({
       cartItems: mockCartItems,
@@ -82,6 +82,9 @@ describe('Cart component', () => {
       return selector(mockState as Parameters<typeof selector>[0])
     })
 
+    mockDispatch.mockImplementation(() => ({
+      unwrap: vi.fn().mockResolvedValue(undefined),
+    }))
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
 
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
@@ -226,7 +229,11 @@ describe('Cart component', () => {
         cart: mockCartState,
         payment: {
           ...mockPaymentState,
-          payment: { session: 'session_123', amount: 4200 },
+          payment: {
+            paymentId: 'pi_123',
+            paymentToken: 'session_123',
+            amount: 4200,
+          },
         },
         user: mockUserState,
       }

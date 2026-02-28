@@ -1,6 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentSessionKey } from '@/constants'
+import { cartKey, paymentIdKey } from '@/constants'
 import { MinimalCart } from '@/types'
 import {
   cartAdd,
@@ -10,7 +10,7 @@ import {
   cartQuantitySet,
   cartRemove,
 } from './slices/cart'
-import { paymentClear } from './slices/payment'
+import { paymentSessionReset, paymentStateReset } from './slices/payment'
 import { AppDispatch, RootState } from './store'
 import { paymentCreate } from './thunks/payment'
 
@@ -54,13 +54,13 @@ const paymentToSessionStorageTyped =
 paymentToSessionStorageTyped({
   actionCreator: paymentCreate.fulfilled,
   effect: (action) => {
-    sessionStorageAdapter.set(paymentSessionKey, action.payload.session)
+    sessionStorageAdapter.set(paymentIdKey, action.payload.paymentId)
   },
 })
 
 paymentToSessionStorageTyped({
-  matcher: isAnyOf(paymentClear),
+  matcher: isAnyOf(paymentStateReset, paymentSessionReset),
   effect: () => {
-    sessionStorageAdapter.remove(paymentSessionKey)
+    sessionStorageAdapter.remove(paymentIdKey)
   },
 })

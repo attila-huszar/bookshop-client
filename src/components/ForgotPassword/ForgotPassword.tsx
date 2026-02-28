@@ -5,6 +5,7 @@ import { postPasswordReset } from '@/api'
 import { Button } from '@/components/Button/Button'
 import { IconButton } from '@/components/Button/IconButton'
 import { FormikField } from '@/components/FormikField/FormikField'
+import { useClickOutside } from '@/hooks'
 import { forgotPasswordSchema } from '@/validation'
 import { handleError } from '@/errors/handleError'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
@@ -29,6 +30,8 @@ export function ForgotPassword({ ref }: Props) {
   const handleClose = () => {
     forgotPassRef.current?.close()
   }
+
+  useClickOutside(forgotPassRef, handleClose)
 
   const handleSubmit = async (
     values: {
@@ -56,7 +59,7 @@ export function ForgotPassword({ ref }: Props) {
   }
 
   return (
-    <StyledForgotPassword ref={forgotPassRef}>
+    <StyledForgotPassword ref={forgotPassRef} onCancel={handleClose}>
       <h2>Forgotten Password</h2>
       <p>
         Enter your email address and we'll send you a link to reset your

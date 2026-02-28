@@ -1,11 +1,6 @@
 import { fetchAuthTokens, store } from '@/store'
 import { baseRequest } from './baseRequest'
 
-const httpError = {
-  Unauthorized: 401,
-  TooManyRequests: 429,
-}
-
 let refreshPromise: Promise<unknown> | null = null
 
 export const authRequest = baseRequest.extend({
@@ -20,19 +15,28 @@ export const authRequest = baseRequest.extend({
       },
     ],
     afterResponse: [
-      async (request, _options, response) => {
-        if (response.status === httpError.Unauthorized) {
-          refreshPromise ??= store.dispatch(fetchAuthTokens())
-          await refreshPromise
-          refreshPromise = null
+      async (request, options, response) => {
+        const authRetryAttempted = options.context.authRetryAttempted === true
+
+        if (response.status === 401 && !authRetryAttempted) {
+          try {
+            refreshPromise ??= store.dispatch(fetchAuthTokens())
+            await refreshPromise
+          } finally {
+            refreshPromise = null
+          }
 
           const accessToken = store.getState().user.accessToken
 
           if (accessToken) {
-            return authRequest(request)
+            return authRequest(request, {
+              retry: options.retry,
+              context: {
+                ...options.context,
+                authRetryAttempted: true,
+              },
+            })
           }
-        } else if (response.status === httpError.TooManyRequests) {
-          throw new Error('Request aborted due to too many requests')
         }
 
         return response

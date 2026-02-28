@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from './media.breakpoints'
 
 export const StyledDialog = styled.dialog`
   top: 50%;

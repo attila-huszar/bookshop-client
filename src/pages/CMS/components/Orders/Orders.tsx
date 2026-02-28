@@ -2,7 +2,7 @@ import { useOutletContext } from 'react-router'
 import { cmsOrdersSelector } from '@/store'
 import { Alert, IconButton } from '@/components'
 import { useAppSelector } from '@/hooks'
-import { formatDate, formatPaymentStatus } from '@/helpers'
+import { formatDate, formatPaymentStatus, getPaidAtStatus } from '@/helpers'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
 import { StyledTable } from '../../styles/CMS.style'
@@ -22,7 +22,7 @@ export const Orders = () => {
   }
 
   if (!ordersLoading && orders.length === 0) {
-    return <Alert message="No orders found" />
+    return <Alert type="info" message="No orders found" />
   }
 
   const allSelected =
@@ -113,7 +113,7 @@ export const Orders = () => {
                   {formatDate(order.createdAt)}
                 </td>
                 <td style={{ fontSize: '0.75rem' }}>
-                  {order.paidAt ? formatDate(order.paidAt) : '—'}
+                  {getPaidAtStatus(order)}
                 </td>
                 <td style={{ padding: 0 }}>
                   <IconButton

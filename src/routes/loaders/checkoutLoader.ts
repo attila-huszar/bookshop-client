@@ -1,28 +1,64 @@
-import { redirect } from 'react-router'
+import { replace } from 'react-router'
 import { ROUTE } from '@/routes'
 import { paymentRetrieve, store } from '@/store'
-import { getPaymentId, sessionStorageAdapter } from '@/helpers'
-import { paymentSessionKey } from '@/constants'
+import { sessionStorageAdapter } from '@/helpers'
+import { paymentIdKey } from '@/constants'
+import { PaymentIntentStatus } from '@/types'
 import { authLoader } from './authLoader'
 
-export const checkoutLoader = async () => {
-  await authLoader()
+const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
 
-  const paymentSession = sessionStorageAdapter.get<string>(paymentSessionKey)
-  if (!paymentSession) {
-    return redirect(ROUTE.HOME)
+export const checkoutLoader = async ({ request }: { request: Request }) => {
+  const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
+  if (!paymentId) {
+    return replace(ROUTE.HOME)
   }
+  const requestURL = new URL(request.url)
+  const hasPaymentIntent = requestURL.searchParams.has('payment_intent')
+  const hasClientSecret = requestURL.searchParams.has(
+    'payment_intent_client_secret',
+  )
+
+  if (hasPaymentIntent || hasClientSecret) {
+    requestURL.searchParams.delete('payment_intent')
+    requestURL.searchParams.delete('payment_intent_client_secret')
+
+    const sanitizedSearch = requestURL.searchParams.toString()
+    const sanitizedPath = sanitizedSearch
+      ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
+      : `/${ROUTE.CHECKOUT}`
+
+    return replace(sanitizedPath)
+  }
+
+  const isStripeReturn = requestURL.searchParams.has('redirect_status')
+
+  await authLoader()
 
   const state = store.getState()
   const currentPayment = state.payment?.payment
-  if (currentPayment?.session) return null
+  const shouldRetrievePayment = !currentPayment?.paymentToken || !isStripeReturn
+  if (!shouldRetrievePayment) return null
 
   try {
-    const paymentId = getPaymentId(paymentSession)
-    await store.dispatch(paymentRetrieve(paymentId)).unwrap()
+    const retrievedPayment = await store
+      .dispatch(
+        paymentRetrieve({
+          paymentId,
+          allowSucceeded: true,
+        }),
+      )
+      .unwrap()
+
+    if (!isStripeReturn && successStatuses.includes(retrievedPayment.status)) {
+      requestURL.searchParams.set('redirect_status', retrievedPayment.status)
+
+      return replace(`/${ROUTE.CHECKOUT}?${requestURL.searchParams.toString()}`)
+    }
+
     return null
   } catch {
-    sessionStorageAdapter.remove(paymentSessionKey)
-    return redirect(ROUTE.HOME)
+    sessionStorageAdapter.remove(paymentIdKey)
+    return replace(ROUTE.HOME)
   }
 }

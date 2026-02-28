@@ -1,41 +1,63 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import Lottie from 'lottie-react'
-import { cartClear, paymentClear, paymentSelector } from '@/store'
-import { useAppDispatch, useAppSelector, usePaymentStatus } from '@/hooks'
-import { PaymentIntentStatus } from '@/types'
-import checkmarkAnim from '@/assets/animations/checkmark.json'
-import clockAnim from '@/assets/animations/clock_loop.json'
-import exclamationAnim from '@/assets/animations/exclamation.json'
+import {
+  cartClear,
+  orderSyncAfterWebhook,
+  paymentSelector,
+  paymentSessionReset,
+} from '@/store'
+import {
+  useAppDispatch,
+  useAppSelector,
+  useMessages,
+  usePaymentStatus,
+} from '@/hooks'
 import logo from '@/assets/image/logo.png'
+import { getPaymentStatusView, successStatuses } from './PaymentStatus.helpers'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
-
-const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
-const warningStatuses: PaymentIntentStatus[] = [
-  'requires_payment_method',
-  'requires_confirmation',
-  'requires_action',
-  'canceled',
-]
-
-const getAnimation = (status: PaymentIntentStatus) => {
-  if (successStatuses.includes(status)) return checkmarkAnim
-  if (warningStatuses.includes(status)) return exclamationAnim
-  return clockAnim
-}
 
 export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { payment } = useAppSelector(paymentSelector)
-  const { status } = usePaymentStatus(payment?.session)
+  const { getCheckoutStatusMessages } = useMessages()
+  const { payment, orderSyncAttempt, orderSyncIssueCode, orderSync } =
+    useAppSelector(paymentSelector)
+  const { status } = usePaymentStatus(payment?.paymentToken)
+  const lastSyncedPaymentId = useRef<string | null>(null)
+
+  const paymentId = payment?.paymentId
+  const isStripeSuccess = successStatuses.includes(status.intent)
+  const syncedPaymentStatus = orderSync?.paymentStatus ?? null
+  const isOrderConfirmed = Boolean(
+    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
+  )
+
+  const statusText = getCheckoutStatusMessages()
 
   useEffect(() => {
-    if (successStatuses.includes(status.intent)) {
+    if (!paymentId || !isStripeSuccess || isOrderConfirmed) return
+    if (lastSyncedPaymentId.current === paymentId) return
+
+    lastSyncedPaymentId.current = paymentId
+    void dispatch(orderSyncAfterWebhook({ paymentId }))
+  }, [dispatch, isStripeSuccess, isOrderConfirmed, paymentId])
+
+  useEffect(() => {
+    if (isOrderConfirmed) {
       dispatch(cartClear())
-      dispatch(paymentClear())
+      dispatch(paymentSessionReset())
     }
-  }, [dispatch, status.intent])
+  }, [dispatch, isOrderConfirmed])
+
+  const { animation, isLooping, primaryLine, secondaryLine } =
+    getPaymentStatusView({
+      status,
+      orderSyncIssueCode,
+      syncedPaymentStatus,
+      orderSyncAttempt,
+      statusText,
+    })
 
   return (
     <StyledPaymentStatus>
@@ -44,9 +66,10 @@ export function PaymentStatus() {
         <h1>Book Shop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie animationData={getAnimation(status.intent)} loop={false} />
+        <Lottie animationData={animation} loop={isLooping} />
       </LottieWrapper>
-      <p>{status.message}</p>
+      <p>{primaryLine}</p>
+      {secondaryLine && <p>{secondaryLine}</p>}
       <button onClick={() => void navigate('/')} type="button">
         Back to Shop
       </button>

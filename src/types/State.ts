@@ -1,15 +1,15 @@
+import type { Author } from './Author'
+import type { Book, BookWithAuthorId } from './Book'
+import type { Cart } from './Cart'
+import type { Filters } from './Filters'
+import type { News } from './News'
 import type {
-  Author,
-  Book,
-  BookWithAuthorId,
-  Cart,
-  Filters,
-  News,
   Order,
+  OrderSyncIssueCode,
+  OrderSyncResponse,
   PaymentSession,
-  User,
-  UserWithMetadata,
-} from './'
+} from './Order'
+import type { User, UserWithMetadata } from './User'
 
 export type BookState = {
   books: Book[]
@@ -57,12 +57,23 @@ export type CartState = {
   cartError: string | null
 }
 
+export type OrdersState = {
+  orders: Order[]
+  ordersIsLoading: boolean
+  ordersError: string | null
+}
+
 export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean
   paymentCreateError: string | null
   paymentRetrieveError: string | null
   paymentCancelError: string | null
+  orderSyncIsLoading: boolean
+  orderSyncAttempt: number
+  orderSyncError: string | null
+  orderSyncIssueCode: OrderSyncIssueCode | null
+  orderSync: OrderSyncResponse | null
 }
 
 export type CMSState = {

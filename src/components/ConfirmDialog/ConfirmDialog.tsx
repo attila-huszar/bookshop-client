@@ -1,4 +1,5 @@
 import { FC, useEffect } from 'react'
+import { useClickOutside } from '@/hooks'
 import { Button } from '../Button/Button'
 import { StyledConfirmDialog } from './ConfirmDialog.style'
 
@@ -28,6 +29,8 @@ export const ConfirmDialog: FC<Props> = ({
       ref.current?.close()
     }
   }, [isDialogOpen, ref])
+
+  useClickOutside(ref, () => setIsDialogOpen(false))
 
   if (!isDialogOpen) return null
 

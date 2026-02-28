@@ -58,10 +58,14 @@ const userSlice = createSlice({
 
       .addCase(fetchAuthTokens.fulfilled, (state, action) => {
         state.accessToken = action.payload.accessToken
+        if (!action.payload.accessToken) {
+          state.userData = null
+        }
         state.tokenError = null
       })
       .addCase(fetchAuthTokens.rejected, (state, action) => {
         state.accessToken = null
+        state.userData = null
         state.tokenError = action.error.message ?? 'Failed to fetch auth tokens'
       })
 
