@@ -7,6 +7,7 @@ import { Button } from '@/components/Button/Button'
 import { Price } from '@/components/Price/Price'
 import { Recommended } from '@/components/Recommended/Recommended'
 import { useAppSelector, useBreakpoints, useCart } from '@/hooks'
+import { scrollToTop } from '@/helpers'
 import type { Book } from '@/types'
 import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import {
@@ -33,7 +34,7 @@ export function Product() {
   const isBookInCart = cartItems.some((item) => item.id === book?.id)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
   }, [])
 
   const handleCartAction = (book: Book) => {

@@ -2,13 +2,14 @@ import { useEffect } from 'react'
 import { booksSelector } from '@/store'
 import { Card, SwiperComponent } from '@/components'
 import { useAppSelector } from '@/hooks'
+import { scrollToTop } from '@/helpers'
 import { StyledRecommended } from './Recommended.style'
 
 export function Recommended() {
   const { booksRecommended } = useAppSelector(booksSelector)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
   }, [])
 
   return (

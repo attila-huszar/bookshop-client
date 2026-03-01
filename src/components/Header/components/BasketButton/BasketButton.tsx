@@ -3,9 +3,9 @@ import { ROUTE } from '@/routes'
 import { cartSelector, paymentSelector } from '@/store'
 import { Button, IconButton } from '@/components'
 import { useAppSelector, useBreakpoints } from '@/hooks'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdKey } from '@/constants'
-import { MinimalCart } from '@/types'
+import { sessionStorageAdapter } from '@/helpers'
+import { paymentIdKey } from '@/constants'
+import type { Cart } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
@@ -18,15 +18,10 @@ export function BasketButton() {
   const storedPayment = sessionStorageAdapter.get(paymentIdKey)
   const isCheckingOut = !!(payment ?? storedPayment)
 
-  const calculateCartQuantity = (items: MinimalCart[] | null): number =>
-    items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
+  const calculateCartQuantity = (items: Cart[]): number =>
+    items.reduce((sum, item) => sum + item.quantity, 0)
 
-  const storedCart = localStorageAdapter.get<MinimalCart[]>(cartKey)
-  const safeStoredCart = Array.isArray(storedCart) ? storedCart : null
-
-  const cartCount = calculateCartQuantity(
-    cartItems.length ? cartItems : safeStoredCart,
-  )
+  const cartCount = calculateCartQuantity(cartItems)
 
   const handleCartClick = () => {
     void navigate(`/${ROUTE.CART}`)

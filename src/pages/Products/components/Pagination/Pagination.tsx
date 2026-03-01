@@ -7,6 +7,7 @@ import {
 } from '@/store'
 import { IconButton } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
+import { scrollToTop } from '@/helpers'
 import { ChevronLeftEndIcon, ChevronLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
@@ -60,6 +61,7 @@ export function Pagination() {
           if (booksCurrentPage > 1) {
             dispatch(setBooksCurrentPage(1))
             void dispatch(fetchBooks(booksFilters.active))
+            scrollToTop()
           }
         }}
         icon={<ChevronLeftEndIcon />}
@@ -72,6 +74,7 @@ export function Pagination() {
           if (booksCurrentPage > 1) {
             dispatch(decrementBooksCurrentPage())
             void dispatch(fetchBooks(booksFilters.active))
+            scrollToTop()
           }
         }}
         icon={<ChevronLeftIcon />}
@@ -91,6 +94,7 @@ export function Pagination() {
             onClick={() => {
               dispatch(setBooksCurrentPage(page))
               void dispatch(fetchBooks(booksFilters.active))
+              scrollToTop()
             }}
             disabled={booksCurrentPage === page}
             aria-label={`Page ${page}`}>
@@ -103,6 +107,7 @@ export function Pagination() {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(incrementBooksCurrentPage())
             void dispatch(fetchBooks(booksFilters.active))
+            scrollToTop()
           }
         }}
         icon={<ChevronLeftIcon />}
@@ -116,6 +121,7 @@ export function Pagination() {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(setBooksCurrentPage(Math.ceil(booksTotal / booksPerPage)))
             void dispatch(fetchBooks(booksFilters.active))
+            scrollToTop()
           }
         }}
         icon={<ChevronLeftEndIcon />}

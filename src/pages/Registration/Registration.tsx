@@ -10,6 +10,7 @@ import { IconButton } from '@/components/Button/IconButton'
 import { CountrySelect } from '@/components/CountrySelect/CountrySelect'
 import { FormikField } from '@/components/FormikField/FormikField'
 import { useAppDispatch } from '@/hooks'
+import { scrollToTop } from '@/helpers'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
@@ -23,7 +24,7 @@ export function Registration() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
   }, [])
 
   useEffect(() => {

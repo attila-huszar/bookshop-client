@@ -1,6 +1,7 @@
 export * from './enforceMinMax'
 export * from './generateFilterArray'
 export * from './getCookie'
+export * from './scrollToTop'
 export * from './splitFullName'
 export * from './checkout'
 export * from './browserStorage'

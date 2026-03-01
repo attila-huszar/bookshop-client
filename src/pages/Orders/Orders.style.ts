@@ -2,15 +2,15 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledOrders = styled.main`
-  padding: 0 6.25rem 4rem;
+  padding-inline: 6.25rem;
 
   > h2 {
     margin-bottom: 2rem;
-    text-align: center;
   }
 
   ${media.down('sm')`
-    padding: 0.5rem 2rem;
+     padding-inline: 1.25rem;
+     padding-top: 0.5rem;
 
     > h2 {
       margin-bottom: 1.25rem;
@@ -30,6 +30,10 @@ export const OrderCard = styled.article`
   border-radius: 10px;
   background-color: var(--pearly-white);
   padding: 1rem 1.25rem;
+
+  ${media.down('sm')`
+     padding: 0.75rem;
+  `}
 `
 
 export const OrderHeader = styled.header`

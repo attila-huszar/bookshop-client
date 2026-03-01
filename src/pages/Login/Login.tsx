@@ -9,6 +9,7 @@ import { IconButton } from '@/components/Button/IconButton'
 import { ForgotPassword } from '@/components/ForgotPassword/ForgotPassword'
 import { FormikField } from '@/components/FormikField/FormikField'
 import { useAppDispatch } from '@/hooks'
+import { scrollToTop } from '@/helpers'
 import { loginSchema } from '@/validation'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
@@ -22,7 +23,7 @@ export function Login() {
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
   }, [])
 
   const handleSubmit = async (values: LoginRequest) => {

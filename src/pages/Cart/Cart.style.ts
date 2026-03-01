@@ -8,11 +8,7 @@ export const StyledCart = styled.main`
   padding-inline: 6.25rem;
 
   ${media.down('sm')`
-    padding-inline: 1.5rem;
-  `}
-
-  ${media.down('sm')`
-    padding-inline: 1rem;
+    padding-inline: 1.25rem;
   `}
 `
 
@@ -221,11 +217,22 @@ export const ButtonWrapper = styled.div`
   display: flex;
   justify-content: end;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 1.25rem;
 
   ${media.down('sm')`
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto;
     gap: 0.75rem;
+    width: 100%;
+
+    > *:first-child {
+      width: 100%;
+    }
+
+    > *:last-child {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
   `}
 `
 

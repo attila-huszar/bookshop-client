@@ -15,13 +15,8 @@ import { IconButton } from '@/components/Button/IconButton'
 import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { Loading } from '@/components/Loading/Loading'
 import { Price } from '@/components/Price/Price'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useBreakpoints,
-  useCart,
-} from '@/hooks'
-import { enforceMinMax, sessionStorageAdapter } from '@/helpers'
+import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
+import { enforceMinMax, scrollToTop, sessionStorageAdapter } from '@/helpers'
 import {
   defaultCurrencySymbol,
   maxItemQuantity,
@@ -66,7 +61,6 @@ export function Cart() {
   const { cartIsLoading, cartError } = useAppSelector(cartSelector)
   const { payment, paymentIsLoading, paymentCreateError } =
     useAppSelector(paymentSelector)
-  const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
   const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
@@ -95,7 +89,7 @@ export function Cart() {
   }, [paymentCreateError])
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    scrollToTop()
   }, [])
 
   const price = cartItems.reduce(
@@ -286,12 +280,7 @@ export function Cart() {
           </div>
         </TotalPrice>
         <ButtonWrapper>
-          <Button
-            onClick={navigateToBooks}
-            disabled={isCheckoutBusy}
-            $size={isMobile ? 'sm' : 'lg'}
-            $textSize={isMobile ? 'sm' : 'lg'}
-            $inverted>
+          <Button onClick={navigateToBooks} disabled={isCheckoutBusy} $inverted>
             Back to Shop
           </Button>
           <IconButton
@@ -299,7 +288,6 @@ export function Cart() {
             onClick={handleCartClear}
             disabled={isCheckoutBusy}
             title="Reset Cart"
-            $size={isMobile ? 'sm' : 'lg'}
             $color="var(--mid-grey)"
             $outline
           />
@@ -307,8 +295,6 @@ export function Cart() {
             onClick={handleCheckout}
             disabled={isCheckoutBusy}
             $icon={isCheckoutBusy ? <SpinnerIcon /> : <CartIcon />}
-            $size={isMobile ? 'sm' : 'lg'}
-            $textSize={isMobile ? 'sm' : 'lg'}
             $shadow>
             {isCheckoutBusy ? 'Checking out' : 'Checkout'}
           </Button>
