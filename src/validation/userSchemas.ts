@@ -11,10 +11,9 @@ export const passwordSchema = Yup.string()
   .matches(/^(?=.*[a-z])(?=.*\d)/, 'One number required')
   .required('Required')
 
-export const passwordConfirmSchema = Yup.string().oneOf(
-  [Yup.ref('password'), Yup.ref('newPassword')],
-  'Passwords must match',
-)
+export const passwordConfirmSchema = Yup.string()
+  .required('Required')
+  .oneOf([Yup.ref('password'), Yup.ref('newPassword')], 'Passwords must match')
 
 export const nameSchema = Yup.string()
   .max(100, 'Max 100 characters')

@@ -345,7 +345,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
                 type="submit"
                 $size="sm"
                 disabled={!dirty || isSubmitting}>
-                {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+                {isSubmitting && <SpinnerIcon height={22} />} Save
               </Button>
             </FormButtons>
           </Form>

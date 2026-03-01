@@ -9,10 +9,6 @@ export const StyledPasswordReset = styled.section`
 
   ${media.down('sm')`
     padding: 0 1rem 4rem;
-
-    form {
-      width: 100%;
-    }
   `}
 
   h2 {
@@ -24,7 +20,8 @@ export const StyledPasswordReset = styled.section`
   }
 
   form {
-    width: 30rem;
+    width: 100%;
+    max-width: 30rem;
 
     > div {
       margin-bottom: 1rem;

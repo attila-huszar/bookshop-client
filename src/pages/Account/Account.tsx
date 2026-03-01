@@ -17,7 +17,7 @@ import {
   validateImageFile,
 } from '@/validation'
 import type { StripeAddress, UserUpdate } from '@/types'
-import { EditIcon } from '@/assets/svg'
+import { EditIcon, SpinnerIcon } from '@/assets/svg'
 import {
   Address,
   AddressLine,
@@ -175,6 +175,7 @@ export function Account() {
                             name="firstName"
                             placeholder="First name"
                             type="text"
+                            autoComplete="given-name"
                             readOnly={!editingUserInfo}
                           />
                         </div>
@@ -184,6 +185,7 @@ export function Account() {
                             name="lastName"
                             placeholder="Last name"
                             type="text"
+                            autoComplete="family-name"
                             readOnly={!editingUserInfo}
                           />
                         </div>
@@ -195,6 +197,7 @@ export function Account() {
                             name="email"
                             placeholder="Email"
                             type="email"
+                            autoComplete="email"
                             readOnly
                           />
                         </div>
@@ -204,7 +207,8 @@ export function Account() {
                             name="phone"
                             placeholder="Phone"
                             type="tel"
-                            inputMode="numeric"
+                            inputMode="tel"
+                            autoComplete="tel"
                             readOnly={!editingUserInfo}
                           />
                         </div>
@@ -218,7 +222,7 @@ export function Account() {
                             $size="sm"
                             type="submit"
                             disabled={userIsUpdating || !dirty}>
-                            {userIsUpdating ? 'Saving...' : 'Save'}
+                            {userIsUpdating && <SpinnerIcon height={22} />} Save
                           </Button>
                         </ButtonWrapper>
                       )}
@@ -263,6 +267,7 @@ export function Account() {
                           name="line1"
                           placeholder="Address line 1"
                           type="text"
+                          autoComplete="address-line1"
                           readOnly={!editingAddress}
                         />
                       </div>
@@ -272,6 +277,7 @@ export function Account() {
                           name="line2"
                           placeholder="Address line 2"
                           type="text"
+                          autoComplete="address-line2"
                           readOnly={!editingAddress}
                         />
                       </div>
@@ -283,6 +289,7 @@ export function Account() {
                           name="city"
                           placeholder="City"
                           type="text"
+                          autoComplete="address-level2"
                           readOnly={!editingAddress}
                         />
                       </div>
@@ -292,6 +299,7 @@ export function Account() {
                           name="state"
                           placeholder="State"
                           type="text"
+                          autoComplete="address-level1"
                           readOnly={!editingAddress}
                         />
                       </div>
@@ -301,6 +309,7 @@ export function Account() {
                           name="postal_code"
                           placeholder="Postal Code"
                           type="text"
+                          autoComplete="postal-code"
                           readOnly={!editingAddress}
                         />
                       </div>
@@ -323,7 +332,7 @@ export function Account() {
                           $size="sm"
                           type="submit"
                           disabled={userIsUpdating || !dirty}>
-                          {userIsUpdating ? 'Saving...' : 'Save'}
+                          {userIsUpdating && <SpinnerIcon height={22} />} Save
                         </Button>
                       </ButtonWrapper>
                     )}

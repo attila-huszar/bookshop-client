@@ -72,7 +72,13 @@ export function ForgotPassword({ ref }: Props) {
         {({ isSubmitting }) => (
           <Form noValidate>
             <p>Email</p>
-            <FormikField name="email" placeholder="Email" type="email" />
+            <FormikField
+              name="email"
+              placeholder="Email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+            />
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
@@ -84,7 +90,7 @@ export function ForgotPassword({ ref }: Props) {
                 onClick={handleClose}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <SpinnerIcon height={28} /> : 'Send Email'}
+                {isSubmitting && <SpinnerIcon height={28} />} Send Email
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

@@ -62,16 +62,25 @@ export function Registration() {
         {({ isSubmitting }) => (
           <Form noValidate>
             <p>First Name</p>
-            <FormikField name="firstName" placeholder="First Name" focus />
+            <FormikField
+              name="firstName"
+              placeholder="First Name"
+              autoComplete="given-name"
+              focus
+            />
             <p>Last Name</p>
-            <FormikField name="lastName" placeholder="Last Name" />
+            <FormikField
+              name="lastName"
+              placeholder="Last Name"
+              autoComplete="family-name"
+            />
             <p>Email</p>
             <FormikField
               name="email"
               placeholder="Email"
               type="email"
               inputMode="email"
-              autoComplete="username"
+              autoComplete="email"
             />
             <p>Password</p>
             <FormikField
@@ -106,7 +115,7 @@ export function Registration() {
                 onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <SpinnerIcon height={28} /> : 'Register'}
+                {isSubmitting && <SpinnerIcon height={28} />} Register
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

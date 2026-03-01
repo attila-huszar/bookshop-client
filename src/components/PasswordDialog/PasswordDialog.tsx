@@ -133,7 +133,7 @@ export function PasswordDialog({ email, ref }: Props) {
                 onClick={handleClose}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <SpinnerIcon height={28} /> : 'Submit'}
+                {isSubmitting && <SpinnerIcon height={28} />} Submit
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

@@ -131,6 +131,7 @@ export function FormikField({
               {showPassword !== undefined && (
                 <PasswordEye
                   type="button"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPassword?.((prev) => !prev)}>
                   {showPassword ? <EyeHideIcon /> : <EyeIcon />}
                 </PasswordEye>

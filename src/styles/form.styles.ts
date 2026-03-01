@@ -120,6 +120,7 @@ export const PasswordEye = styled.button`
   background: none;
   border: none;
   cursor: pointer;
+  touch-action: manipulation;
 
   svg {
     width: 1.5rem;

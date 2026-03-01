@@ -9,6 +9,7 @@ import { Loading } from '@/components/Loading/Loading'
 import { resetPasswordSchema } from '@/validation'
 import { passwordResetInitialValues } from '@/constants'
 import { handleError } from '@/errors/handleError'
+import { SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
@@ -110,6 +111,7 @@ export function PasswordReset() {
               name="newPassword"
               placeholder="New Password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
@@ -118,12 +120,13 @@ export function PasswordReset() {
               name="newPasswordConfirmation"
               placeholder="Confirm New Password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit'}
+                {isSubmitting && <SpinnerIcon height={28} />} Submit
               </Button>
             </ButtonWrapper>
           </Form>

@@ -87,7 +87,7 @@ export function CountrySelect({
 
   const onSelect = (code: string) => {
     if (readOnly) return
-    void setFieldValue(fieldName, code, false)
+    void setFieldValue(fieldName, code, true)
     setIsOpen(false)
   }
 

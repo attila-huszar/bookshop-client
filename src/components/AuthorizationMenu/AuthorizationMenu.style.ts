@@ -13,7 +13,8 @@ export const StyledAuthorizationMenu = styled.main`
   `}
 
   form {
-    width: min(100%, 30rem);
+    width: 100%;
+    max-width: 30rem;
 
     > div {
       margin-bottom: 1rem;
@@ -24,7 +25,8 @@ export const StyledAuthorizationMenu = styled.main`
 export const FormChangeLinks = styled.div`
   display: flex;
   justify-content: space-evenly;
-  width: min(100%, 30rem);
+  width: 100%;
+  max-width: 30rem;
   margin-bottom: 2rem;
   gap: 0.5rem;
 

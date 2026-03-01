@@ -84,7 +84,7 @@ export function Login() {
                 onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <SpinnerIcon height={28} /> : 'Login'}
+                {isSubmitting && <SpinnerIcon height={28} />} Login
               </Button>
               <IconButton
                 icon={<QuestionIcon />}

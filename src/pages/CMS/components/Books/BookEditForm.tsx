@@ -318,7 +318,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
               Cancel
             </Button>
             <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
-              {isSubmitting ? <SpinnerIcon height={22} /> : 'Save'}
+              {isSubmitting && <SpinnerIcon height={22} />} Save
             </Button>
           </FormButtons>
         </Form>
