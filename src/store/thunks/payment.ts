@@ -77,18 +77,23 @@ export const paymentCreate = createAsyncThunk<
 
     return { paymentId, paymentToken, amount }
   } catch (error) {
-    void log.error('Order creation failed', { error })
-    const formattedError = await handleError({
-      error,
-      message: 'Order creation failed',
-    })
-
     if (error instanceof HTTPError && error.response.status === 409) {
+      const formattedError = await handleError({
+        error,
+        message: 'Order creation failed',
+      })
+
       return rejectWithValue({
         code: 'price_conflict',
         message: formattedError.message,
       })
     }
+
+    void log.error('Order creation failed', { error })
+    const formattedError = await handleError({
+      error,
+      message: 'Order creation failed',
+    })
 
     return rejectWithValue({
       code: 'unknown',
