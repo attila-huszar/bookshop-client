@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { HTTPError } from 'ky'
 import {
   deletePaymentIntent,
   getOrderSyncStatus,
@@ -7,9 +8,11 @@ import {
 } from '@/api'
 import { log } from '@/services'
 import { ORDER_SYNC_MAX_RETRIES, retryableStatuses } from '@/constants'
+import { handleError } from '@/errors'
 import {
   OrderSyncIssueCode,
   OrderSyncResponse,
+  PaymentCreateIssueCode,
   PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentSession,
@@ -51,9 +54,18 @@ const waitForRetryOrAbort = async (
   })
 }
 
-export const paymentCreate = createAsyncThunk(
+type PaymentCreateRejectValue = {
+  code: PaymentCreateIssueCode
+  message: string
+}
+
+export const paymentCreate = createAsyncThunk<
+  PaymentSession,
+  PaymentIntentRequest,
+  { rejectValue: PaymentCreateRejectValue }
+>(
   'payment/paymentCreate',
-  async (payment: PaymentIntentRequest): Promise<PaymentSession> => {
+  async (payment, { rejectWithValue }): Promise<PaymentSession> => {
     try {
       const { paymentId, paymentToken, amount } =
         await postPaymentIntent(payment)
@@ -69,7 +81,22 @@ export const paymentCreate = createAsyncThunk(
       return { paymentId, paymentToken, amount }
     } catch (error) {
       void log.error('Order creation failed', { error })
-      throw error
+      const formattedError = await handleError({
+        error,
+        message: 'Order creation failed',
+      })
+
+      if (error instanceof HTTPError && error.response.status === 409) {
+        return rejectWithValue({
+          code: 'price_conflict',
+          message: formattedError.message,
+        }) as never
+      }
+
+      return rejectWithValue({
+        code: 'unknown',
+        message: formattedError.message,
+      }) as never
     }
   },
 )

@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { paymentCreate } from '@/store'
+import { fetchCartItems, paymentCreate } from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
@@ -17,6 +17,7 @@ vi.mock('@/store', async (importOriginal) => {
   return {
     ...actual,
     orderCreate: vi.fn(),
+    fetchCartItems: vi.fn(),
     paymentCreate: vi.fn(),
   }
 })
@@ -31,6 +32,7 @@ const mockPaymentState = {
   payment: null,
   paymentIsLoading: false,
   paymentCreateError: null,
+  paymentCreateIssueCode: null,
   paymentRetrieveError: null,
   paymentCancelError: null,
 }
@@ -199,6 +201,7 @@ describe('Cart component', () => {
     await waitFor(() => {
       expect(paymentCreate).toHaveBeenCalledWith({
         items: [{ id: 1, quantity: 2 }],
+        expectedTotal: 36,
       })
       expect(mockDispatch).toHaveBeenCalledWith(mockThunk)
     })
@@ -220,6 +223,63 @@ describe('Cart component', () => {
       expect(toast.error).toHaveBeenCalledWith('Payment failed', {
         id: 'payment-error',
       })
+    })
+  })
+
+  it('should refresh cart only once for the same price conflict error', async () => {
+    const mockFetchCartItemsThunk = vi.fn()
+    vi.mocked(fetchCartItems).mockReturnValue(mockFetchCartItemsThunk)
+
+    const originalCartItems = [...mockCartItems]
+    const updatedCartItems = mockCartItems.map((item) => ({
+      ...item,
+      quantity: item.quantity + 1,
+    }))
+
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: {
+          ...mockPaymentState,
+          paymentCreateIssueCode: 'price_conflict',
+          paymentCreateError:
+            'Prices have been updated in your cart. Please review before checkout.',
+        },
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: originalCartItems,
+      addQuantity: vi.fn(),
+      removeQuantity: vi.fn(),
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
+
+    const { rerender } = render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => {
+      expect(fetchCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }])
+      expect(mockDispatch).toHaveBeenCalledWith(mockFetchCartItemsThunk)
+    })
+
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: updatedCartItems,
+      addQuantity: vi.fn(),
+      removeQuantity: vi.fn(),
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
+
+    rerender(<Cart />)
+
+    await waitFor(() => {
+      expect(fetchCartItems).toHaveBeenCalledTimes(1)
+      expect(toast.error).toHaveBeenCalledTimes(1)
     })
   })
 

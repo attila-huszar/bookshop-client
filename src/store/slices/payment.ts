@@ -11,6 +11,7 @@ const initialState: PaymentState = {
   payment: null,
   paymentIsLoading: false,
   paymentCreateError: null,
+  paymentCreateIssueCode: null,
   paymentRetrieveError: null,
   paymentCancelError: null,
   orderSyncIsLoading: false,
@@ -28,6 +29,7 @@ const paymentSlice = createSlice({
       state.payment = null
       state.paymentIsLoading = false
       state.paymentCreateError = null
+      state.paymentCreateIssueCode = null
       state.paymentRetrieveError = null
       state.paymentCancelError = null
       state.orderSyncIsLoading = false
@@ -40,6 +42,7 @@ const paymentSlice = createSlice({
       state.payment = null
       state.paymentIsLoading = false
       state.paymentCreateError = null
+      state.paymentCreateIssueCode = null
       state.paymentRetrieveError = null
       state.paymentCancelError = null
     },
@@ -52,6 +55,7 @@ const paymentSlice = createSlice({
       .addCase(paymentCreate.pending, (state) => {
         state.paymentIsLoading = true
         state.paymentCreateError = null
+        state.paymentCreateIssueCode = null
         state.orderSyncIsLoading = false
         state.orderSyncAttempt = 0
         state.orderSyncError = null
@@ -66,6 +70,7 @@ const paymentSlice = createSlice({
         }
         state.paymentIsLoading = false
         state.paymentCreateError = null
+        state.paymentCreateIssueCode = null
         state.orderSyncIsLoading = false
         state.orderSyncAttempt = 0
         state.orderSyncError = null
@@ -76,7 +81,8 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentCreateError =
-          action.error.message ?? 'Failed to create payment'
+          action.payload?.message ?? 'Failed to create payment'
+        state.paymentCreateIssueCode = action.payload?.code ?? 'unknown'
         state.orderSyncIsLoading = false
         state.orderSyncAttempt = 0
         state.orderSyncError = null
@@ -110,6 +116,7 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentCreateError = null
+        state.paymentCreateIssueCode = null
         state.paymentRetrieveError = null
         state.paymentCancelError = null
         state.orderSyncIsLoading = false

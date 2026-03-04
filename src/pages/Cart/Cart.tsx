@@ -5,6 +5,7 @@ import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
+  fetchCartItems,
   paymentCreate,
   paymentSelector,
   paymentStateReset,
@@ -59,10 +60,15 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading, cartError } = useAppSelector(cartSelector)
-  const { payment, paymentIsLoading, paymentCreateError } =
-    useAppSelector(paymentSelector)
+  const {
+    payment,
+    paymentIsLoading,
+    paymentCreateError,
+    paymentCreateIssueCode,
+  } = useAppSelector(paymentSelector)
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDialogElement>(null)
+  const hasHandledPriceConflictRef = useRef(false)
   const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
   const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
 
@@ -81,12 +87,29 @@ export function Cart() {
   }, [isCheckoutBusy])
 
   useEffect(() => {
-    if (paymentCreateError) {
-      toast.error(paymentCreateError, {
-        id: 'payment-error',
-      })
-    }
+    if (!paymentCreateError) return
+
+    toast.error(paymentCreateError, {
+      id: 'payment-error',
+    })
   }, [paymentCreateError])
+
+  useEffect(() => {
+    if (paymentCreateIssueCode !== 'price_conflict') {
+      hasHandledPriceConflictRef.current = false
+      return
+    }
+
+    if (hasHandledPriceConflictRef.current) return
+
+    hasHandledPriceConflictRef.current = true
+
+    const cartRequest = cartItems.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+    }))
+    void dispatch(fetchCartItems(cartRequest))
+  }, [paymentCreateIssueCode, cartItems, dispatch])
 
   useEffect(() => {
     scrollToTop()
@@ -142,6 +165,7 @@ export function Cart() {
           id: item.id,
           quantity: item.quantity,
         })),
+        expectedTotal: Number(discountPrice.toFixed(2)),
       }
 
       void dispatch(paymentCreate(orderRequest))
