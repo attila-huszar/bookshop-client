@@ -1,4 +1,11 @@
-import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  Fragment,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
@@ -67,9 +74,10 @@ export function Cart() {
     paymentCreateIssueCode,
   } = useAppSelector(paymentSelector)
   const dispatch = useAppDispatch()
-  const ref = useRef<HTMLDialogElement>(null)
-  const hasHandledPriceConflictRef = useRef(false)
   const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const hasHandledPriceConflictRef = useRef(false)
+
   const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
 
   useEffect(() => {
@@ -80,9 +88,9 @@ export function Cart() {
 
   useEffect(() => {
     if (isCheckoutBusy) {
-      ref.current?.showModal()
+      dialogRef.current?.showModal()
     } else {
-      ref.current?.close()
+      dialogRef.current?.close()
     }
   }, [isCheckoutBusy])
 
@@ -94,6 +102,14 @@ export function Cart() {
     })
   }, [paymentCreateError])
 
+  const onPriceConflict = useEffectEvent(() => {
+    const cartRequest = cartItems.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+    }))
+    void dispatch(fetchCartItems({ cartItems: cartRequest, force: true }))
+  })
+
   useEffect(() => {
     if (paymentCreateIssueCode !== 'price_conflict') {
       hasHandledPriceConflictRef.current = false
@@ -103,13 +119,8 @@ export function Cart() {
     if (hasHandledPriceConflictRef.current) return
 
     hasHandledPriceConflictRef.current = true
-
-    const cartRequest = cartItems.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-    }))
-    void dispatch(fetchCartItems(cartRequest))
-  }, [paymentCreateIssueCode, cartItems, dispatch])
+    onPriceConflict()
+  }, [paymentCreateIssueCode])
 
   useEffect(() => {
     scrollToTop()
@@ -324,7 +335,7 @@ export function Cart() {
           </Button>
         </ButtonWrapper>
         <InfoDialog
-          dialogRef={ref}
+          dialogRef={dialogRef}
           message={
             paymentIsLoading
               ? 'Creating checkout session...'

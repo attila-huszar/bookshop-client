@@ -7,6 +7,11 @@ import { fetchBookById } from './books'
 
 const staleHydrationRejectValue = 'stale-hydration'
 
+type FetchCartItemsArgs = {
+  cartItems: MinimalCart[]
+  force?: boolean
+}
+
 const toCartFingerprint = (items: MinimalCart[]) =>
   items.map((item) => `${item.id}:${item.quantity}`).join('|')
 
@@ -18,11 +23,11 @@ const matchesStorageCart = (cartItems: MinimalCart[]): boolean => {
 
 export const fetchCartItems = createAsyncThunk<
   Cart[],
-  MinimalCart[],
+  FetchCartItemsArgs,
   { state: RootState; rejectValue: typeof staleHydrationRejectValue }
 >(
   'cart/fetchCartItems',
-  async (cartItems, { getState, dispatch, rejectWithValue }) => {
+  async ({ cartItems }, { getState, dispatch, rejectWithValue }) => {
     const state = getState()
 
     const promises = cartItems.map(async (item) => {
@@ -68,9 +73,13 @@ export const fetchCartItems = createAsyncThunk<
     return itemsToCart
   },
   {
-    condition: (cartItems, { getState }) => {
+    condition: ({ cartItems, force = false }, { getState }) => {
       const state = getState()
-      if (state.cart.cartIsLoading || state.cart.cartItems.length > 0) {
+      if (state.cart.cartIsLoading) {
+        return false
+      }
+
+      if (!force && state.cart.cartItems.length > 0) {
         return false
       }
 

@@ -63,43 +63,39 @@ export const paymentCreate = createAsyncThunk<
   PaymentSession,
   PaymentIntentRequest,
   { rejectValue: PaymentCreateRejectValue }
->(
-  'payment/paymentCreate',
-  async (payment, { rejectWithValue }): Promise<PaymentSession> => {
-    try {
-      const { paymentId, paymentToken, amount } =
-        await postPaymentIntent(payment)
+>('payment/paymentCreate', async (payment, { rejectWithValue }) => {
+  try {
+    const { paymentId, paymentToken, amount } = await postPaymentIntent(payment)
 
-      if (!paymentToken) {
-        throw new Error('Invalid response from server: missing payment token')
-      }
-
-      if (!paymentId) {
-        throw new Error('Invalid response from server: missing payment ID')
-      }
-
-      return { paymentId, paymentToken, amount }
-    } catch (error) {
-      void log.error('Order creation failed', { error })
-      const formattedError = await handleError({
-        error,
-        message: 'Order creation failed',
-      })
-
-      if (error instanceof HTTPError && error.response.status === 409) {
-        return rejectWithValue({
-          code: 'price_conflict',
-          message: formattedError.message,
-        }) as never
-      }
-
-      return rejectWithValue({
-        code: 'unknown',
-        message: formattedError.message,
-      }) as never
+    if (!paymentToken) {
+      throw new Error('Invalid response from server: missing payment token')
     }
-  },
-)
+
+    if (!paymentId) {
+      throw new Error('Invalid response from server: missing payment ID')
+    }
+
+    return { paymentId, paymentToken, amount }
+  } catch (error) {
+    void log.error('Order creation failed', { error })
+    const formattedError = await handleError({
+      error,
+      message: 'Order creation failed',
+    })
+
+    if (error instanceof HTTPError && error.response.status === 409) {
+      return rejectWithValue({
+        code: 'price_conflict',
+        message: formattedError.message,
+      })
+    }
+
+    return rejectWithValue({
+      code: 'unknown',
+      message: formattedError.message,
+    })
+  }
+})
 
 export const paymentRetrieve = createAsyncThunk(
   'payment/paymentRetrieve',
