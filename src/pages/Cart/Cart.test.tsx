@@ -262,7 +262,10 @@ describe('Cart component', () => {
     const { rerender } = render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
-      expect(fetchCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }])
+      expect(fetchCartItems).toHaveBeenCalledWith({
+        cartItems: [{ id: 1, quantity: 2 }],
+        force: true,
+      })
       expect(mockDispatch).toHaveBeenCalledWith(mockFetchCartItemsThunk)
     })
 

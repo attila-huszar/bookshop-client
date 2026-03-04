@@ -19,11 +19,13 @@ const hydratedCartItems: Cart[] = [
 
 describe('cart slice hydration handling', () => {
   it('applies hydrate result on fulfilled', () => {
-    const pendingAction = fetchCartItems.pending('request-2', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-2', {
+      cartItems: minimalCartArg,
+    })
     const fulfilledAction = fetchCartItems.fulfilled(
       hydratedCartItems,
       'request-2',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
     )
 
     let state = cartReducer(undefined, { type: 'unknown' })
@@ -35,11 +37,13 @@ describe('cart slice hydration handling', () => {
   })
 
   it('does not set cart error for stale hydration rejection', () => {
-    const pendingAction = fetchCartItems.pending('request-3', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-3', {
+      cartItems: minimalCartArg,
+    })
     const staleRejectedAction = fetchCartItems.rejected(
       null,
       'request-3',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
       'stale-hydration',
     )
 
@@ -53,11 +57,13 @@ describe('cart slice hydration handling', () => {
   })
 
   it('clears cart immediately with cartClear', () => {
-    const pendingAction = fetchCartItems.pending('request-4', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-4', {
+      cartItems: minimalCartArg,
+    })
     const fulfilledAction = fetchCartItems.fulfilled(
       hydratedCartItems,
       'request-4',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
     )
 
     let state = cartReducer(undefined, { type: 'unknown' })
