@@ -15,6 +15,9 @@ type FetchCartItemsArgs = {
 const toCartFingerprint = (items: MinimalCart[]) =>
   items.map((item) => `${item.id}:${item.quantity}`).join('|')
 
+const toMinimalCart = (items: Cart[]): MinimalCart[] =>
+  items.map((item) => ({ id: item.id, quantity: item.quantity }))
+
 const matchesStorageCart = (cartItems: MinimalCart[]): boolean => {
   const storedCart = localStorageAdapter.get<MinimalCart[]>(cartKey)
   if (!Array.isArray(storedCart)) return false
@@ -79,7 +82,11 @@ export const fetchCartItems = createAsyncThunk<
         return false
       }
 
-      if (!force && state.cart.cartItems.length > 0) {
+      if (
+        !force &&
+        toCartFingerprint(cartItems) ===
+          toCartFingerprint(toMinimalCart(state.cart.cartItems))
+      ) {
         return false
       }
 
