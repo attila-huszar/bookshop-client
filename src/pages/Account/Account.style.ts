@@ -116,7 +116,7 @@ export const Address = styled.div`
 
   select[name='country'],
   select[name='country'] > option {
-    font-family: 'Noto Color Emoji', 'Montserrat', sans-serif;
+    font-family: 'Montserrat', sans-serif;
   }
 
   option[hidden] {
