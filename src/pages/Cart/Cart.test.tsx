@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { paymentCreate, refreshCartItems } from '@/store'
+import { paymentCreate, paymentCreateReset, refreshCartItems } from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
@@ -276,6 +276,59 @@ describe('Cart component', () => {
     })
 
     rerender(<Cart />)
+
+    await waitFor(() => {
+      expect(refreshCartItems).toHaveBeenCalledTimes(1)
+      expect(toast.error).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('should not re-trigger conflict handling after cart remount', async () => {
+    const mockRefreshCartItemsThunk = vi.fn()
+    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
+
+    let paymentState = {
+      ...mockPaymentState,
+      paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
+      paymentCreateError:
+        'Prices have been updated in your cart. Please review before checkout.' as
+          | string
+          | null,
+    }
+
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: paymentState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    mockDispatch.mockImplementation((action: { type?: string }) => {
+      if (action?.type === paymentCreateReset.type) {
+        paymentState = {
+          ...paymentState,
+          paymentCreateIssueCode: null,
+          paymentCreateError: null,
+        }
+      }
+
+      return {
+        unwrap: vi.fn().mockResolvedValue(undefined),
+      }
+    })
+
+    const { unmount } = render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => {
+      expect(refreshCartItems).toHaveBeenCalledTimes(1)
+      expect(toast.error).toHaveBeenCalledTimes(1)
+    })
+
+    unmount()
+
+    render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
       expect(refreshCartItems).toHaveBeenCalledTimes(1)

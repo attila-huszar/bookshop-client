@@ -13,6 +13,7 @@ import {
   cartClear,
   cartSelector,
   paymentCreate,
+  paymentCreateReset,
   paymentSelector,
   paymentStateReset,
   refreshCartItems,
@@ -100,7 +101,8 @@ export function Cart() {
     toast.error(paymentCreateError, {
       id: 'payment-error',
     })
-  }, [paymentCreateError])
+    dispatch(paymentCreateReset())
+  }, [paymentCreateError, dispatch])
 
   const onPriceConflict = useEffectEvent(() => {
     const cartRequest = cartItems.map((item) => ({
@@ -120,7 +122,8 @@ export function Cart() {
 
     hasHandledPriceConflictRef.current = true
     onPriceConflict()
-  }, [paymentCreateIssueCode])
+    dispatch(paymentCreateReset())
+  }, [paymentCreateIssueCode, dispatch])
 
   useEffect(() => {
     scrollToTop()
@@ -176,7 +179,7 @@ export function Cart() {
           id: item.id,
           quantity: item.quantity,
         })),
-        expectedTotal: Number(discountPrice.toFixed(2)),
+        expectedTotal: Math.round((discountPrice + Number.EPSILON) * 100) / 100,
       }
 
       void dispatch(paymentCreate(orderRequest))

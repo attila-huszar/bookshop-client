@@ -46,6 +46,10 @@ const paymentSlice = createSlice({
       state.paymentRetrieveError = null
       state.paymentCancelError = null
     },
+    paymentCreateReset: (state) => {
+      state.paymentCreateError = null
+      state.paymentCreateIssueCode = null
+    },
     setOrderSyncAttempt: (state, action: PayloadAction<number>) => {
       state.orderSyncAttempt = action.payload
     },
@@ -152,5 +156,9 @@ const paymentSlice = createSlice({
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const { paymentStateReset, paymentSessionReset, setOrderSyncAttempt } =
-  paymentSlice.actions
+export const {
+  paymentStateReset,
+  paymentSessionReset,
+  paymentCreateReset,
+  setOrderSyncAttempt,
+} = paymentSlice.actions
