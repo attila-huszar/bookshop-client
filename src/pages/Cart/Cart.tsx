@@ -12,10 +12,10 @@ import { ROUTE } from '@/routes'
 import {
   cartClear,
   cartSelector,
-  fetchCartItems,
   paymentCreate,
   paymentSelector,
   paymentStateReset,
+  refreshCartItems,
 } from '@/store'
 import { Alert } from '@/components/Alert/Alert'
 import { Button } from '@/components/Button/Button'
@@ -107,7 +107,7 @@ export function Cart() {
       id: item.id,
       quantity: item.quantity,
     }))
-    void dispatch(fetchCartItems({ cartItems: cartRequest, force: true }))
+    void dispatch(refreshCartItems(cartRequest))
   })
 
   useEffect(() => {

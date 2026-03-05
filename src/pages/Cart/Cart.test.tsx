@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { fetchCartItems, paymentCreate } from '@/store'
+import { paymentCreate, refreshCartItems } from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
@@ -17,7 +17,7 @@ vi.mock('@/store', async (importOriginal) => {
   return {
     ...actual,
     orderCreate: vi.fn(),
-    fetchCartItems: vi.fn(),
+    refreshCartItems: vi.fn(),
     paymentCreate: vi.fn(),
   }
 })
@@ -227,8 +227,8 @@ describe('Cart component', () => {
   })
 
   it('should refresh cart only once for the same price conflict error', async () => {
-    const mockFetchCartItemsThunk = vi.fn()
-    vi.mocked(fetchCartItems).mockReturnValue(mockFetchCartItemsThunk)
+    const mockRefreshCartItemsThunk = vi.fn()
+    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
 
     const originalCartItems = [...mockCartItems]
     const updatedCartItems = mockCartItems.map((item) => ({
@@ -262,11 +262,8 @@ describe('Cart component', () => {
     const { rerender } = render(<Cart />, { wrapper: Providers })
 
     await waitFor(() => {
-      expect(fetchCartItems).toHaveBeenCalledWith({
-        cartItems: [{ id: 1, quantity: 2 }],
-        force: true,
-      })
-      expect(mockDispatch).toHaveBeenCalledWith(mockFetchCartItemsThunk)
+      expect(refreshCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }])
+      expect(mockDispatch).toHaveBeenCalledWith(mockRefreshCartItemsThunk)
     })
 
     vi.mocked(useCart).mockReturnValue({
@@ -281,7 +278,7 @@ describe('Cart component', () => {
     rerender(<Cart />)
 
     await waitFor(() => {
-      expect(fetchCartItems).toHaveBeenCalledTimes(1)
+      expect(refreshCartItems).toHaveBeenCalledTimes(1)
       expect(toast.error).toHaveBeenCalledTimes(1)
     })
   })

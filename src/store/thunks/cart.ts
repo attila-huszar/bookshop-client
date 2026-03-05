@@ -30,13 +30,19 @@ export const fetchCartItems = createAsyncThunk<
   { state: RootState; rejectValue: typeof staleHydrationRejectValue }
 >(
   'cart/fetchCartItems',
-  async ({ cartItems }, { getState, dispatch, rejectWithValue }) => {
+  async (
+    { cartItems, force = false },
+    { getState, dispatch, rejectWithValue },
+  ) => {
     const state = getState()
 
     const promises = cartItems.map(async (item) => {
+      const cachedBook = !force
+        ? state.books.books.find((book) => book.id === item.id)
+        : undefined
+
       const book =
-        state.books.books.find((book) => book.id === item.id) ??
-        (await dispatch(fetchBookById(item.id)).unwrap())
+        cachedBook ?? (await dispatch(fetchBookById(item.id)).unwrap())
 
       const {
         author,
@@ -69,7 +75,7 @@ export const fetchCartItems = createAsyncThunk<
       throw new Error('Failed to fetch cart items')
     }
 
-    if (!matchesStorageCart(cartItems)) {
+    if (!force && !matchesStorageCart(cartItems)) {
       return rejectWithValue(staleHydrationRejectValue)
     }
 
@@ -90,7 +96,10 @@ export const fetchCartItems = createAsyncThunk<
         return false
       }
 
-      return matchesStorageCart(cartItems)
+      return force || matchesStorageCart(cartItems)
     },
   },
 )
+
+export const refreshCartItems = (cartItems: MinimalCart[]) =>
+  fetchCartItems({ cartItems, force: true })
