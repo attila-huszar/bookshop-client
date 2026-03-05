@@ -1,8 +1,12 @@
 import ky, { HTTPError } from 'ky'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const postPaymentIntentMock = vi.fn()
 const handleErrorMock = vi.fn()
+const logInfoMock = vi.fn()
+const logWarnMock = vi.fn()
+const logErrorMock = vi.fn()
+const logDebugMock = vi.fn()
 
 vi.mock('@/api', () => ({
   postPaymentIntent: postPaymentIntentMock,
@@ -14,6 +18,28 @@ vi.mock('@/api', () => ({
 vi.mock('@/errors', () => ({
   handleError: handleErrorMock,
 }))
+
+vi.mock('@/services', () => ({
+  log: {
+    info: logInfoMock,
+    warn: logWarnMock,
+    error: logErrorMock,
+    debug: logDebugMock,
+  },
+}))
+
+beforeEach(() => {
+  vi.resetModules()
+})
+
+afterEach(() => {
+  postPaymentIntentMock.mockReset()
+  handleErrorMock.mockReset()
+  logInfoMock.mockReset()
+  logWarnMock.mockReset()
+  logErrorMock.mockReset()
+  logDebugMock.mockReset()
+})
 
 const createHttpErrorWithStatus = async (
   status: number,
@@ -48,7 +74,6 @@ const getPaymentCreate = async () => {
 
 describe('payment thunk - paymentCreate', () => {
   it('maps HTTP 409 errors to price_conflict reject payload', async () => {
-    vi.resetModules()
     const conflictError = await createHttpErrorWithStatus(409)
 
     postPaymentIntentMock.mockRejectedValue(conflictError)
@@ -69,7 +94,6 @@ describe('payment thunk - paymentCreate', () => {
   })
 
   it('maps non-409 failures to unknown reject payload', async () => {
-    vi.resetModules()
     const genericError = new Error('Network issue')
 
     postPaymentIntentMock.mockRejectedValue(genericError)

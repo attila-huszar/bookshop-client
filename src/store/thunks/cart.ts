@@ -84,7 +84,7 @@ export const fetchCartItems = createAsyncThunk<
   {
     condition: ({ cartItems, force = false }, { getState }) => {
       const state = getState()
-      if (state.cart.cartIsLoading) {
+      if (state.cart.cartIsLoading && !force) {
         return false
       }
 
