@@ -95,15 +95,6 @@ export function Cart() {
     }
   }, [isCheckoutBusy])
 
-  useEffect(() => {
-    if (!paymentCreateError) return
-
-    toast.error(paymentCreateError, {
-      id: 'payment-error',
-    })
-    dispatch(paymentCreateReset())
-  }, [paymentCreateError, dispatch])
-
   const onPriceConflict = useEffectEvent(() => {
     const cartRequest = cartItems.map((item) => ({
       id: item.id,
@@ -113,17 +104,24 @@ export function Cart() {
   })
 
   useEffect(() => {
-    if (paymentCreateIssueCode !== 'price_conflict') {
-      hasHandledPriceConflictRef.current = false
-      return
+    const isPriceConflict = paymentCreateIssueCode === 'price_conflict'
+
+    if (!isPriceConflict) hasHandledPriceConflictRef.current = false
+    if (!paymentCreateError) return
+
+    toast.error(paymentCreateError, {
+      id: 'payment-error',
+    })
+
+    if (isPriceConflict) {
+      if (hasHandledPriceConflictRef.current) return
+
+      hasHandledPriceConflictRef.current = true
+      onPriceConflict()
     }
 
-    if (hasHandledPriceConflictRef.current) return
-
-    hasHandledPriceConflictRef.current = true
-    onPriceConflict()
     dispatch(paymentCreateReset())
-  }, [paymentCreateIssueCode, dispatch])
+  }, [paymentCreateError, paymentCreateIssueCode, dispatch])
 
   useEffect(() => {
     scrollToTop()
