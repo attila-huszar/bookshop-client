@@ -114,10 +114,10 @@ export function Cart() {
     })
 
     if (isPriceConflict) {
-      if (hasHandledPriceConflictRef.current) return
-
-      hasHandledPriceConflictRef.current = true
-      onPriceConflict()
+      if (!hasHandledPriceConflictRef.current) {
+        hasHandledPriceConflictRef.current = true
+        onPriceConflict()
+      }
     }
 
     dispatch(paymentCreateReset())
@@ -125,7 +125,10 @@ export function Cart() {
 
   useEffect(() => {
     scrollToTop()
-  }, [])
+    return () => {
+      dispatch(paymentCreateReset())
+    }
+  }, [dispatch])
 
   const price = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,

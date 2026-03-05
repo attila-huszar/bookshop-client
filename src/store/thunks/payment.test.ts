@@ -91,6 +91,7 @@ describe('payment thunk - paymentCreate', () => {
       code: 'price_conflict',
       message: 'Prices changed in your cart',
     })
+    expect(logErrorMock).not.toHaveBeenCalled()
   })
 
   it('maps non-409 failures to unknown reject payload', async () => {
