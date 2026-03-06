@@ -107,7 +107,7 @@ export function Cart() {
     const isPriceConflict = paymentCreateIssueCode === 'price_conflict'
 
     if (!isPriceConflict) hasHandledPriceConflictRef.current = false
-    if (!paymentCreateError) return
+    if (paymentCreateError == null) return
 
     toast.error(paymentCreateError, {
       id: 'payment-error',
