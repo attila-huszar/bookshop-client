@@ -17,9 +17,9 @@ export const cartLoader = () => {
     return replace(`/${ROUTE.CHECKOUT}`)
   }
 
-  const cart = localStorageAdapter.get<MinimalCart[]>(cartKey)
+  const cartItems = localStorageAdapter.get<MinimalCart[]>(cartKey)
 
-  if (cart && Array.isArray(cart)) {
-    void store.dispatch(fetchCartItems(cart))
+  if (cartItems && Array.isArray(cartItems)) {
+    void store.dispatch(fetchCartItems({ cartItems }))
   }
 }

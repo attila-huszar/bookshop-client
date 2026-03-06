@@ -7,6 +7,7 @@ import type {
   Order,
   OrderSyncIssueCode,
   OrderSyncResponse,
+  PaymentCreateIssueCode,
   PaymentSession,
 } from './Order'
 import type { User, UserWithMetadata } from './User'
@@ -67,6 +68,7 @@ export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean
   paymentCreateError: string | null
+  paymentCreateIssueCode: PaymentCreateIssueCode | null
   paymentRetrieveError: string | null
   paymentCancelError: string | null
   orderSyncIsLoading: boolean
