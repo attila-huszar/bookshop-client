@@ -33,6 +33,7 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@rolldown/plugin-babel": "^0.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -55,7 +56,6 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.0",
     "prettier": "^3.8.1",
-    "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.1",
     "vite": "^8.0.0",
