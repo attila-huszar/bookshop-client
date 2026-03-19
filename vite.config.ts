@@ -1,10 +1,8 @@
-import react from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import path from 'path'
-import { visualizer } from 'rollup-plugin-visualizer'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, withFilter } from 'vite'
 import svgr from 'vite-plugin-svgr'
-
-const ReactCompilerConfig = {}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
@@ -12,13 +10,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      react({
-        babel: {
-          plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
-        },
-      }),
-      svgr(),
-      visualizer(),
+      react(),
+      babel({ presets: [reactCompilerPreset()] }),
+      withFilter(svgr(), { load: { id: /\.svg\?react$/ } }),
     ],
     resolve: {
       alias: {
@@ -40,59 +34,54 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return
-
-            if (
-              id.includes('/node_modules/react/') ||
-              id.includes('/node_modules/react-dom/') ||
-              id.includes('/node_modules/scheduler/')
-            ) {
-              return 'react-vendor'
-            }
-
-            if (id.includes('/node_modules/react-router/')) {
-              return 'router-vendor'
-            }
-
-            if (
-              id.includes('/node_modules/@reduxjs/') ||
-              id.includes('/node_modules/react-redux/') ||
-              id.includes('/node_modules/redux/')
-            ) {
-              return 'redux-vendor'
-            }
-
-            if (
-              id.includes('/node_modules/formik/') ||
-              id.includes('/node_modules/yup/')
-            ) {
-              return 'form-vendor'
-            }
-
-            if (
-              id.includes('/node_modules/@stripe/') ||
-              id.includes('/node_modules/stripe/')
-            ) {
-              return 'stripe-vendor'
-            }
-
-            if (id.includes('/node_modules/swiper/')) {
-              return 'swiper-vendor'
-            }
-
-            if (
-              id.includes('/node_modules/lottie-react/') ||
-              id.includes('/node_modules/lottie-web/')
-            ) {
-              return 'lottie-vendor'
-            }
-
-            if (id.includes('/node_modules/styled-components/')) {
-              return 'styled-vendor'
-            }
-
-            return 'vendor'
+          codeSplitting: {
+            groups: [
+              {
+                name: 'react-vendor',
+                test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/,
+                priority: 100,
+              },
+              {
+                name: 'router-vendor',
+                test: /node_modules[\\/]react-router[\\/]/,
+                priority: 90,
+              },
+              {
+                name: 'redux-vendor',
+                test: /node_modules[\\/](?:@reduxjs|react-redux|redux)[\\/]/,
+                priority: 80,
+              },
+              {
+                name: 'form-vendor',
+                test: /node_modules[\\/](?:formik|yup)[\\/]/,
+                priority: 70,
+              },
+              {
+                name: 'stripe-vendor',
+                test: /node_modules[\\/](?:@stripe|stripe)[\\/]/,
+                priority: 60,
+              },
+              {
+                name: 'swiper-vendor',
+                test: /node_modules[\\/]swiper[\\/]/,
+                priority: 50,
+              },
+              {
+                name: 'lottie-vendor',
+                test: /node_modules[\\/](?:lottie-react|lottie-web)[\\/]/,
+                priority: 40,
+              },
+              {
+                name: 'styled-vendor',
+                test: /node_modules[\\/]styled-components[\\/]/,
+                priority: 30,
+              },
+              {
+                name: 'vendor',
+                test: /node_modules[\\/]/,
+                priority: 0,
+              },
+            ],
           },
         },
       },
