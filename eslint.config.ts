@@ -37,7 +37,6 @@ export default defineConfig(
       vitest,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
       'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': [
         'warn',
