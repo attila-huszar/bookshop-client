@@ -34,6 +34,7 @@ describe('cart slice hydration handling', () => {
 
     expect(state.cartItems).toEqual(hydratedCartItems)
     expect(state.cartIsLoading).toBe(false)
+    expect(state.currentRequestId).toBeNull()
   })
 
   it('does not set cart error for stale hydration rejection', () => {
@@ -54,6 +55,48 @@ describe('cart slice hydration handling', () => {
     expect(state.cartItems).toEqual([])
     expect(state.cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
+    expect(state.currentRequestId).toBeNull()
+  })
+
+  it('ignores stale fulfilled results when a newer request is in flight', () => {
+    const pendingActionA = fetchCartItems.pending('request-a', {
+      cartItems: minimalCartArg,
+    })
+    const pendingActionB = fetchCartItems.pending('request-b', {
+      cartItems: minimalCartArg,
+      force: true,
+    })
+
+    const fulfilledActionA = fetchCartItems.fulfilled(
+      [
+        {
+          ...hydratedCartItems[0]!,
+          title: 'Old Result',
+        },
+      ],
+      'request-a',
+      { cartItems: minimalCartArg },
+    )
+    const fulfilledActionB = fetchCartItems.fulfilled(
+      hydratedCartItems,
+      'request-b',
+      { cartItems: minimalCartArg, force: true },
+    )
+
+    let state = cartReducer(undefined, { type: 'unknown' })
+    state = cartReducer(state, pendingActionA)
+    state = cartReducer(state, pendingActionB)
+    state = cartReducer(state, fulfilledActionA)
+
+    expect(state.cartItems).toEqual([])
+    expect(state.cartIsLoading).toBe(true)
+    expect(state.currentRequestId).toBe('request-b')
+
+    state = cartReducer(state, fulfilledActionB)
+
+    expect(state.cartItems).toEqual(hydratedCartItems)
+    expect(state.cartIsLoading).toBe(false)
+    expect(state.currentRequestId).toBeNull()
   })
 
   it('clears cart immediately with cartClear', () => {
@@ -74,5 +117,6 @@ describe('cart slice hydration handling', () => {
     expect(state.cartItems).toEqual([])
     expect(state.cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
+    expect(state.currentRequestId).toBeNull()
   })
 })

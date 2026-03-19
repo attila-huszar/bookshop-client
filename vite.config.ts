@@ -1,7 +1,7 @@
 import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { fileURLToPath } from 'url'
-import { defineConfig, loadEnv, withFilter } from 'vite'
+import { defineConfig, loadEnv, searchForWorkspaceRoot, withFilter } from 'vite'
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ mode }) => {
@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
           }
         : undefined,
       fs: {
-        allow: [fileURLToPath(new URL('..', import.meta.url))],
+        allow: [searchForWorkspaceRoot(process.cwd())],
       },
     },
     build: {

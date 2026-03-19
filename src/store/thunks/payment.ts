@@ -78,26 +78,31 @@ export const paymentCreate = createAsyncThunk<
     return { paymentId, paymentToken, amount }
   } catch (error) {
     if (error instanceof HTTPError && error.response.status === 409) {
+      const fallbackMessage =
+        'Prices have been updated in your cart. Please review before checkout.'
       const formattedError = await handleError({
         error,
-        message: 'Order creation failed',
+        message: fallbackMessage,
       })
+      const finalMessage = formattedError.message?.trim() || fallbackMessage
 
       return rejectWithValue({
         code: 'price_conflict',
-        message: formattedError.message,
+        message: finalMessage,
       })
     }
 
-    void log.error('Order creation failed', { error })
+    const fallbackMessage = 'Order creation failed'
     const formattedError = await handleError({
       error,
-      message: 'Order creation failed',
+      message: fallbackMessage,
     })
+    const finalMessage = formattedError.message?.trim() || fallbackMessage
+    void log.error(finalMessage, { error })
 
     return rejectWithValue({
       code: 'unknown',
-      message: formattedError.message,
+      message: finalMessage,
     })
   }
 })

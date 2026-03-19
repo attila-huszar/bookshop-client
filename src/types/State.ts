@@ -56,6 +56,7 @@ export type CartState = {
   cartItems: Cart[]
   cartIsLoading: boolean
   cartError: string | null
+  currentRequestId: string | null
 }
 
 export type OrdersState = {
