@@ -11,10 +11,8 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
-  {
-    ignores: ['dist', 'coverage'],
-  },
   js.configs.recommended,
+  reactHooks.configs.flat['recommended-latest'],
   prettierConfig,
   {
     files: ['**/*.{ts,tsx}'],
@@ -34,7 +32,6 @@ export default defineConfig(
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       'react-compiler': reactCompiler,
-      'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       prettier,
       vitest,
@@ -78,5 +75,8 @@ export default defineConfig(
   {
     files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
+  },
+  {
+    ignores: ['dist', 'coverage'],
   },
 )
