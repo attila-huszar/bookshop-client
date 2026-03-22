@@ -1,4 +1,11 @@
-import { ChangeEvent, Fragment, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  Fragment,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
@@ -6,8 +13,10 @@ import {
   cartClear,
   cartSelector,
   paymentCreate,
+  paymentCreateReset,
   paymentSelector,
   paymentStateReset,
+  refreshCartItems,
 } from '@/store'
 import { Alert } from '@/components/Alert/Alert'
 import { Button } from '@/components/Button/Button'
@@ -59,11 +68,17 @@ export function Cart() {
     setQuantity,
   } = useCart()
   const { cartIsLoading, cartError } = useAppSelector(cartSelector)
-  const { payment, paymentIsLoading, paymentCreateError } =
-    useAppSelector(paymentSelector)
+  const {
+    payment,
+    paymentIsLoading,
+    paymentCreateError,
+    paymentCreateIssueCode,
+  } = useAppSelector(paymentSelector)
   const dispatch = useAppDispatch()
-  const ref = useRef<HTMLDialogElement>(null)
   const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const hasHandledPriceConflictRef = useRef(false)
+
   const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
 
   useEffect(() => {
@@ -74,23 +89,46 @@ export function Cart() {
 
   useEffect(() => {
     if (isCheckoutBusy) {
-      ref.current?.showModal()
+      dialogRef.current?.showModal()
     } else {
-      ref.current?.close()
+      dialogRef.current?.close()
     }
   }, [isCheckoutBusy])
 
+  const onPriceConflict = useEffectEvent(() => {
+    const cartRequest = cartItems.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+    }))
+    void dispatch(refreshCartItems(cartRequest))
+  })
+
   useEffect(() => {
-    if (paymentCreateError) {
-      toast.error(paymentCreateError, {
-        id: 'payment-error',
-      })
+    const isPriceConflict = paymentCreateIssueCode === 'price_conflict'
+
+    if (!isPriceConflict) hasHandledPriceConflictRef.current = false
+    if (paymentCreateError == null) return
+
+    toast.error(paymentCreateError, {
+      id: 'payment-error',
+    })
+
+    if (isPriceConflict) {
+      if (!hasHandledPriceConflictRef.current) {
+        hasHandledPriceConflictRef.current = true
+        onPriceConflict()
+      }
     }
-  }, [paymentCreateError])
+
+    dispatch(paymentCreateReset())
+  }, [paymentCreateError, paymentCreateIssueCode, dispatch])
 
   useEffect(() => {
     scrollToTop()
-  }, [])
+    return () => {
+      dispatch(paymentCreateReset())
+    }
+  }, [dispatch])
 
   const price = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -142,6 +180,7 @@ export function Cart() {
           id: item.id,
           quantity: item.quantity,
         })),
+        expectedTotal: Math.round((discountPrice + Number.EPSILON) * 100) / 100,
       }
 
       void dispatch(paymentCreate(orderRequest))
@@ -300,7 +339,7 @@ export function Cart() {
           </Button>
         </ButtonWrapper>
         <InfoDialog
-          dialogRef={ref}
+          dialogRef={dialogRef}
           message={
             paymentIsLoading
               ? 'Creating checkout session...'

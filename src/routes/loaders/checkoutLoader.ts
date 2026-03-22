@@ -9,11 +9,19 @@ import { authLoader } from './authLoader'
 const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
 
 export const checkoutLoader = async ({ request }: { request: Request }) => {
-  const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
+  const requestURL = new URL(request.url)
+  let paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
+  const stripeReturnPaymentId = requestURL.searchParams.get('payment_intent')
+
+  if (!paymentId && stripeReturnPaymentId) {
+    paymentId = stripeReturnPaymentId
+    sessionStorageAdapter.set(paymentIdKey, stripeReturnPaymentId)
+  }
+
   if (!paymentId) {
     return replace(ROUTE.HOME)
   }
-  const requestURL = new URL(request.url)
+
   const hasPaymentIntent = requestURL.searchParams.has('payment_intent')
   const hasClientSecret = requestURL.searchParams.has(
     'payment_intent_client_secret',

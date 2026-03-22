@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { HTTPError } from 'ky'
 import {
   deletePaymentIntent,
   getOrderSyncStatus,
@@ -7,9 +8,11 @@ import {
 } from '@/api'
 import { log } from '@/services'
 import { ORDER_SYNC_MAX_RETRIES, retryableStatuses } from '@/constants'
+import { handleError } from '@/errors'
 import {
   OrderSyncIssueCode,
   OrderSyncResponse,
+  PaymentCreateIssueCode,
   PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentSession,
@@ -51,28 +54,58 @@ const waitForRetryOrAbort = async (
   })
 }
 
-export const paymentCreate = createAsyncThunk(
-  'payment/paymentCreate',
-  async (payment: PaymentIntentRequest): Promise<PaymentSession> => {
-    try {
-      const { paymentId, paymentToken, amount } =
-        await postPaymentIntent(payment)
+type PaymentCreateRejectValue = {
+  code: PaymentCreateIssueCode
+  message: string
+}
 
-      if (!paymentToken) {
-        throw new Error('Invalid response from server: missing payment token')
-      }
+export const paymentCreate = createAsyncThunk<
+  PaymentSession,
+  PaymentIntentRequest,
+  { rejectValue: PaymentCreateRejectValue }
+>('payment/paymentCreate', async (payment, { rejectWithValue }) => {
+  try {
+    const { paymentId, paymentToken, amount } = await postPaymentIntent(payment)
 
-      if (!paymentId) {
-        throw new Error('Invalid response from server: missing payment ID')
-      }
-
-      return { paymentId, paymentToken, amount }
-    } catch (error) {
-      void log.error('Order creation failed', { error })
-      throw error
+    if (!paymentToken) {
+      throw new Error('Invalid response from server: missing payment token')
     }
-  },
-)
+
+    if (!paymentId) {
+      throw new Error('Invalid response from server: missing payment ID')
+    }
+
+    return { paymentId, paymentToken, amount }
+  } catch (error) {
+    if (error instanceof HTTPError && error.response.status === 409) {
+      const fallbackMessage =
+        'Prices have been updated in your cart. Please review before checkout.'
+      const formattedError = await handleError({
+        error,
+        message: fallbackMessage,
+      })
+      const finalMessage = formattedError.message?.trim() || fallbackMessage
+
+      return rejectWithValue({
+        code: 'price_conflict',
+        message: finalMessage,
+      })
+    }
+
+    const fallbackMessage = 'Order creation failed'
+    const formattedError = await handleError({
+      error,
+      message: fallbackMessage,
+    })
+    const finalMessage = formattedError.message?.trim() || fallbackMessage
+    void log.error(finalMessage, { error })
+
+    return rejectWithValue({
+      code: 'unknown',
+      message: finalMessage,
+    })
+  }
+})
 
 export const paymentRetrieve = createAsyncThunk(
   'payment/paymentRetrieve',

@@ -25,6 +25,7 @@ export function PaymentStatus() {
     useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
   const lastSyncedPaymentId = useRef<string | null>(null)
+  const hasHandledConfirmedOrder = useRef(false)
 
   const paymentId = payment?.paymentId
   const isStripeSuccess = successStatuses.includes(status.intent)
@@ -44,11 +45,18 @@ export function PaymentStatus() {
   }, [dispatch, isStripeSuccess, isOrderConfirmed, paymentId])
 
   useEffect(() => {
-    if (isOrderConfirmed) {
-      dispatch(cartClear())
-      dispatch(paymentSessionReset())
-    }
+    if (!isOrderConfirmed) return
+    if (hasHandledConfirmedOrder.current) return
+
+    hasHandledConfirmedOrder.current = true
+
+    dispatch(cartClear())
   }, [dispatch, isOrderConfirmed])
+
+  const handleBackToShop = () => {
+    dispatch(paymentSessionReset())
+    void navigate('/')
+  }
 
   const { animation, isLooping, primaryLine, secondaryLine } =
     getPaymentStatusView({
@@ -70,7 +78,7 @@ export function PaymentStatus() {
       </LottieWrapper>
       <p>{primaryLine}</p>
       {secondaryLine && <p>{secondaryLine}</p>}
-      <button onClick={() => void navigate('/')} type="button">
+      <button onClick={handleBackToShop} type="button">
         Back to Shop
       </button>
     </StyledPaymentStatus>

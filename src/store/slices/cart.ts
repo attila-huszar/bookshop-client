@@ -7,6 +7,7 @@ const initialState: CartState = {
   cartItems: [],
   cartIsLoading: false,
   cartError: null,
+  currentRequestId: null,
 }
 
 const cartSlice = createSlice({
@@ -38,6 +39,7 @@ const cartSlice = createSlice({
       state.cartItems = []
       state.cartIsLoading = false
       state.cartError = null
+      state.currentRequestId = null
     },
     cartRemove: (state, action: PayloadAction<Cart>) => {
       state.cartItems = state.cartItems.filter(
@@ -84,19 +86,26 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCartItems.pending, (state) => {
+      .addCase(fetchCartItems.pending, (state, action) => {
         state.cartIsLoading = true
         state.cartError = null
+        state.currentRequestId = action.meta.requestId
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.currentRequestId) return
+
         state.cartItems = action.payload
         state.cartIsLoading = false
+        state.currentRequestId = null
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
+        if (action.meta.requestId !== state.currentRequestId) return
+
         if (action.payload !== 'stale-hydration') {
           state.cartError = action.error.message ?? 'Failed to fetch cart items'
         }
         state.cartIsLoading = false
+        state.currentRequestId = null
       })
   },
 })
