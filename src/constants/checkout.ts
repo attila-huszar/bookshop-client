@@ -1,17 +1,28 @@
 import { OrderSyncIssueCode } from '@/types/Order'
 import { PaymentIntentStatus } from '@/types/Stripe'
 
-export const successStatuses: PaymentIntentStatus[] = [
+export const stripeStatuses: PaymentIntentStatus[] = [
   'succeeded',
-  'requires_capture',
-]
-
-export const retryableStatuses: PaymentIntentStatus[] = [
   'processing',
   'requires_payment_method',
   'requires_confirmation',
   'requires_action',
+  'requires_capture',
+  'canceled',
 ]
+
+const successStatusSet = new Set<PaymentIntentStatus>([
+  'succeeded',
+  'requires_capture',
+])
+
+export const successStatuses: PaymentIntentStatus[] = stripeStatuses.filter(
+  (status) => successStatusSet.has(status),
+)
+
+export const retryableStatuses: PaymentIntentStatus[] = stripeStatuses.filter(
+  (status) => !successStatusSet.has(status) && status !== 'canceled',
+)
 
 export const orderSyncIssueCodes: OrderSyncIssueCode[] = [
   'timeout',
