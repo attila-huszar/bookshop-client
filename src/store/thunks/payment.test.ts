@@ -114,5 +114,12 @@ describe('payment thunk - paymentCreate', () => {
       code: 'unknown',
       message: 'Order creation failed fallback',
     })
+    expect(logErrorMock).toHaveBeenCalledTimes(1)
+    expect(logErrorMock).toHaveBeenCalledWith(
+      'Order creation failed fallback',
+      {
+        error: genericError,
+      },
+    )
   })
 })
