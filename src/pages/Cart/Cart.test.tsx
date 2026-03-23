@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { paymentCreate } from '@/store'
+import { paymentCreate, paymentCreateReset, refreshCartItems } from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
@@ -17,6 +17,7 @@ vi.mock('@/store', async (importOriginal) => {
   return {
     ...actual,
     orderCreate: vi.fn(),
+    refreshCartItems: vi.fn(),
     paymentCreate: vi.fn(),
   }
 })
@@ -31,6 +32,7 @@ const mockPaymentState = {
   payment: null,
   paymentIsLoading: false,
   paymentCreateError: null,
+  paymentCreateIssueCode: null,
   paymentRetrieveError: null,
   paymentCancelError: null,
 }
@@ -196,12 +198,13 @@ describe('Cart component', () => {
 
     await userEvent.click(checkoutButton)
 
-    await waitFor(() => {
+    await waitFor(() =>
       expect(paymentCreate).toHaveBeenCalledWith({
         items: [{ id: 1, quantity: 2 }],
-      })
-      expect(mockDispatch).toHaveBeenCalledWith(mockThunk)
-    })
+        expectedTotal: 36,
+      }),
+    )
+    expect(mockDispatch).toHaveBeenCalledWith(mockThunk)
   })
 
   it('should display an error toast on payment error', async () => {
@@ -220,6 +223,155 @@ describe('Cart component', () => {
       expect(toast.error).toHaveBeenCalledWith('Payment failed', {
         id: 'payment-error',
       })
+    })
+  })
+
+  it('should refresh cart only once for the same price conflict error', async () => {
+    const mockRefreshCartItemsThunk = vi.fn()
+    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
+
+    const originalCartItems = [...mockCartItems]
+    const updatedCartItems = mockCartItems.map((item) => ({
+      ...item,
+      quantity: item.quantity + 1,
+    }))
+
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: {
+          ...mockPaymentState,
+          paymentCreateIssueCode: 'price_conflict',
+          paymentCreateError:
+            'Prices have been updated in your cart. Please review before checkout.',
+        },
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: originalCartItems,
+      addQuantity: vi.fn(),
+      removeQuantity: vi.fn(),
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
+
+    const { rerender } = render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() =>
+      expect(refreshCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }]),
+    )
+    expect(mockDispatch).toHaveBeenCalledWith(mockRefreshCartItemsThunk)
+
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: updatedCartItems,
+      addQuantity: vi.fn(),
+      removeQuantity: vi.fn(),
+      setQuantity: vi.fn(),
+      addToCart: vi.fn(),
+      removeFromCart: vi.fn(),
+    })
+
+    rerender(<Cart />)
+
+    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
+    expect(toast.error).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not re-trigger conflict handling after cart remount', async () => {
+    const mockRefreshCartItemsThunk = vi.fn()
+    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
+
+    let paymentState = {
+      ...mockPaymentState,
+      paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
+      paymentCreateError:
+        'Prices have been updated in your cart. Please review before checkout.' as
+          | string
+          | null,
+    }
+
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: paymentState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    mockDispatch.mockImplementation((action: { type?: string }) => {
+      if (action?.type === paymentCreateReset.type) {
+        paymentState = {
+          ...paymentState,
+          paymentCreateIssueCode: null,
+          paymentCreateError: null,
+        }
+      }
+
+      return {
+        unwrap: vi.fn().mockResolvedValue(undefined),
+      }
+    })
+
+    const { unmount } = render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
+    expect(toast.error).toHaveBeenCalledTimes(1)
+
+    unmount()
+
+    render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
+    expect(toast.error).toHaveBeenCalledTimes(1)
+  })
+
+  it('should handle price conflicts even when the payment error message is blank', async () => {
+    const mockRefreshCartItemsThunk = vi.fn()
+    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
+
+    let paymentState = {
+      ...mockPaymentState,
+      paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
+      paymentCreateError: '' as string | null,
+    }
+
+    vi.mocked(useAppSelector).mockImplementation((selector) => {
+      const mockState = {
+        cart: mockCartState,
+        payment: paymentState,
+        user: mockUserState,
+      }
+      return selector(mockState as Parameters<typeof selector>[0])
+    })
+
+    mockDispatch.mockImplementation((action: { type?: string }) => {
+      if (action?.type === paymentCreateReset.type) {
+        paymentState = {
+          ...paymentState,
+          paymentCreateIssueCode: null,
+          paymentCreateError: null,
+        }
+      }
+
+      return {
+        unwrap: vi.fn().mockResolvedValue(undefined),
+      }
+    })
+
+    render(<Cart />, { wrapper: Providers })
+
+    await waitFor(() =>
+      expect(refreshCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }]),
+    )
+    expect(mockDispatch).toHaveBeenCalledWith(mockRefreshCartItemsThunk)
+    expect(mockDispatch).toHaveBeenCalledWith(paymentCreateReset())
+    expect(toast.error).toHaveBeenCalledWith('', {
+      id: 'payment-error',
     })
   })
 

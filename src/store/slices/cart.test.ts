@@ -19,11 +19,13 @@ const hydratedCartItems: Cart[] = [
 
 describe('cart slice hydration handling', () => {
   it('applies hydrate result on fulfilled', () => {
-    const pendingAction = fetchCartItems.pending('request-2', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-2', {
+      cartItems: minimalCartArg,
+    })
     const fulfilledAction = fetchCartItems.fulfilled(
       hydratedCartItems,
       'request-2',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
     )
 
     let state = cartReducer(undefined, { type: 'unknown' })
@@ -32,14 +34,17 @@ describe('cart slice hydration handling', () => {
 
     expect(state.cartItems).toEqual(hydratedCartItems)
     expect(state.cartIsLoading).toBe(false)
+    expect(state.currentRequestId).toBeNull()
   })
 
   it('does not set cart error for stale hydration rejection', () => {
-    const pendingAction = fetchCartItems.pending('request-3', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-3', {
+      cartItems: minimalCartArg,
+    })
     const staleRejectedAction = fetchCartItems.rejected(
       null,
       'request-3',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
       'stale-hydration',
     )
 
@@ -50,14 +55,58 @@ describe('cart slice hydration handling', () => {
     expect(state.cartItems).toEqual([])
     expect(state.cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
+    expect(state.currentRequestId).toBeNull()
+  })
+
+  it('ignores stale fulfilled results when a newer request is in flight', () => {
+    const pendingActionA = fetchCartItems.pending('request-a', {
+      cartItems: minimalCartArg,
+    })
+    const pendingActionB = fetchCartItems.pending('request-b', {
+      cartItems: minimalCartArg,
+      force: true,
+    })
+
+    const fulfilledActionA = fetchCartItems.fulfilled(
+      [
+        {
+          ...hydratedCartItems[0]!,
+          title: 'Old Result',
+        },
+      ],
+      'request-a',
+      { cartItems: minimalCartArg },
+    )
+    const fulfilledActionB = fetchCartItems.fulfilled(
+      hydratedCartItems,
+      'request-b',
+      { cartItems: minimalCartArg, force: true },
+    )
+
+    let state = cartReducer(undefined, { type: 'unknown' })
+    state = cartReducer(state, pendingActionA)
+    state = cartReducer(state, pendingActionB)
+    state = cartReducer(state, fulfilledActionA)
+
+    expect(state.cartItems).toEqual([])
+    expect(state.cartIsLoading).toBe(true)
+    expect(state.currentRequestId).toBe('request-b')
+
+    state = cartReducer(state, fulfilledActionB)
+
+    expect(state.cartItems).toEqual(hydratedCartItems)
+    expect(state.cartIsLoading).toBe(false)
+    expect(state.currentRequestId).toBeNull()
   })
 
   it('clears cart immediately with cartClear', () => {
-    const pendingAction = fetchCartItems.pending('request-4', minimalCartArg)
+    const pendingAction = fetchCartItems.pending('request-4', {
+      cartItems: minimalCartArg,
+    })
     const fulfilledAction = fetchCartItems.fulfilled(
       hydratedCartItems,
       'request-4',
-      minimalCartArg,
+      { cartItems: minimalCartArg },
     )
 
     let state = cartReducer(undefined, { type: 'unknown' })
@@ -68,5 +117,6 @@ describe('cart slice hydration handling', () => {
     expect(state.cartItems).toEqual([])
     expect(state.cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
+    expect(state.currentRequestId).toBeNull()
   })
 })

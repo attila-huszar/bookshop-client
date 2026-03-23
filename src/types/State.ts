@@ -7,6 +7,7 @@ import type {
   Order,
   OrderSyncIssueCode,
   OrderSyncResponse,
+  PaymentCreateIssueCode,
   PaymentSession,
 } from './Order'
 import type { User, UserWithMetadata } from './User'
@@ -55,6 +56,7 @@ export type CartState = {
   cartItems: Cart[]
   cartIsLoading: boolean
   cartError: string | null
+  currentRequestId: string | null
 }
 
 export type OrdersState = {
@@ -67,6 +69,7 @@ export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean
   paymentCreateError: string | null
+  paymentCreateIssueCode: PaymentCreateIssueCode | null
   paymentRetrieveError: string | null
   paymentCancelError: string | null
   orderSyncIsLoading: boolean

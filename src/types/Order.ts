@@ -37,6 +37,7 @@ export type OrderUpdate = { paymentId: string } & Partial<
 
 export type PaymentIntentRequest = {
   items: MinimalCart[]
+  expectedTotal: number
 }
 
 export type PaymentIntentResponse = Pick<
@@ -73,3 +74,5 @@ export type OrderSyncIssueCode =
   | 'retryable'
   | 'unauthorized'
   | 'unknown'
+
+export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'

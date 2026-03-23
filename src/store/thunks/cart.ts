@@ -7,8 +7,16 @@ import { fetchBookById } from './books'
 
 const staleHydrationRejectValue = 'stale-hydration'
 
+type FetchCartItemsArgs = {
+  cartItems: MinimalCart[]
+  force?: boolean
+}
+
 const toCartFingerprint = (items: MinimalCart[]) =>
   items.map((item) => `${item.id}:${item.quantity}`).join('|')
+
+const toMinimalCart = (items: Cart[]): MinimalCart[] =>
+  items.map((item) => ({ id: item.id, quantity: item.quantity }))
 
 const matchesStorageCart = (cartItems: MinimalCart[]): boolean => {
   const storedCart = localStorageAdapter.get<MinimalCart[]>(cartKey)
@@ -18,17 +26,23 @@ const matchesStorageCart = (cartItems: MinimalCart[]): boolean => {
 
 export const fetchCartItems = createAsyncThunk<
   Cart[],
-  MinimalCart[],
+  FetchCartItemsArgs,
   { state: RootState; rejectValue: typeof staleHydrationRejectValue }
 >(
   'cart/fetchCartItems',
-  async (cartItems, { getState, dispatch, rejectWithValue }) => {
+  async (
+    { cartItems, force = false },
+    { getState, dispatch, rejectWithValue },
+  ) => {
     const state = getState()
 
     const promises = cartItems.map(async (item) => {
+      const cachedBook = !force
+        ? state.books.books.find((book) => book.id === item.id)
+        : undefined
+
       const book =
-        state.books.books.find((book) => book.id === item.id) ??
-        (await dispatch(fetchBookById(item.id)).unwrap())
+        cachedBook ?? (await dispatch(fetchBookById(item.id)).unwrap())
 
       const {
         author,
@@ -61,20 +75,31 @@ export const fetchCartItems = createAsyncThunk<
       throw new Error('Failed to fetch cart items')
     }
 
-    if (!matchesStorageCart(cartItems)) {
+    if (!force && !matchesStorageCart(cartItems)) {
       return rejectWithValue(staleHydrationRejectValue)
     }
 
     return itemsToCart
   },
   {
-    condition: (cartItems, { getState }) => {
+    condition: ({ cartItems, force = false }, { getState }) => {
       const state = getState()
-      if (state.cart.cartIsLoading || state.cart.cartItems.length > 0) {
+      if (state.cart.cartIsLoading && !force) {
         return false
       }
 
-      return matchesStorageCart(cartItems)
+      if (
+        !force &&
+        toCartFingerprint(cartItems) ===
+          toCartFingerprint(toMinimalCart(state.cart.cartItems))
+      ) {
+        return false
+      }
+
+      return force || matchesStorageCart(cartItems)
     },
   },
 )
+
+export const refreshCartItems = (cartItems: MinimalCart[]) =>
+  fetchCartItems({ cartItems, force: true })

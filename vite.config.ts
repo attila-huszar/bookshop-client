@@ -1,7 +1,7 @@
 import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import path from 'path'
-import { defineConfig, loadEnv, withFilter } from 'vite'
+import { fileURLToPath } from 'url'
+import { defineConfig, loadEnv, searchForWorkspaceRoot, withFilter } from 'vite'
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ mode }) => {
@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        'lottie-react': 'lottie-react/build/index.es.js',
       },
     },
     server: {
@@ -30,6 +31,9 @@ export default defineConfig(({ mode }) => {
             },
           }
         : undefined,
+      fs: {
+        allow: [searchForWorkspaceRoot(process.cwd())],
+      },
     },
     build: {
       rollupOptions: {

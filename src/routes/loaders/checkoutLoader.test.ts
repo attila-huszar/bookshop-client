@@ -71,7 +71,7 @@ describe('checkoutLoader', () => {
     })
   })
 
-  it('redirects home when payment session key is missing', async () => {
+  it('redirects home when payment session key is missing and no Stripe return', async () => {
     mockSessionStorageGet.mockReturnValue(null)
 
     const result = await checkoutLoader({
@@ -89,6 +89,22 @@ describe('checkoutLoader', () => {
       ),
     })
 
+    expect(getResponseLocation(result)).toBe(
+      '/checkout?redirect_status=succeeded',
+    )
+    expect(mockAuthLoader).not.toHaveBeenCalled()
+  })
+
+  it('recovers missing session key from Stripe return payment_intent', async () => {
+    mockSessionStorageGet.mockReturnValue(null)
+
+    const result = await checkoutLoader({
+      request: new Request(
+        'http://localhost/checkout?payment_intent=pi_123&payment_intent_client_secret=secret_123&redirect_status=succeeded',
+      ),
+    })
+
+    expect(mockSessionStorageSet).toHaveBeenCalledWith(paymentIdKey, 'pi_123')
     expect(getResponseLocation(result)).toBe(
       '/checkout?redirect_status=succeeded',
     )
