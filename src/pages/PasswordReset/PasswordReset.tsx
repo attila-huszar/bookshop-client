@@ -13,19 +13,24 @@ import { SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
+type PasswordResetVerification =
+  | { status: 'verifying' }
+  | { status: 'ready'; token: string }
+  | { status: 'invalid' }
+
 export function PasswordReset() {
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
   const tokenParam = queryParams.get('token')
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [token, setToken] = useState<string | null>(null)
+  const [verification, setVerification] = useState<PasswordResetVerification>(
+    () => (tokenParam ? { status: 'verifying' } : { status: 'invalid' }),
+  )
   const [showPassword, setShowPassword] = useState(false)
   const hasVerified = useRef(false)
 
   useEffect(() => {
     if (!tokenParam) {
-      setIsVerifying(false)
       toast.error('Invalid or missing password reset token')
       void navigate('/', { replace: true })
       return
@@ -38,8 +43,7 @@ export function PasswordReset() {
     const verifyToken = async () => {
       try {
         const response = await postVerifyPasswordReset(tokenParam)
-
-        setToken(response.token)
+        setVerification({ status: 'ready', token: response.token })
 
         toast.success('Please enter your new password')
       } catch (error) {
@@ -48,11 +52,10 @@ export function PasswordReset() {
           message: 'Password reset failed, please try again later',
         })
 
+        setVerification({ status: 'invalid' })
         toast.error(formattedError.message)
 
         void navigate('/', { replace: true })
-      } finally {
-        setIsVerifying(false)
       }
     }
 
@@ -63,7 +66,7 @@ export function PasswordReset() {
     newPassword: string
     newPasswordConfirmation: string
   }) => {
-    if (!token) {
+    if (verification.status !== 'ready') {
       toast.error('Invalid or expired token')
       return
     }
@@ -74,7 +77,10 @@ export function PasswordReset() {
     }
 
     try {
-      const response = await postPasswordResetSubmit(token, values.newPassword)
+      const response = await postPasswordResetSubmit(
+        verification.token,
+        values.newPassword,
+      )
       toast.success(response.message)
 
       void navigate('/login', { replace: true })
@@ -87,11 +93,11 @@ export function PasswordReset() {
     }
   }
 
-  if (isVerifying) {
+  if (verification.status === 'verifying') {
     return <Loading message="Verifying" fullScreen />
   }
 
-  if (!token) {
+  if (verification.status === 'invalid') {
     return null
   }
 

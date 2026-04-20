@@ -40,7 +40,7 @@ export const postUserLogin = async ({
       error,
       message: 'Login failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 
@@ -68,7 +68,7 @@ export const postUserRegister = async (
       error,
       message: 'Registration failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 
@@ -86,7 +86,7 @@ export const postUserLogout = async () => {
       error,
       message: 'Logout failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 

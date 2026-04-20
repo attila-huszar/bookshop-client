@@ -166,10 +166,16 @@ export const paymentCancel = createAsyncThunk(
       if (stripeError instanceof Error) {
         throw new Error(
           `Unable to cancel checkout right now: ${stripeError.message}`,
+          { cause: stripeError },
         )
       }
 
-      throw new Error('Unable to cancel checkout right now. Please try again.')
+      throw new Error(
+        'Unable to cancel checkout right now. Please try again.',
+        {
+          cause: stripeError,
+        },
+      )
     }
   },
 )
