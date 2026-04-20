@@ -8,7 +8,7 @@ import { FormikField } from '@/components/FormikField/FormikField'
 import { Loading } from '@/components/Loading/Loading'
 import { resetPasswordSchema } from '@/validation'
 import { passwordResetInitialValues } from '@/constants'
-import { handleError } from '@/errors/handleError'
+import { handleError } from '@/errors'
 import { SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledPasswordReset } from './PasswordReset.style'
@@ -47,7 +47,7 @@ export function PasswordReset() {
 
         toast.success('Please enter your new password')
       } catch (error) {
-        const formattedError = await handleError({
+        const formattedError = handleError({
           error,
           message: 'Password reset failed, please try again later',
         })
@@ -85,7 +85,7 @@ export function PasswordReset() {
 
       void navigate('/login', { replace: true })
     } catch (error) {
-      const formattedError = await handleError({
+      const formattedError = handleError({
         error,
         message: 'Error changing password, please try again later',
       })

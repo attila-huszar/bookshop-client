@@ -5,10 +5,14 @@ import {
   getOrderSyncStatus,
   getPaymentIntent,
   postPaymentIntent,
-} from '@/api'
+} from '@/api/payments'
 import { log } from '@/services'
 import { ORDER_SYNC_MAX_RETRIES, retryableStatuses } from '@/constants'
-import { handleError } from '@/errors'
+import {
+  getOrderSyncRetryDelay,
+  handleError,
+  parseOrderSyncError,
+} from '@/errors'
 import {
   OrderSyncIssueCode,
   OrderSyncResponse,
@@ -18,7 +22,6 @@ import {
   PaymentSession,
 } from '@/types'
 import { setOrderSyncAttempt } from '../slices/payment'
-import { getOrderSyncRetryDelay, parseOrderSyncError } from '../utils'
 
 const createAbortError = () =>
   new DOMException('Order sync request aborted', 'AbortError')
@@ -80,7 +83,7 @@ export const paymentCreate = createAsyncThunk<
     if (error instanceof HTTPError && error.response.status === 409) {
       const fallbackMessage =
         'Prices have been updated in your cart. Please review before checkout.'
-      const formattedError = await handleError({
+      const formattedError = handleError({
         error,
         message: fallbackMessage,
       })
@@ -93,7 +96,7 @@ export const paymentCreate = createAsyncThunk<
     }
 
     const fallbackMessage = 'Order creation failed'
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: fallbackMessage,
     })
@@ -212,7 +215,7 @@ export const orderSyncAfterWebhook = createAsyncThunk<
           throw error
         }
 
-        const parsedError = await parseOrderSyncError(error)
+        const parsedError = parseOrderSyncError(error)
         const canRetryTransientError =
           (parsedError.code === 'retryable' ||
             parsedError.code === 'timeout') &&

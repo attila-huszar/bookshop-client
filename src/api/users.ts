@@ -36,7 +36,7 @@ export const postUserLogin = async ({
     })
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Login failed, please try again later',
     })
@@ -64,7 +64,7 @@ export const postUserRegister = async (
     )
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Registration failed, please try again later',
     })
@@ -82,7 +82,7 @@ export const postUserLogout = async () => {
     )
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Logout failed, please try again later',
     })
