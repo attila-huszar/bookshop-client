@@ -122,6 +122,11 @@ export function handleError({
       error: classified.message,
       status: classified.status,
     })
+  } else if (classified.kind === 'http') {
+    void log.warn('HTTP error', {
+      error: classified.message,
+      status: classified.status,
+    })
   } else {
     void log.error(
       error instanceof Error ? 'Generic JS error' : 'Unknown error',
@@ -176,9 +181,7 @@ export const getOrderSyncRetryDelay = (attempt: number): number => {
   const exponential =
     ORDER_SYNC_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
 
-  const cappedDelay = Math.min(exponential, ORDER_SYNC_RETRY_MAX_DELAY_MS)
+  const jitter = exponential * 0.2 * Math.random()
 
-  const jitter = cappedDelay * 0.2 * Math.random()
-
-  return cappedDelay + jitter
+  return Math.min(exponential + jitter, ORDER_SYNC_RETRY_MAX_DELAY_MS)
 }
