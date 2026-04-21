@@ -18,7 +18,7 @@ describe('Orders page', () => {
           orders: [],
           ordersIsLoading: false,
           ordersError: null,
-        } as ReturnType<typeof useAppSelector>
+        }
       }
 
       if (selector === userSelector) {
@@ -26,10 +26,10 @@ describe('Orders page', () => {
           userData: {
             firstName: 'July',
           },
-        } as ReturnType<typeof useAppSelector>
+        }
       }
 
-      return null as ReturnType<typeof useAppSelector>
+      return null
     })
   })
 
@@ -40,9 +40,9 @@ describe('Orders page', () => {
           orders: [],
           ordersIsLoading: true,
           ordersError: null,
-        } as ReturnType<typeof useAppSelector>
+        }
       }
-      return { userData: null } as ReturnType<typeof useAppSelector>
+      return { userData: null }
     })
 
     render(<Orders />, { wrapper: Providers })
@@ -63,10 +63,10 @@ describe('Orders page', () => {
           orders: [],
           ordersIsLoading: false,
           ordersError: 'Network error',
-        } as ReturnType<typeof useAppSelector>
+        }
       }
 
-      return { userData: null } as ReturnType<typeof useAppSelector>
+      return { userData: null }
     })
 
     render(<Orders />, { wrapper: Providers })
@@ -107,14 +107,14 @@ describe('Orders page', () => {
           ],
           ordersIsLoading: false,
           ordersError: null,
-        } as ReturnType<typeof useAppSelector>
+        }
       }
 
       return {
         userData: {
           firstName: 'July',
         },
-      } as ReturnType<typeof useAppSelector>
+      }
     })
 
     render(<Orders />, { wrapper: Providers })
