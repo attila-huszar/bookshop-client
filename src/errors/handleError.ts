@@ -70,7 +70,7 @@ const classifyError = (
     if (validationMessages.length > 0) {
       return {
         kind: 'http-validation',
-        message: validationMessages.join(', ') || fallback,
+        message: validationMessages.join(', '),
         status,
         validation,
       }
@@ -97,9 +97,7 @@ const classifyError = (
     message:
       error instanceof Error && error.message
         ? error.message
-        : isRecord(error) && typeof error.message === 'string' && error.message
-          ? error.message
-          : fallback,
+        : (extractDataMessage(error) ?? fallback),
   }
 }
 
