@@ -290,8 +290,7 @@ describe('Cart component', () => {
       paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
       paymentCreateError:
         'Prices have been updated in your cart. Please review before checkout.' as
-          | string
-          | null,
+          string | null,
     }
 
     vi.mocked(useAppSelector).mockImplementation((selector) => {
