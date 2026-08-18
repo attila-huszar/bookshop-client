@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
-import Lottie from 'lottie-react'
+import { Lottie } from 'lottie-react'
 import {
   cartClear,
   orderSyncAfterWebhook,
@@ -74,7 +74,7 @@ export function PaymentStatus() {
         <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie animationData={animation} loop={isLooping} />
+        <Lottie src={animation} loop={isLooping} />
       </LottieWrapper>
       <p>{primaryLine}</p>
       {secondaryLine && <p>{secondaryLine}</p>}

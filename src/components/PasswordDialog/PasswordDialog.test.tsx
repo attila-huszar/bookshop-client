@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 import { postUserLogin } from '@/api'
 import { updateUserProfile } from '@/store'
 import { useAppDispatch } from '@/hooks'
+import type { LoginResponse } from '@/types'
 import { PasswordDialog } from './PasswordDialog'
 
 vi.mock('@/api', async (importOriginal) => {
@@ -22,6 +23,10 @@ vi.mock('@/store', () => ({
 describe('PasswordDialog', () => {
   const email = 'test.email@example.com'
   const mockDispatch = vi.fn()
+  const successfulLoginResponse: LoginResponse = {
+    accessToken: 'access-token',
+    firstName: 'Test',
+  }
 
   beforeEach(() => {
     vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
@@ -45,10 +50,7 @@ describe('PasswordDialog', () => {
   })
 
   it('should call verifyPassword and dispatch updateUser on successful password change, then close the dialog', async () => {
-    vi.mocked(postUserLogin).mockResolvedValue({
-      accessToken: expect.any(String) as string,
-      firstName: expect.any(String) as string,
-    })
+    vi.mocked(postUserLogin).mockResolvedValue(successfulLoginResponse)
     mockDispatch.mockResolvedValue({
       meta: { requestStatus: 'fulfilled' },
     })
@@ -126,10 +128,7 @@ describe('PasswordDialog', () => {
   })
 
   it('should show error if new password matches the current password', async () => {
-    vi.mocked(postUserLogin).mockResolvedValue({
-      accessToken: expect.any(String) as string,
-      firstName: expect.any(String) as string,
-    })
+    vi.mocked(postUserLogin).mockResolvedValue(successfulLoginResponse)
 
     render(<PasswordDialog ref={null} email={email} />)
 

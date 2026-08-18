@@ -1,4 +1,3 @@
-import type { LottieOptions } from 'lottie-react'
 import type { CheckoutStatusText } from '@/hooks/useMessages'
 import type { PaymentStatusState } from '@/hooks/usePaymentStatus'
 import type { OrderSyncIssueCode } from '@/types/Order'
@@ -62,6 +61,13 @@ type PaymentStatusViewArgs = {
   statusText: CheckoutStatusText
 }
 
+type PaymentStatusView = {
+  animation: object
+  isLooping: boolean
+  primaryLine: string
+  secondaryLine: string | null
+}
+
 const toOptionalLine = (line: string): string | null => {
   if (!line.trim()) return null
   return line
@@ -73,7 +79,7 @@ export const getPaymentStatusView = ({
   syncedPaymentStatus,
   orderSyncAttempt,
   statusText,
-}: PaymentStatusViewArgs) => {
+}: PaymentStatusViewArgs): PaymentStatusView => {
   const isStripeSuccess = successStatuses.includes(status.intent)
   const hasHardSyncError =
     orderSyncIssueCode !== null && orderSyncIssueCode !== 'timeout'
@@ -93,7 +99,7 @@ export const getPaymentStatusView = ({
   }
 
   if (isStripeSuccess) {
-    let animation: LottieOptions['animationData'] = clockAnim
+    let animation: object = clockAnim
     let isLooping = true
     let primaryLine = statusText.paymentReceived
 

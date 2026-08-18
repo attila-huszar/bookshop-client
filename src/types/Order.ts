@@ -70,9 +70,6 @@ export type OrderSyncResponse = {
 }
 
 export type OrderSyncIssueCode =
-  | 'timeout'
-  | 'retryable'
-  | 'unauthorized'
-  | 'unknown'
+  'timeout' | 'retryable' | 'unauthorized' | 'unknown'
 
 export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'
