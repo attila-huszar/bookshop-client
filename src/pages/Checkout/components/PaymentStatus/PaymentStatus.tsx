@@ -74,7 +74,7 @@ export function PaymentStatus() {
         <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie src={animation} loop={isLooping} />
+        <Lottie src={animation} autoplay loop={isLooping} />
       </LottieWrapper>
       <p>{primaryLine}</p>
       {secondaryLine && <p>{secondaryLine}</p>}

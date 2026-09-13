@@ -12,7 +12,8 @@ export const Books = () => {
   const {
     selectedItems,
     setSelectedItems,
-    setIsEditDialogOpen,
+    setIsDialogOpen,
+    setIsEditing,
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
 
@@ -75,17 +76,24 @@ export const Books = () => {
               <tr
                 key={book.id}
                 onClick={() => {
-                  setSelectedItems((prev) => ({
-                    ...prev,
-                    books: prev.books.includes(book.id)
-                      ? prev.books.filter((id) => id !== book.id)
-                      : [...prev.books, book.id],
-                  }))
+                  setIsEditing(false)
+                  setEditedItem(book)
+                  setIsDialogOpen(true)
                 }}
                 className={
                   selectedItems.books.includes(book.id) ? 'selected' : ''
                 }>
-                <td style={{ textAlign: 'center' }}>
+                <td
+                  style={{ textAlign: 'center' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedItems((prev) => ({
+                      ...prev,
+                      books: prev.books.includes(book.id)
+                        ? prev.books.filter((id) => id !== book.id)
+                        : [...prev.books, book.id],
+                    }))
+                  }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.books.includes(book.id)}
@@ -124,7 +132,8 @@ export const Books = () => {
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation()
-                      setIsEditDialogOpen(true)
+                      setIsEditing(true)
+                      setIsDialogOpen(true)
                       setEditedItem(book)
                     }}
                     icon={<EditIcon />}

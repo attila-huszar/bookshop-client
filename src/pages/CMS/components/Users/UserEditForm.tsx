@@ -48,9 +48,10 @@ const initialUserValues: UserWithMetadata = {
 type Props = {
   editedItem: UserWithMetadata | null
   onClose: () => void
+  readOnly?: boolean
 }
 
-export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
+export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const dispatch = useAppDispatch()
 
   const handleSubmit = async (
@@ -98,193 +99,212 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose }) => {
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => (
         <Form>
-          {editedItem && (
-            <>
-              <SectionHeader>User Information</SectionHeader>
-              <MetadataBlock>
-                <div>
-                  <p>User ID</p>
-                  <span>{editedItem.id}</span>
-                </div>
-                <div>
-                  <p>Created At</p>
-                  <span>
-                    {editedItem.createdAt
-                      ? formatDate(editedItem.createdAt)
-                      : '—'}
-                  </span>
-                </div>
-                <div>
-                  <p>Updated At</p>
-                  <span>
-                    {editedItem.updatedAt
-                      ? formatDate(editedItem.updatedAt)
-                      : '—'}
-                  </span>
-                </div>
-              </MetadataBlock>
-            </>
-          )}
-          <Row>
-            <div>
-              <p>First Name</p>
-              <FormikField
-                name="firstName"
-                placeholder="First Name"
-                type="text"
-              />
-            </div>
-            <div>
-              <p>Last Name</p>
-              <FormikField
-                name="lastName"
-                placeholder="Last Name"
-                type="text"
-              />
-            </div>
-          </Row>
-          <Row>
-            <div>
-              <p>Email</p>
-              <FormikField name="email" placeholder="Email" type="email" />
-            </div>
-            <div>
-              <p>Phone</p>
-              <FormikField name="phone" placeholder="Phone" type="text" />
-            </div>
-          </Row>
-          <Row>
-            <div>
-              <p>Country at Registration</p>
-              <CountrySelect fieldName="country" />
-            </div>
-            <div>
-              <p>Avatar URL</p>
-              <FormikField name="avatar" placeholder="Avatar URL" type="text" />
-            </div>
-          </Row>
-          <UserRoleRow>
-            <div>
-              <p>Role</p>
-              <FormikField name="role" type="select">
-                {Object.values(UserRole).map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </FormikField>
-            </div>
-            <div className="centered-checkbox">
-              <p>Verified</p>
-              <div style={{ display: 'flex', height: '100%' }}>
-                <FormikField name="verified" type="checkbox" />
-              </div>
-            </div>
-          </UserRoleRow>
-          <AddressBlock>
-            <p>Address</p>
+          <fieldset disabled={readOnly}>
+            {editedItem && (
+              <>
+                <SectionHeader>User Information</SectionHeader>
+                <MetadataBlock>
+                  <div>
+                    <p>User ID</p>
+                    <span>{editedItem.id}</span>
+                  </div>
+                  <div>
+                    <p>Created At</p>
+                    <span>
+                      {editedItem.createdAt
+                        ? formatDate(editedItem.createdAt)
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <p>Updated At</p>
+                    <span>
+                      {editedItem.updatedAt
+                        ? formatDate(editedItem.updatedAt)
+                        : '—'}
+                    </span>
+                  </div>
+                </MetadataBlock>
+              </>
+            )}
             <Row>
               <div>
-                <p>Line 1</p>
+                <p>First Name</p>
                 <FormikField
-                  name="address.line1"
-                  placeholder="Line 1"
+                  name="firstName"
+                  placeholder="First Name"
                   type="text"
                 />
               </div>
               <div>
-                <p>Line 2</p>
+                <p>Last Name</p>
                 <FormikField
-                  name="address.line2"
-                  placeholder="Line 2"
+                  name="lastName"
+                  placeholder="Last Name"
                   type="text"
                 />
               </div>
             </Row>
             <Row>
               <div>
-                <p>City</p>
-                <FormikField
-                  name="address.city"
-                  placeholder="City"
-                  type="text"
-                />
+                <p>Email</p>
+                <FormikField name="email" placeholder="Email" type="email" />
               </div>
               <div>
-                <p>State</p>
-                <FormikField
-                  name="address.state"
-                  placeholder="State"
-                  type="text"
-                />
+                <p>Phone</p>
+                <FormikField name="phone" placeholder="Phone" type="text" />
               </div>
             </Row>
             <Row>
               <div>
-                <p>Postal Code</p>
+                <p>Country at Registration</p>
+                <CountrySelect fieldName="country" />
+              </div>
+              <div>
+                <p>Avatar URL</p>
                 <FormikField
-                  name="address.postal_code"
-                  placeholder="Postal Code"
+                  name="avatar"
+                  placeholder="Avatar URL"
                   type="text"
                 />
               </div>
-              <div>
-                <p>Country</p>
-                <CountrySelect fieldName="address.country" />
-              </div>
             </Row>
-          </AddressBlock>
-          {editedItem && (
-            <>
-              <SectionHeader>Read-Only Metadata</SectionHeader>
-              <FullRow>
-                <div>
-                  <p>UUID</p>
-                  <FormikField name="uuid" type="text" readOnly />
+            <UserRoleRow>
+              <div>
+                <p>Role</p>
+                <FormikField name="role" type="select">
+                  {Object.values(UserRole).map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </FormikField>
+              </div>
+              <div className="centered-checkbox">
+                <p>Verified</p>
+                <div style={{ display: 'flex', height: '100%' }}>
+                  <FormikField name="verified" type="checkbox" />
                 </div>
-              </FullRow>
+              </div>
+            </UserRoleRow>
+            <AddressBlock>
+              <p>Address</p>
               <Row>
                 <div>
-                  <p>Verification Token</p>
-                  <FormikField name="verificationToken" type="text" readOnly />
+                  <p>Line 1</p>
+                  <FormikField
+                    name="address.line1"
+                    placeholder="Line 1"
+                    type="text"
+                  />
                 </div>
                 <div>
-                  <p>Verification Expires</p>
+                  <p>Line 2</p>
                   <FormikField
-                    name="verificationExpires"
+                    name="address.line2"
+                    placeholder="Line 2"
                     type="text"
-                    readOnly
                   />
                 </div>
               </Row>
               <Row>
                 <div>
-                  <p>Password Reset Token</p>
-                  <FormikField name="passwordResetToken" type="text" readOnly />
+                  <p>City</p>
+                  <FormikField
+                    name="address.city"
+                    placeholder="City"
+                    type="text"
+                  />
                 </div>
                 <div>
-                  <p>Password Reset Expires</p>
+                  <p>State</p>
                   <FormikField
-                    name="passwordResetExpires"
+                    name="address.state"
+                    placeholder="State"
                     type="text"
-                    readOnly
                   />
                 </div>
               </Row>
-            </>
-          )}
+              <Row>
+                <div>
+                  <p>Postal Code</p>
+                  <FormikField
+                    name="address.postal_code"
+                    placeholder="Postal Code"
+                    type="text"
+                  />
+                </div>
+                <div>
+                  <p>Country</p>
+                  <CountrySelect fieldName="address.country" />
+                </div>
+              </Row>
+            </AddressBlock>
+            {editedItem && (
+              <>
+                <SectionHeader>Read-Only Metadata</SectionHeader>
+                <FullRow>
+                  <div>
+                    <p>UUID</p>
+                    <FormikField name="uuid" type="text" readOnly />
+                  </div>
+                </FullRow>
+                <Row>
+                  <div>
+                    <p>Verification Token</p>
+                    <FormikField
+                      name="verificationToken"
+                      type="text"
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <p>Verification Expires</p>
+                    <FormikField
+                      name="verificationExpires"
+                      type="text"
+                      readOnly
+                    />
+                  </div>
+                </Row>
+                <Row>
+                  <div>
+                    <p>Password Reset Token</p>
+                    <FormikField
+                      name="passwordResetToken"
+                      type="text"
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <p>Password Reset Expires</p>
+                    <FormikField
+                      name="passwordResetExpires"
+                      type="text"
+                      readOnly
+                    />
+                  </div>
+                </Row>
+              </>
+            )}
+          </fieldset>
           <FormButtons>
             <Button
-              type="reset"
+              type={readOnly ? 'button' : 'reset'}
               onClick={onClose}
               $size="sm"
               $inverted
               disabled={isSubmitting}>
-              Cancel
+              {readOnly ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
-              {isSubmitting && <SpinnerIcon height={22} />} Save
-            </Button>
+            {!readOnly && (
+              <Button
+                type="submit"
+                $size="sm"
+                disabled={!dirty || isSubmitting}>
+                {isSubmitting && <SpinnerIcon height={22} />} Save
+              </Button>
+            )}
           </FormButtons>
         </Form>
       )}
