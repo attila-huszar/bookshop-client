@@ -1,13 +1,18 @@
 import type { PaymentIntentStatus, StripeError } from '@/types/Stripe'
 
-const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
+type PendingPaymentIntentStatus = Exclude<
+  PaymentIntentStatus,
+  'succeeded' | 'requires_capture'
+>
+
+/**
+ * Returns customer-facing copy for Stripe states that have not reached the
+ * checkout success view. Successful and capturable intents use `paymentReceived`.
+ */
+const getPaymentIntentStatusLabel = (
+  status: PendingPaymentIntentStatus,
+): string => {
   switch (status) {
-    case 'succeeded':
-      return '✅ Your payment was successful.'
-
-    case 'processing':
-      return '⏳ Your payment is processing.'
-
     case 'requires_payment_method':
       return '❌ We could not complete your payment. Please try another method.'
 
@@ -17,8 +22,8 @@ const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
     case 'requires_action':
       return '🔐 Please complete the required verification.'
 
-    case 'requires_capture':
-      return '✅ Payment approved and awaiting capture.'
+    case 'processing':
+      return '⏳ Your payment is processing.'
 
     case 'canceled':
       return '❌ Payment canceled.'
@@ -33,15 +38,20 @@ const getCheckoutSubmitMessages = () => ({
   submitFailed: 'We could not process your payment. Please try again.',
 })
 
+/**
+ * Returns copy for the checkout status view as Stripe resolves the payment.
+ * The success copy acknowledges payment; order confirmation remains webhook-driven.
+ */
 const getCheckoutStatusMessages = () => ({
+  intent: getPaymentIntentStatusLabel,
   retry: (attempt: number, maxRetries: number): string =>
     `🔄 We are retrying payment status (${attempt}/${maxRetries})...`,
-  fetchFailed: (details: string): string =>
-    `⚠️ We could not retrieve payment status: ${details}. Please refresh this page. If the issue continues, contact support and include your payment ID.`,
   timeout: (timeoutSeconds: number): string =>
     `⏳ Payment confirmation is taking longer than expected (${timeoutSeconds}s). Please refresh shortly.`,
-  paymentReceived: '✅ Payment received. Thank you.',
-  intent: getPaymentIntentStatusLabel,
+  fetchFailed: (details: string): string =>
+    `⚠️ We could not retrieve payment status: ${details}. Please refresh this page. If the issue continues, contact support and include your payment ID.`,
+  paymentReceived:
+    '✅ Payment successful — we’ll email you when your order is confirmed.',
 })
 
 export type CheckoutSubmitText = ReturnType<typeof getCheckoutSubmitMessages>

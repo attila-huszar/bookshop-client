@@ -5,10 +5,17 @@ import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 
-export const successStatuses: PaymentIntentStatus[] = [
+export const successStatuses = [
   'succeeded',
   'requires_capture',
-]
+] as const satisfies readonly PaymentIntentStatus[]
+
+type SuccessPaymentIntentStatus = (typeof successStatuses)[number]
+
+export const isSuccessPaymentIntentStatus = (
+  status: PaymentIntentStatus,
+): status is SuccessPaymentIntentStatus =>
+  successStatuses.some((successStatus) => successStatus === status)
 
 const warningStatuses: PaymentIntentStatus[] = [
   'requires_payment_method',
@@ -22,6 +29,10 @@ const getStripeStatusLine = (
   statusText: CheckoutStatusText,
 ): string => {
   if (!status.messageOverride) {
+    if (isSuccessPaymentIntentStatus(status.intent)) {
+      return statusText.paymentReceived
+    }
+
     return statusText.intent(status.intent)
   }
 
@@ -49,30 +60,26 @@ type PaymentStatusView = {
   animation: object
   isLooping: boolean
   primaryLine: string
-  secondaryLine: string | null
 }
 
 export const getPaymentStatusView = ({
   status,
   statusText,
 }: PaymentStatusViewArgs): PaymentStatusView => {
-  const isStripeSuccess = successStatuses.includes(status.intent)
-  const isWarning = warningStatuses.includes(status.intent)
-  const statusLine = getStripeStatusLine(status, statusText)
-
-  if (isStripeSuccess) {
+  if (isSuccessPaymentIntentStatus(status.intent)) {
     return {
       animation: checkmarkAnim,
       isLooping: false,
       primaryLine: statusText.paymentReceived,
-      secondaryLine: null,
     }
   }
+
+  const isWarning = warningStatuses.includes(status.intent)
+  const statusLine = getStripeStatusLine(status, statusText)
 
   return {
     animation: isWarning ? exclamationAnim : clockAnim,
     isLooping: !isWarning,
     primaryLine: statusLine,
-    secondaryLine: null,
   }
 }

@@ -9,7 +9,10 @@ import {
   usePaymentStatus,
 } from '@/hooks'
 import logo from '@/assets/image/logo.png'
-import { getPaymentStatusView, successStatuses } from './PaymentStatus.helpers'
+import {
+  getPaymentStatusView,
+  isSuccessPaymentIntentStatus,
+} from './PaymentStatus.helpers'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {
@@ -18,32 +21,30 @@ export function PaymentStatus() {
   const { getCheckoutStatusMessages } = useMessages()
   const { payment } = useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
-  const hasHandledConfirmedOrder = useRef(false)
+  const hasHandledSuccessfulPayment = useRef(false)
 
-  const isStripeSuccess = successStatuses.includes(status.intent)
-  const isOrderConfirmed = isStripeSuccess
+  const isStripeSuccess = isSuccessPaymentIntentStatus(status.intent)
 
   const statusText = getCheckoutStatusMessages()
 
   useEffect(() => {
-    if (!isOrderConfirmed) return
-    if (hasHandledConfirmedOrder.current) return
+    if (!isStripeSuccess) return
+    if (hasHandledSuccessfulPayment.current) return
 
-    hasHandledConfirmedOrder.current = true
+    hasHandledSuccessfulPayment.current = true
 
     dispatch(cartClear())
-  }, [dispatch, isOrderConfirmed])
+  }, [dispatch, isStripeSuccess])
 
   const handleBackToShop = () => {
     dispatch(paymentSessionReset())
     void navigate('/')
   }
 
-  const { animation, isLooping, primaryLine, secondaryLine } =
-    getPaymentStatusView({
-      status,
-      statusText,
-    })
+  const { animation, isLooping, primaryLine } = getPaymentStatusView({
+    status,
+    statusText,
+  })
 
   return (
     <StyledPaymentStatus>
@@ -55,7 +56,6 @@ export function PaymentStatus() {
         <Lottie src={animation} autoplay loop={isLooping} />
       </LottieWrapper>
       <p>{primaryLine}</p>
-      {secondaryLine && <p>{secondaryLine}</p>}
       <button onClick={handleBackToShop} type="button">
         Back to Shop
       </button>
