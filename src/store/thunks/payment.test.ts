@@ -2,11 +2,13 @@ import ky, { HTTPError } from 'ky'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as paymentsApi from '@/api/payments'
 import { log } from '@/services'
+import { paymentIdempotencyKey } from '@/constants'
 import * as errorsModule from '@/errors'
 import { paymentCreate } from './payment'
 
 afterEach(() => {
   vi.restoreAllMocks()
+  sessionStorage.removeItem(paymentIdempotencyKey)
 })
 
 const createHttpErrorWithStatus = async (
@@ -81,5 +83,26 @@ describe('payment thunk - paymentCreate', () => {
     expect(logErrorSpy).toHaveBeenCalledWith('Order creation failed fallback', {
       error: genericError,
     })
+  })
+
+  it('reuses the same idempotency key for a retry of the same payment request', async () => {
+    const request = {
+      items: [{ id: 1, quantity: 2 }],
+      expectedTotal: 36,
+    }
+    const postPaymentIntentSpy = vi
+      .spyOn(paymentsApi, 'postPaymentIntent')
+      .mockRejectedValue(new Error('Network issue'))
+    vi.spyOn(errorsModule, 'handleError').mockReturnValue(
+      new Error('Order creation failed fallback'),
+    )
+
+    await paymentCreate(request)(vi.fn(), vi.fn(), undefined)
+    await paymentCreate(request)(vi.fn(), vi.fn(), undefined)
+
+    expect(postPaymentIntentSpy).toHaveBeenCalledTimes(2)
+    expect(postPaymentIntentSpy.mock.calls[0]?.[1]).toBe(
+      postPaymentIntentSpy.mock.calls[1]?.[1],
+    )
   })
 })
