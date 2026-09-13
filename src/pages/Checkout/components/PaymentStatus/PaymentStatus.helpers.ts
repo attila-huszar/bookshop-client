@@ -1,6 +1,5 @@
 import type { CheckoutStatusText } from '@/hooks/useMessages'
 import type { PaymentStatusState } from '@/hooks/usePaymentStatus'
-import type { OrderSyncIssueCode } from '@/types/Order'
 import type { PaymentIntentStatus } from '@/types/Stripe'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
@@ -41,23 +40,8 @@ const getStripeStatusLine = (
   }
 }
 
-const getStatusLine = (
-  syncedPaymentStatus: PaymentIntentStatus | null,
-  status: PaymentStatusState,
-  statusText: CheckoutStatusText,
-): string => {
-  if (syncedPaymentStatus) {
-    return statusText.intent(syncedPaymentStatus)
-  }
-
-  return getStripeStatusLine(status, statusText)
-}
-
 type PaymentStatusViewArgs = {
   status: PaymentStatusState
-  orderSyncIssueCode: OrderSyncIssueCode | null
-  syncedPaymentStatus: PaymentIntentStatus | null
-  orderSyncAttempt: number
   statusText: CheckoutStatusText
 }
 
@@ -68,77 +52,20 @@ type PaymentStatusView = {
   secondaryLine: string | null
 }
 
-const toOptionalLine = (line: string): string | null => {
-  if (!line.trim()) return null
-  return line
-}
-
 export const getPaymentStatusView = ({
   status,
-  orderSyncIssueCode,
-  syncedPaymentStatus,
-  orderSyncAttempt,
   statusText,
 }: PaymentStatusViewArgs): PaymentStatusView => {
   const isStripeSuccess = successStatuses.includes(status.intent)
-  const hasHardSyncError =
-    orderSyncIssueCode !== null && orderSyncIssueCode !== 'timeout'
   const isWarning = warningStatuses.includes(status.intent)
-  const isOrderConfirmed = Boolean(
-    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
-  )
-  const statusLine = getStatusLine(syncedPaymentStatus, status, statusText)
+  const statusLine = getStripeStatusLine(status, statusText)
 
-  if (isOrderConfirmed) {
+  if (isStripeSuccess) {
     return {
       animation: checkmarkAnim,
       isLooping: false,
-      primaryLine: statusText.orderConfirmed,
+      primaryLine: statusText.paymentReceived,
       secondaryLine: null,
-    }
-  }
-
-  if (isStripeSuccess) {
-    let animation: object = clockAnim
-    let isLooping = true
-    let primaryLine = statusText.paymentReceived
-
-    if (hasHardSyncError) {
-      animation = exclamationAnim
-      isLooping = false
-    }
-
-    if (syncedPaymentStatus === 'canceled') {
-      animation = exclamationAnim
-      isLooping = false
-      primaryLine = statusText.paymentCanceled
-    } else if (
-      syncedPaymentStatus &&
-      !successStatuses.includes(syncedPaymentStatus)
-    ) {
-      animation = exclamationAnim
-      isLooping = false
-      primaryLine = statusLine
-    } else if (orderSyncIssueCode === 'unauthorized') {
-      primaryLine = statusText.verificationIssue
-    }
-
-    const secondaryLine =
-      syncedPaymentStatus && !successStatuses.includes(syncedPaymentStatus)
-        ? null
-        : toOptionalLine(
-            statusText.detail(
-              orderSyncIssueCode,
-              syncedPaymentStatus,
-              orderSyncAttempt,
-            ),
-          )
-
-    return {
-      animation,
-      isLooping,
-      primaryLine,
-      secondaryLine: secondaryLine === primaryLine ? null : secondaryLine,
     }
   }
 

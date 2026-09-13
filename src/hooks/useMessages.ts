@@ -1,4 +1,3 @@
-import type { OrderSyncIssueCode } from '@/types/Order'
 import type { PaymentIntentStatus, StripeError } from '@/types/Stripe'
 
 const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
@@ -42,41 +41,8 @@ const getCheckoutStatusMessages = () => ({
   timeout: (timeoutSeconds: number): string =>
     `⏳ Payment confirmation is taking longer than expected (${timeoutSeconds}s). Please refresh shortly.`,
   paymentReceived: '✅ Payment received. Thank you.',
-  paymentCanceled: '❌ Payment canceled. Your order was not finalized.',
-  verificationIssue:
-    '🔒 We could not verify your order status for this session. Please refresh.',
-  orderConfirmed: '✅ Order confirmed. Thank you for your purchase.',
   intent: getPaymentIntentStatusLabel,
-  detail: getCheckoutOrderSyncDetailMessage,
 })
-
-const getCheckoutOrderSyncDetailMessage = (
-  orderSyncIssueCode: OrderSyncIssueCode | null,
-  syncedPaymentStatus: PaymentIntentStatus | null = null,
-  syncAttempt = 0,
-): string => {
-  const issueDetailByCode: Record<OrderSyncIssueCode, string> = {
-    timeout: '⏳ Finalization is taking longer than expected.',
-    retryable:
-      '🔄 Temporary issue while finalizing your order. Please refresh shortly.',
-    unauthorized: '',
-    unknown: '⚠️ We could not confirm your order status yet. Please refresh.',
-  }
-
-  if (syncedPaymentStatus === 'canceled') {
-    return '❌ No charge was captured for this payment.'
-  }
-
-  if (orderSyncIssueCode === null) {
-    if (syncAttempt < 3) return ''
-    if (syncAttempt >= 5) {
-      return '⏳ Finalizing is taking longer than usual, but your order is still processing. Thank you for your patience.'
-    }
-    return '🧾 We are finalizing your order.'
-  }
-
-  return issueDetailByCode[orderSyncIssueCode]
-}
 
 export type CheckoutSubmitText = ReturnType<typeof getCheckoutSubmitMessages>
 export type CheckoutStatusText = ReturnType<typeof getCheckoutStatusMessages>

@@ -3,13 +3,7 @@ import type { Book, BookWithAuthorId } from './Book'
 import type { Cart } from './Cart'
 import type { Filters } from './Filters'
 import type { News } from './News'
-import type {
-  Order,
-  OrderSyncIssueCode,
-  OrderSyncResponse,
-  PaymentCreateIssueCode,
-  PaymentSession,
-} from './Order'
+import type { Order, PaymentCreateIssueCode, PaymentSession } from './Order'
 import type { User, UserWithMetadata } from './User'
 
 export type BookState = {
@@ -72,11 +66,6 @@ export type PaymentState = {
   paymentCreateIssueCode: PaymentCreateIssueCode | null
   paymentRetrieveError: string | null
   paymentCancelError: string | null
-  orderSyncIsLoading: boolean
-  orderSyncAttempt: number
-  orderSyncError: string | null
-  orderSyncIssueCode: OrderSyncIssueCode | null
-  orderSync: OrderSyncResponse | null
 }
 
 export type CMSState = {

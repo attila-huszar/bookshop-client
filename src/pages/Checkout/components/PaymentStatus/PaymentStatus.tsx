@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
-import {
-  cartClear,
-  orderSyncAfterWebhook,
-  paymentSelector,
-  paymentSessionReset,
-} from '@/store'
+import { cartClear, paymentSelector, paymentSessionReset } from '@/store'
 import {
   useAppDispatch,
   useAppSelector,
@@ -21,28 +16,14 @@ export function PaymentStatus() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { getCheckoutStatusMessages } = useMessages()
-  const { payment, orderSyncAttempt, orderSyncIssueCode, orderSync } =
-    useAppSelector(paymentSelector)
+  const { payment } = useAppSelector(paymentSelector)
   const { status } = usePaymentStatus(payment?.paymentToken)
-  const lastSyncedPaymentId = useRef<string | null>(null)
   const hasHandledConfirmedOrder = useRef(false)
 
-  const paymentId = payment?.paymentId
   const isStripeSuccess = successStatuses.includes(status.intent)
-  const syncedPaymentStatus = orderSync?.paymentStatus ?? null
-  const isOrderConfirmed = Boolean(
-    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
-  )
+  const isOrderConfirmed = isStripeSuccess
 
   const statusText = getCheckoutStatusMessages()
-
-  useEffect(() => {
-    if (!paymentId || !isStripeSuccess || isOrderConfirmed) return
-    if (lastSyncedPaymentId.current === paymentId) return
-
-    lastSyncedPaymentId.current = paymentId
-    void dispatch(orderSyncAfterWebhook({ paymentId }))
-  }, [dispatch, isStripeSuccess, isOrderConfirmed, paymentId])
 
   useEffect(() => {
     if (!isOrderConfirmed) return
@@ -61,9 +42,6 @@ export function PaymentStatus() {
   const { animation, isLooping, primaryLine, secondaryLine } =
     getPaymentStatusView({
       status,
-      orderSyncIssueCode,
-      syncedPaymentStatus,
-      orderSyncAttempt,
       statusText,
     })
 

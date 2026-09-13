@@ -1,13 +1,5 @@
-import { isHTTPError, isNetworkError, isTimeoutError } from 'ky'
+import { isHTTPError } from 'ky'
 import { log } from '@/services'
-import {
-  ORDER_SYNC_RETRY_BASE_DELAY_MS,
-  ORDER_SYNC_RETRY_MAX_DELAY_MS,
-  RETRYABLE_STATUS_CODES,
-  TIMEOUT_STATUS_CODES,
-  UNAUTHORIZED_STATUS_CODES,
-} from '@/constants'
-import type { OrderSyncIssueCode } from '@/types'
 
 type ErrorResponse = {
   error?: string
@@ -133,53 +125,4 @@ export function handleError({
   }
 
   return new Error(classified.message)
-}
-
-export const parseOrderSyncError = (
-  error: unknown,
-): {
-  message: string
-  code: OrderSyncIssueCode
-} => {
-  if (isTimeoutError(error)) {
-    return {
-      message: 'Order sync request timed out',
-      code: 'timeout',
-    }
-  }
-
-  if (isNetworkError(error)) {
-    return {
-      message: error.message || 'Network error while syncing order status',
-      code: 'retryable',
-    }
-  }
-
-  const classified = classifyError(
-    error,
-    'Request failed while syncing order status',
-  )
-
-  if (classified.status !== undefined) {
-    const { status } = classified
-    const code = UNAUTHORIZED_STATUS_CODES.includes(status)
-      ? 'unauthorized'
-      : TIMEOUT_STATUS_CODES.includes(status)
-        ? 'timeout'
-        : RETRYABLE_STATUS_CODES.includes(status)
-          ? 'retryable'
-          : 'unknown'
-    return { message: classified.message, code }
-  }
-
-  return { message: classified.message, code: 'unknown' }
-}
-
-export const getOrderSyncRetryDelay = (attempt: number): number => {
-  const exponential =
-    ORDER_SYNC_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
-
-  const jitter = exponential * 0.2 * Math.random()
-
-  return Math.min(exponential + jitter, ORDER_SYNC_RETRY_MAX_DELAY_MS)
 }
