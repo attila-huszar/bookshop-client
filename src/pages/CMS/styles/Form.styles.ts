@@ -14,6 +14,12 @@ export const StyledEditDialog = styled.dialog`
   border-radius: 10px;
   background: var(--white);
   box-shadow: var(--shadow);
+
+  fieldset {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
 `
 
 export const DefaultRow = styled.div`

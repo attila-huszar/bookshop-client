@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router'
 import { postVerifyEmail } from '@/api'
 import { ROUTE } from '@/routes'
 import { Loading } from '@/components/Loading/Loading'
-import { handleError } from '@/errors/handleError'
+import { handleError } from '@/errors'
 
 export function VerifyEmail() {
   const navigate = useNavigate()
@@ -31,7 +31,7 @@ export function VerifyEmail() {
 
         void navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
-        const formattedError = await handleError({
+        const formattedError = handleError({
           error,
           message: 'Verification failed, please try again later.',
         })

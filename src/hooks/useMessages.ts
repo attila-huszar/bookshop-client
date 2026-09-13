@@ -1,14 +1,18 @@
-import type { OrderSyncIssueCode } from '@/types/Order'
 import type { PaymentIntentStatus, StripeError } from '@/types/Stripe'
 
-const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
+type PendingPaymentIntentStatus = Exclude<
+  PaymentIntentStatus,
+  'succeeded' | 'requires_capture'
+>
+
+/**
+ * Returns customer-facing copy for Stripe states that have not reached the
+ * checkout success view. Successful and capturable intents use `paymentReceived`.
+ */
+const getPaymentIntentStatusLabel = (
+  status: PendingPaymentIntentStatus,
+): string => {
   switch (status) {
-    case 'succeeded':
-      return '✅ Your payment was successful.'
-
-    case 'processing':
-      return '⏳ Your payment is processing.'
-
     case 'requires_payment_method':
       return '❌ We could not complete your payment. Please try another method.'
 
@@ -18,8 +22,8 @@ const getPaymentIntentStatusLabel = (status: PaymentIntentStatus): string => {
     case 'requires_action':
       return '🔐 Please complete the required verification.'
 
-    case 'requires_capture':
-      return '✅ Payment approved and awaiting capture.'
+    case 'processing':
+      return '⏳ Your payment is processing.'
 
     case 'canceled':
       return '❌ Payment canceled.'
@@ -34,49 +38,21 @@ const getCheckoutSubmitMessages = () => ({
   submitFailed: 'We could not process your payment. Please try again.',
 })
 
+/**
+ * Returns copy for the checkout status view as Stripe resolves the payment.
+ * The success copy acknowledges payment; order confirmation remains webhook-driven.
+ */
 const getCheckoutStatusMessages = () => ({
+  intent: getPaymentIntentStatusLabel,
   retry: (attempt: number, maxRetries: number): string =>
     `🔄 We are retrying payment status (${attempt}/${maxRetries})...`,
-  fetchFailed: (details: string): string =>
-    `⚠️ We could not retrieve payment status: ${details}. Please refresh this page. If the issue continues, contact support and include your payment ID.`,
   timeout: (timeoutSeconds: number): string =>
     `⏳ Payment confirmation is taking longer than expected (${timeoutSeconds}s). Please refresh shortly.`,
-  paymentReceived: '✅ Payment received. Thank you.',
-  paymentCanceled: '❌ Payment canceled. Your order was not finalized.',
-  verificationIssue:
-    '🔒 We could not verify your order status for this session. Please refresh.',
-  orderConfirmed: '✅ Order confirmed. Thank you for your purchase.',
-  intent: getPaymentIntentStatusLabel,
-  detail: getCheckoutOrderSyncDetailMessage,
+  fetchFailed: (details: string): string =>
+    `⚠️ We could not retrieve payment status: ${details}. Please refresh this page. If the issue continues, contact support and include your payment ID.`,
+  paymentReceived:
+    '✅ Payment successful — we’ll email you when your order is confirmed.',
 })
-
-const getCheckoutOrderSyncDetailMessage = (
-  orderSyncIssueCode: OrderSyncIssueCode | null,
-  syncedPaymentStatus: PaymentIntentStatus | null = null,
-  syncAttempt = 0,
-): string => {
-  const issueDetailByCode: Record<OrderSyncIssueCode, string> = {
-    timeout: '⏳ Finalization is taking longer than expected.',
-    retryable:
-      '🔄 Temporary issue while finalizing your order. Please refresh shortly.',
-    unauthorized: '',
-    unknown: '⚠️ We could not confirm your order status yet. Please refresh.',
-  }
-
-  if (syncedPaymentStatus === 'canceled') {
-    return '❌ No charge was captured for this payment.'
-  }
-
-  if (orderSyncIssueCode === null) {
-    if (syncAttempt < 3) return ''
-    if (syncAttempt >= 5) {
-      return '⏳ Finalizing is taking longer than usual, but your order is still processing. Thank you for your patience.'
-    }
-    return '🧾 We are finalizing your order.'
-  }
-
-  return issueDetailByCode[orderSyncIssueCode]
-}
 
 export type CheckoutSubmitText = ReturnType<typeof getCheckoutSubmitMessages>
 export type CheckoutStatusText = ReturnType<typeof getCheckoutStatusMessages>

@@ -1,44 +1,14 @@
 import ky, { HTTPError } from 'ky'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-const postPaymentIntentMock = vi.fn()
-const handleErrorMock = vi.fn()
-const logInfoMock = vi.fn()
-const logWarnMock = vi.fn()
-const logErrorMock = vi.fn()
-const logDebugMock = vi.fn()
-
-vi.mock('@/api', () => ({
-  postPaymentIntent: postPaymentIntentMock,
-  getPaymentIntent: vi.fn(),
-  deletePaymentIntent: vi.fn(),
-  getOrderSyncStatus: vi.fn(),
-}))
-
-vi.mock('@/errors', () => ({
-  handleError: handleErrorMock,
-}))
-
-vi.mock('@/services', () => ({
-  log: {
-    info: logInfoMock,
-    warn: logWarnMock,
-    error: logErrorMock,
-    debug: logDebugMock,
-  },
-}))
-
-beforeEach(() => {
-  vi.resetModules()
-})
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import * as paymentsApi from '@/api/payments'
+import { log } from '@/services'
+import { paymentIdempotencyKey } from '@/constants'
+import * as errorsModule from '@/errors'
+import { paymentCreate } from './payment'
 
 afterEach(() => {
-  postPaymentIntentMock.mockReset()
-  handleErrorMock.mockReset()
-  logInfoMock.mockReset()
-  logWarnMock.mockReset()
-  logErrorMock.mockReset()
-  logDebugMock.mockReset()
+  vi.restoreAllMocks()
+  sessionStorage.removeItem(paymentIdempotencyKey)
 })
 
 const createHttpErrorWithStatus = async (
@@ -67,19 +37,15 @@ const createHttpErrorWithStatus = async (
   throw new Error('Expected ky to throw HTTPError')
 }
 
-const getPaymentCreate = async () => {
-  const module = await import('./payment')
-  return module.paymentCreate
-}
-
 describe('payment thunk - paymentCreate', () => {
   it('maps HTTP 409 errors to price_conflict reject payload', async () => {
     const conflictError = await createHttpErrorWithStatus(409)
 
-    postPaymentIntentMock.mockRejectedValue(conflictError)
-    handleErrorMock.mockResolvedValue(new Error('Prices changed in your cart'))
-
-    const paymentCreate = await getPaymentCreate()
+    vi.spyOn(paymentsApi, 'postPaymentIntent').mockRejectedValue(conflictError)
+    vi.spyOn(errorsModule, 'handleError').mockReturnValue(
+      new Error('Prices changed in your cart'),
+    )
+    const logErrorSpy = vi.spyOn(log, 'error')
 
     const action = await paymentCreate({
       items: [{ id: 1, quantity: 2 }],
@@ -91,18 +57,17 @@ describe('payment thunk - paymentCreate', () => {
       code: 'price_conflict',
       message: 'Prices changed in your cart',
     })
-    expect(logErrorMock).not.toHaveBeenCalled()
+    expect(logErrorSpy).not.toHaveBeenCalled()
   })
 
   it('maps non-409 failures to unknown reject payload', async () => {
     const genericError = new Error('Network issue')
 
-    postPaymentIntentMock.mockRejectedValue(genericError)
-    handleErrorMock.mockResolvedValue(
+    vi.spyOn(paymentsApi, 'postPaymentIntent').mockRejectedValue(genericError)
+    vi.spyOn(errorsModule, 'handleError').mockReturnValue(
       new Error('Order creation failed fallback'),
     )
-
-    const paymentCreate = await getPaymentCreate()
+    const logErrorSpy = vi.spyOn(log, 'error')
 
     const action = await paymentCreate({
       items: [{ id: 1, quantity: 2 }],
@@ -114,12 +79,30 @@ describe('payment thunk - paymentCreate', () => {
       code: 'unknown',
       message: 'Order creation failed fallback',
     })
-    expect(logErrorMock).toHaveBeenCalledTimes(1)
-    expect(logErrorMock).toHaveBeenCalledWith(
-      'Order creation failed fallback',
-      {
-        error: genericError,
-      },
+    expect(logErrorSpy).toHaveBeenCalledTimes(1)
+    expect(logErrorSpy).toHaveBeenCalledWith('Order creation failed fallback', {
+      error: genericError,
+    })
+  })
+
+  it('reuses the same idempotency key for a retry of the same payment request', async () => {
+    const request = {
+      items: [{ id: 1, quantity: 2 }],
+      expectedTotal: 36,
+    }
+    const postPaymentIntentSpy = vi
+      .spyOn(paymentsApi, 'postPaymentIntent')
+      .mockRejectedValue(new Error('Network issue'))
+    vi.spyOn(errorsModule, 'handleError').mockReturnValue(
+      new Error('Order creation failed fallback'),
+    )
+
+    await paymentCreate(request)(vi.fn(), vi.fn(), undefined)
+    await paymentCreate(request)(vi.fn(), vi.fn(), undefined)
+
+    expect(postPaymentIntentSpy).toHaveBeenCalledTimes(2)
+    expect(postPaymentIntentSpy.mock.calls[0]?.[1]).toBe(
+      postPaymentIntentSpy.mock.calls[1]?.[1],
     )
   })
 })

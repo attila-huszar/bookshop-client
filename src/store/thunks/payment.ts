@@ -2,56 +2,37 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { HTTPError } from 'ky'
 import {
   deletePaymentIntent,
-  getOrderSyncStatus,
   getPaymentIntent,
   postPaymentIntent,
-} from '@/api'
+} from '@/api/payments'
 import { log } from '@/services'
-import { ORDER_SYNC_MAX_RETRIES, retryableStatuses } from '@/constants'
+import { sessionStorageAdapter } from '@/helpers'
+import { paymentIdempotencyKey } from '@/constants'
 import { handleError } from '@/errors'
 import {
-  OrderSyncIssueCode,
-  OrderSyncResponse,
   PaymentCreateIssueCode,
   PaymentIntentRequest,
-  PaymentIntentStatus,
   PaymentSession,
 } from '@/types'
-import { setOrderSyncAttempt } from '../slices/payment'
-import { getOrderSyncRetryDelay, parseOrderSyncError } from '../utils'
 
-const createAbortError = () =>
-  new DOMException('Order sync request aborted', 'AbortError')
-
-const isAbortError = (error: unknown): boolean =>
-  (error instanceof DOMException && error.name === 'AbortError') ||
-  (error instanceof Error && error.name === 'AbortError')
-
-const throwIfAborted = (signal: AbortSignal): void => {
-  if (signal.aborted) {
-    throw createAbortError()
-  }
+type StoredPaymentIdempotency = {
+  fingerprint: string
+  key: string
 }
 
-const waitForRetryOrAbort = async (
-  delayMs: number,
-  signal: AbortSignal,
-): Promise<void> => {
-  throwIfAborted(signal)
+const getPaymentIdempotencyKey = (payment: PaymentIntentRequest): string => {
+  const fingerprint = JSON.stringify(payment)
+  const stored = sessionStorageAdapter.get<StoredPaymentIdempotency>(
+    paymentIdempotencyKey,
+  )
 
-  await new Promise<void>((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      signal.removeEventListener('abort', onAbort)
-      resolve()
-    }, delayMs)
+  if (stored?.fingerprint === fingerprint && stored.key) {
+    return stored.key
+  }
 
-    const onAbort = () => {
-      clearTimeout(timeoutId)
-      reject(createAbortError())
-    }
-
-    signal.addEventListener('abort', onAbort, { once: true })
-  })
+  const key = crypto.randomUUID()
+  sessionStorageAdapter.set(paymentIdempotencyKey, { fingerprint, key })
+  return key
 }
 
 type PaymentCreateRejectValue = {
@@ -64,8 +45,13 @@ export const paymentCreate = createAsyncThunk<
   PaymentIntentRequest,
   { rejectValue: PaymentCreateRejectValue }
 >('payment/paymentCreate', async (payment, { rejectWithValue }) => {
+  const idempotencyKey = getPaymentIdempotencyKey(payment)
+
   try {
-    const { paymentId, paymentToken, amount } = await postPaymentIntent(payment)
+    const { paymentId, paymentToken, amount } = await postPaymentIntent(
+      payment,
+      idempotencyKey,
+    )
 
     if (!paymentToken) {
       throw new Error('Invalid response from server: missing payment token')
@@ -75,12 +61,13 @@ export const paymentCreate = createAsyncThunk<
       throw new Error('Invalid response from server: missing payment ID')
     }
 
+    sessionStorageAdapter.remove(paymentIdempotencyKey)
     return { paymentId, paymentToken, amount }
   } catch (error) {
     if (error instanceof HTTPError && error.response.status === 409) {
       const fallbackMessage =
         'Prices have been updated in your cart. Please review before checkout.'
-      const formattedError = await handleError({
+      const formattedError = handleError({
         error,
         message: fallbackMessage,
       })
@@ -93,7 +80,7 @@ export const paymentCreate = createAsyncThunk<
     }
 
     const fallbackMessage = 'Order creation failed'
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: fallbackMessage,
     })
@@ -166,89 +153,16 @@ export const paymentCancel = createAsyncThunk(
       if (stripeError instanceof Error) {
         throw new Error(
           `Unable to cancel checkout right now: ${stripeError.message}`,
+          { cause: stripeError },
         )
       }
 
-      throw new Error('Unable to cancel checkout right now. Please try again.')
+      throw new Error(
+        'Unable to cancel checkout right now. Please try again.',
+        {
+          cause: stripeError,
+        },
+      )
     }
-  },
-)
-
-export const orderSyncAfterWebhook = createAsyncThunk<
-  OrderSyncResponse,
-  { paymentId: string },
-  { rejectValue: { code: OrderSyncIssueCode; message: string } }
->(
-  'payment/orderSyncAfterWebhook',
-  async ({ paymentId }, { rejectWithValue, signal, dispatch }) => {
-    if (!paymentId) {
-      return rejectWithValue({
-        code: 'unknown',
-        message: 'Missing payment ID for order sync',
-      })
-    }
-
-    let lastStatus: PaymentIntentStatus | null = null
-
-    for (let attempt = 1; attempt <= ORDER_SYNC_MAX_RETRIES; attempt++) {
-      dispatch(setOrderSyncAttempt(attempt))
-      throwIfAborted(signal)
-
-      let orderSyncStatus: OrderSyncResponse
-      let orderSyncHttpStatus: number
-
-      try {
-        const orderSyncResponse = await getOrderSyncStatus(paymentId, signal)
-        orderSyncStatus = orderSyncResponse.data
-        orderSyncHttpStatus = orderSyncResponse.status
-      } catch (error) {
-        if (isAbortError(error) || signal.aborted) {
-          throw error
-        }
-
-        const parsedError = await parseOrderSyncError(error)
-        const canRetryTransientError =
-          (parsedError.code === 'retryable' ||
-            parsedError.code === 'timeout') &&
-          attempt < ORDER_SYNC_MAX_RETRIES
-
-        if (canRetryTransientError) {
-          await waitForRetryOrAbort(getOrderSyncRetryDelay(attempt), signal)
-          continue
-        }
-
-        return rejectWithValue({
-          code: parsedError.code,
-          message: `Unable to sync order status: ${parsedError.message}`,
-        })
-      }
-
-      const status = orderSyncStatus.paymentStatus
-      lastStatus = status
-
-      const shouldRetry =
-        orderSyncHttpStatus === 202 || retryableStatuses.includes(status)
-
-      if (shouldRetry && attempt < ORDER_SYNC_MAX_RETRIES) {
-        await waitForRetryOrAbort(getOrderSyncRetryDelay(attempt), signal)
-        continue
-      }
-
-      if (shouldRetry) {
-        break
-      }
-
-      return {
-        ...orderSyncStatus,
-        paymentStatus: status,
-      }
-    }
-
-    const timeoutSuffix = lastStatus ? ` (last status: ${lastStatus})` : ''
-
-    return rejectWithValue({
-      code: 'timeout',
-      message: `Order sync timed out${timeoutSuffix}. Please refresh and verify your order.`,
-    })
   },
 )

@@ -40,9 +40,10 @@ const initialBookValues: BookWithAuthorId = {
 type Props = {
   editedItem: BookWithAuthorId | null
   onClose: () => void
+  readOnly?: boolean
 }
 
-export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
+export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const dispatch = useAppDispatch()
   const { authors } = useAppSelector((state) => state.cms)
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
@@ -141,185 +142,194 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose }) => {
       onSubmit={handleSubmit}>
       {({ values, dirty, isSubmitting, setFieldValue }) => (
         <Form>
-          {editedItem && (
-            <>
-              <SectionHeader>Book Information</SectionHeader>
-              <MetadataBlock>
-                <div>
-                  <p>Book ID</p>
-                  <span>{editedItem.id}</span>
-                </div>
-                <div>
-                  <p>Created At</p>
-                  <span>
-                    {editedItem.createdAt
-                      ? formatDate(editedItem.createdAt)
-                      : '—'}
-                  </span>
-                </div>
-                <div>
-                  <p>Updated At</p>
-                  <span>
-                    {editedItem.updatedAt
-                      ? formatDate(editedItem.updatedAt)
-                      : '—'}
-                  </span>
-                </div>
-              </MetadataBlock>
-            </>
-          )}
-          <BookTitleRow>
-            <div>
-              <p>Title</p>
-              <FormikField name="title" placeholder="Title" type="text" />
-            </div>
-            <div>
-              <p>Author</p>
-              <FormikField name="authorId" type="select">
-                <option value="" hidden>
-                  Please select an author...
-                </option>
-                {authors.map((author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name}
+          <fieldset disabled={readOnly}>
+            {editedItem && (
+              <>
+                <SectionHeader>Book Information</SectionHeader>
+                <MetadataBlock>
+                  <div>
+                    <p>Book ID</p>
+                    <span>{editedItem.id}</span>
+                  </div>
+                  <div>
+                    <p>Created At</p>
+                    <span>
+                      {editedItem.createdAt
+                        ? formatDate(editedItem.createdAt)
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <p>Updated At</p>
+                    <span>
+                      {editedItem.updatedAt
+                        ? formatDate(editedItem.updatedAt)
+                        : '—'}
+                    </span>
+                  </div>
+                </MetadataBlock>
+              </>
+            )}
+            <BookTitleRow>
+              <div>
+                <p>Title</p>
+                <FormikField name="title" placeholder="Title" type="text" />
+              </div>
+              <div>
+                <p>Author</p>
+                <FormikField name="authorId" type="select">
+                  <option value="" hidden>
+                    Please select an author...
                   </option>
-                ))}
-              </FormikField>
-            </div>
-            <div>
-              <p>Published</p>
-              <FormikField
-                name="publishYear"
-                placeholder="Published"
-                type="number"
-              />
-            </div>
-          </BookTitleRow>
-          <FullRow>
-            <div>
-              <p>Description</p>
-              <FormikField
-                name="description"
-                placeholder="Description"
-                type="textarea"
-                rows={4}
-              />
-            </div>
-          </FullRow>
-          <BookGenreRow>
-            <div>
-              <p>Genre</p>
-              <FormikField name="genre" placeholder="Genre" type="text" />
-            </div>
-            <div>
-              <p>Rating</p>
-              <FormikField name="rating" placeholder="Rating" type="number" />
-            </div>
-          </BookGenreRow>
-          <Row>
-            <div>
-              <p>Price</p>
-              <FormikField name="price" placeholder="Price" type="number" />
-            </div>
-            <div>
-              <p>Discount %</p>
-              <FormikField
-                name="discount"
-                placeholder="Discount"
-                type="number"
-              />
-            </div>
-            <div>
-              <p>Discount Price</p>
-              {(() => {
-                const price = Number(values.price) || 0
-                const discount = Number(values.discount) || 0
-                const discountPrice = (price * (1 - discount / 100)).toFixed(2)
-
-                return (
-                  <FormikField
-                    value={discountPrice}
-                    readOnly
-                    name="discountPrice"
-                    placeholder="Discount Price"
-                    type="number"
-                  />
-                )
-              })()}
-            </div>
-          </Row>
-          <BookSettingsRow>
-            <div style={{ position: 'relative' }}>
-              <p>Image URL</p>
-              <FormikField
-                name="imgUrl"
-                placeholder="Image URL"
-                type="text"
-                onMouseEnter={() => setShowBookCover(true)}
-                onMouseMove={debouncedMouseMove}
-                onMouseLeave={() => setShowBookCover(false)}
-              />
-              {showBookCover && (
-                <img
-                  src={values.imgUrl}
-                  style={{
-                    display: 'block',
-                    position: 'absolute',
-                    top: mousePos.y - 160,
-                    left: mousePos.x + 8,
-                    maxHeight: '10rem',
-                    boxShadow: 'var(--shadow)',
-                    borderRadius: 6,
-                    zIndex: 1000,
-                    pointerEvents: 'none',
-                  }}
-                  alt="Book cover preview"
+                  {authors.map((author) => (
+                    <option key={author.id} value={author.id}>
+                      {author.name}
+                    </option>
+                  ))}
+                </FormikField>
+              </div>
+              <div>
+                <p>Published</p>
+                <FormikField
+                  name="publishYear"
+                  placeholder="Published"
+                  type="number"
                 />
-              )}
-            </div>
-            <div>
-              <IconButton
-                type="button"
-                onClick={handleProductImageClick}
-                title="Upload Image"
-                icon={<UploadIcon />}
-                $size="lg"
-              />
-              <input
-                type="file"
-                name="productImageInput"
-                aria-label="Upload Product Image"
-                onChange={(e) => {
-                  handleProductImageChange(e)
-                    .then((url) => setFieldValue('imgUrl', url))
-                    .catch(() => setFieldValue('imgUrl', ''))
-                }}
-                accept="image/*"
-                ref={productImageInputRef}
-                style={{ display: 'none' }}
-              />
-            </div>
-            <div>
-              <p>Top Sellers</p>
-              <FormikField name="topSellers" type="checkbox" />
-            </div>
-            <div>
-              <p>New Release</p>
-              <FormikField name="newRelease" type="checkbox" />
-            </div>
-          </BookSettingsRow>
+              </div>
+            </BookTitleRow>
+            <FullRow>
+              <div>
+                <p>Description</p>
+                <FormikField
+                  name="description"
+                  placeholder="Description"
+                  type="textarea"
+                  rows={4}
+                />
+              </div>
+            </FullRow>
+            <BookGenreRow>
+              <div>
+                <p>Genre</p>
+                <FormikField name="genre" placeholder="Genre" type="text" />
+              </div>
+              <div>
+                <p>Rating</p>
+                <FormikField name="rating" placeholder="Rating" type="number" />
+              </div>
+            </BookGenreRow>
+            <Row>
+              <div>
+                <p>Price</p>
+                <FormikField name="price" placeholder="Price" type="number" />
+              </div>
+              <div>
+                <p>Discount %</p>
+                <FormikField
+                  name="discount"
+                  placeholder="Discount"
+                  type="number"
+                />
+              </div>
+              <div>
+                <p>Discount Price</p>
+                {(() => {
+                  const price = Number(values.price) || 0
+                  const discount = Number(values.discount) || 0
+                  const discountPrice = (price * (1 - discount / 100)).toFixed(
+                    2,
+                  )
+
+                  return (
+                    <FormikField
+                      value={discountPrice}
+                      readOnly
+                      name="discountPrice"
+                      placeholder="Discount Price"
+                      type="number"
+                    />
+                  )
+                })()}
+              </div>
+            </Row>
+            <BookSettingsRow>
+              <div style={{ position: 'relative' }}>
+                <p>Image URL</p>
+                <FormikField
+                  name="imgUrl"
+                  placeholder="Image URL"
+                  type="text"
+                  onMouseEnter={() => setShowBookCover(true)}
+                  onMouseMove={debouncedMouseMove}
+                  onMouseLeave={() => setShowBookCover(false)}
+                />
+                {showBookCover && (
+                  <img
+                    src={values.imgUrl}
+                    style={{
+                      display: 'block',
+                      position: 'absolute',
+                      top: mousePos.y - 160,
+                      left: mousePos.x + 8,
+                      maxHeight: '10rem',
+                      boxShadow: 'var(--shadow)',
+                      borderRadius: 6,
+                      zIndex: 1000,
+                      pointerEvents: 'none',
+                    }}
+                    alt="Book cover preview"
+                  />
+                )}
+              </div>
+              <div>
+                <IconButton
+                  type="button"
+                  onClick={handleProductImageClick}
+                  title="Upload Image"
+                  icon={<UploadIcon />}
+                  $size="lg"
+                />
+                <input
+                  type="file"
+                  name="productImageInput"
+                  aria-label="Upload Product Image"
+                  onChange={(e) => {
+                    handleProductImageChange(e)
+                      .then((url) => setFieldValue('imgUrl', url))
+                      .catch(() => setFieldValue('imgUrl', ''))
+                  }}
+                  accept="image/*"
+                  ref={productImageInputRef}
+                  style={{ display: 'none' }}
+                />
+              </div>
+              <div>
+                <p>Top Sellers</p>
+                <FormikField name="topSellers" type="checkbox" />
+              </div>
+              <div>
+                <p>New Release</p>
+                <FormikField name="newRelease" type="checkbox" />
+              </div>
+            </BookSettingsRow>
+          </fieldset>
           <FormButtons>
             <Button
-              type="reset"
+              type={readOnly ? 'button' : 'reset'}
               onClick={onClose}
               $size="sm"
               $inverted
               disabled={isSubmitting}>
-              Cancel
+              {readOnly ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
-              {isSubmitting && <SpinnerIcon height={22} />} Save
-            </Button>
+            {!readOnly && (
+              <Button
+                type="submit"
+                $size="sm"
+                disabled={!dirty || isSubmitting}>
+                {isSubmitting && <SpinnerIcon height={22} />} Save
+              </Button>
+            )}
           </FormButtons>
         </Form>
       )}

@@ -6,7 +6,7 @@ let refreshPromise: Promise<unknown> | null = null
 export const authRequest = baseRequest.extend({
   hooks: {
     beforeRequest: [
-      (request) => {
+      ({ request }) => {
         const accessToken = store.getState().user.accessToken
 
         if (accessToken) {
@@ -15,7 +15,7 @@ export const authRequest = baseRequest.extend({
       },
     ],
     afterResponse: [
-      async (request, options, response) => {
+      async ({ request, options, response }) => {
         const authRetryAttempted = options.context.authRetryAttempted === true
 
         if (response.status === 401 && !authRetryAttempted) {

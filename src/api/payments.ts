@@ -1,6 +1,5 @@
 import { authRequest, PATH } from '.'
 import type {
-  OrderSyncResponse,
   PaymentIntentRequest,
   PaymentIntentResponse,
   PaymentSession,
@@ -18,10 +17,14 @@ export const getPaymentIntent = async (
 
 export const postPaymentIntent = async (
   payment: PaymentIntentRequest,
+  idempotencyKey: string,
 ): Promise<PaymentSession> => {
   const response = await authRequest.post<PaymentSession>(PATH.payments, {
     json: payment,
     credentials: 'include',
+    headers: {
+      'Idempotency-Key': idempotencyKey,
+    },
   })
   return await response.json()
 }
@@ -34,16 +37,4 @@ export const deletePaymentIntent = async (
     { credentials: 'include' },
   )
   return await response.json()
-}
-
-export const getOrderSyncStatus = async (
-  paymentId: string,
-  signal?: AbortSignal,
-): Promise<{ status: number; data: OrderSyncResponse }> => {
-  const response = await authRequest.get<OrderSyncResponse>(
-    `${PATH.payments}/${paymentId}/order-sync`,
-    { credentials: 'include', signal, retry: 0 },
-  )
-  const data = await response.json()
-  return { status: response.status, data }
 }

@@ -1,16 +1,21 @@
-import type { LottieOptions } from 'lottie-react'
 import type { CheckoutStatusText } from '@/hooks/useMessages'
 import type { PaymentStatusState } from '@/hooks/usePaymentStatus'
-import type { OrderSyncIssueCode } from '@/types/Order'
 import type { PaymentIntentStatus } from '@/types/Stripe'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 
-export const successStatuses: PaymentIntentStatus[] = [
+export const successStatuses = [
   'succeeded',
   'requires_capture',
-]
+] as const satisfies readonly PaymentIntentStatus[]
+
+type SuccessPaymentIntentStatus = (typeof successStatuses)[number]
+
+export const isSuccessPaymentIntentStatus = (
+  status: PaymentIntentStatus,
+): status is SuccessPaymentIntentStatus =>
+  successStatuses.some((successStatus) => successStatus === status)
 
 const warningStatuses: PaymentIntentStatus[] = [
   'requires_payment_method',
@@ -24,6 +29,10 @@ const getStripeStatusLine = (
   statusText: CheckoutStatusText,
 ): string => {
   if (!status.messageOverride) {
+    if (isSuccessPaymentIntentStatus(status.intent)) {
+      return statusText.paymentReceived
+    }
+
     return statusText.intent(status.intent)
   }
 
@@ -42,104 +51,35 @@ const getStripeStatusLine = (
   }
 }
 
-const getStatusLine = (
-  syncedPaymentStatus: PaymentIntentStatus | null,
-  status: PaymentStatusState,
-  statusText: CheckoutStatusText,
-): string => {
-  if (syncedPaymentStatus) {
-    return statusText.intent(syncedPaymentStatus)
-  }
-
-  return getStripeStatusLine(status, statusText)
-}
-
 type PaymentStatusViewArgs = {
   status: PaymentStatusState
-  orderSyncIssueCode: OrderSyncIssueCode | null
-  syncedPaymentStatus: PaymentIntentStatus | null
-  orderSyncAttempt: number
   statusText: CheckoutStatusText
 }
 
-const toOptionalLine = (line: string): string | null => {
-  if (!line.trim()) return null
-  return line
+type PaymentStatusView = {
+  animation: object
+  isLooping: boolean
+  primaryLine: string
 }
 
 export const getPaymentStatusView = ({
   status,
-  orderSyncIssueCode,
-  syncedPaymentStatus,
-  orderSyncAttempt,
   statusText,
-}: PaymentStatusViewArgs) => {
-  const isStripeSuccess = successStatuses.includes(status.intent)
-  const hasHardSyncError =
-    orderSyncIssueCode !== null && orderSyncIssueCode !== 'timeout'
-  const isWarning = warningStatuses.includes(status.intent)
-  const isOrderConfirmed = Boolean(
-    syncedPaymentStatus && successStatuses.includes(syncedPaymentStatus),
-  )
-  const statusLine = getStatusLine(syncedPaymentStatus, status, statusText)
-
-  if (isOrderConfirmed) {
+}: PaymentStatusViewArgs): PaymentStatusView => {
+  if (isSuccessPaymentIntentStatus(status.intent)) {
     return {
       animation: checkmarkAnim,
       isLooping: false,
-      primaryLine: statusText.orderConfirmed,
-      secondaryLine: null,
+      primaryLine: statusText.paymentReceived,
     }
   }
 
-  if (isStripeSuccess) {
-    let animation: LottieOptions['animationData'] = clockAnim
-    let isLooping = true
-    let primaryLine = statusText.paymentReceived
-
-    if (hasHardSyncError) {
-      animation = exclamationAnim
-      isLooping = false
-    }
-
-    if (syncedPaymentStatus === 'canceled') {
-      animation = exclamationAnim
-      isLooping = false
-      primaryLine = statusText.paymentCanceled
-    } else if (
-      syncedPaymentStatus &&
-      !successStatuses.includes(syncedPaymentStatus)
-    ) {
-      animation = exclamationAnim
-      isLooping = false
-      primaryLine = statusLine
-    } else if (orderSyncIssueCode === 'unauthorized') {
-      primaryLine = statusText.verificationIssue
-    }
-
-    const secondaryLine =
-      syncedPaymentStatus && !successStatuses.includes(syncedPaymentStatus)
-        ? null
-        : toOptionalLine(
-            statusText.detail(
-              orderSyncIssueCode,
-              syncedPaymentStatus,
-              orderSyncAttempt,
-            ),
-          )
-
-    return {
-      animation,
-      isLooping,
-      primaryLine,
-      secondaryLine: secondaryLine === primaryLine ? null : secondaryLine,
-    }
-  }
+  const isWarning = warningStatuses.includes(status.intent)
+  const statusLine = getStripeStatusLine(status, statusText)
 
   return {
     animation: isWarning ? exclamationAnim : clockAnim,
     isLooping: !isWarning,
     primaryLine: statusLine,
-    secondaryLine: null,
   }
 }

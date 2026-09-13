@@ -44,7 +44,8 @@ export const CMS = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const { userData } = useAppSelector((state) => state.user)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
   const [selectedItems, setSelectedItems] = useState<SelectContext>({
     orders: [],
@@ -53,16 +54,19 @@ export const CMS = () => {
     users: [],
   })
   const [editedItem, setEditedItem] = useState<EditedItem | null>(null)
-  const editDialogRef = useRef<HTMLDialogElement>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    if (isEditDialogOpen) {
-      editDialogRef.current?.showModal()
+    const dialog = dialogRef.current
+
+    if (isDialogOpen) {
+      dialog?.showModal()
+      if (dialog) dialog.scrollTop = 0
     } else {
-      editDialogRef.current?.close()
+      dialog?.close()
     }
-  }, [isEditDialogOpen])
+  }, [isDialogOpen])
 
   const activeTab = useMemo(() => {
     const tab = location.pathname.split('/').pop()
@@ -83,11 +87,12 @@ export const CMS = () => {
   )
 
   const handleDialogClose = () => {
-    setIsEditDialogOpen(false)
+    setIsDialogOpen(false)
+    setIsEditing(false)
     setEditedItem(null)
   }
 
-  useClickOutside(editDialogRef, handleDialogClose)
+  useClickOutside(dialogRef, handleDialogClose)
 
   const handleDeleteClick = () => {
     if (!selectedItems[activeTab].length) {
@@ -127,6 +132,7 @@ export const CMS = () => {
           <BookEditForm
             editedItem={getEditedItem<BookWithAuthorId>(editedItem)}
             onClose={handleDialogClose}
+            readOnly={!isEditing}
           />
         )
       case 'authors':
@@ -134,6 +140,7 @@ export const CMS = () => {
           <AuthorEditForm
             editedItem={getEditedItem<Author>(editedItem)}
             onClose={handleDialogClose}
+            readOnly={!isEditing}
           />
         )
       case 'orders':
@@ -141,6 +148,7 @@ export const CMS = () => {
           <OrderEditForm
             editedItem={getEditedItem<Order>(editedItem)}
             onClose={handleDialogClose}
+            readOnly={!isEditing}
           />
         )
       case 'users':
@@ -148,6 +156,7 @@ export const CMS = () => {
           <UserEditForm
             editedItem={getEditedItem<UserWithMetadata>(editedItem)}
             onClose={handleDialogClose}
+            readOnly={!isEditing}
           />
         )
       default:
@@ -163,7 +172,8 @@ export const CMS = () => {
           <Button
             onClick={() => {
               setEditedItem(null)
-              setIsEditDialogOpen(true)
+              setIsEditing(true)
+              setIsDialogOpen(true)
             }}
             $size="smMd"
             $color="secondary"
@@ -200,13 +210,14 @@ export const CMS = () => {
           context={{
             selectedItems,
             setSelectedItems,
-            setIsEditDialogOpen,
+            setIsDialogOpen,
+            setIsEditing,
             setEditedItem,
           }}
         />
       </MainContainer>
-      {isEditDialogOpen && (
-        <StyledEditDialog ref={editDialogRef} onCancel={handleDialogClose}>
+      {isDialogOpen && (
+        <StyledEditDialog ref={dialogRef} onCancel={handleDialogClose}>
           {renderEditForm()}
         </StyledEditDialog>
       )}

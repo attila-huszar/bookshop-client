@@ -58,21 +58,4 @@ export type PaymentSession = {
   amount: number
 }
 
-export type OrderSyncResponse = {
-  paymentId: string
-  paymentStatus: PaymentIntentStatus
-  amount: number
-  currency: string
-  receiptEmail: string | null
-  shipping: PaymentIntentShipping | null
-  finalizedAt: string | null
-  webhookUpdatedAt: string | null
-}
-
-export type OrderSyncIssueCode =
-  | 'timeout'
-  | 'retryable'
-  | 'unauthorized'
-  | 'unknown'
-
 export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'
