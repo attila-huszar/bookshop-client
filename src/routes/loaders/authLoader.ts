@@ -45,12 +45,10 @@ export const authLoader = async ({
     if (!requiresLogin && canSkipTokenBootstrap(DEFAULT_GUEST_MAX_RETRIES))
       return true
 
-    try {
-      tokenFetchPromise ??= store.dispatch(fetchAuthTokens())
-      await tokenFetchPromise
-    } finally {
+    tokenFetchPromise ??= store.dispatch(fetchAuthTokens()).finally(() => {
       tokenFetchPromise = null
-    }
+    })
+    await tokenFetchPromise
 
     if (!getUserState().accessToken) {
       if (!requiresLogin) scheduleTokenRetry()
@@ -63,12 +61,10 @@ export const authLoader = async ({
   const { userData: userDataAfterBootstrap } = getUserState()
 
   if (!userDataAfterBootstrap) {
-    try {
-      profileFetchPromise ??= store.dispatch(fetchUserProfile())
-      await profileFetchPromise
-    } finally {
+    profileFetchPromise ??= store.dispatch(fetchUserProfile()).finally(() => {
       profileFetchPromise = null
-    }
+    })
+    await profileFetchPromise
 
     const { userData: profile } = getUserState()
 

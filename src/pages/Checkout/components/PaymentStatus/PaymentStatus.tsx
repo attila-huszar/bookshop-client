@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
+import { ROUTE } from '@/routes'
 import { cartClear, paymentSelector, paymentSessionReset } from '@/store'
 import {
   useAppDispatch,
@@ -34,12 +35,24 @@ export function PaymentStatus() {
     hasHandledSuccessfulPayment.current = true
 
     dispatch(cartClear())
+    dispatch(paymentSessionReset())
   }, [dispatch, isStripeSuccess])
 
   const handleBackToShop = () => {
     dispatch(paymentSessionReset())
     void navigate('/')
   }
+
+  const handleBackToCart = () => {
+    dispatch(paymentSessionReset())
+    void navigate(`/${ROUTE.CART}`, { replace: true })
+  }
+
+  const canReturnToCart =
+    status.messageOverride?.type === 'failure' ||
+    status.messageOverride?.type === 'timeout' ||
+    status.intent === 'requires_payment_method' ||
+    status.intent === 'canceled'
 
   const { animation, isLooping, primaryLine } = getPaymentStatusView({
     status,
@@ -56,6 +69,11 @@ export function PaymentStatus() {
         <Lottie src={animation} autoplay loop={isLooping} />
       </LottieWrapper>
       <p>{primaryLine}</p>
+      {canReturnToCart && (
+        <button onClick={handleBackToCart} type="button">
+          Back to Cart
+        </button>
+      )}
       <button onClick={handleBackToShop} type="button">
         Back to Shop
       </button>

@@ -19,12 +19,10 @@ export const authRequest = baseRequest.extend({
         const authRetryAttempted = options.context.authRetryAttempted === true
 
         if (response.status === 401 && !authRetryAttempted) {
-          try {
-            refreshPromise ??= store.dispatch(fetchAuthTokens())
-            await refreshPromise
-          } finally {
+          refreshPromise ??= store.dispatch(fetchAuthTokens()).finally(() => {
             refreshPromise = null
-          }
+          })
+          await refreshPromise
 
           const accessToken = store.getState().user.accessToken
 
