@@ -13,7 +13,7 @@ export const successStatuses = [
 type SuccessPaymentIntentStatus = (typeof successStatuses)[number]
 
 export const isSuccessPaymentIntentStatus = (
-  status: PaymentIntentStatus,
+  status: PaymentIntentStatus | null,
 ): status is SuccessPaymentIntentStatus =>
   successStatuses.some((successStatus) => successStatus === status)
 
@@ -29,6 +29,10 @@ const getStripeStatusLine = (
   statusText: CheckoutStatusText,
 ): string => {
   if (!status.messageOverride) {
+    if (status.intent === null) {
+      return statusText.checking
+    }
+
     if (isSuccessPaymentIntentStatus(status.intent)) {
       return statusText.paymentReceived
     }
@@ -74,7 +78,8 @@ export const getPaymentStatusView = ({
     }
   }
 
-  const isWarning = warningStatuses.includes(status.intent)
+  const isWarning =
+    status.intent !== null && warningStatuses.includes(status.intent)
   const statusLine = getStripeStatusLine(status, statusText)
 
   return {

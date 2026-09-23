@@ -153,7 +153,7 @@ describe('checkoutLoader', () => {
     expect(mockSessionStorageRemove).not.toHaveBeenCalled()
   })
 
-  it('clears session payment key when payment retrieval fails', async () => {
+  it('keeps the session payment key when payment retrieval fails', async () => {
     mockStoreDispatch.mockReturnValue({
       unwrap: vi
         .fn()
@@ -164,8 +164,8 @@ describe('checkoutLoader', () => {
       request: new Request('http://localhost/checkout'),
     })
 
-    expect(mockSessionStorageRemove).toHaveBeenCalledWith(paymentIdKey)
-    expect(getResponseLocation(result)).toBe(ROUTE.HOME)
+    expect(mockSessionStorageRemove).not.toHaveBeenCalled()
+    expect(result).toBeNull()
   })
 
   it('skips retrieval when returning from Stripe and payment token is already in state', async () => {

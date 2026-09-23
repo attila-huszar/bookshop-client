@@ -40,6 +40,7 @@ describe('PaymentStatus', () => {
         submitFailed: 'Submit failed',
       }),
       getCheckoutStatusMessages: () => ({
+        checking: 'Checking payment status',
         paymentReceived: 'Payment received',
         intent: () => 'Payment failed',
         retry: () => 'Retrying payment',
@@ -55,6 +56,7 @@ describe('PaymentStatus', () => {
   it('clears the active payment session after success', () => {
     vi.mocked(usePaymentStatus).mockReturnValue({
       status: { intent: 'succeeded', messageOverride: null },
+      retry: vi.fn(),
     })
 
     render(<PaymentStatus />)
@@ -68,7 +70,7 @@ describe('PaymentStatus', () => {
       intent: 'requires_payment_method',
       messageOverride: null,
     }
-    vi.mocked(usePaymentStatus).mockReturnValue({ status })
+    vi.mocked(usePaymentStatus).mockReturnValue({ status, retry: vi.fn() })
 
     render(<PaymentStatus />)
     await userEvent.click(screen.getByRole('button', { name: 'Back to Cart' }))

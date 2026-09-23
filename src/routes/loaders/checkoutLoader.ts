@@ -1,7 +1,7 @@
 import { replace } from 'react-router'
 import { ROUTE } from '@/routes'
 import { paymentRetrieve, store } from '@/store'
-import { sessionStorageAdapter } from '@/helpers'
+import { getErrorMessage, sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
 import { PaymentIntentStatus } from '@/types'
 import { authLoader } from './authLoader'
@@ -58,15 +58,23 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
       )
       .unwrap()
 
-    if (!isStripeReturn && successStatuses.includes(retrievedPayment.status)) {
+    if (
+      !isStripeReturn &&
+      (successStatuses.includes(retrievedPayment.status) ||
+        retrievedPayment.status === 'processing')
+    ) {
       requestURL.searchParams.set('redirect_status', retrievedPayment.status)
 
       return replace(`/${ROUTE.CHECKOUT}?${requestURL.searchParams.toString()}`)
     }
 
     return null
-  } catch {
-    sessionStorageAdapter.remove(paymentIdKey)
-    return replace(ROUTE.HOME)
+  } catch (error) {
+    if (getErrorMessage(error)?.includes('Payment session has expired')) {
+      sessionStorageAdapter.remove(paymentIdKey)
+      return replace(ROUTE.HOME)
+    }
+
+    return null
   }
 }

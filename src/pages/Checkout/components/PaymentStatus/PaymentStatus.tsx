@@ -21,7 +21,7 @@ export function PaymentStatus() {
   const dispatch = useAppDispatch()
   const { getCheckoutStatusMessages } = useMessages()
   const { payment } = useAppSelector(paymentSelector)
-  const { status } = usePaymentStatus(payment?.paymentToken)
+  const { status, retry } = usePaymentStatus(payment?.paymentToken)
   const hasHandledSuccessfulPayment = useRef(false)
 
   const isStripeSuccess = isSuccessPaymentIntentStatus(status.intent)
@@ -49,10 +49,17 @@ export function PaymentStatus() {
   }
 
   const canReturnToCart =
+    status.intent === 'requires_payment_method' || status.intent === 'canceled'
+  const canRetryStatus =
     status.messageOverride?.type === 'failure' ||
-    status.messageOverride?.type === 'timeout' ||
-    status.intent === 'requires_payment_method' ||
-    status.intent === 'canceled'
+    status.messageOverride?.type === 'timeout'
+  const canReturnToCheckout =
+    status.intent === 'requires_action' ||
+    status.intent === 'requires_confirmation'
+
+  const handleReturnToCheckout = () => {
+    void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+  }
 
   const { animation, isLooping, primaryLine } = getPaymentStatusView({
     status,
@@ -69,14 +76,26 @@ export function PaymentStatus() {
         <Lottie src={animation} autoplay loop={isLooping} />
       </LottieWrapper>
       <p>{primaryLine}</p>
+      {canRetryStatus && (
+        <button onClick={retry} type="button">
+          Check Payment Again
+        </button>
+      )}
+      {canReturnToCheckout && (
+        <button onClick={handleReturnToCheckout} type="button">
+          Return to Checkout
+        </button>
+      )}
       {canReturnToCart && (
         <button onClick={handleBackToCart} type="button">
           Back to Cart
         </button>
       )}
-      <button onClick={handleBackToShop} type="button">
-        Back to Shop
-      </button>
+      {(canReturnToCart || isStripeSuccess) && (
+        <button onClick={handleBackToShop} type="button">
+          Back to Shop
+        </button>
+      )}
     </StyledPaymentStatus>
   )
 }

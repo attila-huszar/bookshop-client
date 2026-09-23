@@ -43,6 +43,7 @@ const getCheckoutSubmitMessages = () => ({
  * The success copy acknowledges payment; order confirmation remains webhook-driven.
  */
 const getCheckoutStatusMessages = () => ({
+  checking: '⏳ Checking your payment status...',
   intent: getPaymentIntentStatusLabel,
   retry: (attempt: number, maxRetries: number): string =>
     `🔄 We are retrying payment status (${attempt}/${maxRetries})...`,

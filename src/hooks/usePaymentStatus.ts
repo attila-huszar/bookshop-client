@@ -9,7 +9,7 @@ export type PaymentStatusMessageOverride =
   | { type: 'timeout'; timeoutSeconds: number }
 
 export type PaymentStatusState = {
-  intent: PaymentIntentStatus
+  intent: PaymentIntentStatus | null
   messageOverride: PaymentStatusMessageOverride | null
 }
 
@@ -20,8 +20,9 @@ const ABSOLUTE_TIMEOUT = 30000
 export function usePaymentStatus(session: string | null | undefined) {
   const stripe = useStripe()
   const { getUnknownErrorDetails } = useMessages()
+  const [retryCount, setRetryCount] = useState(0)
   const [status, setStatus] = useState<PaymentStatusState>({
-    intent: 'processing',
+    intent: null,
     messageOverride: null,
   })
 
@@ -83,7 +84,7 @@ export function usePaymentStatus(session: string | null | undefined) {
 
         if (attempt < MAX_RETRIES) {
           setStatus({
-            intent: 'processing',
+            intent: null,
             messageOverride: {
               type: 'retry',
               attempt,
@@ -93,7 +94,7 @@ export function usePaymentStatus(session: string | null | undefined) {
           scheduleRetry(attempt)
         } else {
           setStatus({
-            intent: 'requires_payment_method',
+            intent: null,
             messageOverride: {
               type: 'failure',
               details: getUnknownErrorDetails(error),
@@ -108,7 +109,7 @@ export function usePaymentStatus(session: string | null | undefined) {
       if (isInactive()) return
       hasTimedOut = true
       setStatus({
-        intent: 'requires_payment_method',
+        intent: null,
         messageOverride: {
           type: 'timeout',
           timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
@@ -123,7 +124,12 @@ export function usePaymentStatus(session: string | null | undefined) {
     return () => {
       timeoutIds.forEach(clearTimeout)
     }
-  }, [getUnknownErrorDetails, session, stripe])
+  }, [getUnknownErrorDetails, retryCount, session, stripe])
 
-  return { status }
+  const retry = () => {
+    setStatus({ intent: null, messageOverride: null })
+    setRetryCount((current) => current + 1)
+  }
+
+  return { status, retry }
 }
