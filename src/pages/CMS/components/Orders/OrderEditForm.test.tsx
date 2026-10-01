@@ -8,9 +8,11 @@ import { OrderEditForm } from './OrderEditForm'
 
 vi.mock('@/store', () => ({ updateOrder: vi.fn() }))
 
-vi.mock('@/components', async () => {
+vi.mock('@/components', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components')>()
   const { useField } = await import('formik')
   return {
+    ...actual,
     Button: ({ children, type, disabled }: React.ComponentProps<'button'>) => (
       <button type={type} disabled={disabled}>
         {children}

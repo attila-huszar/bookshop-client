@@ -1,5 +1,4 @@
 import { ChangeEvent, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
 import { updateAvatar, updateUserProfile, userSelector } from '@/store'
 import {
@@ -9,6 +8,7 @@ import {
   FormikField,
   IconButton,
   PasswordDialog,
+  toast,
 } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import {

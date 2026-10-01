@@ -2,9 +2,9 @@ import { styled } from 'styled-components'
 
 export const StyledConfirmDialog = styled.dialog`
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   align-items: center;

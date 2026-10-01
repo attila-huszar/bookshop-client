@@ -74,43 +74,55 @@ describe('PasswordDialog', () => {
     })
   })
 
-  it('should show error if current password is invalid', async () => {
-    mockDispatch.mockResolvedValue({ meta: { requestStatus: 'rejected' } })
-
-    render(<PasswordDialog ref={null} email={email} />)
-
-    await userEvent.type(
-      screen.getByPlaceholderText('Current Password'),
-      'InvalidPass123!',
-    )
-
-    await userEvent.type(
-      screen.getByPlaceholderText('New Password'),
-      'NewPass456!',
-    )
-
-    await userEvent.type(
-      screen.getByPlaceholderText('Confirm New Password'),
-      'NewPass456!',
-    )
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /submit/i, hidden: true }),
-    )
-
-    await waitFor(() => {
-      expect(updateUserProfile).toHaveBeenCalledWith({
-        currentPassword: 'InvalidPass123!',
-        password: 'NewPass456!',
+  it.each([
+    {
+      error: { message: 'Current password is incorrect' },
+      message: 'Current password is incorrect',
+    },
+    {
+      error: undefined,
+      message: 'Failed to change password, please try again later',
+    },
+  ])(
+    'shows "$message" when the password update fails',
+    async ({ error, message }) => {
+      mockDispatch.mockResolvedValue({
+        meta: { requestStatus: 'rejected' },
+        error,
       })
-      expect(toast.error).toHaveBeenCalledWith(
-        'Failed to change password, please try again later',
-        {
-          id: 'password-change-fail',
-        },
+
+      render(<PasswordDialog ref={null} email={email} />)
+
+      await userEvent.type(
+        screen.getByPlaceholderText('Current Password'),
+        'InvalidPass123!',
       )
-    })
-  })
+
+      await userEvent.type(
+        screen.getByPlaceholderText('New Password'),
+        'NewPass456!',
+      )
+
+      await userEvent.type(
+        screen.getByPlaceholderText('Confirm New Password'),
+        'NewPass456!',
+      )
+
+      await userEvent.click(
+        screen.getByRole('button', { name: /submit/i, hidden: true }),
+      )
+
+      await waitFor(() => {
+        expect(updateUserProfile).toHaveBeenCalledWith({
+          currentPassword: 'InvalidPass123!',
+          password: 'NewPass456!',
+        })
+        expect(toast.error).toHaveBeenCalledWith(message, {
+          id: 'password-change-fail',
+        })
+      })
+    },
+  )
 
   it('should show error if new password matches the current password', async () => {
     render(<PasswordDialog ref={null} email={email} />)

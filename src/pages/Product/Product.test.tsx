@@ -12,7 +12,6 @@ vi.mock('@/components', async (importOriginal) => {
     Button: ({ children }: { children: React.ReactNode }) => (
       <button>{children}</button>
     ),
-    Alert: () => <div>Error Alert</div>,
   }
 })
 

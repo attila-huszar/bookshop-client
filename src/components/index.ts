@@ -1,3 +1,7 @@
+export { AppToaster } from './AppToaster/AppToaster'
+export { toast } from './AppToaster/toast'
+export { AuthorizationMenu } from './AuthorizationMenu/AuthorizationMenu'
+export { ForgotPassword } from './ForgotPassword/ForgotPassword'
 export { Header } from './Header/Header'
 export { Footer } from './Footer/Footer'
 export { Button } from './Button/Button'

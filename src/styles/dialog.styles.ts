@@ -2,9 +2,10 @@ import { styled } from 'styled-components'
 import { media } from './media.breakpoints'
 
 export const StyledDialog = styled.dialog`
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
   width: 32rem;
   padding: 1.5rem 2rem;
   border: none;

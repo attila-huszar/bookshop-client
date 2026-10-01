@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { booksSelector } from '@/store'
-import { Alert } from '@/components/Alert/Alert'
-import { Card } from '@/components/Card/Card'
+import { Alert, Card } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { FilterIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter, Pagination } from './components'

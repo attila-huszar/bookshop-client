@@ -1,9 +1,9 @@
 import { useImperativeHandle, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
 import { updateUserProfile } from '@/store'
-import { Button, FormikField, IconButton } from '@/components'
+import { Button, FormikField, IconButton, toast } from '@/components'
 import { useAppDispatch, useClickOutside } from '@/hooks'
+import { getErrorMessage } from '@/helpers'
 import { accountPasswordSchema } from '@/validation'
 import { passwordChangeInitialValues } from '@/constants'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
@@ -54,9 +54,13 @@ export function PasswordDialog({ email, ref }: Props) {
         actions.resetForm()
         toast.success('Password changed successfully')
       } else {
-        toast.error('Failed to change password, please try again later', {
-          id: 'password-change-fail',
-        })
+        toast.error(
+          getErrorMessage(
+            'error' in result ? result.error : undefined,
+            'Failed to change password, please try again later',
+          ),
+          { id: 'password-change-fail' },
+        )
       }
     } else {
       toast.error('Password must be different from current password', {

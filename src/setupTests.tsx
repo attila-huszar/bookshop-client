@@ -46,11 +46,18 @@ vi.mock('@/hooks', () => ({
 }))
 
 vi.mock('react-hot-toast', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-    loading: vi.fn(),
-  },
+  toast: Object.assign(
+    vi.fn(() => ''),
+    {
+      error: vi.fn(),
+      success: vi.fn(),
+      loading: vi.fn(),
+      custom: vi.fn(),
+      promise: vi.fn(),
+    },
+  ),
+  Toaster: () => null,
+  useToasterStore: () => ({ toasts: [] }),
 }))
 
 vi.mock('@/services', () => ({

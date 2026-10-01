@@ -1,20 +1,11 @@
-import { Toaster } from 'react-hot-toast'
 import { Routes } from '@/routes'
+import { AppToaster } from '@/components'
 import { GlobalStyle } from '@/styles'
 
 function App() {
   return (
     <>
-      <Toaster
-        containerStyle={{ marginTop: '2rem' }}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            fontSize: '1.125rem',
-            textAlign: 'center',
-          },
-        }}
-      />
+      <AppToaster />
       <Routes />
       <GlobalStyle />
     </>

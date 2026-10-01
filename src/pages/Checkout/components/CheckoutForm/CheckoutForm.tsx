@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import {
   LinkAuthenticationElement,
@@ -14,6 +13,7 @@ import {
   paymentSessionReset,
   userSelector,
 } from '@/store'
+import { toast } from '@/components'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
 import { getErrorMessage } from '@/helpers/errors'
 import { defaultCurrency } from '@/constants'

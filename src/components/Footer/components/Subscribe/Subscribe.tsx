@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { toast } from '@/components'
 import { SubscribeForm, Text } from './Subscribe.style'
 
 export function Subscribe() {

@@ -23,13 +23,6 @@ vi.mock('@/components', async (importOriginal) => {
   }
 })
 
-vi.mock(import('react-hot-toast'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-  }
-})
-
 describe('Account page', () => {
   const mockDispatch = vi.fn(() =>
     Promise.resolve({ url: 'mock-avatar-url', meta: {} }),

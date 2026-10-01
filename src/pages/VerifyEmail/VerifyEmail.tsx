@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { toast } from 'react-hot-toast'
 import { useLocation, useNavigate } from 'react-router'
 import { postVerifyEmail } from '@/api'
 import { ROUTE } from '@/routes'
-import { Loading } from '@/components/Loading/Loading'
+import { Loading, toast } from '@/components'
 import { handleError } from '@/errors'
 
 export function VerifyEmail() {

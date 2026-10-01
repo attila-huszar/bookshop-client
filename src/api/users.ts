@@ -93,10 +93,18 @@ export const postUserLogout = async () => {
 export const patchUserProfile = async (
   fields: UserProfileUpdate,
 ): Promise<User> => {
-  const response = await authRequest.patch<User>(PATH.users.profile, {
-    json: fields,
-  })
-  return await response.json()
+  try {
+    const response = await authRequest.patch<User>(PATH.users.profile, {
+      json: fields,
+    })
+    return await response.json()
+  } catch (error) {
+    const formattedError = handleError({
+      error,
+      message: 'Failed to update user profile, please try again later',
+    })
+    throw new Error(formattedError.message, { cause: error })
+  }
 }
 
 export const postVerifyEmail = async (
