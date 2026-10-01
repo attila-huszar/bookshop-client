@@ -1,10 +1,9 @@
 import { FC } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { addAuthor, updateAuthor } from '@/store'
-import { Button, FormikField } from '@/components'
+import { Button, FormikField, toast } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { formatDate } from '@/helpers'
+import { formatDate, getErrorMessage } from '@/helpers'
 import { authorSchema } from '@/validation'
 import { Author } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
@@ -29,9 +28,14 @@ const initialAuthorValues: Author = {
 type Props = {
   editedItem: Author | null
   onClose: () => void
+  readOnly?: boolean
 }
 
-export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
+export const AuthorEditForm: FC<Props> = ({
+  editedItem,
+  onClose,
+  readOnly,
+}) => {
   const dispatch = useAppDispatch()
 
   const handleSubmit = async (
@@ -56,9 +60,7 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
         toast.error(`Failed to ${editedItem ? 'update' : 'add'} author`)
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 
@@ -70,84 +72,95 @@ export const AuthorEditForm: FC<Props> = ({ editedItem, onClose }) => {
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => (
         <Form>
-          {editedItem && (
-            <>
-              <SectionHeader>Author Information</SectionHeader>
-              <MetadataBlock>
-                <div>
-                  <p>Author ID</p>
-                  <span>{editedItem.id}</span>
-                </div>
-                <div>
-                  <p>Created At</p>
-                  <span>
-                    {editedItem.createdAt
-                      ? formatDate(editedItem.createdAt)
-                      : '—'}
-                  </span>
-                </div>
-                <div>
-                  <p>Updated At</p>
-                  <span>
-                    {editedItem.updatedAt
-                      ? formatDate(editedItem.updatedAt)
-                      : '—'}
-                  </span>
-                </div>
-              </MetadataBlock>
-            </>
-          )}
-          <Row>
-            <div>
-              <p>Name</p>
-              <FormikField name="name" placeholder="Name" type="text" />
-            </div>
-            <div>
-              <p>Full Name</p>
-              <FormikField
-                name="fullName"
-                placeholder="Full Name"
-                type="text"
-              />
-            </div>
-            <div>
-              <p>Homeland</p>
-              <FormikField name="homeland" placeholder="Homeland" type="text" />
-            </div>
-          </Row>
-          <Row>
-            <div>
-              <p>Birth</p>
-              <FormikField name="birthYear" placeholder="Birth" type="text" />
-            </div>
-            <div>
-              <p>Death</p>
-              <FormikField name="deathYear" placeholder="Death" type="text" />
-            </div>
-          </Row>
-          <FullRow>
-            <div>
-              <p>Biography</p>
-              <FormikField
-                name="biography"
-                placeholder="Biography"
-                type="textarea"
-                rows={4}
-              />
-            </div>
-          </FullRow>
+          <fieldset disabled={readOnly}>
+            {editedItem && (
+              <>
+                <SectionHeader>Author Information</SectionHeader>
+                <MetadataBlock>
+                  <div>
+                    <p>Author ID</p>
+                    <span>{editedItem.id}</span>
+                  </div>
+                  <div>
+                    <p>Created At</p>
+                    <span>
+                      {editedItem.createdAt
+                        ? formatDate(editedItem.createdAt)
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <p>Updated At</p>
+                    <span>
+                      {editedItem.updatedAt
+                        ? formatDate(editedItem.updatedAt)
+                        : '—'}
+                    </span>
+                  </div>
+                </MetadataBlock>
+              </>
+            )}
+            <Row>
+              <div>
+                <p>Name</p>
+                <FormikField name="name" placeholder="Name" type="text" />
+              </div>
+              <div>
+                <p>Full Name</p>
+                <FormikField
+                  name="fullName"
+                  placeholder="Full Name"
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>Homeland</p>
+                <FormikField
+                  name="homeland"
+                  placeholder="Homeland"
+                  type="text"
+                />
+              </div>
+            </Row>
+            <Row>
+              <div>
+                <p>Birth</p>
+                <FormikField name="birthYear" placeholder="Birth" type="text" />
+              </div>
+              <div>
+                <p>Death</p>
+                <FormikField name="deathYear" placeholder="Death" type="text" />
+              </div>
+            </Row>
+            <FullRow>
+              <div>
+                <p>Biography</p>
+                <FormikField
+                  name="biography"
+                  placeholder="Biography"
+                  type="textarea"
+                  rows={4}
+                />
+              </div>
+            </FullRow>
+          </fieldset>
           <FormButtons>
             <Button
-              type="reset"
+              type={readOnly ? 'button' : 'reset'}
               onClick={onClose}
               $size="sm"
               $inverted
               disabled={isSubmitting}>
-              Cancel
+              {readOnly ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" $size="sm" disabled={!dirty || isSubmitting}>
-              {isSubmitting && <SpinnerIcon height={22} />} Save
-            </Button>
+            {!readOnly && (
+              <Button
+                type="submit"
+                $size="sm"
+                disabled={!dirty || isSubmitting}>
+                {isSubmitting && <SpinnerIcon height={22} />} Save
+              </Button>
+            )}
           </FormButtons>
         </Form>
       )}

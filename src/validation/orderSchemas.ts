@@ -1,8 +1,9 @@
 import * as Yup from 'yup'
+import { maxItemQuantity } from '@/constants/defaultValues'
 import {
-  addressSchema,
   emailSchema,
   nameSchema,
+  optionalAddressSchema,
   phoneSchema,
 } from './userSchemas'
 
@@ -18,19 +19,40 @@ export const orderItemSchema = Yup.object().shape({
   quantity: Yup.number()
     .integer('Must be integer')
     .positive('Must be positive')
+    .max(maxItemQuantity)
     .required('Required'),
 })
 
 export const orderSchema = Yup.object().shape({
-  firstName: nameSchema,
-  lastName: nameSchema,
-  email: emailSchema,
+  firstName: nameSchema.notRequired(),
+  lastName: nameSchema.notRequired(),
+  email: emailSchema.nullable().notRequired(),
   shipping: Yup.object()
     .shape({
-      name: nameSchema,
-      address: addressSchema,
-      phone: phoneSchema.optional(),
+      name: Yup.string().trim().max(200).optional(),
+      address: optionalAddressSchema,
+      phone: phoneSchema.nullable().optional(),
     })
-    .required('Shipping information is required'),
-  items: Yup.array().of(orderItemSchema).required('Order items are required'),
+    .nullable()
+    .default(undefined)
+    .optional(),
+  items: Yup.array()
+    .of(orderItemSchema)
+    .min(1)
+    .required('Order items are required'),
+  total: Yup.number().min(0).required(),
+  currency: Yup.string()
+    .matches(/^[A-Za-z]{3}$/)
+    .required(),
+  paymentStatus: Yup.string()
+    .oneOf([
+      'requires_payment_method',
+      'requires_confirmation',
+      'requires_action',
+      'processing',
+      'requires_capture',
+      'canceled',
+      'succeeded',
+    ])
+    .required(),
 })

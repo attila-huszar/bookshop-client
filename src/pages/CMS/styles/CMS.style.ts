@@ -88,6 +88,11 @@ export const StyledTable = styled.div`
       border-bottom: 1px solid #eee;
     }
 
+    th:first-child,
+    td:first-child {
+      text-align: center;
+    }
+
     th {
       background: var(--pearly-white);
       font-size: 0.75rem;

@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import { logout, ordersClear, userSelector } from '@/store'
-import { Avatar, Button, IconButton } from '@/components'
+import { Avatar, Button, IconButton, toast } from '@/components'
 import {
   useAppDispatch,
   useAppSelector,
@@ -128,7 +127,7 @@ export function AccountMenu() {
   return (
     <StyledMenu ref={menuRef}>
       <Avatar
-        imgUrl={userData.avatar}
+        imgUrl={userData.avatar ?? undefined}
         onClick={toggleMenu}
         title={userData.firstName}
       />

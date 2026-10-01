@@ -1,13 +1,10 @@
 import { useImperativeHandle, useRef } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
 import { postPasswordReset } from '@/api'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { FormikField } from '@/components/FormikField/FormikField'
+import { Button, FormikField, IconButton, toast } from '@/components'
 import { useClickOutside } from '@/hooks'
 import { forgotPasswordSchema } from '@/validation'
-import { handleError } from '@/errors/handleError'
+import { handleError } from '@/errors'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 import { StyledForgotPassword } from './ForgotPassword.style'
@@ -49,7 +46,7 @@ export function ForgotPassword({ ref }: Props) {
       handleClose()
       actions.resetForm()
     } catch (error) {
-      const formattedError = await handleError({
+      const formattedError = handleError({
         error,
         message: 'Password reset failed, please try again later',
       })

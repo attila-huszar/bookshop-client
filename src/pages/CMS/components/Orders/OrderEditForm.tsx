@@ -1,10 +1,9 @@
 import { FC } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { updateOrder } from '@/store'
-import { Button, CountrySelect, FormikField } from '@/components'
+import { Button, CountrySelect, FormikField, toast } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { formatDate, formatPaymentStatus } from '@/helpers'
+import { formatDate, formatPaymentStatus, getErrorMessage } from '@/helpers'
 import { orderSchema } from '@/validation'
 import { Order, OrderUpdate } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
@@ -21,6 +20,7 @@ import {
 type Props = {
   editedItem: Order | null
   onClose: () => void
+  readOnly?: boolean
 }
 
 type OrderFormValues = Order & {
@@ -41,40 +41,46 @@ const getEffectivePaymentStatus = (
   return originalPaymentStatus
 }
 
-export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
+export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const dispatch = useAppDispatch()
 
   if (!editedItem) return null
+  const isReadOnly = readOnly === true || !editedItem.paymentId
 
   const handleSubmit = async (
     values: OrderFormValues,
     actions: FormikHelpers<OrderFormValues>,
   ) => {
+    if (!editedItem.paymentId) return
     try {
-      const { id, createdAt, updatedAt, paidAt, markAsPaid, ...orderValues } =
-        values
+      const { markAsPaid } = values
       const nextPaymentStatus = getEffectivePaymentStatus(
         editedItem.paymentStatus,
         editedItem.paidAt,
         markAsPaid,
       )
       const payload: OrderUpdate = {
-        ...orderValues,
+        firstName: values.firstName?.trim() || null,
+        lastName: values.lastName?.trim() || null,
+        email: values.email?.trim() || null,
+        shipping: values.shipping,
+        items: values.items,
+        total: values.total,
+        currency: values.currency,
+        paymentId: editedItem.paymentId,
         paymentStatus: nextPaymentStatus,
       }
       const result = await dispatch(updateOrder(payload))
 
       if (result?.meta?.requestStatus === 'fulfilled') {
         actions.resetForm()
-        toast.success(`Order ${editedItem ? 'updated' : 'added'} successfully`)
+        toast.success('Order updated successfully')
         onClose()
       } else {
-        toast.error(`Failed to ${editedItem ? 'update' : 'add'} order`)
+        toast.error('Failed to update order')
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 
@@ -97,256 +103,268 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose }) => {
 
         return (
           <Form>
-            <SectionHeader>Order Information</SectionHeader>
-            <MetadataBlock>
-              <div>
-                <p>Order ID</p>
-                <span>{editedItem.id}</span>
-              </div>
-              <div>
-                <p>Created At</p>
-                <span>{formatDate(editedItem.createdAt)}</span>
-              </div>
-              <div>
-                <p>Updated At</p>
-                <span>{formatDate(editedItem.updatedAt)}</span>
-              </div>
-              <div>
-                <p>Paid At</p>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '2.25rem',
-                  }}>
-                  <span>{formatDate(editedItem.paidAt)}</span>
-                  {!editedItem.paidAt && (
-                    <label
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.375rem',
-                        fontSize: '0.75rem',
-                      }}>
-                      <FormikField name="markAsPaid" type="checkbox" />
-                      Mark as paid
-                    </label>
-                  )}
+            {!editedItem.paymentId && (
+              <p>
+                Draft order — no payment linked yet. Editing is unavailable.
+              </p>
+            )}
+            <fieldset disabled={isReadOnly}>
+              <SectionHeader>Order Information</SectionHeader>
+              <MetadataBlock>
+                <div>
+                  <p>Order ID</p>
+                  <span>{editedItem.id}</span>
                 </div>
-              </div>
-            </MetadataBlock>
-            <SectionHeader>Payment Details</SectionHeader>
-            <Row>
-              <div>
-                <p>Payment ID</p>
-                <FormikField
-                  name="paymentId"
-                  placeholder="Payment ID"
-                  type="text"
-                  readOnly
-                />
-              </div>
-              <div>
-                <p>Payment Status</p>
-                <FormikField
-                  name="paymentStatus"
-                  placeholder="Payment Status"
-                  type="text"
-                  value={formatPaymentStatus(effectivePaymentStatus)}
-                  readOnly
-                />
-              </div>
-            </Row>
-            <Row>
-              <div>
-                <p>Total</p>
-                <FormikField name="total" placeholder="Total" type="number" />
-              </div>
-              <div>
-                <p>Currency</p>
-                <FormikField
-                  name="currency"
-                  placeholder="Currency"
-                  type="text"
-                />
-              </div>
-            </Row>
-            <SectionHeader>Customer Information</SectionHeader>
-            <Row>
-              <div>
-                <p>First Name</p>
-                <FormikField
-                  name="firstName"
-                  placeholder="First Name"
-                  type="text"
-                />
-              </div>
-              <div>
-                <p>Last Name</p>
-                <FormikField
-                  name="lastName"
-                  placeholder="Last Name"
-                  type="text"
-                />
-              </div>
-            </Row>
-            <Row>
-              <div>
-                <p>Email</p>
-                <FormikField name="email" placeholder="Email" type="email" />
-              </div>
-              <div>
-                <p>Phone</p>
-                <FormikField name="phone" placeholder="Phone" type="text" />
-              </div>
-            </Row>
-            <SectionHeader>Shipping Address</SectionHeader>
-            <Row>
-              <div>
-                <p>Name</p>
-                <FormikField
-                  name="shipping.name"
-                  placeholder="Name"
-                  type="text"
-                />
-              </div>
-              <div>
-                <p>Phone</p>
-                <FormikField
-                  name="shipping.phone"
-                  placeholder="Phone"
-                  type="text"
-                />
-              </div>
-            </Row>
-            <AddressBlock>
-              <p>Address</p>
+                <div>
+                  <p>Created At</p>
+                  <span>{formatDate(editedItem.createdAt)}</span>
+                </div>
+                <div>
+                  <p>Updated At</p>
+                  <span>{formatDate(editedItem.updatedAt)}</span>
+                </div>
+                <div>
+                  <p>Paid At</p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2.25rem',
+                    }}>
+                    <span>{formatDate(editedItem.paidAt)}</span>
+                    {!editedItem.paidAt && (
+                      <label
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.375rem',
+                          fontSize: '0.75rem',
+                        }}>
+                        <FormikField name="markAsPaid" type="checkbox" />
+                        Mark as paid
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </MetadataBlock>
+              <SectionHeader>Payment Details</SectionHeader>
               <Row>
                 <div>
-                  <p>Line 1</p>
+                  <p>Payment ID</p>
                   <FormikField
-                    name="shipping.address.line1"
-                    placeholder="Line 1"
+                    name="paymentId"
+                    placeholder="Payment ID"
+                    type="text"
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <p>Payment Status</p>
+                  <FormikField
+                    name="paymentStatus"
+                    placeholder="Payment Status"
+                    type="text"
+                    value={formatPaymentStatus(effectivePaymentStatus)}
+                    readOnly
+                  />
+                </div>
+              </Row>
+              <Row>
+                <div>
+                  <p>Total</p>
+                  <FormikField name="total" placeholder="Total" type="number" />
+                </div>
+                <div>
+                  <p>Currency</p>
+                  <FormikField
+                    name="currency"
+                    placeholder="Currency"
+                    type="text"
+                  />
+                </div>
+              </Row>
+              <SectionHeader>Customer Information</SectionHeader>
+              <Row>
+                <div>
+                  <p>First Name</p>
+                  <FormikField
+                    name="firstName"
+                    placeholder="First Name"
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Line 2</p>
+                  <p>Last Name</p>
                   <FormikField
-                    name="shipping.address.line2"
-                    placeholder="Line 2"
+                    name="lastName"
+                    placeholder="Last Name"
                     type="text"
                   />
                 </div>
               </Row>
               <Row>
                 <div>
-                  <p>City</p>
-                  <FormikField
-                    name="shipping.address.city"
-                    placeholder="City"
-                    type="text"
-                  />
+                  <p>Email</p>
+                  <FormikField name="email" placeholder="Email" type="email" />
                 </div>
                 <div>
-                  <p>State</p>
-                  <FormikField
-                    name="shipping.address.state"
-                    placeholder="State"
-                    type="text"
-                  />
+                  <p>Phone</p>
+                  <FormikField name="phone" placeholder="Phone" type="text" />
                 </div>
               </Row>
+              <SectionHeader>Shipping Address</SectionHeader>
               <Row>
                 <div>
-                  <p>Postal Code</p>
+                  <p>Name</p>
                   <FormikField
-                    name="shipping.address.postal_code"
-                    placeholder="Postal Code"
+                    name="shipping.name"
+                    placeholder="Name"
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Country</p>
-                  <CountrySelect fieldName="shipping.address.country" />
+                  <p>Phone</p>
+                  <FormikField
+                    name="shipping.phone"
+                    placeholder="Phone"
+                    type="text"
+                  />
                 </div>
               </Row>
-            </AddressBlock>
-            <SectionHeader>Order Items</SectionHeader>
-            <OrderItemBlock>
-              <p>Items</p>
-              {editedItem.items?.map((item, idx) => (
-                <div key={item.id}>
-                  <OrderItemRow>
-                    <div>
-                      <p>ID</p>
-                      <FormikField
-                        name={`items.${idx}.id`}
-                        placeholder="ID"
-                        type="number"
-                      />
-                    </div>
-                    <div>
-                      <p>Author</p>
-                      <FormikField
-                        name={`items.${idx}.author`}
-                        placeholder="Author"
-                        type="text"
-                      />
-                    </div>
-                    <div>
-                      <p>Title</p>
-                      <FormikField
-                        name={`items.${idx}.title`}
-                        placeholder="Title"
-                        type="text"
-                      />
-                    </div>
-                  </OrderItemRow>
-                  <Row>
-                    <div>
-                      <p>Price</p>
-                      <FormikField
-                        name={`items.${idx}.price`}
-                        placeholder="Price"
-                        type="number"
-                      />
-                    </div>
-                    <div>
-                      <p>Discount</p>
-                      <FormikField
-                        name={`items.${idx}.discount`}
-                        placeholder="Discount"
-                        type="number"
-                      />
-                    </div>
-                    <div>
-                      <p>Quantity</p>
-                      <FormikField
-                        name={`items.${idx}.quantity`}
-                        placeholder="Quantity"
-                        type="number"
-                      />
-                    </div>
-                  </Row>
-                </div>
-              ))}
-            </OrderItemBlock>
+              <AddressBlock>
+                <p>Address</p>
+                <Row>
+                  <div>
+                    <p>Line 1</p>
+                    <FormikField
+                      name="shipping.address.line1"
+                      placeholder="Line 1"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Line 2</p>
+                    <FormikField
+                      name="shipping.address.line2"
+                      placeholder="Line 2"
+                      type="text"
+                    />
+                  </div>
+                </Row>
+                <Row>
+                  <div>
+                    <p>City</p>
+                    <FormikField
+                      name="shipping.address.city"
+                      placeholder="City"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>State</p>
+                    <FormikField
+                      name="shipping.address.state"
+                      placeholder="State"
+                      type="text"
+                    />
+                  </div>
+                </Row>
+                <Row>
+                  <div>
+                    <p>Postal Code</p>
+                    <FormikField
+                      name="shipping.address.postal_code"
+                      placeholder="Postal Code"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <p>Country</p>
+                    <CountrySelect
+                      fieldName="shipping.address.country"
+                      readOnly={isReadOnly}
+                    />
+                  </div>
+                </Row>
+              </AddressBlock>
+              <SectionHeader>Order Items</SectionHeader>
+              <OrderItemBlock>
+                <p>Items</p>
+                {editedItem.items?.map((item, idx) => (
+                  <div key={item.id}>
+                    <OrderItemRow>
+                      <div>
+                        <p>ID</p>
+                        <FormikField
+                          name={`items.${idx}.id`}
+                          placeholder="ID"
+                          type="number"
+                        />
+                      </div>
+                      <div>
+                        <p>Author</p>
+                        <FormikField
+                          name={`items.${idx}.author`}
+                          placeholder="Author"
+                          type="text"
+                        />
+                      </div>
+                      <div>
+                        <p>Title</p>
+                        <FormikField
+                          name={`items.${idx}.title`}
+                          placeholder="Title"
+                          type="text"
+                        />
+                      </div>
+                    </OrderItemRow>
+                    <Row>
+                      <div>
+                        <p>Price</p>
+                        <FormikField
+                          name={`items.${idx}.price`}
+                          placeholder="Price"
+                          type="number"
+                        />
+                      </div>
+                      <div>
+                        <p>Discount</p>
+                        <FormikField
+                          name={`items.${idx}.discount`}
+                          placeholder="Discount"
+                          type="number"
+                        />
+                      </div>
+                      <div>
+                        <p>Quantity</p>
+                        <FormikField
+                          name={`items.${idx}.quantity`}
+                          placeholder="Quantity"
+                          type="number"
+                        />
+                      </div>
+                    </Row>
+                  </div>
+                ))}
+              </OrderItemBlock>
+            </fieldset>
             <FormButtons>
               <Button
-                type="reset"
+                type={isReadOnly ? 'button' : 'reset'}
                 onClick={onClose}
                 $size="sm"
                 $inverted
                 disabled={isSubmitting}>
-                Cancel
+                {isReadOnly ? 'Close' : 'Cancel'}
               </Button>
-              <Button
-                type="submit"
-                $size="sm"
-                disabled={!dirty || isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={22} />} Save
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  type="submit"
+                  $size="sm"
+                  disabled={!dirty || isSubmitting}>
+                  {isSubmitting && <SpinnerIcon height={22} />} Save
+                </Button>
+              )}
             </FormButtons>
           </Form>
         )

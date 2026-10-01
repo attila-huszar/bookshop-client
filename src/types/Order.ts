@@ -7,7 +7,7 @@ import type {
 
 export type Order = {
   id: number
-  paymentId: string
+  paymentId: string | null
   paymentStatus: PaymentIntentStatus
   total: number
   currency: string
@@ -57,22 +57,5 @@ export type PaymentSession = {
   paymentToken: string
   amount: number
 }
-
-export type OrderSyncResponse = {
-  paymentId: string
-  paymentStatus: PaymentIntentStatus
-  amount: number
-  currency: string
-  receiptEmail: string | null
-  shipping: PaymentIntentShipping | null
-  finalizedAt: string | null
-  webhookUpdatedAt: string | null
-}
-
-export type OrderSyncIssueCode =
-  | 'timeout'
-  | 'retryable'
-  | 'unauthorized'
-  | 'unknown'
 
 export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'

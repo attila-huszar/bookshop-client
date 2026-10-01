@@ -14,7 +14,7 @@ import type {
   RegisterRequest,
   RegisterResponse,
   User,
-  UserUpdate,
+  UserProfileUpdate,
 } from '@/types'
 
 export const fetchAuthTokens = createAsyncThunk<
@@ -42,9 +42,9 @@ export const logout = createAsyncThunk<{ success: boolean }, void>(
   () => postUserLogout(),
 )
 
-export const updateUserProfile = createAsyncThunk<User, UserUpdate>(
+export const updateUserProfile = createAsyncThunk<User, UserProfileUpdate>(
   'user/updateUserProfile',
-  (fields: UserUpdate) => patchUserProfile(fields),
+  (fields: UserProfileUpdate) => patchUserProfile(fields),
 )
 
 export const updateAvatar = createAsyncThunk<User, FormData>(

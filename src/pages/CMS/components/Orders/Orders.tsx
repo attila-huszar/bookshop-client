@@ -13,7 +13,8 @@ export const Orders = () => {
   const {
     selectedItems,
     setSelectedItems,
-    setIsEditDialogOpen,
+    setIsDialogOpen,
+    setIsEditing,
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
 
@@ -72,17 +73,24 @@ export const Orders = () => {
               <tr
                 key={order.id}
                 onClick={() => {
-                  setSelectedItems({
-                    ...selectedItems,
-                    orders: selectedItems.orders.includes(order.id)
-                      ? selectedItems.orders.filter((id) => id !== order.id)
-                      : [...selectedItems.orders, order.id],
-                  })
+                  setIsEditing(false)
+                  setEditedItem(order)
+                  setIsDialogOpen(true)
                 }}
                 className={
                   selectedItems.orders.includes(order.id) ? 'selected' : ''
                 }>
-                <td style={{ textAlign: 'center' }}>
+                <td
+                  style={{ textAlign: 'center' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedItems((prev) => ({
+                      ...prev,
+                      orders: prev.orders.includes(order.id)
+                        ? prev.orders.filter((id) => id !== order.id)
+                        : [...prev.orders, order.id],
+                    }))
+                  }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.orders.includes(order.id)}
@@ -100,7 +108,7 @@ export const Orders = () => {
                 <td>{order.id}</td>
                 <td>
                   <p style={{ width: 96, wordWrap: 'break-word' }}>
-                    {order.paymentId}
+                    {order.paymentId ?? 'Draft'}
                   </p>
                 </td>
                 <td>{formatPaymentStatus(order.paymentStatus)}</td>
@@ -117,9 +125,11 @@ export const Orders = () => {
                 </td>
                 <td style={{ padding: 0 }}>
                   <IconButton
+                    disabled={!order.paymentId}
                     onClick={(e) => {
                       e.stopPropagation()
-                      setIsEditDialogOpen(true)
+                      setIsEditing(true)
+                      setIsDialogOpen(true)
                       setEditedItem(order)
                     }}
                     icon={<EditIcon />}

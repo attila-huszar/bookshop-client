@@ -14,7 +14,6 @@ import {
   patchUserCMS,
   postAuthorCMS,
   postBookCMS,
-  postOrderCMS,
   postUserCMS,
 } from '@/api'
 import type {
@@ -24,6 +23,7 @@ import type {
   BookWithAuthorId,
   Order,
   OrderUpdate,
+  UserCreate,
   UserUpdate,
   UserWithMetadata,
 } from '@/types'
@@ -54,15 +54,10 @@ export const addAuthor = createAsyncThunk<Author, Omit<Author, 'id'>>(
   async (author) => postAuthorCMS(author),
 )
 
-export const addOrder = createAsyncThunk<Order, Omit<Order, 'id'>>(
-  'orders/addOrder',
-  async (order) => await postOrderCMS(order),
+export const addUser = createAsyncThunk<UserWithMetadata, UserCreate>(
+  'users/addUser',
+  async (user) => await postUserCMS(user),
 )
-
-export const addUser = createAsyncThunk<
-  UserWithMetadata,
-  Omit<UserWithMetadata, 'id'>
->('users/addUser', async (user) => await postUserCMS(user))
 
 export const updateBook = createAsyncThunk<BookWithAuthorId, BookUpdate>(
   'books/updateBook',

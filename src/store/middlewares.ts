@@ -10,9 +10,10 @@ import {
   cartQuantitySet,
   cartRemove,
 } from './slices/cart'
-import { paymentSessionReset, paymentStateReset } from './slices/payment'
+import { paymentSessionReset } from './slices/payment'
 import { AppDispatch, RootState } from './store'
 import { paymentCreate } from './thunks/payment'
+import { logout } from './thunks/user'
 
 export const cartToLocalStorage = createListenerMiddleware()
 
@@ -46,6 +47,24 @@ cartToLocalStorageTyped({
   },
 })
 
+cartToLocalStorageTyped({
+  matcher: isAnyOf(
+    cartAdd,
+    cartRemove,
+    cartQuantityAdd,
+    cartQuantityRemove,
+    cartQuantitySet,
+  ),
+  effect: (_action, listenerApi) => {
+    const previousCartItems = listenerApi.getOriginalState().cart.cartItems
+    const currentCartItems = listenerApi.getState().cart.cartItems
+
+    if (previousCartItems !== currentCartItems) {
+      listenerApi.dispatch(paymentSessionReset())
+    }
+  },
+})
+
 export const paymentToSessionStorage = createListenerMiddleware()
 
 const paymentToSessionStorageTyped =
@@ -59,8 +78,15 @@ paymentToSessionStorageTyped({
 })
 
 paymentToSessionStorageTyped({
-  matcher: isAnyOf(paymentStateReset, paymentSessionReset),
+  actionCreator: paymentSessionReset,
   effect: () => {
     sessionStorageAdapter.remove(paymentIdKey)
+  },
+})
+
+paymentToSessionStorageTyped({
+  actionCreator: logout.fulfilled,
+  effect: (_action, listenerApi) => {
+    listenerApi.dispatch(paymentSessionReset())
   },
 })

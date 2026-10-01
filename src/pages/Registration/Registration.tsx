@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { getUserCountry } from '@/api'
 import { register } from '@/store'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { CountrySelect } from '@/components/CountrySelect/CountrySelect'
-import { FormikField } from '@/components/FormikField/FormikField'
+import {
+  AuthorizationMenu,
+  Button,
+  CountrySelect,
+  FormikField,
+  IconButton,
+  toast,
+} from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { getErrorMessage, scrollToTop } from '@/helpers'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
@@ -43,11 +45,9 @@ export function Registration() {
       )
       void navigate('/', { replace: true })
     } catch (error) {
-      const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error.message as string)
-          : 'Registration failed, please try again later'
-      toast.error(errorMessage)
+      toast.error(
+        getErrorMessage(error, 'Registration failed, please try again later'),
+      )
     }
   }
 

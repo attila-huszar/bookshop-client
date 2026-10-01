@@ -6,6 +6,7 @@ import {
   BookWithAuthorId,
   Order,
   OrderUpdate,
+  UserCreate,
   UserUpdate,
   UserWithMetadata,
 } from '@/types'
@@ -70,21 +71,8 @@ export const postAuthorCMS = async (
   return await response.json()
 }
 
-export const postOrderCMS = async (
-  order: Omit<Order, 'id'>,
-): Promise<Order> => {
-  const response = await authRequest.post(PATH.cms.orders, {
-    json: order,
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to add order')
-  }
-  return await response.json()
-}
-
 export const postUserCMS = async (
-  user: Omit<UserWithMetadata, 'id'>,
+  user: UserCreate,
 ): Promise<UserWithMetadata> => {
   const response = await authRequest.post(PATH.cms.users, {
     json: user,

@@ -1,6 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 import {
-  orderSyncAfterWebhook,
   paymentCancel,
   paymentCreate,
   paymentRetrieve,
@@ -14,44 +13,16 @@ const initialState: PaymentState = {
   paymentCreateIssueCode: null,
   paymentRetrieveError: null,
   paymentCancelError: null,
-  orderSyncIsLoading: false,
-  orderSyncAttempt: 0,
-  orderSyncError: null,
-  orderSyncIssueCode: null,
-  orderSync: null,
 }
 
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
   reducers: {
-    paymentStateReset: (state) => {
-      state.payment = null
-      state.paymentIsLoading = false
-      state.paymentCreateError = null
-      state.paymentCreateIssueCode = null
-      state.paymentRetrieveError = null
-      state.paymentCancelError = null
-      state.orderSyncIsLoading = false
-      state.orderSyncAttempt = 0
-      state.orderSyncError = null
-      state.orderSyncIssueCode = null
-      state.orderSync = null
-    },
-    paymentSessionReset: (state) => {
-      state.payment = null
-      state.paymentIsLoading = false
-      state.paymentCreateError = null
-      state.paymentCreateIssueCode = null
-      state.paymentRetrieveError = null
-      state.paymentCancelError = null
-    },
+    paymentSessionReset: () => initialState,
     paymentCreateReset: (state) => {
       state.paymentCreateError = null
       state.paymentCreateIssueCode = null
-    },
-    setOrderSyncAttempt: (state, action: PayloadAction<number>) => {
-      state.orderSyncAttempt = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -60,11 +31,6 @@ const paymentSlice = createSlice({
         state.paymentIsLoading = true
         state.paymentCreateError = null
         state.paymentCreateIssueCode = null
-        state.orderSyncIsLoading = false
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-        state.orderSync = null
       })
       .addCase(paymentCreate.fulfilled, (state, action) => {
         state.payment = {
@@ -75,11 +41,6 @@ const paymentSlice = createSlice({
         state.paymentIsLoading = false
         state.paymentCreateError = null
         state.paymentCreateIssueCode = null
-        state.orderSyncIsLoading = false
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-        state.orderSync = null
       })
       .addCase(paymentCreate.rejected, (state, action) => {
         state.payment = null
@@ -87,11 +48,6 @@ const paymentSlice = createSlice({
         state.paymentCreateError =
           action.payload?.message ?? 'Failed to create payment'
         state.paymentCreateIssueCode = action.payload?.code ?? 'unknown'
-        state.orderSyncIsLoading = false
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-        state.orderSync = null
       })
       .addCase(paymentRetrieve.pending, (state) => {
         state.paymentIsLoading = true
@@ -110,55 +66,22 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentRetrieveError =
-          action.error.message ?? 'Failed to retrieve payment'
+          action.payload?.message ??
+          action.error.message ??
+          'Failed to retrieve payment'
       })
       .addCase(paymentCancel.pending, (state) => {
         state.paymentIsLoading = true
         state.paymentCancelError = null
       })
-      .addCase(paymentCancel.fulfilled, (state) => {
-        state.payment = null
-        state.paymentIsLoading = false
-        state.paymentCreateError = null
-        state.paymentCreateIssueCode = null
-        state.paymentRetrieveError = null
-        state.paymentCancelError = null
-        state.orderSyncIsLoading = false
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-        state.orderSync = null
-      })
+      .addCase(paymentCancel.fulfilled, () => initialState)
       .addCase(paymentCancel.rejected, (state, action) => {
         state.paymentIsLoading = false
         state.paymentCancelError =
           action.error.message ?? 'Failed to cancel payment'
       })
-      .addCase(orderSyncAfterWebhook.pending, (state) => {
-        state.orderSyncIsLoading = true
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-      })
-      .addCase(orderSyncAfterWebhook.fulfilled, (state, action) => {
-        state.orderSyncIsLoading = false
-        state.orderSyncAttempt = 0
-        state.orderSyncError = null
-        state.orderSyncIssueCode = null
-        state.orderSync = action.payload
-      })
-      .addCase(orderSyncAfterWebhook.rejected, (state, action) => {
-        state.orderSyncIsLoading = false
-        state.orderSyncError = action.payload?.message ?? 'Failed to sync order'
-        state.orderSyncIssueCode = action.payload?.code ?? 'unknown'
-      })
   },
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const {
-  paymentStateReset,
-  paymentSessionReset,
-  paymentCreateReset,
-  setOrderSyncAttempt,
-} = paymentSlice.actions
+export const { paymentSessionReset, paymentCreateReset } = paymentSlice.actions

@@ -1,5 +1,4 @@
 import { ChangeEvent, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
 import { updateAvatar, updateUserProfile, userSelector } from '@/store'
 import {
@@ -9,6 +8,7 @@ import {
   FormikField,
   IconButton,
   PasswordDialog,
+  toast,
 } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import {
@@ -16,7 +16,7 @@ import {
   addressSchema,
   validateImageFile,
 } from '@/validation'
-import type { StripeAddress, UserUpdate } from '@/types'
+import type { StripeAddress, UserProfileUpdate } from '@/types'
 import { EditIcon, SpinnerIcon } from '@/assets/svg'
 import {
   Address,
@@ -40,13 +40,17 @@ export function Account() {
 
   if (!userData) return null
 
-  const handleUserInfoSubmit = async (values: UserUpdate) => {
-    await dispatch(updateUserProfile(values))
+  const handleUserInfoSubmit = async ({
+    firstName,
+    lastName,
+    phone,
+  }: UserProfileUpdate) => {
+    await dispatch(updateUserProfile({ firstName, lastName, phone }))
     setEditingUserInfo(false)
   }
 
   const handleAddressSubmit = async (values: StripeAddress) => {
-    const updateData: UserUpdate = {
+    const updateData: UserProfileUpdate = {
       address: {
         line1: values.line1,
         line2: values.line2,
@@ -121,7 +125,7 @@ export function Account() {
             <div>
               <AvatarPanel>
                 <Avatar
-                  imgUrl={avatar}
+                  imgUrl={avatar ?? undefined}
                   onClick={handleAvatarClick}
                   title="Change Profile Picture"
                   $size={160}
@@ -160,7 +164,7 @@ export function Account() {
                     firstName,
                     lastName,
                     email,
-                    phone: phone || '',
+                    phone: phone ?? '',
                   }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}

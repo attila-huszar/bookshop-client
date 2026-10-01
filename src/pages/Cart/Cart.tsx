@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import {
@@ -15,15 +14,18 @@ import {
   paymentCreate,
   paymentCreateReset,
   paymentSelector,
-  paymentStateReset,
+  paymentSessionReset,
   refreshCartItems,
 } from '@/store'
-import { Alert } from '@/components/Alert/Alert'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
-import { Loading } from '@/components/Loading/Loading'
-import { Price } from '@/components/Price/Price'
+import {
+  Alert,
+  Button,
+  IconButton,
+  InfoDialog,
+  Loading,
+  Price,
+  toast,
+} from '@/components'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { enforceMinMax, scrollToTop, sessionStorageAdapter } from '@/helpers'
 import {
@@ -193,7 +195,7 @@ export function Cart() {
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(paymentStateReset())
+    dispatch(paymentSessionReset())
   }
 
   const navigateToBooks = () => {

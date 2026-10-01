@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        'lottie-react': 'lottie-react/build/index.es.js',
       },
     },
     server: {

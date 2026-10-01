@@ -8,7 +8,7 @@ import type {
   RegisterRequest,
   RegisterResponse,
   User,
-  UserUpdate,
+  UserProfileUpdate,
 } from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
@@ -36,11 +36,11 @@ export const postUserLogin = async ({
     })
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Login failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 
@@ -64,11 +64,11 @@ export const postUserRegister = async (
     )
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Registration failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 
@@ -82,19 +82,29 @@ export const postUserLogout = async () => {
     )
     return await response.json()
   } catch (error) {
-    const formattedError = await handleError({
+    const formattedError = handleError({
       error,
       message: 'Logout failed, please try again later',
     })
-    throw new Error(formattedError.message)
+    throw new Error(formattedError.message, { cause: error })
   }
 }
 
-export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
-  const response = await authRequest.patch<User>(PATH.users.profile, {
-    json: fields,
-  })
-  return await response.json()
+export const patchUserProfile = async (
+  fields: UserProfileUpdate,
+): Promise<User> => {
+  try {
+    const response = await authRequest.patch<User>(PATH.users.profile, {
+      json: fields,
+    })
+    return await response.json()
+  } catch (error) {
+    const formattedError = handleError({
+      error,
+      message: 'Failed to update user profile, please try again later',
+    })
+    throw new Error(formattedError.message, { cause: error })
+  }
 }
 
 export const postVerifyEmail = async (

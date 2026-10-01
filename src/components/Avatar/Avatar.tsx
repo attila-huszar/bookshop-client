@@ -9,7 +9,7 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
 
   const handleRemoveAvatar = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
-    void dispatch(updateUserProfile({ avatar: '' }))
+    void dispatch(updateUserProfile({ avatar: null }))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
