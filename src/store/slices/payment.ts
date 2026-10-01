@@ -19,22 +19,7 @@ const paymentSlice = createSlice({
   name: 'payment',
   initialState,
   reducers: {
-    paymentStateReset: (state) => {
-      state.payment = null
-      state.paymentIsLoading = false
-      state.paymentCreateError = null
-      state.paymentCreateIssueCode = null
-      state.paymentRetrieveError = null
-      state.paymentCancelError = null
-    },
-    paymentSessionReset: (state) => {
-      state.payment = null
-      state.paymentIsLoading = false
-      state.paymentCreateError = null
-      state.paymentCreateIssueCode = null
-      state.paymentRetrieveError = null
-      state.paymentCancelError = null
-    },
+    paymentSessionReset: () => initialState,
     paymentCreateReset: (state) => {
       state.paymentCreateError = null
       state.paymentCreateIssueCode = null
@@ -81,20 +66,15 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentRetrieveError =
-          action.error.message ?? 'Failed to retrieve payment'
+          action.payload?.message ??
+          action.error.message ??
+          'Failed to retrieve payment'
       })
       .addCase(paymentCancel.pending, (state) => {
         state.paymentIsLoading = true
         state.paymentCancelError = null
       })
-      .addCase(paymentCancel.fulfilled, (state) => {
-        state.payment = null
-        state.paymentIsLoading = false
-        state.paymentCreateError = null
-        state.paymentCreateIssueCode = null
-        state.paymentRetrieveError = null
-        state.paymentCancelError = null
-      })
+      .addCase(paymentCancel.fulfilled, () => initialState)
       .addCase(paymentCancel.rejected, (state, action) => {
         state.paymentIsLoading = false
         state.paymentCancelError =
@@ -104,5 +84,4 @@ const paymentSlice = createSlice({
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const { paymentStateReset, paymentSessionReset, paymentCreateReset } =
-  paymentSlice.actions
+export const { paymentSessionReset, paymentCreateReset } = paymentSlice.actions

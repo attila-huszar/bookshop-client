@@ -17,13 +17,13 @@ export const getPaymentIntent = async (
 
 export const postPaymentIntent = async (
   payment: PaymentIntentRequest,
-  idempotencyKey: string,
+  clientIdempotencyKey: string,
 ): Promise<PaymentSession> => {
   const response = await authRequest.post<PaymentSession>(PATH.payments, {
     json: payment,
     credentials: 'include',
     headers: {
-      'Idempotency-Key': idempotencyKey,
+      'Idempotency-Key': clientIdempotencyKey,
     },
   })
   return await response.json()

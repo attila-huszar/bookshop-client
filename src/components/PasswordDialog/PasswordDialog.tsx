@@ -1,7 +1,6 @@
 import { useImperativeHandle, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
-import { postUserLogin } from '@/api'
 import { updateUserProfile } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { useAppDispatch, useClickOutside } from '@/hooks'
@@ -43,20 +42,11 @@ export function PasswordDialog({ email, ref }: Props) {
     actions: { resetForm: () => void },
   ) => {
     if (values.currentPassword !== values.newPassword) {
-      try {
-        await postUserLogin({
-          email,
-          password: values.currentPassword,
-        })
-      } catch {
-        toast.error('Current password invalid', {
-          id: 'password-change-fail',
-        })
-        return
-      }
-
       const result = await dispatch(
-        updateUserProfile({ password: values.newPassword }),
+        updateUserProfile({
+          password: values.newPassword,
+          currentPassword: values.currentPassword,
+        }),
       )
 
       if (result.meta.requestStatus === 'fulfilled') {

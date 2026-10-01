@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/helpers/errors'
 import type { PaymentIntentStatus, StripeError } from '@/types/Stripe'
 
 type PendingPaymentIntentStatus = Exclude<
@@ -94,10 +95,8 @@ const getStripePaymentErrorMessage = (error: StripeError): string => {
   }
 }
 
-const getUnknownErrorDetails = (error: unknown): string => {
-  if (error instanceof Error && error.message) return error.message
-  return 'Unknown error'
-}
+const getUnknownErrorDetails = (error: unknown): string =>
+  getErrorMessage(error, 'Unknown error')
 
 export function useMessages() {
   // TODO: Add i18n

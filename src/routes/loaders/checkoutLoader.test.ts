@@ -168,6 +168,23 @@ describe('checkoutLoader', () => {
     expect(result).toBeNull()
   })
 
+  it('clears an inaccessible guest payment so a new checkout can be started', async () => {
+    mockStoreDispatch.mockReturnValue({
+      unwrap: vi.fn().mockRejectedValue({
+        code: 'session_unavailable',
+        message: 'Access expired',
+      }),
+    })
+    const result = await checkoutLoader({
+      request: new Request('http://localhost/checkout'),
+    })
+    expect(mockSessionStorageRemove).toHaveBeenCalledWith(paymentIdKey)
+    expect(mockStoreDispatch).toHaveBeenLastCalledWith({
+      type: 'payment/paymentSessionReset',
+    })
+    expect(getResponseLocation(result)).toBe(ROUTE.HOME)
+  })
+
   it('skips retrieval when returning from Stripe and payment token is already in state', async () => {
     mockStoreGetState.mockReturnValue({
       payment: {

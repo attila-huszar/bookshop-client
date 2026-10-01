@@ -7,7 +7,7 @@ import type {
 
 export type Order = {
   id: number
-  paymentId: string
+  paymentId: string | null
   paymentStatus: PaymentIntentStatus
   total: number
   currency: string

@@ -128,7 +128,7 @@ export function AccountMenu() {
   return (
     <StyledMenu ref={menuRef}>
       <Avatar
-        imgUrl={userData.avatar}
+        imgUrl={userData.avatar ?? undefined}
         onClick={toggleMenu}
         title={userData.firstName}
       />

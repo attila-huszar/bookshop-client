@@ -108,7 +108,7 @@ export const Orders = () => {
                 <td>{order.id}</td>
                 <td>
                   <p style={{ width: 96, wordWrap: 'break-word' }}>
-                    {order.paymentId}
+                    {order.paymentId ?? 'Draft'}
                   </p>
                 </td>
                 <td>{formatPaymentStatus(order.paymentStatus)}</td>
@@ -125,6 +125,7 @@ export const Orders = () => {
                 </td>
                 <td style={{ padding: 0 }}>
                   <IconButton
+                    disabled={!order.paymentId}
                     onClick={(e) => {
                       e.stopPropagation()
                       setIsEditing(true)

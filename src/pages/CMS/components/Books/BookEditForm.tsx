@@ -6,7 +6,7 @@ import { addBook, updateBook } from '@/store'
 import { Button, FormikField, IconButton } from '@/components'
 import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
 import { log } from '@/services/logger'
-import { formatDate } from '@/helpers'
+import { formatDate, getErrorMessage } from '@/helpers'
 import { bookSchema, validateImageFile } from '@/validation'
 import { BookWithAuthorId } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
@@ -128,9 +128,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
         toast.error(`Failed to ${editedItem ? 'update' : 'add'} book`)
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 

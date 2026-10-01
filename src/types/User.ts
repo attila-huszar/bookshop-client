@@ -5,9 +5,9 @@ export type User = {
   lastName: string
   email: string
   country: string
-  phone: string
-  address: StripeAddress
-  avatar: string
+  phone: string | null
+  address: StripeAddress | null
+  avatar: string | null
   role: UserRole
 }
 
@@ -52,7 +52,21 @@ export type LoginResponse = {
 }
 
 export type UserUpdate = Partial<User> & {
+  uuid?: string
+  verified?: boolean
+}
+
+export type UserCreate = User & {
+  password: string
+  verified: boolean
+}
+
+export type UserProfileUpdate = Partial<
+  Pick<User, 'firstName' | 'lastName' | 'country' | 'phone' | 'address'>
+> & {
+  avatar?: null
   password?: string
+  currentPassword?: string
 }
 
 export type CountryData = Record<string, string>

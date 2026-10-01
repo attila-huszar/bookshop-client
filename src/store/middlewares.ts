@@ -10,7 +10,7 @@ import {
   cartQuantitySet,
   cartRemove,
 } from './slices/cart'
-import { paymentSessionReset, paymentStateReset } from './slices/payment'
+import { paymentSessionReset } from './slices/payment'
 import { AppDispatch, RootState } from './store'
 import { paymentCreate } from './thunks/payment'
 import { logout } from './thunks/user'
@@ -78,7 +78,7 @@ paymentToSessionStorageTyped({
 })
 
 paymentToSessionStorageTyped({
-  matcher: isAnyOf(paymentStateReset, paymentSessionReset),
+  actionCreator: paymentSessionReset,
   effect: () => {
     sessionStorageAdapter.remove(paymentIdKey)
   },

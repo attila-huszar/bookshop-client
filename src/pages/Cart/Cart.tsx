@@ -15,7 +15,7 @@ import {
   paymentCreate,
   paymentCreateReset,
   paymentSelector,
-  paymentStateReset,
+  paymentSessionReset,
   refreshCartItems,
 } from '@/store'
 import { Alert } from '@/components/Alert/Alert'
@@ -193,7 +193,7 @@ export function Cart() {
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(paymentStateReset())
+    dispatch(paymentSessionReset())
   }
 
   const navigateToBooks = () => {

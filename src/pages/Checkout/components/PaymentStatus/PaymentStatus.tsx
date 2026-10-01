@@ -9,11 +9,11 @@ import {
   useMessages,
   usePaymentStatus,
 } from '@/hooks'
-import logo from '@/assets/image/logo.png'
 import {
   getPaymentStatusView,
   isSuccessPaymentIntentStatus,
-} from './PaymentStatus.helpers'
+} from '@/helpers/paymentStatus'
+import logo from '@/assets/image/logo.png'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {

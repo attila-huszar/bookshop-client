@@ -3,6 +3,7 @@ import { UserRole } from '@/types'
 import { imageSchema } from './fileSchemas'
 
 export const emailSchema = Yup.string()
+  .trim()
   .email('Invalid Email')
   .required('Required')
 
@@ -16,14 +17,13 @@ export const passwordConfirmSchema = Yup.string()
   .oneOf([Yup.ref('password'), Yup.ref('newPassword')], 'Passwords must match')
 
 export const nameSchema = Yup.string()
+  .trim()
   .max(100, 'Max 100 characters')
-  .matches(
-    /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/g,
-    'Latin letters only',
-  )
   .required('Required')
 
 export const countrySchema = Yup.string()
+  .trim()
+  .lowercase()
   .length(2, 'Country code must be 2 characters')
   .matches(/^[a-z]{2}$/, 'Invalid country code')
   .required('Country is required')
@@ -32,17 +32,37 @@ export const addressSchema = Yup.object().shape({
   line1: Yup.string().required('Required'),
   line2: Yup.string().nullable(),
   city: Yup.string().required('Required'),
-  state: Yup.string().required('Required'),
+  state: Yup.string().nullable().optional(),
   postal_code: Yup.string().required('Required'),
-  country: Yup.string().required('Required'),
+  country: countrySchema,
 })
 
 export const phoneSchema = Yup.string().matches(
   /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/,
-  'Invalid Phone number',
+  { message: 'Invalid Phone number', excludeEmptyString: true },
 )
 
 export const avatarSchema = Yup.string().url('Invalid URL')
+
+export const optionalAddressSchema = Yup.object({
+  line1: Yup.string().max(200).nullable().optional(),
+  line2: Yup.string().max(200).nullable().optional(),
+  city: Yup.string().max(100).nullable().optional(),
+  state: Yup.string().max(100).nullable().optional(),
+  postal_code: Yup.string().max(30).nullable().optional(),
+  country: Yup.string()
+    .trim()
+    .lowercase()
+    .matches(/^[a-z]{2}$/, {
+      message: 'Invalid country code',
+      excludeEmptyString: true,
+    })
+    .nullable()
+    .optional(),
+})
+  .nullable()
+  .default(undefined)
+  .optional()
 
 export const registrationSchema = Yup.object().shape({
   firstName: nameSchema,
@@ -59,7 +79,9 @@ export const loginSchema = Yup.object().shape({
   password: passwordSchema,
 })
 
-export const searchSchema = Yup.string().required('Required')
+export const searchSchema = Yup.object({
+  search: Yup.string().trim().required('Required'),
+})
 
 export const accountBasicSchema = Yup.object().shape({
   firstName: nameSchema,
@@ -73,7 +95,7 @@ export const accountPasswordSchema = Yup.object().shape({
   newPasswordConfirmation: passwordConfirmSchema,
 })
 
-export const forgotPasswordSchema = emailSchema
+export const forgotPasswordSchema = Yup.object({ email: emailSchema })
 
 export const resetPasswordSchema = Yup.object().shape({
   newPassword: passwordSchema,
@@ -87,5 +109,8 @@ export const userSchema = Yup.object().shape({
   role: Yup.mixed<UserRole>().oneOf(Object.values(UserRole), 'Invalid role'),
   phone: phoneSchema.nullable(),
   avatar: avatarSchema.nullable(),
-  address: addressSchema,
+  address: optionalAddressSchema,
+  country: countrySchema,
 })
+
+export const userCreateSchema = userSchema.shape({ password: passwordSchema })

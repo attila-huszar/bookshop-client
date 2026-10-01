@@ -8,7 +8,7 @@ import type {
   RegisterRequest,
   RegisterResponse,
   User,
-  UserUpdate,
+  UserProfileUpdate,
 } from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
@@ -90,7 +90,9 @@ export const postUserLogout = async () => {
   }
 }
 
-export const patchUserProfile = async (fields: UserUpdate): Promise<User> => {
+export const patchUserProfile = async (
+  fields: UserProfileUpdate,
+): Promise<User> => {
   const response = await authRequest.patch<User>(PATH.users.profile, {
     json: fields,
   })

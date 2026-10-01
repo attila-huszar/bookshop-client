@@ -4,8 +4,8 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { addUser, updateUser } from '@/store'
 import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { formatDate } from '@/helpers'
-import { userSchema } from '@/validation'
+import { formatDate, getErrorMessage } from '@/helpers'
+import { userCreateSchema, userSchema } from '@/validation'
 import { UserRole, UserWithMetadata } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
@@ -45,6 +45,8 @@ const initialUserValues: UserWithMetadata = {
   updatedAt: '',
 }
 
+type UserFormValues = UserWithMetadata & { password: string }
+
 type Props = {
   editedItem: UserWithMetadata | null
   onClose: () => void
@@ -55,26 +57,41 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const dispatch = useAppDispatch()
 
   const handleSubmit = async (
-    values: UserWithMetadata,
-    actions: FormikHelpers<UserWithMetadata>,
+    values: UserFormValues,
+    actions: FormikHelpers<UserFormValues>,
   ) => {
     try {
+      const {
+        email,
+        firstName,
+        lastName,
+        country,
+        phone,
+        address,
+        avatar,
+        role,
+        verified,
+      } = values
+      const userValues = {
+        email,
+        firstName,
+        lastName,
+        country,
+        phone,
+        address,
+        avatar,
+        role,
+        verified,
+      }
       let result
       if (editedItem) {
-        const {
-          id,
-          verificationToken,
-          verificationExpires,
-          passwordResetToken,
-          passwordResetExpires,
-          createdAt,
-          updatedAt,
-          ...userValues
-        } = values
-        result = await dispatch(updateUser(userValues))
+        result = await dispatch(
+          updateUser({ ...userValues, uuid: editedItem.uuid }),
+        )
       } else {
-        const { id, ...userWithoutId } = values
-        result = await dispatch(addUser(userWithoutId))
+        result = await dispatch(
+          addUser({ ...userValues, password: values.password }),
+        )
       }
 
       if (result?.meta?.requestStatus === 'fulfilled') {
@@ -85,17 +102,15 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
         toast.error(`Failed to ${editedItem ? 'update' : 'add'} user`)
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 
   return (
     <Formik
       key="users"
-      initialValues={editedItem ?? initialUserValues}
-      validationSchema={userSchema}
+      initialValues={{ ...(editedItem ?? initialUserValues), password: '' }}
+      validationSchema={editedItem ? userSchema : userCreateSchema}
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => (
         <Form>
@@ -158,7 +173,7 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             <Row>
               <div>
                 <p>Country at Registration</p>
-                <CountrySelect fieldName="country" />
+                <CountrySelect fieldName="country" readOnly={readOnly} />
               </div>
               <div>
                 <p>Avatar URL</p>
@@ -169,6 +184,19 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 />
               </div>
             </Row>
+            {!editedItem && (
+              <FullRow>
+                <div>
+                  <p>Password</p>
+                  <FormikField
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    autoComplete="new-password"
+                  />
+                </div>
+              </FullRow>
+            )}
             <UserRoleRow>
               <div>
                 <p>Role</p>
@@ -236,7 +264,10 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 </div>
                 <div>
                   <p>Country</p>
-                  <CountrySelect fieldName="address.country" />
+                  <CountrySelect
+                    fieldName="address.country"
+                    readOnly={readOnly}
+                  />
                 </div>
               </Row>
             </AddressBlock>

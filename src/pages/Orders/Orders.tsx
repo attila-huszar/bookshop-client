@@ -63,7 +63,9 @@ export function Orders() {
               <OrderMeta>
                 <p>
                   <span>Status:</span>{' '}
-                  {formatPaymentStatus(order.paymentStatus)}
+                  {order.paymentId
+                    ? formatPaymentStatus(order.paymentStatus)
+                    : 'Checkout not completed'}
                 </p>
                 <p>
                   <span>Total:</span> {formatTotal(order.total, order.currency)}
@@ -72,7 +74,7 @@ export function Orders() {
                   <span>Paid At:</span> {getPaidAtStatus(order)}
                 </p>
                 <p>
-                  <span>Payment ID:</span> {order.paymentId}
+                  <span>Payment ID:</span> {order.paymentId ?? 'Not linked yet'}
                 </p>
               </OrderMeta>
               <OrderItems>

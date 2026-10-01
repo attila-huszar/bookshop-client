@@ -9,7 +9,7 @@ type ErrorResponse = {
   }
 }
 
-export type ErrorClassification = {
+type ErrorClassification = {
   kind: 'http-validation' | 'http-server' | 'http' | 'error' | 'unknown'
   message: string
   status?: number

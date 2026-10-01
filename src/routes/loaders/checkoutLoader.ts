@@ -1,17 +1,21 @@
 import { replace } from 'react-router'
 import { ROUTE } from '@/routes'
-import { paymentRetrieve, store } from '@/store'
-import { getErrorMessage, sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey } from '@/constants'
-import { PaymentIntentStatus } from '@/types'
+import { paymentRetrieve, paymentSessionReset, store } from '@/store'
+import { getErrorCode, sessionStorageAdapter } from '@/helpers'
+import { isSuccessPaymentIntentStatus } from '@/helpers/paymentStatus'
+import {
+  checkoutQueryParams,
+  paymentIdKey,
+  paymentSessionUnavailableCode,
+} from '@/constants'
 import { authLoader } from './authLoader'
-
-const successStatuses: PaymentIntentStatus[] = ['succeeded', 'requires_capture']
 
 export const checkoutLoader = async ({ request }: { request: Request }) => {
   const requestURL = new URL(request.url)
   let paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
-  const stripeReturnPaymentId = requestURL.searchParams.get('payment_intent')
+  const stripeReturnPaymentId = requestURL.searchParams.get(
+    checkoutQueryParams.paymentIntent,
+  )
 
   if (!paymentId && stripeReturnPaymentId) {
     paymentId = stripeReturnPaymentId
@@ -22,14 +26,16 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
     return replace(ROUTE.HOME)
   }
 
-  const hasPaymentIntent = requestURL.searchParams.has('payment_intent')
-  const hasClientSecret = requestURL.searchParams.has(
-    'payment_intent_client_secret',
+  const hasPaymentIntent = requestURL.searchParams.has(
+    checkoutQueryParams.paymentIntent,
+  )
+  const hasPaymentToken = requestURL.searchParams.has(
+    checkoutQueryParams.paymentToken,
   )
 
-  if (hasPaymentIntent || hasClientSecret) {
-    requestURL.searchParams.delete('payment_intent')
-    requestURL.searchParams.delete('payment_intent_client_secret')
+  if (hasPaymentIntent || hasPaymentToken) {
+    requestURL.searchParams.delete(checkoutQueryParams.paymentIntent)
+    requestURL.searchParams.delete(checkoutQueryParams.paymentToken)
 
     const sanitizedSearch = requestURL.searchParams.toString()
     const sanitizedPath = sanitizedSearch
@@ -39,7 +45,9 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
     return replace(sanitizedPath)
   }
 
-  const isStripeReturn = requestURL.searchParams.has('redirect_status')
+  const isStripeReturn = requestURL.searchParams.has(
+    checkoutQueryParams.redirectStatus,
+  )
 
   await authLoader()
 
@@ -60,18 +68,22 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
 
     if (
       !isStripeReturn &&
-      (successStatuses.includes(retrievedPayment.status) ||
+      (isSuccessPaymentIntentStatus(retrievedPayment.status) ||
         retrievedPayment.status === 'processing')
     ) {
-      requestURL.searchParams.set('redirect_status', retrievedPayment.status)
+      requestURL.searchParams.set(
+        checkoutQueryParams.redirectStatus,
+        retrievedPayment.status,
+      )
 
       return replace(`/${ROUTE.CHECKOUT}?${requestURL.searchParams.toString()}`)
     }
 
     return null
   } catch (error) {
-    if (getErrorMessage(error)?.includes('Payment session has expired')) {
+    if (getErrorCode(error) === paymentSessionUnavailableCode) {
       sessionStorageAdapter.remove(paymentIdKey)
+      store.dispatch(paymentSessionReset())
       return replace(ROUTE.HOME)
     }
 

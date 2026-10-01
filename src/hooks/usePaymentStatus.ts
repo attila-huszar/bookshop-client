@@ -17,7 +17,7 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 5000
 const ABSOLUTE_TIMEOUT = 30000
 
-export function usePaymentStatus(session: string | null | undefined) {
+export function usePaymentStatus(paymentToken: string | null | undefined) {
   const stripe = useStripe()
   const { getUnknownErrorDetails } = useMessages()
   const [retryCount, setRetryCount] = useState(0)
@@ -27,7 +27,7 @@ export function usePaymentStatus(session: string | null | undefined) {
   })
 
   useEffect(() => {
-    if (!stripe || !session) return
+    if (!stripe || !paymentToken) return
 
     const timeoutIds: ReturnType<typeof setTimeout>[] = []
     let absoluteTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -58,7 +58,7 @@ export function usePaymentStatus(session: string | null | undefined) {
 
       try {
         const { paymentIntent, error } =
-          await stripe.retrievePaymentIntent(session)
+          await stripe.retrievePaymentIntent(paymentToken)
 
         if (isInactive()) return
 
@@ -122,9 +122,10 @@ export function usePaymentStatus(session: string | null | undefined) {
     void retrievePaymentStatus()
 
     return () => {
+      isSettled = true
       timeoutIds.forEach(clearTimeout)
     }
-  }, [getUnknownErrorDetails, retryCount, session, stripe])
+  }, [getUnknownErrorDetails, retryCount, paymentToken, stripe])
 
   const retry = () => {
     setStatus({ intent: null, messageOverride: null })

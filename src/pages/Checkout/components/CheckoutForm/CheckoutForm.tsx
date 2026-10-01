@@ -11,10 +11,11 @@ import { ROUTE } from '@/routes'
 import {
   paymentCancel,
   paymentSelector,
-  paymentStateReset,
+  paymentSessionReset,
   userSelector,
 } from '@/store'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
+import { getErrorMessage } from '@/helpers/errors'
 import { defaultCurrency } from '@/constants'
 import type { StripePaymentElementOptions } from '@/types'
 
@@ -76,13 +77,13 @@ export function CheckoutForm() {
 
     try {
       await dispatch(paymentCancel({ paymentId })).unwrap()
-      dispatch(paymentStateReset())
+      dispatch(paymentSessionReset())
       void navigate(`/${ROUTE.CART}`, { replace: true })
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Unable to cancel checkout right now. Please try again.'
+      const errorMessage = getErrorMessage(
+        error,
+        'Unable to cancel checkout right now. Please try again.',
+      )
 
       setCancelError(errorMessage)
       toast.error(errorMessage, { id: 'checkout-cancel-error' })

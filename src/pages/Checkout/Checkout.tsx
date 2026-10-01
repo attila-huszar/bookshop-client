@@ -9,7 +9,7 @@ import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
 import { Loading } from '@/components/Loading/Loading'
 import { useAppSelector } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey, stripeKey } from '@/constants'
+import { checkoutQueryParams, paymentIdKey, stripeKey } from '@/constants'
 import { handleError } from '@/errors'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
@@ -40,11 +40,11 @@ export function Checkout() {
   const location = useLocation()
   const { payment, paymentIsLoading, paymentRetrieveError } =
     useAppSelector(paymentSelector)
-  const [checkoutClientSecret] = useState(payment?.paymentToken)
+  const [checkoutPaymentToken] = useState(payment?.paymentToken)
   const ref = useRef<HTMLDialogElement>(null)
 
   const searchParams = new URLSearchParams(location.search)
-  const isStripeReturn = searchParams.has('redirect_status')
+  const isStripeReturn = searchParams.has(checkoutQueryParams.redirectStatus)
 
   useEffect(() => {
     if (paymentIsLoading || paymentRetrieveError) {
@@ -77,7 +77,7 @@ export function Checkout() {
   }
 
   const options: StripeElementsOptions = {
-    clientSecret: checkoutClientSecret,
+    clientSecret: checkoutPaymentToken,
     appearance: { theme: 'stripe', variables: {} },
     loader: 'auto',
   }

@@ -9,7 +9,7 @@ import { IconButton } from '@/components/Button/IconButton'
 import { ForgotPassword } from '@/components/ForgotPassword/ForgotPassword'
 import { FormikField } from '@/components/FormikField/FormikField'
 import { useAppDispatch } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { getErrorMessage, scrollToTop } from '@/helpers'
 import { loginSchema } from '@/validation'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
@@ -33,11 +33,9 @@ export function Login() {
       toast.success(`Welcome back, ${firstName}!`)
       void navigate('/', { replace: true })
     } catch (error) {
-      const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error.message as string)
-          : 'Login failed, please try again later'
-      toast.error(errorMessage)
+      toast.error(
+        getErrorMessage(error, 'Login failed, please try again later'),
+      )
     }
   }
 

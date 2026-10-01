@@ -4,7 +4,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { updateOrder } from '@/store'
 import { Button, CountrySelect, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { formatDate, formatPaymentStatus } from '@/helpers'
+import { formatDate, formatPaymentStatus, getErrorMessage } from '@/helpers'
 import { orderSchema } from '@/validation'
 import { Order, OrderUpdate } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
@@ -46,36 +46,42 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const dispatch = useAppDispatch()
 
   if (!editedItem) return null
+  const isReadOnly = readOnly === true || !editedItem.paymentId
 
   const handleSubmit = async (
     values: OrderFormValues,
     actions: FormikHelpers<OrderFormValues>,
   ) => {
+    if (!editedItem.paymentId) return
     try {
-      const { id, createdAt, updatedAt, paidAt, markAsPaid, ...orderValues } =
-        values
+      const { markAsPaid } = values
       const nextPaymentStatus = getEffectivePaymentStatus(
         editedItem.paymentStatus,
         editedItem.paidAt,
         markAsPaid,
       )
       const payload: OrderUpdate = {
-        ...orderValues,
+        firstName: values.firstName?.trim() || null,
+        lastName: values.lastName?.trim() || null,
+        email: values.email?.trim() || null,
+        shipping: values.shipping,
+        items: values.items,
+        total: values.total,
+        currency: values.currency,
+        paymentId: editedItem.paymentId,
         paymentStatus: nextPaymentStatus,
       }
       const result = await dispatch(updateOrder(payload))
 
       if (result?.meta?.requestStatus === 'fulfilled') {
         actions.resetForm()
-        toast.success(`Order ${editedItem ? 'updated' : 'added'} successfully`)
+        toast.success('Order updated successfully')
         onClose()
       } else {
-        toast.error(`Failed to ${editedItem ? 'update' : 'add'} order`)
+        toast.error('Failed to update order')
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 
@@ -98,7 +104,12 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
 
         return (
           <Form>
-            <fieldset disabled={readOnly}>
+            {!editedItem.paymentId && (
+              <p>
+                Draft order — no payment linked yet. Editing is unavailable.
+              </p>
+            )}
+            <fieldset disabled={isReadOnly}>
               <SectionHeader>Order Information</SectionHeader>
               <MetadataBlock>
                 <div>
@@ -270,7 +281,10 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   </div>
                   <div>
                     <p>Country</p>
-                    <CountrySelect fieldName="shipping.address.country" />
+                    <CountrySelect
+                      fieldName="shipping.address.country"
+                      readOnly={isReadOnly}
+                    />
                   </div>
                 </Row>
               </AddressBlock>
@@ -337,14 +351,14 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             </fieldset>
             <FormButtons>
               <Button
-                type={readOnly ? 'button' : 'reset'}
+                type={isReadOnly ? 'button' : 'reset'}
                 onClick={onClose}
                 $size="sm"
                 $inverted
                 disabled={isSubmitting}>
-                {readOnly ? 'Close' : 'Cancel'}
+                {isReadOnly ? 'Close' : 'Cancel'}
               </Button>
-              {!readOnly && (
+              {!isReadOnly && (
                 <Button
                   type="submit"
                   $size="sm"

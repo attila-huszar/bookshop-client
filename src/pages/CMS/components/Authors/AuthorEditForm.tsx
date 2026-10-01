@@ -4,7 +4,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { addAuthor, updateAuthor } from '@/store'
 import { Button, FormikField } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { formatDate } from '@/helpers'
+import { formatDate, getErrorMessage } from '@/helpers'
 import { authorSchema } from '@/validation'
 import { Author } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
@@ -61,9 +61,7 @@ export const AuthorEditForm: FC<Props> = ({
         toast.error(`Failed to ${editedItem ? 'update' : 'add'} author`)
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-      )
+      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
   }
 

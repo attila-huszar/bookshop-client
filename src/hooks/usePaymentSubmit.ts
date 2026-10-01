@@ -2,7 +2,7 @@ import { SubmitEvent, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes'
-import { baseURL } from '@/constants'
+import { baseURL, checkoutQueryParams } from '@/constants'
 import { handleError } from '@/errors'
 import type { StripeErrorType } from '@/types/Stripe'
 import { useMessages } from './useMessages'
@@ -86,7 +86,10 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
 
       if (paymentIntent) {
         const searchParams = new URLSearchParams()
-        searchParams.set('redirect_status', paymentIntent.status)
+        searchParams.set(
+          checkoutQueryParams.redirectStatus,
+          paymentIntent.status,
+        )
 
         void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
           replace: true,

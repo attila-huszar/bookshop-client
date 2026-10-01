@@ -5,16 +5,14 @@ import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 
-export const successStatuses = [
+const successStatuses = [
   'succeeded',
   'requires_capture',
 ] as const satisfies readonly PaymentIntentStatus[]
 
-type SuccessPaymentIntentStatus = (typeof successStatuses)[number]
-
 export const isSuccessPaymentIntentStatus = (
   status: PaymentIntentStatus | null,
-): status is SuccessPaymentIntentStatus =>
+): status is (typeof successStatuses)[number] =>
   successStatuses.some((successStatus) => successStatus === status)
 
 const warningStatuses: PaymentIntentStatus[] = [
