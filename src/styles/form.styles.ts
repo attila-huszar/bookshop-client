@@ -54,15 +54,20 @@ export const baseInputStyles = css<FormTypes>`
       }
     `}
 
-    ${({ disabled }) =>
-      disabled &&
-      `background-color: var(--light-grey);
-    color: var(--black);
-    cursor: not-allowed;
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background-color: var(--light-grey);
+      color: var(--black);
+      cursor: not-allowed;
     `}
 
-    ${({ readOnly }) =>
-      readOnly && `background-color: var(--white-smoke); color: var(--black); `}
+  ${({ readOnly }) =>
+    readOnly &&
+    css`
+      background-color: var(--white-smoke);
+      color: var(--black);
+    `}
 `
 
 export const Input = styled.input<FormTypes>`
