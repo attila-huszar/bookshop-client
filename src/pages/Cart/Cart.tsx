@@ -252,7 +252,7 @@ export function Cart() {
                   icon={<MinusIcon />}
                   title="Remove quantity"
                   $size="sm"
-                  $color="var(--grey)"
+                  $color="var(--color-on-surface-variant)"
                   disabled={item.quantity <= 1}
                 />
                 <input
@@ -269,7 +269,7 @@ export function Cart() {
                   icon={<PlusIcon />}
                   title="Add quantity"
                   $size="sm"
-                  $color="var(--grey)"
+                  $color="var(--color-on-surface-variant)"
                   disabled={item.quantity >= maxItemQuantity}
                 />
               </Quantity>
@@ -293,7 +293,7 @@ export function Cart() {
                   icon={<BinIcon />}
                   title="Remove from cart"
                   $size="sm"
-                  $color="var(--orange)"
+                  $color="var(--color-error)"
                 />
               </RemoveItem>
             </Fragment>
@@ -329,7 +329,7 @@ export function Cart() {
             onClick={handleCartClear}
             disabled={isCheckoutBusy}
             title="Reset Cart"
-            $color="var(--mid-grey)"
+            $color="var(--color-outline)"
             $outline
           />
           <Button

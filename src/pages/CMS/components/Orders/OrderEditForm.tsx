@@ -1,11 +1,10 @@
 import { FC } from 'react'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { updateOrder } from '@/store'
+import { useUpdateOrderMutation } from '@/store/api/bookshopApi'
 import { Button, CountrySelect, FormikField, toast } from '@/components'
-import { useAppDispatch } from '@/hooks'
 import { formatDate, formatPaymentStatus, getErrorMessage } from '@/helpers'
-import { orderSchema } from '@/validation'
-import { Order, OrderUpdate } from '@/types'
+import { orderCustomerUpdateSchema } from '@/validation'
+import type { CmsOrderUpdate, Order } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   AddressBlock,
@@ -23,62 +22,32 @@ type Props = {
   readOnly?: boolean
 }
 
-type OrderFormValues = Order & {
-  markAsPaid: boolean
-}
+export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
+  const [updateOrder] = useUpdateOrderMutation()
 
-const getEffectivePaymentStatus = (
-  originalPaymentStatus: Order['paymentStatus'],
-  paidAt: Order['paidAt'],
-  markAsPaid: boolean,
-): Order['paymentStatus'] => {
-  if (markAsPaid) return 'succeeded'
-
-  if (!paidAt && originalPaymentStatus === 'succeeded') {
-    return 'processing'
+  if (!editedItem) {
+    return null
   }
 
-  return originalPaymentStatus
-}
-
-export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
-  const dispatch = useAppDispatch()
-
-  if (!editedItem) return null
   const isReadOnly = readOnly === true || !editedItem.paymentId
 
-  const handleSubmit = async (
-    values: OrderFormValues,
-    actions: FormikHelpers<OrderFormValues>,
-  ) => {
-    if (!editedItem.paymentId) return
+  const handleSubmit = async (values: Order, actions: FormikHelpers<Order>) => {
+    if (!editedItem.paymentId) {
+      return
+    }
+
     try {
-      const { markAsPaid } = values
-      const nextPaymentStatus = getEffectivePaymentStatus(
-        editedItem.paymentStatus,
-        editedItem.paidAt,
-        markAsPaid,
-      )
-      const payload: OrderUpdate = {
+      const payload: CmsOrderUpdate = {
         firstName: values.firstName?.trim() || null,
         lastName: values.lastName?.trim() || null,
         email: values.email?.trim() || null,
         shipping: values.shipping,
-        items: values.items,
-        total: values.total,
-        currency: values.currency,
         paymentId: editedItem.paymentId,
-        paymentStatus: nextPaymentStatus,
       }
-      const result = await dispatch(updateOrder(payload))
-
-      if (result?.meta?.requestStatus === 'fulfilled') {
-        actions.resetForm()
-        toast.success('Order updated successfully')
-        onClose()
-      } else {
-        toast.error('Failed to update order')
-      }
+      await updateOrder(payload).unwrap()
+      actions.resetForm()
+      toast.success('Order updated successfully')
+      onClose()
     } catch (error) {
       toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
@@ -87,20 +56,10 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   return (
     <Formik
       key="orders"
-      initialValues={{
-        ...editedItem,
-        markAsPaid:
-          editedItem.paymentStatus === 'succeeded' && !editedItem.paidAt,
-      }}
-      validationSchema={orderSchema}
+      initialValues={editedItem}
+      validationSchema={orderCustomerUpdateSchema}
       onSubmit={handleSubmit}>
-      {({ dirty, isSubmitting, values }) => {
-        const effectivePaymentStatus = getEffectivePaymentStatus(
-          editedItem.paymentStatus,
-          editedItem.paidAt,
-          values.markAsPaid,
-        )
-
+      {({ dirty, isSubmitting }) => {
         return (
           <Form>
             {!editedItem.paymentId && (
@@ -132,18 +91,6 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                       gap: '2.25rem',
                     }}>
                     <span>{formatDate(editedItem.paidAt)}</span>
-                    {!editedItem.paidAt && (
-                      <label
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.375rem',
-                          fontSize: '0.75rem',
-                        }}>
-                        <FormikField name="markAsPaid" type="checkbox" />
-                        Mark as paid
-                      </label>
-                    )}
                   </div>
                 </div>
               </MetadataBlock>
@@ -164,7 +111,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                     name="paymentStatus"
                     placeholder="Payment Status"
                     type="text"
-                    value={formatPaymentStatus(effectivePaymentStatus)}
+                    value={formatPaymentStatus(editedItem.paymentStatus)}
                     readOnly
                   />
                 </div>
@@ -172,12 +119,18 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               <Row>
                 <div>
                   <p>Total</p>
-                  <FormikField name="total" placeholder="Total" type="number" />
+                  <FormikField
+                    name="total"
+                    placeholder="Total"
+                    type="number"
+                    readOnly
+                  />
                 </div>
                 <div>
                   <p>Currency</p>
                   <FormikField
                     name="currency"
+                    readOnly
                     placeholder="Currency"
                     type="text"
                   />
@@ -206,10 +159,6 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 <div>
                   <p>Email</p>
                   <FormikField name="email" placeholder="Email" type="email" />
-                </div>
-                <div>
-                  <p>Phone</p>
-                  <FormikField name="phone" placeholder="Phone" type="text" />
                 </div>
               </Row>
               <SectionHeader>Shipping Address</SectionHeader>
@@ -297,6 +246,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>ID</p>
                         <FormikField
                           name={`items.${idx}.id`}
+                          readOnly
                           placeholder="ID"
                           type="number"
                         />
@@ -305,6 +255,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>Author</p>
                         <FormikField
                           name={`items.${idx}.author`}
+                          readOnly
                           placeholder="Author"
                           type="text"
                         />
@@ -313,6 +264,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>Title</p>
                         <FormikField
                           name={`items.${idx}.title`}
+                          readOnly
                           placeholder="Title"
                           type="text"
                         />
@@ -323,6 +275,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>Price</p>
                         <FormikField
                           name={`items.${idx}.price`}
+                          readOnly
                           placeholder="Price"
                           type="number"
                         />
@@ -331,6 +284,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>Discount</p>
                         <FormikField
                           name={`items.${idx}.discount`}
+                          readOnly
                           placeholder="Discount"
                           type="number"
                         />
@@ -339,6 +293,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                         <p>Quantity</p>
                         <FormikField
                           name={`items.${idx}.quantity`}
+                          readOnly
                           placeholder="Quantity"
                           type="number"
                         />
@@ -353,7 +308,7 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 type={isReadOnly ? 'button' : 'reset'}
                 onClick={onClose}
                 $size="sm"
-                $inverted
+                $color="neutral"
                 disabled={isSubmitting}>
                 {isReadOnly ? 'Close' : 'Cancel'}
               </Button>

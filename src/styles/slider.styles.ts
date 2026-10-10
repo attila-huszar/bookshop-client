@@ -1,11 +1,11 @@
 export const sliderStyles = {
   track: {
-    backgroundColor: 'var(--primary-color)',
+    backgroundColor: 'var(--color-primary)',
   },
   handle: {
     opacity: 1,
     border: 'none',
-    backgroundColor: 'var(--primary-color)',
+    backgroundColor: 'var(--color-primary)',
   },
-  rail: { backgroundColor: 'var(--grey)' },
+  rail: { backgroundColor: 'var(--color-on-surface-variant)' },
 }

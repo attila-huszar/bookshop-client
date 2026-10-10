@@ -1,34 +1,53 @@
 import { useOutletContext } from 'react-router'
 import { cmsUsersSelector } from '@/store'
-import { Alert, IconButton } from '@/components'
+import { Alert, IconButton, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../styles/CMS.style'
+import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Users = () => {
-  const { users, usersLoading, usersError } = useAppSelector(cmsUsersSelector)
   const {
+    users: allUsers,
+    usersLoading,
+    usersError,
+  } = useAppSelector(cmsUsersSelector)
+  const {
+    showDeletedUsers,
     selectedItems,
     setSelectedItems,
     setIsDialogOpen,
     setIsEditing,
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
+  const users = allUsers.filter(
+    (user) => Boolean(user.deletedAt) === showDeletedUsers,
+  )
+
+  if (usersLoading) {
+    return <Loading message="Loading users" />
+  }
 
   if (usersError) {
     return <Alert message="Error loading users" error={usersError} />
   }
 
-  if (!usersLoading && users.length === 0) {
-    return <Alert message="No users found" />
+  if (users.length === 0) {
+    return (
+      <Alert
+        message={showDeletedUsers ? 'No deleted users found' : 'No users found'}
+      />
+    )
   }
 
   const allSelected =
     users.length > 0 && selectedItems.users.length === users.length
 
   const sortedUsers = [...users].sort((a, b) => {
-    if (a.id === undefined || b.id === undefined) return 0
+    if (a.id === undefined || b.id === undefined) {
+      return 0
+    }
+
     return a.id - b.id
   })
 
@@ -64,7 +83,7 @@ export const Users = () => {
             <th>Verified</th>
             <th>Created</th>
             <th>Updated</th>
-            <th style={{ width: 40, padding: 0 }}></th>
+            <th className="actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -94,6 +113,7 @@ export const Users = () => {
                   <input
                     type="checkbox"
                     checked={selectedItems.users.includes(user.id)}
+                    aria-label={`Select user #${user.id}`}
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => {
                       setSelectedItems((prev) => ({
@@ -140,17 +160,23 @@ export const Users = () => {
                     minute: '2-digit',
                   })}
                 </td>
-                <td style={{ padding: 0 }}>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsEditing(true)
-                      setIsDialogOpen(true)
-                      setEditedItem(user)
-                    }}
-                    icon={<EditIcon />}
-                    $size="sm"
-                  />
+                <td className="actions">
+                  <TableActions>
+                    <IconButton
+                      type="button"
+                      title="Edit user"
+                      aria-label={`Edit user #${user.id}`}
+                      disabled={showDeletedUsers}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsEditing(true)
+                        setIsDialogOpen(true)
+                        setEditedItem(user)
+                      }}
+                      icon={<EditIcon aria-hidden="true" />}
+                      $size="sm"
+                    />
+                  </TableActions>
                 </td>
               </tr>
             )

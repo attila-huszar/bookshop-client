@@ -1,4 +1,4 @@
-import { CaretDownIcon } from '@/assets/svg'
+import { ChevronDownIcon } from '@/assets/svg'
 import { Content, Header, Item } from './AccordionItem.style'
 
 export type AccordionItemProps = {
@@ -20,7 +20,7 @@ export function AccordionItem({
     <>
       <Header $isOpen={isOpen} onClick={() => setIsOpen(panelKey)}>
         <p>{header}</p>
-        <CaretDownIcon color="var(--grey)" />
+        <ChevronDownIcon color="var(--color-on-surface-variant)" />
       </Header>
       <Item $isOpen={isOpen}>
         <Content>{children}</Content>

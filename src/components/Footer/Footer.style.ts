@@ -12,7 +12,7 @@ export const StyledFooter = styled.footer`
   padding: 0 6.25rem;
 
   a:hover {
-    color: var(--primary-color);
+    color: var(--color-primary);
   }
 
   ${media.down('sm')`
@@ -43,6 +43,6 @@ export const BottomSection = styled.section`
   grid-area: 2 / 1 / 3 / 3;
 
   ${media.up('sm')`
-    border-top: 1px var(--light-grey) solid;
+    border-top: 1px var(--color-outline-variant) solid;
   `}
 `

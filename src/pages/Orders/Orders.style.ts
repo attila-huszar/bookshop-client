@@ -26,9 +26,9 @@ export const OrdersList = styled.div`
 `
 
 export const OrderCard = styled.article`
-  border: 1px solid var(--light-grey);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 10px;
-  background-color: var(--pearly-white);
+  background-color: var(--color-surface-container);
   padding: 1rem 1.25rem;
 
   ${media.down('sm')`
@@ -49,7 +49,7 @@ export const OrderHeader = styled.header`
   > p {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--dark-grey);
+    color: var(--color-on-surface-variant);
   }
 
   ${media.down('sm')`
@@ -82,7 +82,7 @@ export const OrderItems = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--light-grey);
+  border-top: 1px solid var(--color-outline-variant);
 `
 
 export const OrderItem = styled.li`
@@ -91,7 +91,7 @@ export const OrderItem = styled.li`
   align-items: center;
   gap: 0.5rem 1rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid var(--light-grey);
+  border-bottom: 1px solid var(--color-outline-variant);
 
   &:last-child {
     border-bottom: none;
@@ -120,7 +120,7 @@ export const OrderItemImage = styled.img`
   border-radius: 0.375rem;
   object-fit: cover;
   flex-shrink: 0;
-  background-color: var(--light-grey);
+  background-color: var(--color-surface-container-high);
 `
 
 export const OrderItemTitle = styled.p`
@@ -137,9 +137,9 @@ export const OrderItemQuantityTag = styled.span`
   align-items: center;
   padding: 0.125rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid var(--light-grey);
-  background-color: var(--primary-light);
-  color: var(--light-black);
+  border: 1px solid var(--color-outline-variant);
+  background-color: var(--color-primary-container);
+  color: var(--color-on-surface-variant);
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.2;

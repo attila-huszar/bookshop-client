@@ -1,29 +1,24 @@
 import { vi } from 'vitest'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import { ordersLoader } from './ordersLoader'
 
-const { mockFetchUserOrders, mockDispatch } = vi.hoisted(() => ({
-  mockFetchUserOrders: vi.fn(() => ({ type: 'orders/fetchUserOrders' })),
+const { mockDispatch } = vi.hoisted(() => ({
   mockDispatch: vi.fn(),
 }))
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
-  return {
-    ...actual,
-    fetchUserOrders: mockFetchUserOrders,
-    store: {
-      dispatch: mockDispatch,
-    },
-  }
-})
+vi.mock('@/store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store')>()),
+  store: { dispatch: mockDispatch },
+}))
 
 describe('ordersLoader', () => {
-  it('dispatches user orders fetch', () => {
+  it('warms the user orders query without retaining a loader subscription', () => {
+    const initiate = vi.spyOn(bookshopApi.endpoints.userOrders, 'initiate')
+
     ordersLoader()
 
-    expect(mockFetchUserOrders).toHaveBeenCalledTimes(1)
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'orders/fetchUserOrders',
-    })
+    expect(initiate).toHaveBeenCalledWith(undefined, { subscribe: false })
+    expect(mockDispatch).toHaveBeenCalledWith(expect.any(Function))
+    initiate.mockRestore()
   })
 })

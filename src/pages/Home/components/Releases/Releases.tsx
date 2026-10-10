@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import { booksSelector } from '@/store'
+import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 import { Button } from '@/components'
 import { useAppSelector, useBreakpoints } from '@/hooks'
 import {
@@ -14,6 +16,9 @@ import {
 } from './Releases.style'
 
 export function Releases() {
+  useBooksByPropertyQuery('newRelease', {
+    refetchOnMountOrArgChange: cacheTimes.featured,
+  })
   const navigate = useNavigate()
   const { booksReleases } = useAppSelector(booksSelector)
   const { isMobile } = useBreakpoints()
@@ -38,31 +43,32 @@ export function Releases() {
           Find Your Next Read
         </Button>
       </Welcome>
-      {isMobile ? (
-        <MobileImageWrapper>
-          {featuredBooks.map((book) => (
-            <MobileImageCard key={book.id}>
-              <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
-                <img src={book.imgUrl} alt={book.title} />
-                <p>{book.title}</p>
-              </Link>
-            </MobileImageCard>
-          ))}
-        </MobileImageWrapper>
-      ) : (
-        <ImageWrapper>
-          {featuredBooks.map((book, idx) => (
-            <ImageItem key={book.id} $idx={idx}>
-              <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
-                <img src={book.imgUrl} alt={book.title} />
-              </Link>
-              <MirrorImg>
-                <img src={book.imgUrl} alt={book.title} aria-hidden="true" />
-              </MirrorImg>
-            </ImageItem>
-          ))}
-        </ImageWrapper>
-      )}
+      {featuredBooks.length > 0 &&
+        (isMobile ? (
+          <MobileImageWrapper>
+            {featuredBooks.map((book) => (
+              <MobileImageCard key={book.id}>
+                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                  <img src={book.imgUrl} alt={book.title} />
+                  <p>{book.title}</p>
+                </Link>
+              </MobileImageCard>
+            ))}
+          </MobileImageWrapper>
+        ) : (
+          <ImageWrapper>
+            {featuredBooks.map((book, idx) => (
+              <ImageItem key={book.id} $idx={idx}>
+                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                  <img src={book.imgUrl} alt={book.title} />
+                </Link>
+                <MirrorImg>
+                  <img src={book.imgUrl} alt={book.title} aria-hidden="true" />
+                </MirrorImg>
+              </ImageItem>
+            ))}
+          </ImageWrapper>
+        ))}
     </StyledReleases>
   )
 }

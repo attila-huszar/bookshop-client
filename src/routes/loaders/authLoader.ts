@@ -1,4 +1,5 @@
-import { fetchAuthTokens, fetchUserProfile, store } from '@/store'
+import { fetchAuthTokens, store, userSelector } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import { UserRole } from '@/types'
 
 type AuthLoaderOptions = {
@@ -12,7 +13,6 @@ const DEFAULT_GUEST_MAX_RETRIES = 4
 let tokenFailureCount = 0
 let tokenNextAttemptAt = 0
 let tokenFetchPromise: Promise<unknown> | null = null
-let profileFetchPromise: Promise<unknown> | null = null
 
 const canSkipTokenBootstrap = (maxRetries: number) =>
   tokenFailureCount >= maxRetries || Date.now() < tokenNextAttemptAt
@@ -32,7 +32,7 @@ export const authLoader = async ({
   loginRequired = false,
   adminRequired = false,
 }: AuthLoaderOptions = {}) => {
-  const getUserState = () => store.getState().user
+  const getUserState = () => userSelector(store.getState())
   const { accessToken, userData } = getUserState()
   const requiresLogin = loginRequired || adminRequired
 
@@ -42,8 +42,9 @@ export const authLoader = async ({
   }
 
   if (!accessToken) {
-    if (!requiresLogin && canSkipTokenBootstrap(DEFAULT_GUEST_MAX_RETRIES))
+    if (!requiresLogin && canSkipTokenBootstrap(DEFAULT_GUEST_MAX_RETRIES)) {
       return true
+    }
 
     tokenFetchPromise ??= store.dispatch(fetchAuthTokens()).finally(() => {
       tokenFetchPromise = null
@@ -51,7 +52,10 @@ export const authLoader = async ({
     await tokenFetchPromise
 
     if (!getUserState().accessToken) {
-      if (!requiresLogin) scheduleTokenRetry()
+      if (!requiresLogin) {
+        scheduleTokenRetry()
+      }
+
       return !requiresLogin
     }
 
@@ -61,10 +65,11 @@ export const authLoader = async ({
   const { userData: userDataAfterBootstrap } = getUserState()
 
   if (!userDataAfterBootstrap) {
-    profileFetchPromise ??= store.dispatch(fetchUserProfile()).finally(() => {
-      profileFetchPromise = null
-    })
-    await profileFetchPromise
+    await store.dispatch(
+      bookshopApi.endpoints.userProfile.initiate(undefined, {
+        subscribe: false,
+      }),
+    )
 
     const { userData: profile } = getUserState()
 

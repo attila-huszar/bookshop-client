@@ -67,7 +67,7 @@ export const ImageItem = styled.div<ReleasesTypes>`
   img {
     height: 100%;
     border-radius: 3px;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-shadow: var(--shadow-raised);
   }
 `
 
@@ -80,7 +80,11 @@ export const MirrorImg = styled.div`
     transform: translateY(-100%) perspective(500px) rotateX(60deg) scaleY(-1);
     filter: blur(3px);
     transform-origin: bottom;
-    mask-image: linear-gradient(to bottom, transparent 90%, black 100%);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 90%,
+      var(--color-mask-opaque) 100%
+    );
   }
 `
 
@@ -108,13 +112,13 @@ export const MobileImageCard = styled.div`
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: var(--border-radius);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 12px;
+    box-shadow: var(--shadow-book);
   }
 
   p {
     font-size: 0.875rem;
     line-height: 1.2;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
     text-align: center;
     hyphens: auto;
     overflow-wrap: break-word;

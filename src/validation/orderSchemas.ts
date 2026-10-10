@@ -56,3 +56,10 @@ export const orderSchema = Yup.object().shape({
     ])
     .required(),
 })
+
+export const orderCustomerUpdateSchema = orderSchema.pick([
+  'firstName',
+  'lastName',
+  'email',
+  'shipping',
+])

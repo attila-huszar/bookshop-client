@@ -1,18 +1,19 @@
+import type { Dispatch, SetStateAction } from 'react'
 import type { Author } from './Author'
 import type { BookWithAuthorId } from './Book'
-import type { Order } from './Order'
-import type { UserWithMetadata } from './User'
+import type { CmsOrder } from './Order'
+import type { CmsUser } from './User'
+
+export type CmsEditedItem = BookWithAuthorId | Author | CmsOrder | CmsUser
 
 export type CMSOutletContext = {
+  showDeletedOrders: boolean
+  showDeletedUsers: boolean
   selectedItems: SelectContext
-  setSelectedItems: React.Dispatch<React.SetStateAction<SelectContext>>
-  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
-  setEditedItem: React.Dispatch<
-    React.SetStateAction<
-      BookWithAuthorId | Author | Order | UserWithMetadata | null
-    >
-  >
+  setSelectedItems: Dispatch<SetStateAction<SelectContext>>
+  setIsDialogOpen: Dispatch<SetStateAction<boolean>>
+  setIsEditing: Dispatch<SetStateAction<boolean>>
+  setEditedItem: Dispatch<SetStateAction<CmsEditedItem | null>>
 }
 
 export type SelectContext = {

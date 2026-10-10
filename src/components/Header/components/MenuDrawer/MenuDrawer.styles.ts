@@ -31,7 +31,7 @@ export const Backdrop = styled.div<{ $show: boolean }>`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-backdrop);
   z-index: 90;
   opacity: 0;
   visibility: hidden;

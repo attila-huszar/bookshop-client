@@ -10,6 +10,8 @@ export type Author = {
   updatedAt?: string
 }
 
-export type AuthorUpdate = { id: number } & Partial<
-  Omit<Author, 'id' | 'createdAt' | 'updatedAt'>
->
+export type AuthorCreate = Omit<Author, 'id' | 'createdAt' | 'updatedAt'>
+
+export type AuthorUpdate = { id: number } & Partial<AuthorCreate>
+
+export type AuthorReference = Pick<Author, 'id' | 'name'>

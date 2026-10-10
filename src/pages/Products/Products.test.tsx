@@ -38,17 +38,32 @@ describe('Products Page', () => {
     render(<Products />, { wrapper: Providers })
 
     const cards = await screen.findAllByText(/test book/i)
+
     expect(cards).toHaveLength(2)
     expect(screen.getByText('Pagination component')).toBeInTheDocument()
+  })
+
+  it('shows loading instead of empty results while books are being fetched', () => {
+    vi.mocked(useAppSelector).mockReturnValue({
+      booksOnCurrentPage: [],
+      booksIsLoading: true,
+      booksError: null,
+    })
+
+    render(<Products />, { wrapper: Providers })
+
+    expect(screen.getByText('Loading books')).toBeInTheDocument()
+    expect(screen.queryByText('No books found')).not.toBeInTheDocument()
   })
 
   it('should show EmptyFilterResults when no books are found', () => {
     vi.mocked(useAppSelector).mockReturnValue({
       booksOnCurrentPage: [],
+      booksIsLoading: false,
       booksError: null,
     })
 
-    render(<Products />)
+    render(<Products />, { wrapper: Providers })
 
     expect(screen.getByText('No books found')).toBeInTheDocument()
   })
@@ -59,7 +74,7 @@ describe('Products Page', () => {
       booksError: null,
     })
 
-    render(<Products />)
+    render(<Products />, { wrapper: Providers })
 
     expect(screen.getByText('Filter component')).toBeInTheDocument()
   })
@@ -70,7 +85,7 @@ describe('Products Page', () => {
       booksError: 'Failed to fetch books',
     })
 
-    render(<Products />)
+    render(<Products />, { wrapper: Providers })
 
     expect(screen.getByText(/error loading books/i)).toBeInTheDocument()
     expect(screen.getByText(/failed to fetch books/i)).toBeInTheDocument()

@@ -1,9 +1,4 @@
-import type { MinimalCart } from './Cart'
-import type {
-  PaymentIntent,
-  PaymentIntentShipping,
-  PaymentIntentStatus,
-} from './Stripe'
+import type { PaymentIntentShipping, PaymentIntentStatus } from './Stripe'
 
 export type Order = {
   id: number
@@ -31,31 +26,8 @@ export type OrderItem = {
   quantity: number
 }
 
-export type OrderUpdate = { paymentId: string } & Partial<
-  Omit<Order, 'paymentId' | 'id' | 'createdAt' | 'updatedAt' | 'paidAt'>
+export type CmsOrder = Order & { deletedAt: string | null }
+
+export type CmsOrderUpdate = { paymentId: string } & Partial<
+  Pick<Order, 'firstName' | 'lastName' | 'email' | 'shipping'>
 >
-
-export type PaymentIntentRequest = {
-  items: MinimalCart[]
-  expectedTotal: number
-}
-
-export type PaymentIntentResponse = Pick<
-  PaymentIntent,
-  | 'id'
-  | 'client_secret'
-  | 'amount'
-  | 'status'
-  | 'currency'
-  | 'receipt_email'
-  | 'shipping'
-  | 'created'
->
-
-export type PaymentSession = {
-  paymentId: string
-  paymentToken: string
-  amount: number
-}
-
-export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'

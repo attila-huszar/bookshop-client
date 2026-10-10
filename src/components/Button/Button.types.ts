@@ -1,5 +1,7 @@
+export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'neutral'
+
 export type StyleTypes = {
-  $color?: 'primary' | 'secondary' | 'danger'
+  $color?: ButtonColor
   $icon?: React.ReactNode
   $iconPos?: 'left' | 'right'
   $size?: 'xs' | 'sm' | 'smMd' | 'md' | 'lg' | 'wide'

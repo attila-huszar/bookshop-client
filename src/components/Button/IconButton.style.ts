@@ -21,17 +21,25 @@ export const StyledIconButton = styled.button<StyleTypes>`
   justify-content: center;
   height: ${({ $size = 'md' }) => size[$size]};
   width: ${({ $size = 'md' }) => size[$size]};
-  color: ${({ $color }) => $color ?? 'var(--light-black)'};
-  background: none;
+  color: ${({ $color }) => $color ?? 'var(--color-on-surface-variant)'};
+  background-color: transparent;
   border: ${({ $outline, $color }) =>
-    $outline ? `3px solid ${$color ?? 'var(--light-black)'}` : 'none'};
+    $outline
+      ? `3px solid ${$color ?? 'var(--color-on-surface-variant)'}`
+      : 'none'};
   border-radius: ${({ $round }) => ($round ? '999px' : '10px')};
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition:
+    background-color 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 
-  &:hover {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+  &:hover:not(:disabled),
+  &[aria-pressed='true']:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--color-secondary-container);
   }
 
   svg {
@@ -43,6 +51,12 @@ export const StyledIconButton = styled.button<StyleTypes>`
   }
 
   &:disabled {
-    color: var(--light-grey);
+    color: var(--color-outline);
+    border-color: var(--color-surface-container-high);
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 `

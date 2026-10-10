@@ -1,4 +1,4 @@
-import { Book } from './Book'
+import type { Book } from './Book'
 
 export type Cart = Pick<
   Book,

@@ -1,16 +1,19 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { updateOrder } from '@/store'
-import { useAppDispatch } from '@/hooks'
+import { useUpdateOrderMutation } from '@/store/api/bookshopApi'
 import type { Order } from '@/types'
 import { OrderEditForm } from './OrderEditForm'
 
-vi.mock('@/store', () => ({ updateOrder: vi.fn() }))
+vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+  useUpdateOrderMutation: vi.fn(),
+}))
 
 vi.mock('@/components', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components')>()
   const { useField } = await import('formik')
+
   return {
     ...actual,
     Button: ({ children, type, disabled }: React.ComponentProps<'button'>) => (
@@ -21,13 +24,21 @@ vi.mock('@/components', async (importOriginal) => {
     FormikField: ({
       name,
       placeholder,
+      readOnly,
     }: {
       name: string
       placeholder: string
+      readOnly?: boolean
     }) => {
       const [field] = useField<string | number | null>(name)
+
       return (
-        <input {...field} value={field.value ?? ''} placeholder={placeholder} />
+        <input
+          {...field}
+          value={field.value ?? ''}
+          placeholder={placeholder}
+          readOnly={readOnly}
+        />
       )
     },
     CountrySelect: ({ readOnly }: { readOnly?: boolean }) => (
@@ -58,8 +69,11 @@ describe('OrderEditForm', () => {
   const dispatch = vi.fn()
 
   beforeEach(() => {
-    dispatch.mockResolvedValue({ meta: { requestStatus: 'fulfilled' } })
-    vi.mocked(useAppDispatch).mockReturnValue(dispatch)
+    dispatch.mockReturnValue({ unwrap: () => Promise.resolve(order) })
+    vi.mocked(useUpdateOrderMutation).mockReturnValue([
+      dispatch,
+      { reset: vi.fn() },
+    ])
   })
 
   it.each([
@@ -89,6 +103,7 @@ describe('OrderEditForm', () => {
     'normalizes optional customer fields before submitting: $expected',
     async ({ firstName, lastName, email, expected }) => {
       const user = userEvent.setup()
+
       render(
         <OrderEditForm
           editedItem={{
@@ -111,18 +126,24 @@ describe('OrderEditForm', () => {
           onClose={vi.fn()}
         />,
       )
+
       for (const [placeholder, value] of [
         ['First Name', firstName],
         ['Last Name', lastName],
         ['Email', email],
       ]) {
         const input = screen.getByPlaceholderText(placeholder!)
+
         await user.clear(input)
-        if (value) await user.type(input, value)
+
+        if (value) {
+          await user.type(input, value)
+        }
       }
+
       await user.click(screen.getByRole('button', { name: /Save/ }))
       await waitFor(() => {
-        expect(updateOrder).toHaveBeenCalledWith(
+        expect(dispatch).toHaveBeenCalledWith(
           expect.objectContaining({ ...expected, paymentId: 'pi_test' }),
         )
       })

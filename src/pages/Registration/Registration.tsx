@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { getUserCountry } from '@/api'
-import { register } from '@/store'
+import { useRegisterMutation } from '@/store/api/bookshopApi'
 import {
   AuthorizationMenu,
   Button,
@@ -11,7 +11,6 @@ import {
   IconButton,
   toast,
 } from '@/components'
-import { useAppDispatch } from '@/hooks'
 import { getErrorMessage, scrollToTop } from '@/helpers'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'
@@ -20,7 +19,7 @@ import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 
 export function Registration() {
-  const dispatch = useAppDispatch()
+  const [register] = useRegisterMutation()
   const [country, setCountry] = useState(defaultCountry)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -39,7 +38,7 @@ export function Registration() {
 
   const handleSubmit = async (values: RegisterRequest) => {
     try {
-      const { email } = await dispatch(register(values)).unwrap()
+      const { email } = await register(values).unwrap()
       toast.success(
         `${email} registered successfully, please verify your email address`,
       )
@@ -108,7 +107,7 @@ export function Registration() {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}

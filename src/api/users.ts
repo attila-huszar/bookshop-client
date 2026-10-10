@@ -1,15 +1,7 @@
-import { authRequest, baseRequest, PATH } from '.'
+import { baseRequest, PATH } from '.'
 import { defaultCountry } from '@/constants'
 import { handleError } from '@/errors'
-import type {
-  CountryData,
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  RegisterResponse,
-  User,
-  UserProfileUpdate,
-} from '@/types'
+import type { LoginRequest, LoginResponse } from '@/types'
 
 export const retrieveAuthTokens = async (): Promise<{
   accessToken: string | null
@@ -17,11 +9,6 @@ export const retrieveAuthTokens = async (): Promise<{
   const response = await baseRequest.post<{
     accessToken: string | null
   }>(PATH.users.refresh, { credentials: 'include' })
-  return await response.json()
-}
-
-export const getUserProfile = async (): Promise<User> => {
-  const response = await authRequest.get<User>(PATH.users.profile)
   return await response.json()
 }
 
@@ -44,37 +31,9 @@ export const postUserLogin = async ({
   }
 }
 
-export const postUserRegister = async (
-  user: RegisterRequest,
-): Promise<RegisterResponse> => {
-  try {
-    const formData = new FormData()
-    formData.append('firstName', user.firstName)
-    formData.append('lastName', user.lastName)
-    formData.append('email', user.email)
-    formData.append('password', user.password)
-    formData.append('country', user.country)
-    if (user.avatar instanceof File) {
-      formData.append('avatar', user.avatar)
-    }
-
-    const response = await baseRequest.post<RegisterResponse>(
-      PATH.users.register,
-      { body: formData },
-    )
-    return await response.json()
-  } catch (error) {
-    const formattedError = handleError({
-      error,
-      message: 'Registration failed, please try again later',
-    })
-    throw new Error(formattedError.message, { cause: error })
-  }
-}
-
 export const postUserLogout = async () => {
   try {
-    const response = await authRequest.post<{ success: boolean }>(
+    const response = await baseRequest.post<{ success: boolean }>(
       PATH.users.logout,
       {
         credentials: 'include',
@@ -85,23 +44,6 @@ export const postUserLogout = async () => {
     const formattedError = handleError({
       error,
       message: 'Logout failed, please try again later',
-    })
-    throw new Error(formattedError.message, { cause: error })
-  }
-}
-
-export const patchUserProfile = async (
-  fields: UserProfileUpdate,
-): Promise<User> => {
-  try {
-    const response = await authRequest.patch<User>(PATH.users.profile, {
-      json: fields,
-    })
-    return await response.json()
-  } catch (error) {
-    const formattedError = handleError({
-      error,
-      message: 'Failed to update user profile, please try again later',
     })
     throw new Error(formattedError.message, { cause: error })
   }
@@ -148,13 +90,6 @@ export const postPasswordResetSubmit = async (
   return await response.json()
 }
 
-export const uploadAvatar = async (formData: FormData): Promise<User> => {
-  const response = await authRequest.post<User>(PATH.users.avatar, {
-    body: formData,
-  })
-  return await response.json()
-}
-
 export const getUserCountry = async (): Promise<{
   country: string
 }> => {
@@ -168,9 +103,4 @@ export const getUserCountry = async (): Promise<{
   } catch {
     return { country: defaultCountry }
   }
-}
-
-export const getCountryCodes = async (): Promise<CountryData> => {
-  const response = await baseRequest.get<CountryData>(PATH.users.countryCodes)
-  return await response.json()
 }

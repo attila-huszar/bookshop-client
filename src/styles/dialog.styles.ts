@@ -10,9 +10,9 @@ export const StyledDialog = styled.dialog`
   padding: 1.5rem 2rem;
   border: none;
   border-radius: 10px;
-  box-shadow:
-    rgba(0, 0, 0, 0.1) 0px 10px 15px -3px,
-    rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  box-shadow: var(--shadow-raised);
 
   ${media.down('sm')`
     width: 85%;

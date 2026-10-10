@@ -42,9 +42,14 @@ export const FilterFloatingButton = styled.button`
     height: 3rem;
     border: 0;
     border-radius: 50%;
-    background: var(--primary-color);
-    color: #fff;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: var(--shadow-raised);
+    transition: background-color 0.2s ease-out;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary-hover);
+    }
 
     > svg {
       width: 1.25rem;
@@ -61,6 +66,6 @@ export const FilterBackdrop = styled.div<{ $visible: boolean }>`
     position: fixed;
     inset: 0;
     z-index: 35;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--color-backdrop);
   `}
 `

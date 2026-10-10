@@ -1,6 +1,8 @@
 import { FC, useEffect } from 'react'
 import { useClickOutside } from '@/hooks'
+import { SpinnerIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
+import type { ButtonColor } from '../Button/Button.types'
 import { StyledConfirmDialog } from './ConfirmDialog.style'
 
 type Props = {
@@ -10,7 +12,8 @@ type Props = {
   handleConfirm: () => void
   message: string
   buttonText?: string
-  buttonColor?: 'primary' | 'secondary' | 'danger'
+  buttonColor?: ButtonColor
+  isLoading?: boolean
 }
 
 export const ConfirmDialog: FC<Props> = ({
@@ -21,6 +24,7 @@ export const ConfirmDialog: FC<Props> = ({
   message,
   buttonText = 'OK',
   buttonColor = 'primary',
+  isLoading = false,
 }) => {
   useEffect(() => {
     if (isDialogOpen) {
@@ -30,21 +34,40 @@ export const ConfirmDialog: FC<Props> = ({
     }
   }, [isDialogOpen, ref])
 
-  useClickOutside(ref, () => setIsDialogOpen(false))
+  useClickOutside(ref, () => {
+    if (!isLoading) {
+      setIsDialogOpen(false)
+    }
+  })
 
   if (!isDialogOpen) return null
 
   return (
-    <StyledConfirmDialog ref={ref} onCancel={() => setIsDialogOpen(false)}>
+    <StyledConfirmDialog
+      ref={ref}
+      aria-busy={isLoading}
+      onCancel={(event) => {
+        if (isLoading) {
+          event.preventDefault()
+
+          return
+        }
+
+        setIsDialogOpen(false)
+      }}>
       <p>{message}</p>
       <div>
         <Button
           onClick={() => setIsDialogOpen(false)}
-          $color={buttonColor}
-          $inverted>
+          $color="neutral"
+          disabled={isLoading}>
           Cancel
         </Button>
-        <Button onClick={handleConfirm} $color={buttonColor}>
+        <Button
+          onClick={handleConfirm}
+          $color={buttonColor}
+          disabled={isLoading}>
+          {isLoading && <SpinnerIcon height={22} aria-hidden="true" />}
           {buttonText}
         </Button>
       </div>

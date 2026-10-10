@@ -1,10 +1,15 @@
-import { fetchBooks, fetchBookSearchOptions, store } from '@/store'
+import { booksQueryArgs, store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 
 export const shopLoader = () => {
-  const activeFilters = store.getState().books.booksFilters.active
-  void store.dispatch(fetchBooks(activeFilters))
-
-  if (!activeFilters.price.length) {
-    void store.dispatch(fetchBookSearchOptions())
-  }
+  void store.dispatch(
+    bookshopApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
+      subscribe: false,
+    }),
+  )
+  void store.dispatch(
+    bookshopApi.endpoints.searchOptions.initiate(undefined, {
+      subscribe: false,
+    }),
+  )
 }

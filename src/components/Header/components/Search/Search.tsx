@@ -1,16 +1,18 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { ROUTE } from '@/routes'
-import {
-  fetchAuthorsBySearch,
-  fetchBooksByAuthor,
-  fetchBooksBySearch,
-} from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import { useAppDispatch, useClickOutside, useDebounce } from '@/hooks'
 import { searchSchema } from '@/validation'
-import type { Author, Book } from '@/types'
-import { imagePlaceholder, LinkIcon, SearchIcon, XMarkIcon } from '@/assets/svg'
+import type { Book } from '@/types'
+import {
+  imagePlaceholder,
+  LinkIcon,
+  SearchIcon,
+  SpinnerIcon,
+  XMarkIcon,
+} from '@/assets/svg'
 import {
   ClearButton,
   Dropdown,
@@ -26,47 +28,88 @@ import {
 export function Search() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<Book[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const searchRequestId = useRef(0)
+  const pendingRequests = useRef<{ abort: () => void }[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const debouncedSearchResults = useDebounce(getSearchResults)
+
   useClickOutside(searchRef, () => setSearchOpen(false))
 
-  async function getSearchResults(searchString: string) {
+  const cancelSearch = useCallback(() => {
+    searchRequestId.current += 1
+
+    for (const request of pendingRequests.current) {
+      request.abort()
+    }
+
+    pendingRequests.current = []
+  }, [])
+
+  useEffect(() => cancelSearch, [cancelSearch])
+
+  async function getSearchResults(searchString: string, requestId: number) {
+    if (requestId !== searchRequestId.current) {
+      return
+    }
+
     if (searchString.length > 1) {
-      let booksSearched: Book[] = []
-      let authorsSearched: Author[] = []
+      const searchRequests = [
+        dispatch(
+          bookshopApi.endpoints.bookSearch.initiate(searchString, {
+            subscribe: false,
+          }),
+        ),
+        dispatch(
+          bookshopApi.endpoints.authorSearch.initiate(searchString, {
+            subscribe: false,
+          }),
+        ),
+      ] as const
+      pendingRequests.current = [...searchRequests]
 
-      const booksSearchResponse = await dispatch(
-        fetchBooksBySearch(searchString),
-      )
+      const [booksSearchResponse, authorsSearchResponse] =
+        await Promise.all(searchRequests)
 
-      const authorsSearchResponse = await dispatch(
-        fetchAuthorsBySearch(searchString),
-      )
-
-      if (booksSearchResponse.payload) {
-        booksSearched = booksSearchResponse.payload as Book[]
+      if (requestId !== searchRequestId.current) {
+        return
       }
 
-      if (authorsSearchResponse.payload) {
-        authorsSearched = authorsSearchResponse.payload as Author[]
+      if (booksSearchResponse.error || authorsSearchResponse.error) {
+        pendingRequests.current = []
+        setSearchError('Could not load search results. Please try again.')
+        setIsSearching(false)
+
+        return
       }
+
+      const booksSearched: Book[] = [...(booksSearchResponse.data ?? [])]
+      const authorsSearched = authorsSearchResponse.data ?? []
 
       if (authorsSearched.length) {
-        const authorsMatched = await Promise.allSettled(
-          authorsSearched.map((author) =>
-            dispatch(fetchBooksByAuthor(author.id)),
+        const authorRequests = authorsSearched.map((author) =>
+          dispatch(
+            bookshopApi.endpoints.booksByAuthor.initiate(author.id, {
+              subscribe: false,
+            }),
           ),
         )
+        pendingRequests.current = authorRequests
+
+        const authorsMatched = await Promise.allSettled(authorRequests)
 
         authorsMatched.forEach((book) => {
-          if (book.status === 'fulfilled') {
-            const newBooks = book.value.payload as Book[]
+          if (book.status === 'fulfilled' && book.value.data) {
+            const newBooks = book.value.data
+
             newBooks.forEach((newBook) => {
               const exists = booksSearched.some(
                 (existingBook) => existingBook.id === newBook.id,
               )
+
               if (!exists) {
                 booksSearched.push(newBook)
               }
@@ -75,7 +118,13 @@ export function Search() {
         })
       }
 
+      if (requestId !== searchRequestId.current) {
+        return
+      }
+
+      pendingRequests.current = []
       setSearchResults(booksSearched)
+      setIsSearching(false)
       setSearchOpen(true)
     } else {
       setSearchResults([])
@@ -88,23 +137,33 @@ export function Search() {
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   ) => {
     handleChange(e)
-    debouncedSearchResults(e.target.value)
+    const value = e.target.value
+    cancelSearch()
+    setSearchResults([])
+    setSearchError(null)
+    setIsSearching(value.length > 1)
+    setSearchOpen(value.length > 1)
+    debouncedSearchResults(value, searchRequestId.current)
   }
 
   const handleClick = () => {
-    if (searchResults.length) {
+    if (searchResults.length || isSearching || searchError) {
       setSearchOpen(true)
     }
   }
 
   const handleReset = () => {
+    cancelSearch()
     setSearchOpen(false)
     setSearchResults([])
+    setIsSearching(false)
+    setSearchError(null)
   }
 
   const handleSubmit = () => {
     if (searchResults.length) {
       const firstBookId = searchResults[0]?.id ?? 1
+
       void navigate(`/${ROUTE.BOOK}?id=${firstBookId}`)
     }
   }
@@ -122,6 +181,7 @@ export function Search() {
               type="text"
               name="search"
               aria-label="search"
+              aria-busy={isSearching}
               placeholder="What are you looking for?"
               autoComplete="off"
               onChange={(e) => handleSearchChange(e, handleChange)}
@@ -129,8 +189,12 @@ export function Search() {
               onBlur={handleBlur}
               value={values.search}
             />
-            <Dropdown $show={searchOpen}>
-              {searchResults.length ? (
+            <Dropdown $show={searchOpen && !isSearching}>
+              {isSearching ? null : searchError ? (
+                <DropdownList>
+                  <NoResults role="alert">{searchError}</NoResults>
+                </DropdownList>
+              ) : searchResults.length ? (
                 <DropdownList>
                   {searchResults.map((book) => (
                     <li key={book.id}>
@@ -170,8 +234,16 @@ export function Search() {
                 </DropdownList>
               )}
             </Dropdown>
-            <SearchButton type="submit" title="Search">
-              <SearchIcon color="#888888" />
+            <SearchButton
+              type="submit"
+              title="Search"
+              aria-label="Search"
+              aria-busy={isSearching}>
+              {isSearching ? (
+                <SpinnerIcon width={16} height={16} aria-hidden="true" />
+              ) : (
+                <SearchIcon color="var(--color-on-surface-variant)" />
+              )}
             </SearchButton>
             {values.search && (
               <ClearButton
@@ -181,7 +253,7 @@ export function Search() {
                   document.getElementById('search-books')?.focus()
                 }}
                 title="Clear">
-                <XMarkIcon color="#888888" />
+                <XMarkIcon color="var(--color-on-surface-variant)" />
               </ClearButton>
             )}
           </Form>

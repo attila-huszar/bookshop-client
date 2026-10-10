@@ -1,4 +1,5 @@
 import { ordersSelector, userSelector } from '@/store'
+import { useUserOrdersQuery } from '@/store/api/bookshopApi'
 import { Alert, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { formatDate, formatPaymentStatus, getPaidAtStatus } from '@/helpers'
@@ -20,10 +21,12 @@ import {
 
 const formatTotal = (amount: number, currency: string) => {
   const normalizedCurrency = (currency || defaultCurrency).toUpperCase()
+
   return `${amount.toLocaleString()} ${normalizedCurrency}`
 }
 
 export function Orders() {
+  useUserOrdersQuery({ refetchOnMountOrArgChange: true })
   const { orders, ordersIsLoading, ordersError } =
     useAppSelector(ordersSelector)
   const { userData } = useAppSelector(userSelector)

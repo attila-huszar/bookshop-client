@@ -27,7 +27,7 @@ export const SelectedOption = styled.div<FormTypes>`
     height: 1rem;
     margin-left: auto;
     margin-right: 0.5rem;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
     flex-shrink: 0;
   }
 `
@@ -37,13 +37,13 @@ export const DropdownList = styled.div`
   top: 100%;
   left: 0;
   right: 0;
-  background-color: #fff;
-  border: 1px solid lightgrey;
+  background-color: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline);
   border-radius: var(--border-radius);
   margin-top: 4px;
   padding: 0;
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-popover);
   overflow: hidden;
 `
 
@@ -51,12 +51,12 @@ export const SearchInput = styled.input`
   width: 100%;
   padding: 0.75rem;
   border: none;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-outline-variant);
   outline: none;
   font-size: 1rem;
 
   &:focus {
-    background-color: #f9f9f9;
+    background-color: var(--color-surface-container-low);
   }
 `
 
@@ -76,11 +76,18 @@ export const OptionItem = styled.li<OptionItemProps>`
   cursor: pointer;
   transition: background-color 0.2s;
   background-color: ${({ $selected }) =>
-    $selected ? '#e6f7ff' : 'transparent'};
+    $selected ? 'var(--color-secondary-container)' : 'transparent'};
   font-weight: ${({ $selected }) => ($selected ? '600' : 'normal')};
+  color: ${({ $selected }) =>
+    $selected
+      ? 'var(--color-on-secondary-container)'
+      : 'var(--color-on-surface)'};
 
   &:hover {
-    background-color: ${({ $selected }) => ($selected ? '#e6f7ff' : '#f5f5f5')};
+    background-color: ${({ $selected }) =>
+      $selected
+        ? 'var(--color-secondary-container)'
+        : 'var(--color-surface-container-low)'};
   }
 `
 
@@ -88,7 +95,7 @@ export const CountryFlag = styled.img`
   width: 24px;
   height: 18px;
   object-fit: cover;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-outline-variant);
   border-radius: 2px;
   flex-shrink: 0;
 `

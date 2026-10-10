@@ -5,10 +5,13 @@ export const StyledCard = styled.div`
   height: 17.5rem;
   width: 30rem;
   border-radius: 10px;
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
   transition: background-color 0.3s ease-out;
 
   &:hover {
-    background-color: var(--secondary-hover);
+    background-color: var(--color-surface-container);
   }
 
   a {
@@ -64,6 +67,6 @@ export const Description = styled.p`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   font-size: 1rem;
-  color: var(--grey);
+  color: var(--color-on-surface-variant);
   overflow: hidden;
 `

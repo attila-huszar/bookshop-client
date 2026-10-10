@@ -1,20 +1,33 @@
+import { type ComponentRef, createRef } from 'react'
 import { toast } from 'react-hot-toast'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { updateUserProfile } from '@/store'
-import { useAppDispatch } from '@/hooks'
+import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
 import { PasswordDialog } from './PasswordDialog'
 
-vi.mock('@/store', () => ({
-  updateUserProfile: vi.fn(),
+vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+  useUpdateUserProfileMutation: vi.fn(),
 }))
+
+function renderPasswordDialog(email: string) {
+  const ref = createRef<ComponentRef<typeof PasswordDialog>>()
+  render(<PasswordDialog ref={ref} email={email} />)
+
+  act(() => {
+    ref.current?.showModal()
+  })
+}
 
 describe('PasswordDialog', () => {
   const email = 'test.email@example.com'
   const mockDispatch = vi.fn()
   beforeEach(() => {
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
+    vi.mocked(useUpdateUserProfileMutation).mockReturnValue([
+      mockDispatch,
+      { reset: vi.fn() },
+    ])
   })
 
   afterEach(() => {
@@ -22,28 +35,23 @@ describe('PasswordDialog', () => {
   })
 
   it('should render form fields and submit button', () => {
-    render(<PasswordDialog ref={null} email={email} />)
+    renderPasswordDialog(email)
 
     expect(screen.getByPlaceholderText('Current Password')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('New Password')).toBeInTheDocument()
     expect(
       screen.getByPlaceholderText('Confirm New Password'),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /submit/i, hidden: true }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
   })
 
   it('sends both passwords to the profile endpoint and closes on success', async () => {
-    mockDispatch.mockResolvedValue({
-      meta: { requestStatus: 'fulfilled' },
-    })
+    mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve({}) })
 
-    render(<PasswordDialog ref={null} email={email} />)
+    renderPasswordDialog(email)
 
-    const dialog: HTMLDialogElement = screen.getByRole('dialog', {
-      hidden: true,
-    })
+    const dialog: HTMLDialogElement = screen.getByRole('dialog')
+    expect(dialog.open).toBe(true)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
@@ -60,18 +68,16 @@ describe('PasswordDialog', () => {
       'NewPass456!',
     )
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /submit/i, hidden: true }),
-    )
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(() => {
-      expect(updateUserProfile).toHaveBeenCalledWith({
+      expect(mockDispatch).toHaveBeenCalledWith({
         currentPassword: 'OldPass123!',
         password: 'NewPass456!',
       })
-      expect(mockDispatch).toHaveBeenCalledTimes(1)
-      expect(dialog.open).toBe(false)
     })
+    expect(mockDispatch).toHaveBeenCalledTimes(1)
+    expect(dialog.open).toBe(false)
   })
 
   it.each([
@@ -86,12 +92,9 @@ describe('PasswordDialog', () => {
   ])(
     'shows "$message" when the password update fails',
     async ({ error, message }) => {
-      mockDispatch.mockResolvedValue({
-        meta: { requestStatus: 'rejected' },
-        error,
-      })
+      mockDispatch.mockReturnValue({ unwrap: vi.fn().mockRejectedValue(error) })
 
-      render(<PasswordDialog ref={null} email={email} />)
+      renderPasswordDialog(email)
 
       await userEvent.type(
         screen.getByPlaceholderText('Current Password'),
@@ -108,12 +111,10 @@ describe('PasswordDialog', () => {
         'NewPass456!',
       )
 
-      await userEvent.click(
-        screen.getByRole('button', { name: /submit/i, hidden: true }),
-      )
+      await userEvent.click(screen.getByRole('button', { name: /submit/i }))
 
       await waitFor(() => {
-        expect(updateUserProfile).toHaveBeenCalledWith({
+        expect(mockDispatch).toHaveBeenCalledWith({
           currentPassword: 'InvalidPass123!',
           password: 'NewPass456!',
         })
@@ -125,7 +126,7 @@ describe('PasswordDialog', () => {
   )
 
   it('should show error if new password matches the current password', async () => {
-    render(<PasswordDialog ref={null} email={email} />)
+    renderPasswordDialog(email)
 
     await userEvent.type(
       screen.getByPlaceholderText('Current Password'),
@@ -142,9 +143,7 @@ describe('PasswordDialog', () => {
       'SamePass123!',
     )
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /submit/i, hidden: true }),
-    )
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(

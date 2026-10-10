@@ -80,7 +80,7 @@ export function ForgotPassword({ ref }: Props) {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}

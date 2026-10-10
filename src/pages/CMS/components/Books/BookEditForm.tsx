@@ -1,9 +1,13 @@
 import { ChangeEvent, FC, useRef, useState } from 'react'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { uploadProductImage } from '@/api'
-import { addBook, updateBook } from '@/store'
-import { Button, FormikField, IconButton, toast } from '@/components'
-import { useAppDispatch, useAppSelector, useDebounce } from '@/hooks'
+import { cmsAuthorsSelector } from '@/store'
+import {
+  useAddBookMutation,
+  useUpdateBookMutation,
+} from '@/store/api/bookshopApi'
+import { Alert, Button, FormikField, IconButton, toast } from '@/components'
+import { useAppSelector, useDebounce } from '@/hooks'
 import { log } from '@/services/logger'
 import { formatDate, getErrorMessage } from '@/helpers'
 import { bookSchema, validateImageFile } from '@/validation'
@@ -43,8 +47,10 @@ type Props = {
 }
 
 export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
-  const dispatch = useAppDispatch()
-  const { authors } = useAppSelector((state) => state.cms)
+  const [addBook] = useAddBookMutation()
+  const [updateBook] = useUpdateBookMutation()
+  const { authors, authorsLoading, authorsError } =
+    useAppSelector(cmsAuthorsSelector)
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const productImageInputRef = useRef<HTMLInputElement>(null)
@@ -54,6 +60,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   ) => {
     const target = e.target as HTMLInputElement
     const rect = target.getBoundingClientRect()
+
     setMousePos({
       x: e.clientX - rect.left,
       y: rect.height,
@@ -70,7 +77,9 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     const fileInput = e.target
     const files = fileInput.files
 
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) {
+      return
+    }
 
     const file = files[0]!
     const { valid, error } = validateImageFile(file)
@@ -78,10 +87,12 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     if (!valid && error) {
       toast.error(error, { id: 'product-image-upload-error' })
       fileInput.value = ''
+
       return
     }
 
     const formData = new FormData()
+
     formData.append('image', file)
 
     toast.loading('Uploading image...', { id: 'product-image-upload' })
@@ -92,6 +103,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       toast.success('Image uploaded successfully', {
         id: 'product-image-upload',
       })
+
       return result.url
     } catch (error) {
       log.error('Image upload failed:', { error })
@@ -99,6 +111,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       toast.error('Failed to upload image, please try again later', {
         id: 'product-image-upload',
       })
+
       throw error
     } finally {
       fileInput.value = ''
@@ -110,25 +123,26 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     actions: FormikHelpers<BookWithAuthorId>,
   ) => {
     try {
-      let result
       if (editedItem) {
         const { createdAt, updatedAt, ...bookValues } = values
-        result = await dispatch(updateBook(bookValues))
+
+        await updateBook(bookValues).unwrap()
       } else {
         const { id, ...bookWithoutId } = values
-        result = await dispatch(addBook(bookWithoutId))
+
+        await addBook(bookWithoutId).unwrap()
       }
 
-      if (result?.meta?.requestStatus === 'fulfilled') {
-        actions.resetForm()
-        toast.success(`Book ${editedItem ? 'updated' : 'added'} successfully`)
-        onClose()
-      } else {
-        toast.error(`Failed to ${editedItem ? 'update' : 'add'} book`)
-      }
+      actions.resetForm()
+      toast.success(`Book ${editedItem ? 'updated' : 'added'} successfully`)
+      onClose()
     } catch (error) {
       toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
+  }
+
+  if (authorsError && !authors.length) {
+    return <Alert message="Could not load authors" error={authorsError} />
   }
 
   return (
@@ -174,7 +188,11 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               </div>
               <div>
                 <p>Author</p>
-                <FormikField name="authorId" type="select">
+                <FormikField
+                  name="authorId"
+                  type="select"
+                  disabled={authorsLoading}
+                  aria-busy={authorsLoading}>
                   <option value="" hidden>
                     Please select an author...
                   </option>
@@ -315,7 +333,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               type={readOnly ? 'button' : 'reset'}
               onClick={onClose}
               $size="sm"
-              $inverted
+              $color="neutral"
               disabled={isSubmitting}>
               {readOnly ? 'Close' : 'Cancel'}
             </Button>
@@ -323,7 +341,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               <Button
                 type="submit"
                 $size="sm"
-                disabled={!dirty || isSubmitting}>
+                disabled={!dirty || isSubmitting || authorsLoading}>
                 {isSubmitting && <SpinnerIcon height={22} />} Save
               </Button>
             )}

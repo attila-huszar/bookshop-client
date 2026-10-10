@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
-import { logout, ordersClear, userSelector } from '@/store'
+import { logout, userSelector } from '@/store'
 import { Avatar, Button, IconButton, toast } from '@/components'
 import {
   useAppDispatch,
@@ -11,11 +11,11 @@ import {
 } from '@/hooks'
 import { UserRole } from '@/types'
 import {
-  AccountIcon,
   CMSIcon,
   LogoutIcon,
   OrdersIcon,
   ProfileIcon,
+  UserOutlineIcon,
 } from '@/assets/svg'
 import { MenuItem, MenuList, StyledMenu } from '../Menu/Menu.style'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
@@ -50,8 +50,6 @@ export function AccountMenu() {
   const handleLogout = () => {
     toggleMenu()
 
-    dispatch(ordersClear())
-
     dispatch(logout())
       .unwrap()
       .then(() => {
@@ -70,14 +68,14 @@ export function AccountMenu() {
     return isMobile ? (
       <IconButton
         onClick={handleLoginClick}
-        icon={<AccountIcon />}
+        icon={<UserOutlineIcon />}
         title="Login/Register"
       />
     ) : (
       <Button
         onClick={handleLoginClick}
         title="Login/Register"
-        $icon={<AccountIcon />}
+        $icon={<UserOutlineIcon />}
         $size="smMd"
         $inverted>
         Log In

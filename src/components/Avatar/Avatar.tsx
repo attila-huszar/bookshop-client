@@ -1,15 +1,20 @@
-import { updateUserProfile } from '@/store'
-import { useAppDispatch } from '@/hooks'
-import { AccountDefaultIcon, BinIcon, CameraIcon } from '@/assets/svg'
+import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
+import { toast } from '@/components/AppToaster/toast'
+import { getErrorMessage } from '@/helpers'
+import { BinIcon, CameraIcon, SpinnerIcon, UserIcon } from '@/assets/svg'
 import { IconOverlay, RemoveAvatar, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 
 export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
-  const dispatch = useAppDispatch()
+  const [updateUserProfile, avatarRemoval] = useUpdateUserProfileMutation()
 
-  const handleRemoveAvatar = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleRemoveAvatar = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
-    void dispatch(updateUserProfile({ avatar: null }))
+    try {
+      await updateUserProfile({ avatar: null }).unwrap()
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to remove avatar'))
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -29,8 +34,14 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
       {props.$hoverControls && (
         <>
           {imgUrl && (
-            <RemoveAvatar onClick={handleRemoveAvatar} title="Remove Avatar">
-              <BinIcon />
+            <RemoveAvatar
+              onClick={(e) => {
+                void handleRemoveAvatar(e)
+              }}
+              disabled={avatarRemoval.isLoading}
+              aria-busy={avatarRemoval.isLoading}
+              title="Remove Avatar">
+              {avatarRemoval.isLoading ? <SpinnerIcon /> : <BinIcon />}
             </RemoveAvatar>
           )}
           <IconOverlay>
@@ -41,8 +52,8 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
       {imgUrl ? (
         <img src={imgUrl} alt={props.title} />
       ) : (
-        <AccountDefaultIcon
-          color="var(--light-black)"
+        <UserIcon
+          color="var(--color-on-surface-variant)"
           data-testid="default-avatar-icon"
         />
       )}

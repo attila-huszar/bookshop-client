@@ -1,7 +1,7 @@
 export type Book = {
   id: number
   title: string
-  author: string
+  author: string | null
   genre: string
   imgUrl: string
   description: string
@@ -18,6 +18,9 @@ export type Book = {
 
 export type BookWithAuthorId = Omit<Book, 'author'> & { authorId: number }
 
-export type BookUpdate = { id: number } & Partial<
-  Omit<Book, 'id' | 'createdAt' | 'updatedAt'>
+export type BookCreate = Omit<
+  BookWithAuthorId,
+  'id' | 'createdAt' | 'updatedAt'
 >
+
+export type BookUpdate = { id: number } & Partial<BookCreate>

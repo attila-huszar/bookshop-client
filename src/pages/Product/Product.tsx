@@ -1,12 +1,13 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { ROUTE } from '@/routes'
-import { booksSelector } from '@/store'
-import { Alert, Button, Price, Recommended } from '@/components'
-import { useAppSelector, useBreakpoints, useCart } from '@/hooks'
+import { useBookQuery } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
+import { Alert, Button, Loading, Price, Recommended } from '@/components'
+import { useBreakpoints, useCart } from '@/hooks'
 import { scrollToTop } from '@/helpers'
 import type { Book } from '@/types'
-import { CaretLeftIcon, CartAddIcon, imagePlaceholder } from '@/assets/svg'
+import { CartAddIcon, ChevronLeftIcon, imagePlaceholder } from '@/assets/svg'
 import {
   BookAuthor,
   BookTitle,
@@ -25,9 +26,14 @@ export function Product() {
   const { cartItems, addToCart } = useCart()
   const { isMobile } = useBreakpoints()
 
-  const { books, booksError } = useAppSelector(booksSelector)
-
-  const book = books.find((book) => book.id === Number(id))
+  const {
+    currentData: book,
+    isFetching,
+    isError,
+  } = useBookQuery(Number(id), {
+    skip: !id,
+    refetchOnMountOrArgChange: cacheTimes.catalogue,
+  })
   const isBookInCart = cartItems.some((item) => item.id === book?.id)
 
   useEffect(() => {
@@ -54,10 +60,12 @@ export function Product() {
     <>
       <StyledProduct>
         <Breadcrumb onClick={handleGoBack} title="Go back">
-          <CaretLeftIcon height={18} />
+          <ChevronLeftIcon height={18} />
           Book Details
         </Breadcrumb>
-        {book ? (
+        {!book && id && isFetching ? (
+          <Loading message="Loading book details" />
+        ) : book ? (
           <DetailsSection>
             <ImageWrapper>
               <img
@@ -91,7 +99,7 @@ export function Product() {
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          booksError && <Alert message="Book not found" backButton />
+          (isError || !id) && <Alert message="Book not found" backButton />
         )}
       </StyledProduct>
       <Recommended />

@@ -1,19 +1,16 @@
-import { fetchBooksByProperty, fetchNews, store } from '@/store'
+import { store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 
 export const landingPageLoader = () => {
-  if (!store.getState().books.booksReleases.length) {
-    void store.dispatch(fetchBooksByProperty('newRelease'))
+  for (const property of ['newRelease', 'topSellers', 'recommended'] as const) {
+    void store.dispatch(
+      bookshopApi.endpoints.booksByProperty.initiate(property, {
+        subscribe: false,
+      }),
+    )
   }
 
-  if (!store.getState().books.booksTopSellers.length) {
-    void store.dispatch(fetchBooksByProperty('topSellers'))
-  }
-
-  if (!store.getState().books.booksRecommended.length) {
-    void store.dispatch(fetchBooksByProperty('recommended'))
-  }
-
-  if (!store.getState().news.newsItems.length) {
-    void store.dispatch(fetchNews())
-  }
+  void store.dispatch(
+    bookshopApi.endpoints.news.initiate(undefined, { subscribe: false }),
+  )
 }

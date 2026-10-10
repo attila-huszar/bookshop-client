@@ -1,0 +1,106 @@
+import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import ky from 'ky'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { baseRequest } from '@/api'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { createAppStore } from '@/store/store'
+import { Recommended } from '@/components/Recommended/Recommended'
+import type { Book } from '@/types'
+import { News } from './components/News/News'
+import { Releases } from './components/Releases/Releases'
+import { TopSellers } from './components/TopSellers/TopSellers'
+
+vi.unmock('@/hooks')
+vi.unmock('react-router')
+
+let store: ReturnType<typeof createAppStore>
+
+const book: Book = {
+  id: 1,
+  title: 'Featured book',
+  author: 'Author',
+  genre: 'Fiction',
+  imgUrl: 'book.jpg',
+  description: 'A book',
+  publishYear: 2026,
+  rating: 5,
+  price: 10,
+  discount: 0,
+  discountPrice: 10,
+  topSellers: true,
+  newRelease: true,
+}
+
+beforeEach(() => {
+  store = createAppStore()
+})
+
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  vi.restoreAllMocks()
+})
+
+describe('home section loading', () => {
+  it.each([
+    {
+      heading: 'New Releases This Week',
+      Component: Releases,
+      data: [book],
+    },
+    { heading: 'Top Sellers', Component: TopSellers, data: [book] },
+    { heading: 'Recommended for you', Component: Recommended, data: [book] },
+    {
+      heading: 'News',
+      Component: News,
+      data: [
+        { id: 1, title: 'Featured news', content: 'News', img: 'news.jpg' },
+      ],
+    },
+  ])(
+    'loads $heading quietly and displays content when it arrives',
+    async ({ heading, Component, data }) => {
+      let completeRequest!: (response: Response) => void
+      const response = new Promise<Response>((resolve) => {
+        completeRequest = resolve
+      })
+      vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+        ky.get('https://bookshop.test/mock', {
+          retry: 0,
+          fetch: () => response,
+        }),
+      )
+
+      render(
+        <Provider store={store}>
+          <MemoryRouter>
+            <Component />
+          </MemoryRouter>
+        </Provider>,
+      )
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: heading }) !== null).toBe(
+        Component === Releases,
+      )
+
+      act(() => {
+        completeRequest(
+          new Response(JSON.stringify(data), {
+            headers: { 'content-type': 'application/json' },
+          }),
+        )
+      })
+
+      await waitFor(() => {
+        expect(screen.getAllByAltText(data[0]!.title).length).toBeGreaterThan(0)
+      })
+      expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    },
+  )
+})

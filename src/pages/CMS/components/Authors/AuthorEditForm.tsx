@@ -1,8 +1,10 @@
 import { FC } from 'react'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { addAuthor, updateAuthor } from '@/store'
+import {
+  useAddAuthorMutation,
+  useUpdateAuthorMutation,
+} from '@/store/api/bookshopApi'
 import { Button, FormikField, toast } from '@/components'
-import { useAppDispatch } from '@/hooks'
 import { formatDate, getErrorMessage } from '@/helpers'
 import { authorSchema } from '@/validation'
 import { Author } from '@/types'
@@ -36,29 +38,25 @@ export const AuthorEditForm: FC<Props> = ({
   onClose,
   readOnly,
 }) => {
-  const dispatch = useAppDispatch()
+  const [addAuthor] = useAddAuthorMutation()
+  const [updateAuthor] = useUpdateAuthorMutation()
 
   const handleSubmit = async (
     values: Author,
     actions: FormikHelpers<Author>,
   ) => {
     try {
-      let result
       if (editedItem) {
         const { createdAt, updatedAt, ...authorValues } = values
-        result = await dispatch(updateAuthor(authorValues))
+        await updateAuthor(authorValues).unwrap()
       } else {
         const { id, ...authorWithoutId } = values
-        result = await dispatch(addAuthor(authorWithoutId))
+        await addAuthor(authorWithoutId).unwrap()
       }
 
-      if (result?.meta?.requestStatus === 'fulfilled') {
-        actions.resetForm()
-        toast.success(`Author ${editedItem ? 'updated' : 'added'} successfully`)
-        onClose()
-      } else {
-        toast.error(`Failed to ${editedItem ? 'update' : 'add'} author`)
-      }
+      actions.resetForm()
+      toast.success(`Author ${editedItem ? 'updated' : 'added'} successfully`)
+      onClose()
     } catch (error) {
       toast.error(getErrorMessage(error, 'An unexpected error occurred'))
     }
@@ -149,7 +147,7 @@ export const AuthorEditForm: FC<Props> = ({
               type={readOnly ? 'button' : 'reset'}
               onClick={onClose}
               $size="sm"
-              $inverted
+              $color="neutral"
               disabled={isSubmitting}>
               {readOnly ? 'Close' : 'Cancel'}
             </Button>

@@ -13,7 +13,7 @@ export const StyledConfirmDialog = styled.dialog`
   padding: 1rem;
   border: none;
   border-radius: 10px;
-  background: var(--white);
+  background: var(--color-surface-container-high);
   box-shadow: var(--shadow);
 
   > p {

@@ -18,11 +18,8 @@ export const StyledCheckout = styled.section`
     height: fit-content;
     padding: 1.5rem;
     border-radius: 10px;
-    background-color: var(--white);
-    box-shadow:
-      0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
-      0px 2px 5px 0px rgba(50, 50, 93, 0.1),
-      0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
+    background-color: var(--color-surface-container-lowest);
+    box-shadow: var(--shadow);
   }
 
   #payment-form {
@@ -42,10 +39,10 @@ export const StyledCheckout = styled.section`
       height: 5rem;
       width: 100%;
       border-radius: 10px 10px 0 0;
-      background: #e8e8e8;
+      background: var(--color-surface-container-high);
 
       > p {
-        color: var(--light-black);
+        color: var(--color-on-surface-variant);
         font-size: 1.125rem;
       }
 
@@ -64,11 +61,11 @@ export const StyledCheckout = styled.section`
     border-radius: var(--border-radius);
     margin-bottom: 16px;
     padding: 12px;
-    border: 1px solid rgba(50, 50, 93, 0.1);
+    border: 1px solid var(--color-outline-variant);
     max-height: 44px;
     font-size: 16px;
     width: 100%;
-    background: white;
+    background: var(--color-surface-container-lowest);
     box-sizing: border-box;
   }
 
@@ -77,14 +74,14 @@ export const StyledCheckout = styled.section`
     margin-top: 1rem;
     font-size: 1rem;
     text-align: center;
-    color: var(--light-black);
+    color: var(--color-on-surface-variant);
   }
 
   #payment-message.error {
     padding: 0.625rem 1rem;
-    color: rgb(120, 27, 0);
-    background-color: rgb(255, 245, 245);
-    border: 1px solid rgb(244, 129, 116);
+    color: var(--color-error-hover);
+    background-color: var(--color-error-container);
+    border: 1px solid var(--color-error);
     border-radius: var(--border-radius);
   }
 
@@ -93,9 +90,9 @@ export const StyledCheckout = styled.section`
   }
 
   button {
-    background: #5469d4;
+    background: var(--color-primary);
     font-family: Arial, sans-serif;
-    color: #ffffff;
+    color: var(--color-on-primary);
     border-radius: 4px;
     border: 0;
     padding: 12px 16px;
@@ -106,28 +103,30 @@ export const StyledCheckout = styled.section`
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease,
+      background-color 0.2s ease,
       filter 0.2s ease;
-    box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+    box-shadow: var(--shadow-button);
     width: 100%;
   }
 
-  button:hover {
-    filter: brightness(1.05);
-    box-shadow: 0px 8px 12px 0px rgba(0, 0, 0, 0.12);
+  button:hover:not(:disabled) {
+    filter: brightness(0.9);
+    box-shadow: var(--shadow-button-hover);
   }
 
-  button:active {
-    box-shadow: 0px 3px 4.5px 0px rgba(0, 0, 0, 0.1);
+  button:active:not(:disabled) {
+    box-shadow: var(--shadow-button-pressed);
   }
 
   button:focus-visible {
-    outline: 3px solid rgba(84, 105, 212, 0.4);
+    outline: 3px solid var(--color-primary);
     outline-offset: 2px;
   }
 
   button:disabled {
     opacity: 0.5;
-    cursor: default;
+    box-shadow: none;
+    cursor: not-allowed;
   }
 
   .spinner,
@@ -137,7 +136,7 @@ export const StyledCheckout = styled.section`
   }
 
   .spinner {
-    color: #ffffff;
+    color: var(--color-on-primary);
     font-size: 22px;
     text-indent: -99999px;
     margin: 0px auto;
@@ -159,7 +158,7 @@ export const StyledCheckout = styled.section`
   .spinner:before {
     width: 10.4px;
     height: 20.4px;
-    background: #5469d4;
+    background: var(--color-primary);
     border-radius: 20.4px 0 0 20.4px;
     top: -0.2px;
     left: -0.2px;
@@ -172,7 +171,7 @@ export const StyledCheckout = styled.section`
   .spinner:after {
     width: 10.4px;
     height: 10.2px;
-    background: #5469d4;
+    background: var(--color-primary);
     border-radius: 0 10.2px 10.2px 0;
     top: -0.1px;
     left: 10.2px;

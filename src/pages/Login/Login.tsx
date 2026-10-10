@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
-import { fetchUserProfile, login } from '@/store'
+import { login } from '@/store'
 import {
   AuthorizationMenu,
   Button,
@@ -30,8 +30,7 @@ export function Login() {
 
   const handleSubmit = async (values: LoginRequest) => {
     try {
-      await dispatch(login(values)).unwrap()
-      const { firstName } = await dispatch(fetchUserProfile()).unwrap()
+      const { firstName } = await dispatch(login(values)).unwrap()
       toast.success(`Welcome back, ${firstName}!`)
       void navigate('/', { replace: true })
     } catch (error) {
@@ -77,7 +76,7 @@ export function Login() {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
@@ -89,7 +88,7 @@ export function Login() {
               <IconButton
                 icon={<QuestionIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="button"
                 title="Forgot Password?"
                 disabled={isSubmitting}

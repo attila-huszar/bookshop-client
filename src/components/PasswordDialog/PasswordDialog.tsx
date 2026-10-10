@@ -1,8 +1,8 @@
 import { useImperativeHandle, useRef, useState } from 'react'
 import { Form, Formik } from 'formik'
-import { updateUserProfile } from '@/store'
+import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
 import { Button, FormikField, IconButton, toast } from '@/components'
-import { useAppDispatch, useClickOutside } from '@/hooks'
+import { useClickOutside } from '@/hooks'
 import { getErrorMessage } from '@/helpers'
 import { accountPasswordSchema } from '@/validation'
 import { passwordChangeInitialValues } from '@/constants'
@@ -20,7 +20,7 @@ type Props = { email: string; ref: React.Ref<PasswordDialogHandle> }
 export function PasswordDialog({ email, ref }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const dispatch = useAppDispatch()
+  const [updateUserProfile] = useUpdateUserProfileMutation()
 
   useImperativeHandle(ref, () => ({
     showModal: () => dialogRef.current?.showModal(),
@@ -42,21 +42,18 @@ export function PasswordDialog({ email, ref }: Props) {
     actions: { resetForm: () => void },
   ) => {
     if (values.currentPassword !== values.newPassword) {
-      const result = await dispatch(
-        updateUserProfile({
+      try {
+        await updateUserProfile({
           password: values.newPassword,
           currentPassword: values.currentPassword,
-        }),
-      )
-
-      if (result.meta.requestStatus === 'fulfilled') {
+        }).unwrap()
         handleClose()
         actions.resetForm()
         toast.success('Password changed successfully')
-      } else {
+      } catch (error) {
         toast.error(
           getErrorMessage(
-            'error' in result ? result.error : undefined,
+            error,
             'Failed to change password, please try again later',
           ),
           { id: 'password-change-fail' },
@@ -120,7 +117,7 @@ export function PasswordDialog({ email, ref }: Props) {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}

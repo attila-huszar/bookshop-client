@@ -153,7 +153,7 @@ export function CheckoutForm() {
           type="button"
           onClick={() => void retryPayment()}
           disabled={isLoading || !stripe || !elements}
-          style={{ backgroundColor: 'var(--mid-grey)' }}>
+          style={{ backgroundColor: 'var(--color-primary)' }}>
           <span>Retry Payment Now</span>
         </button>
       )}
@@ -161,7 +161,7 @@ export function CheckoutForm() {
         type="button"
         onClick={() => void handleCancel()}
         disabled={isLoading || isCanceling}
-        style={{ backgroundColor: 'var(--grey)' }}>
+        style={{ backgroundColor: 'var(--color-on-surface-variant)' }}>
         <span>
           {isCanceling
             ? 'Canceling checkout...'

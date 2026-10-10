@@ -1,11 +1,13 @@
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { useAppSelector, useCart } from '@/hooks'
+import { useBookQuery } from '@/store/api/bookshopApi'
+import { useCart } from '@/hooks'
 import { Product } from './Product'
 
 vi.mock('@/components', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components')>()
+
   return {
     ...actual,
     Price: () => <div>Price</div>,
@@ -17,6 +19,11 @@ vi.mock('@/components', async (importOriginal) => {
 
 vi.mock('@/components/Recommended/Recommended', () => ({
   Recommended: () => <div>Recommended</div>,
+}))
+
+vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+  useBookQuery: vi.fn(),
 }))
 
 describe('Product Page', () => {
@@ -38,10 +45,11 @@ describe('Product Page', () => {
   })
 
   it('should render book details', () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      books: [mockBook],
-      booksError: null,
-    })
+    vi.mocked(useBookQuery).mockReturnValue({
+      currentData: mockBook,
+      isFetching: true,
+      isError: false,
+    } as unknown as ReturnType<typeof useBookQuery>)
 
     render(
       <MemoryRouter initialEntries={['/book?id=1']}>
@@ -55,11 +63,30 @@ describe('Product Page', () => {
     expect(screen.getByText('Test description')).toBeInTheDocument()
   })
 
+  it('shows loading for a new book without displaying the previous query result', () => {
+    vi.mocked(useBookQuery).mockReturnValue({
+      data: mockBook,
+      currentData: undefined,
+      isFetching: true,
+      isError: false,
+    } as unknown as ReturnType<typeof useBookQuery>)
+
+    render(
+      <MemoryRouter initialEntries={['/book?id=2']}>
+        <Product />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('Loading book details')).toBeInTheDocument()
+    expect(screen.queryByText('Test Book')).not.toBeInTheDocument()
+    expect(screen.queryByText('Book not found')).not.toBeInTheDocument()
+  })
+
   it('should render error alert when book is not found', () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      books: [],
-      booksError: 'Book not found',
-    })
+    vi.mocked(useBookQuery).mockReturnValue({
+      data: undefined,
+      isError: true,
+    } as unknown as ReturnType<typeof useBookQuery>)
 
     render(
       <MemoryRouter initialEntries={['/book?id=999']}>

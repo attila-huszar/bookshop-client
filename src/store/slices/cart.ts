@@ -5,7 +5,6 @@ import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
   cartItems: [],
-  cartIsLoading: false,
   cartError: null,
   currentRequestId: null,
 }
@@ -37,7 +36,6 @@ const cartSlice = createSlice({
     },
     cartClear: (state) => {
       state.cartItems = []
-      state.cartIsLoading = false
       state.cartError = null
       state.currentRequestId = null
     },
@@ -53,7 +51,9 @@ const cartSlice = createSlice({
 
       if (idx !== -1) {
         const item = state.cartItems[idx]
-        if (item && item.quantity < maxItemQuantity) item.quantity++
+        if (item && item.quantity < maxItemQuantity) {
+          item.quantity++
+        }
       }
     },
     cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
@@ -63,7 +63,9 @@ const cartSlice = createSlice({
 
       if (idx !== -1) {
         const item = state.cartItems[idx]
-        if (item && item.quantity > 1) item.quantity--
+        if (item && item.quantity > 1) {
+          item.quantity--
+        }
       }
     },
     cartQuantitySet: (
@@ -80,31 +82,34 @@ const cartSlice = createSlice({
         action.payload.newQuantity <= maxItemQuantity
       ) {
         const item = state.cartItems[idx]
-        if (item) item.quantity = action.payload.newQuantity
+        if (item) {
+          item.quantity = action.payload.newQuantity
+        }
       }
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCartItems.pending, (state, action) => {
-        state.cartIsLoading = true
         state.cartError = null
         state.currentRequestId = action.meta.requestId
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
-        if (action.meta.requestId !== state.currentRequestId) return
+        if (action.meta.requestId !== state.currentRequestId) {
+          return
+        }
 
         state.cartItems = action.payload
-        state.cartIsLoading = false
         state.currentRequestId = null
       })
       .addCase(fetchCartItems.rejected, (state, action) => {
-        if (action.meta.requestId !== state.currentRequestId) return
+        if (action.meta.requestId !== state.currentRequestId) {
+          return
+        }
 
         if (action.payload !== 'stale-hydration') {
           state.cartError = action.error.message ?? 'Failed to fetch cart items'
         }
-        state.cartIsLoading = false
         state.currentRequestId = null
       })
   },

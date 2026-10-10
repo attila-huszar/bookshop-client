@@ -12,7 +12,6 @@ const initialState: PaymentState = {
   paymentCreateError: null,
   paymentCreateIssueCode: null,
   paymentRetrieveError: null,
-  paymentCancelError: null,
 }
 
 const paymentSlice = createSlice({
@@ -72,13 +71,10 @@ const paymentSlice = createSlice({
       })
       .addCase(paymentCancel.pending, (state) => {
         state.paymentIsLoading = true
-        state.paymentCancelError = null
       })
       .addCase(paymentCancel.fulfilled, () => initialState)
-      .addCase(paymentCancel.rejected, (state, action) => {
+      .addCase(paymentCancel.rejected, (state) => {
         state.paymentIsLoading = false
-        state.paymentCancelError =
-          action.error.message ?? 'Failed to cancel payment'
       })
   },
 })

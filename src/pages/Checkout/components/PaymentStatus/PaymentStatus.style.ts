@@ -9,7 +9,7 @@ export const StyledPaymentStatus = styled.section`
   width: 40rem;
   margin: 2rem 0;
   padding: 2rem 6rem;
-  background-color: var(--white);
+  background-color: var(--color-surface-container-lowest);
   border-radius: 10px;
 
   p {

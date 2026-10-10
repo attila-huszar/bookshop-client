@@ -1,11 +1,41 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { deleteAuthors, deleteBooks, deleteOrders, deleteUsers } from '@/store'
-import { Button, ConfirmDialog, ExtraSpace, toast } from '@/components'
-import { useAppDispatch, useAppSelector, useClickOutside } from '@/hooks'
-import { SelectContext } from '@/types'
-import { Author, BookWithAuthorId, Order, UserWithMetadata } from '@/types'
-import { LogoutIcon } from '@/assets/svg'
+import { userSelector } from '@/store'
+import {
+  useCmsAuthorsQuery,
+  useCmsBooksQuery,
+  useCmsOrdersQuery,
+  useCmsUsersQuery,
+  useHardDeleteAuthorsMutation,
+  useHardDeleteBooksMutation,
+  useRestoreOrdersMutation,
+  useRestoreUsersMutation,
+  useSoftDeleteOrdersMutation,
+  useSoftDeleteUsersMutation,
+} from '@/store/api/bookshopApi'
+import {
+  Button,
+  ConfirmDialog,
+  ExtraSpace,
+  IconButton,
+  toast,
+} from '@/components'
+import { useAppSelector, useClickOutside } from '@/hooks'
+import type {
+  Author,
+  BookWithAuthorId,
+  CmsEditedItem,
+  CmsOrder,
+  CmsUser,
+  SelectContext,
+} from '@/types'
+import {
+  LogoutIcon,
+  StoreIcon,
+  StoreSlashIcon,
+  UserIcon,
+  UserSlashIcon,
+} from '@/assets/svg'
 import {
   AuthorEditForm,
   BookEditForm,
@@ -29,22 +59,35 @@ const TABS = [
 
 export type TabValue = (typeof TABS)[number]['value']
 
-type EditedItem = Author | BookWithAuthorId | Order | UserWithMetadata
-
-const getEditedItem = <T extends EditedItem>(
-  item: EditedItem | null,
+const getEditedItem = <T extends CmsEditedItem>(
+  item: CmsEditedItem | null,
 ): T | null => item as T | null
 
-const isValidTab = (tab: string): tab is keyof SelectContext =>
+const isValidTab = (tab: string): tab is TabValue =>
   TABS.some((t) => t.value === tab)
 
 export const CMS = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const dispatch = useAppDispatch()
-  const { userData } = useAppSelector((state) => state.user)
+  const { userData } = useAppSelector(userSelector)
+  const [hardDeleteAuthors, authorDeletion] = useHardDeleteAuthorsMutation()
+  const [hardDeleteBooks, bookDeletion] = useHardDeleteBooksMutation()
+  const [softDeleteOrders, orderRemoval] = useSoftDeleteOrdersMutation()
+  const [restoreOrders, orderRestoration] = useRestoreOrdersMutation()
+  const [softDeleteUsers, userRemoval] = useSoftDeleteUsersMutation()
+  const [restoreUsers, userRestoration] = useRestoreUsersMutation()
+  const isActionPending = [
+    authorDeletion,
+    bookDeletion,
+    orderRemoval,
+    orderRestoration,
+    userRemoval,
+    userRestoration,
+  ].some((mutation) => mutation.isLoading)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [showDeletedOrders, setShowDeletedOrders] = useState(false)
+  const [showDeletedUsers, setShowDeletedUsers] = useState(false)
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false)
   const [selectedItems, setSelectedItems] = useState<SelectContext>({
     orders: [],
@@ -52,7 +95,7 @@ export const CMS = () => {
     authors: [],
     users: [],
   })
-  const [editedItem, setEditedItem] = useState<EditedItem | null>(null)
+  const [editedItem, setEditedItem] = useState<CmsEditedItem | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const confirmRef = useRef<HTMLDialogElement>(null)
 
@@ -61,7 +104,10 @@ export const CMS = () => {
 
     if (isDialogOpen) {
       dialog?.showModal()
-      if (dialog) dialog.scrollTop = 0
+
+      if (dialog) {
+        dialog.scrollTop = 0
+      }
     } else {
       dialog?.close()
     }
@@ -69,21 +115,45 @@ export const CMS = () => {
 
   const activeTab = useMemo(() => {
     const tab = location.pathname.split('/').pop()
+
     if (tab && isValidTab(tab)) {
       return tab
     }
+
     return 'orders'
   }, [location.pathname])
 
-  const actionMap = useMemo(
-    () => ({
-      orders: deleteOrders(selectedItems.orders),
-      books: deleteBooks(selectedItems.books),
-      authors: deleteAuthors(selectedItems.authors),
-      users: deleteUsers(selectedItems.users),
-    }),
-    [selectedItems],
-  )
+  const supportsSoftDelete = activeTab === 'orders' || activeTab === 'users'
+  const showDeleted =
+    activeTab === 'orders' ? showDeletedOrders : showDeletedUsers
+  const actionLabel = supportsSoftDelete
+    ? showDeleted
+      ? 'Restore'
+      : 'Remove'
+    : 'Delete'
+  const isRestoring = supportsSoftDelete && showDeleted
+  const actionColor = isRestoring ? 'secondary' : 'danger'
+  const visibilityLabel = `Show ${showDeleted ? 'active' : 'removed'} ${activeTab}`
+  const VisibilityIcon =
+    activeTab === 'orders'
+      ? showDeleted
+        ? StoreIcon
+        : StoreSlashIcon
+      : showDeleted
+        ? UserIcon
+        : UserSlashIcon
+  const confirmationMessage = isRestoring
+    ? `Restore selected ${activeTab}? They will appear in the active list again.${activeTab === 'users' ? ' Account access will be restored.' : ''}`
+    : supportsSoftDelete
+      ? `Remove selected ${activeTab}? ${activeTab === 'users' ? 'Account access will be disabled; email addresses and order history will be retained.' : 'Order history, payments, and emails will be retained.'} You can restore them from the removed ${activeTab} view.`
+      : `Delete selected ${activeTab} permanently? This action is irreversible. These records cannot be restored.`
+
+  useCmsBooksQuery({ skip: activeTab !== 'books' })
+  useCmsAuthorsQuery({
+    skip: activeTab !== 'authors' && activeTab !== 'books',
+  })
+  useCmsOrdersQuery({ skip: activeTab !== 'orders' })
+  useCmsUsersQuery({ skip: activeTab !== 'users' })
 
   const handleDialogClose = () => {
     setIsDialogOpen(false)
@@ -93,32 +163,50 @@ export const CMS = () => {
 
   useClickOutside(dialogRef, handleDialogClose)
 
-  const handleDeleteClick = () => {
+  const handleBulkActionClick = () => {
     if (!selectedItems[activeTab].length) {
       toast('No items selected', {
         icon: '⚠️',
-        style: { backgroundColor: 'var(--secondary-hover)' },
+        style: { backgroundColor: 'var(--color-surface-container-low)' },
       })
+
       return
     }
+
     setConfirmDialogOpen(true)
   }
 
-  const handleConfirmDelete = async () => {
-    const action = actionMap[activeTab]
-    if (!action || selectedItems[activeTab].length === 0) return
-    const result = await dispatch(action)
+  const handleConfirmAction = async () => {
+    if (isActionPending || selectedItems[activeTab].length === 0) {
+      return
+    }
 
-    if (result.meta.requestStatus === 'fulfilled') {
-      toast.success(`Successfully deleted selected ${activeTab}`)
+    const mutations = {
+      books: hardDeleteBooks,
+      authors: hardDeleteAuthors,
+      orders: showDeletedOrders ? restoreOrders : softDeleteOrders,
+      users: showDeletedUsers ? restoreUsers : softDeleteUsers,
+    }
+
+    try {
+      await mutations[activeTab](selectedItems[activeTab]).unwrap()
+
+      const action = supportsSoftDelete
+        ? showDeleted
+          ? 'restored'
+          : 'removed'
+        : 'deleted'
+      toast.success(`Successfully ${action} selected ${activeTab}`)
       setSelectedItems({
         orders: [],
         books: [],
         authors: [],
         users: [],
       })
-    } else {
-      toast.error(`Failed to delete selected ${activeTab}`)
+    } catch {
+      toast.error(
+        `Failed to ${actionLabel.toLowerCase()} selected ${activeTab}`,
+      )
     }
 
     setConfirmDialogOpen(false)
@@ -145,7 +233,7 @@ export const CMS = () => {
       case 'orders':
         return (
           <OrderEditForm
-            editedItem={getEditedItem<Order>(editedItem)}
+            editedItem={getEditedItem<CmsOrder>(editedItem)}
             onClose={handleDialogClose}
             readOnly={!isEditing}
           />
@@ -153,7 +241,7 @@ export const CMS = () => {
       case 'users':
         return (
           <UserEditForm
-            editedItem={getEditedItem<UserWithMetadata>(editedItem)}
+            editedItem={getEditedItem<CmsUser>(editedItem)}
             onClose={handleDialogClose}
             readOnly={!isEditing}
           />
@@ -177,16 +265,40 @@ export const CMS = () => {
             $size="smMd"
             $color="secondary"
             type="button"
-            disabled={activeTab === 'orders'}>
+            disabled={
+              activeTab === 'orders' ||
+              (activeTab === 'users' && showDeletedUsers)
+            }>
             Add
           </Button>
           <Button
-            onClick={handleDeleteClick}
+            onClick={handleBulkActionClick}
             $size="smMd"
-            $color="danger"
+            $color={actionColor}
             type="button">
-            Remove
+            {actionLabel}
           </Button>
+          {supportsSoftDelete && (
+            <IconButton
+              type="button"
+              title={visibilityLabel}
+              aria-label={visibilityLabel}
+              aria-pressed={showDeleted}
+              icon={<VisibilityIcon aria-hidden="true" />}
+              onClick={() => {
+                if (activeTab === 'orders') {
+                  setShowDeletedOrders(!showDeleted)
+                } else {
+                  setShowDeletedUsers(!showDeleted)
+                }
+
+                setSelectedItems((previous) => ({
+                  ...previous,
+                  [activeTab]: [],
+                }))
+              }}
+            />
+          )}
           <Button
             onClick={() => void navigate('/')}
             $icon={<LogoutIcon />}
@@ -207,6 +319,8 @@ export const CMS = () => {
         </StyledTabs>
         <Outlet
           context={{
+            showDeletedOrders,
+            showDeletedUsers,
             selectedItems,
             setSelectedItems,
             setIsDialogOpen,
@@ -224,10 +338,11 @@ export const CMS = () => {
         ref={confirmRef}
         isDialogOpen={isConfirmDialogOpen}
         setIsDialogOpen={setConfirmDialogOpen}
-        handleConfirm={() => void handleConfirmDelete()}
-        message={`Are you sure you want to delete selected ${activeTab}?`}
-        buttonText="Delete"
-        buttonColor="danger"
+        handleConfirm={() => void handleConfirmAction()}
+        message={confirmationMessage}
+        buttonText={actionLabel}
+        buttonColor={actionColor}
+        isLoading={isActionPending}
       />
     </StyledCMS>
   )

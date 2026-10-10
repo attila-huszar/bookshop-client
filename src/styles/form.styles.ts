@@ -9,31 +9,28 @@ export const baseInputStyles = css<FormTypes>`
   width: 100%;
   padding-inline: 0.75rem;
   font-size: 1rem;
-  border: 1px solid lightgrey;
+  border: 1px solid var(--color-outline);
   border-radius: var(--border-radius);
-  background-color: #fff;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
 
   &:focus,
   &:active {
-    border: 1px solid rgb(26, 33, 43);
-    box-shadow:
-      rgb(210, 213, 217) 0px 0px 2px 1px,
-      rgb(227, 230, 232) 0px 0px 0px 3px;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-container);
     outline: none;
   }
 
   ${({ $valid }) =>
     $valid &&
     `
-      border: 1px solid rgb(0, 156, 38);
+      border-color: var(--color-tertiary);
       outline: none;
       
       &:focus,
       &:active {
-        border: 1px solid rgb(0, 156, 38);
-        box-shadow:
-          rgb(106, 237, 97) 0px 0px 2px 1px,
-          rgb(177, 247, 160) 0px 0px 0px 3px;
+        border-color: var(--color-tertiary);
+        box-shadow: 0 0 0 3px var(--color-tertiary-container);
         outline: none;
       }
     `}
@@ -41,15 +38,13 @@ export const baseInputStyles = css<FormTypes>`
   ${({ $error }) =>
     $error &&
     `
-      border: 1px solid rgb(191, 49, 12);
+      border-color: var(--color-error);
       outline: none;
 
       &:focus,
       &:active {
-        border: 1px solid rgb(191, 49, 12);
-        box-shadow:
-          rgb(244, 129, 116) 0px 0px 2px 1px,
-          rgb(251, 178, 174) 0px 0px 0px 3px;
+        border-color: var(--color-error);
+        box-shadow: 0 0 0 3px var(--color-error-container);
         outline: none;
       }
     `}
@@ -57,16 +52,16 @@ export const baseInputStyles = css<FormTypes>`
   ${({ disabled }) =>
     disabled &&
     css`
-      background-color: var(--light-grey);
-      color: var(--black);
+      background-color: var(--color-surface-container-high);
+      color: var(--color-on-surface);
       cursor: not-allowed;
     `}
 
   ${({ readOnly }) =>
     readOnly &&
     css`
-      background-color: var(--white-smoke);
-      color: var(--black);
+      background-color: var(--color-surface-container-low);
+      color: var(--color-on-surface);
     `}
 `
 
@@ -85,7 +80,7 @@ export const Select = styled.select<FormTypes>`
   padding-right: 3rem;
 
   &:disabled {
-    color: var(--black);
+    color: var(--color-on-surface);
   }
 `
 
@@ -98,7 +93,7 @@ export const Textarea = styled.textarea<FormTypes>`
 
 export const ErrorMessage = styled.div`
   padding: 0.25rem 0.75rem;
-  color: rgb(120, 27, 0);
+  color: var(--color-error-hover);
   font-size: 0.875rem;
   line-height: 1.25;
   user-select: none;
@@ -129,7 +124,7 @@ export const PasswordEye = styled.button`
 
   svg {
     width: 1.5rem;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
   }
 `
 

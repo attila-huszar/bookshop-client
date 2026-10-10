@@ -13,7 +13,11 @@ export const StyledHeader = styled.header`
   min-width: var(--min-width);
   max-width: var(--max-width);
   padding: 0 6.25rem;
-  background-color: #ffffff85;
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface-bright) 85%,
+    transparent
+  );
   backdrop-filter: blur(10px);
   z-index: 3;
 

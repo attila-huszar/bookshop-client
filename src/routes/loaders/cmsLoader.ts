@@ -1,23 +1,42 @@
-import { listAuthors, listBooks, listOrders, listUsers, store } from '@/store'
+import { store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import type { TabValue } from '@/pages/CMS/CMS'
 
 export const cmsLoader = (tab: TabValue) => {
   switch (tab) {
     case 'orders':
-      void store.dispatch(listOrders())
+      void store.dispatch(
+        bookshopApi.endpoints.cmsOrders.initiate(undefined, {
+          subscribe: false,
+        }),
+      )
       break
     case 'books':
-      void store.dispatch(listBooks())
+      void store.dispatch(
+        bookshopApi.endpoints.cmsBooks.initiate(undefined, {
+          subscribe: false,
+        }),
+      )
 
-      if (store.getState().cms.authors.length === 0) {
-        void store.dispatch(listAuthors())
-      }
+      void store.dispatch(
+        bookshopApi.endpoints.cmsAuthors.initiate(undefined, {
+          subscribe: false,
+        }),
+      )
       break
     case 'authors':
-      void store.dispatch(listAuthors())
+      void store.dispatch(
+        bookshopApi.endpoints.cmsAuthors.initiate(undefined, {
+          subscribe: false,
+        }),
+      )
       break
     case 'users':
-      void store.dispatch(listUsers())
+      void store.dispatch(
+        bookshopApi.endpoints.cmsUsers.initiate(undefined, {
+          subscribe: false,
+        }),
+      )
       break
   }
 }
