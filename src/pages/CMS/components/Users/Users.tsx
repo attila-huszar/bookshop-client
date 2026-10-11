@@ -25,7 +25,7 @@ export const Users = () => {
   )
 
   if (usersLoading) {
-    return <Loading message="Loading users" />
+    return <Loading message="Loading users" fullScreen />
   }
 
   if (usersError) {

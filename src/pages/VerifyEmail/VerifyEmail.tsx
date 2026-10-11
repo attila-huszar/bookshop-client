@@ -44,5 +44,5 @@ export function VerifyEmail() {
     void verifyEmailToken()
   }, [navigate, token])
 
-  return <Loading message="Verifying" />
+  return <Loading message="Verifying" fullScreen />
 }

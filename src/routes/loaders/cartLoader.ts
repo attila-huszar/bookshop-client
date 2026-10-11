@@ -1,13 +1,16 @@
 import { replace } from 'react-router'
 import { ROUTE } from '@/routes'
-import { fetchCartItems, store } from '@/store'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdKey } from '@/constants'
-import type { MinimalCart } from '@/types'
+import { store } from '@/store'
+import { sessionStorageAdapter } from '@/helpers'
+import { paymentIdKey } from '@/constants'
+import { appLoader } from './appLoader'
 
-export const cartLoader = () => {
+export const cartLoader = async () => {
+  await appLoader()
+
   const state = store.getState()
   const activeSession = state.payment?.payment?.paymentToken
+
   if (activeSession) {
     return replace(`/${ROUTE.CHECKOUT}`)
   }
@@ -15,11 +18,5 @@ export const cartLoader = () => {
   const paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
   if (paymentId) {
     return replace(`/${ROUTE.CHECKOUT}`)
-  }
-
-  const cartItems = localStorageAdapter.get<MinimalCart[]>(cartKey)
-
-  if (cartItems && Array.isArray(cartItems)) {
-    void store.dispatch(fetchCartItems({ cartItems }))
   }
 }

@@ -2,6 +2,8 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledCheckout = styled.section`
+  --page-loading-height: calc(100dvh - 4rem);
+
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

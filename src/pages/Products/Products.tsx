@@ -29,7 +29,7 @@ export function Products() {
 
   const renderBooks = () => {
     if (booksIsLoading) {
-      return <Loading message="Loading books" />
+      return <Loading message="Loading books" fullScreen />
     }
 
     if (booksError) {

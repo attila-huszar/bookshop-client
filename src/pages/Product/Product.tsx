@@ -64,7 +64,7 @@ export function Product() {
           Book Details
         </Breadcrumb>
         {!book && id && isFetching ? (
-          <Loading message="Loading book details" />
+          <Loading message="Loading book details" fullScreen />
         ) : book ? (
           <DetailsSection>
             <ImageWrapper>

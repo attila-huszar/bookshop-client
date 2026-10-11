@@ -2,9 +2,13 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledProduct = styled.main`
+  --page-loading-height: calc(100dvh - 9.375rem);
+
   padding: 0 6.25rem;
 
   ${media.down('sm')`
+    --page-loading-height: calc(100dvh - 6.5rem);
+
     padding: 0 1rem;
   `}
 `

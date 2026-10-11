@@ -18,7 +18,7 @@ export const Authors = () => {
   } = useOutletContext<CMSOutletContext>()
 
   if (authorsLoading) {
-    return <Loading message="Loading authors" />
+    return <Loading message="Loading authors" fullScreen />
   }
 
   if (authorsError) {

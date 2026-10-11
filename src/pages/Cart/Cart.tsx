@@ -203,7 +203,7 @@ export function Cart() {
   }
 
   if (cartIsLoading) {
-    return <Loading message="Loading Cart" />
+    return <Loading message="Loading Cart" fullScreen />
   }
 
   if (cartError) {

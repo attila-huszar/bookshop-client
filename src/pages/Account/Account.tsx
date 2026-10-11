@@ -48,7 +48,7 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
 
   if (userIsLoading) {
-    return <Loading message="Loading your account" />
+    return <Loading message="Loading your account" fullScreen />
   }
 
   if (!userData) {

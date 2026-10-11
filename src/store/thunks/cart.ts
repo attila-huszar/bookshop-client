@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import type { RootState } from '@/store'
+import type { AppDispatch, RootState } from '@/store'
 import { localStorageAdapter } from '@/helpers'
 import { cartKey } from '@/constants'
 import type { Cart, MinimalCart } from '@/types'
@@ -97,3 +97,13 @@ export const fetchCartItems = createAsyncThunk<
 
 export const refreshCartItems = (cartItems: MinimalCart[]) =>
   fetchCartItems({ cartItems, force: true })
+
+export const restoreCartItems = () => (dispatch: AppDispatch) => {
+  const cartItems = localStorageAdapter.get<MinimalCart[]>(cartKey)
+
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return
+  }
+
+  return dispatch(fetchCartItems({ cartItems }))
+}

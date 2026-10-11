@@ -2,6 +2,8 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledLayout = styled.div`
+  --page-loading-height: calc(100dvh - 7.5rem);
+
   position: relative;
   isolation: isolate;
   min-height: 100vh;
@@ -13,6 +15,8 @@ export const StyledLayout = styled.div`
   background-color: var(--color-surface-bright);
 
   ${media.down('sm')`
+    --page-loading-height: calc(100dvh - 5rem);
+
     min-width: 100%;
     max-width: 100%;
     margin: 0;

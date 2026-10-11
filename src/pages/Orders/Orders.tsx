@@ -32,7 +32,7 @@ export function Orders() {
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {
-    return <Loading message="Loading your orders" />
+    return <Loading message="Loading your orders" fullScreen />
   }
 
   if (ordersError) {

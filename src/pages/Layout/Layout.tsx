@@ -9,7 +9,7 @@ export function Layout() {
       <PageShadow aria-hidden="true" />
       <ExtraSpace />
       <Header />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<Loading fullScreen />}>
         <Outlet />
       </Suspense>
       <Footer />

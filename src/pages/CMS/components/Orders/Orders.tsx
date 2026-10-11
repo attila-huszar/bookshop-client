@@ -30,7 +30,7 @@ export const Orders = () => {
   )
 
   if (ordersLoading) {
-    return <Loading message="Loading orders" />
+    return <Loading message="Loading orders" fullScreen />
   }
 
   if (ordersError) {

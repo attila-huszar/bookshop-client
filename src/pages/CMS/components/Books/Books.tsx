@@ -18,7 +18,7 @@ export const Books = () => {
   } = useOutletContext<CMSOutletContext>()
 
   if (booksLoading) {
-    return <Loading message="Loading books" />
+    return <Loading message="Loading books" fullScreen />
   }
 
   if (booksError) {

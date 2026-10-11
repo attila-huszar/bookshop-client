@@ -86,7 +86,10 @@ export function Checkout() {
         fallbackRender={(props) => <StripeErrorFallback {...props} />}>
         <Elements stripe={stripePromise} options={options}>
           {isStripeReturn ? (
-            <Suspense fallback={<Loading message="Loading payment status" />}>
+            <Suspense
+              fallback={
+                <Loading message="Loading payment status" fullScreen />
+              }>
               <PaymentStatus />
             </Suspense>
           ) : (

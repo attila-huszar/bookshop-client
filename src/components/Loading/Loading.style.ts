@@ -1,4 +1,4 @@
-import { styled } from 'styled-components'
+import { css, styled } from 'styled-components'
 
 export const StyledLoading = styled.div<{ $fullScreen?: boolean }>`
   display: flex;
@@ -7,7 +7,13 @@ export const StyledLoading = styled.div<{ $fullScreen?: boolean }>`
   align-items: center;
   gap: 2rem;
 
-  ${({ $fullScreen }) => $fullScreen && 'height: 100vh;'}
+  ${({ $fullScreen }) =>
+    $fullScreen &&
+    css`
+      flex: 1;
+      width: 100%;
+      min-height: var(--page-loading-height, 100dvh);
+    `}
 
   svg {
     height: 2.5rem;

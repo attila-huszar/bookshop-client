@@ -2,6 +2,11 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledCMS = styled.section`
+  --page-loading-height: 0px;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
   min-width: var(--min-width);
   max-width: var(--max-width);
   margin: 0 auto;
@@ -14,6 +19,9 @@ export const StyledCMS = styled.section`
 `
 
 export const MainContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 1.5rem;
   border-radius: 20px;
   background: var(--color-surface-container-low);

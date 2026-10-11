@@ -10,6 +10,7 @@ import { Home } from '@/pages/Home/Home'
 import { Layout } from '@/pages/Layout/Layout'
 import { Alert, Loading } from '@/components'
 import {
+  appLoader,
   authLoader,
   cartLoader,
   checkoutLoader,
@@ -96,9 +97,7 @@ const routes: RouteObject[] = [
         <Layout />
       </ErrorBoundary>
     ),
-    loader: authLoader,
     errorElement: <Alert fullScreen />,
-    hydrateFallbackElement: <></>,
     children: [
       {
         index: true,
@@ -207,7 +206,14 @@ const routes: RouteObject[] = [
   },
 ]
 
-const router = createBrowserRouter(routes)
+const router = createBrowserRouter([
+  {
+    loader: appLoader,
+    errorElement: <Alert fullScreen />,
+    hydrateFallbackElement: <></>,
+    children: routes,
+  },
+])
 
 export const Routes: React.FC = () => {
   return <RouterProvider router={router} />
