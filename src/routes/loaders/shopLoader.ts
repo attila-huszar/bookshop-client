@@ -1,15 +1,17 @@
 import { booksQueryArgs, store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 
 export const shopLoader = () => {
-  void store.dispatch(
-    bookshopApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
-      subscribe: false,
+  store.dispatch(
+    bookshopApi.util.prefetch('books', booksQueryArgs(store.getState()), {
+      ifOlderThan: cacheTimes.catalogue,
     }),
   )
-  void store.dispatch(
-    bookshopApi.endpoints.searchOptions.initiate(undefined, {
-      subscribe: false,
+
+  store.dispatch(
+    bookshopApi.util.prefetch('searchOptions', undefined, {
+      ifOlderThan: cacheTimes.reference,
     }),
   )
 }

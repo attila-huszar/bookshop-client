@@ -1,7 +1,8 @@
 import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 
-export const productLoader = (request: Request) => {
+export const productLoader = ({ request }: { request: Request }) => {
   const url = new URL(request.url)
   const id = Number(url.searchParams.get('id'))
 
@@ -9,7 +10,9 @@ export const productLoader = (request: Request) => {
     return
   }
 
-  void store.dispatch(
-    bookshopApi.endpoints.book.initiate(id, { subscribe: false }),
+  store.dispatch(
+    bookshopApi.util.prefetch('book', id, {
+      ifOlderThan: cacheTimes.catalogue,
+    }),
   )
 }

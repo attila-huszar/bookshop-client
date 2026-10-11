@@ -53,8 +53,14 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
 
   const state = store.getState()
   const currentPayment = state.payment?.payment
-  const shouldRetrievePayment = !currentPayment?.paymentToken || !isStripeReturn
-  if (!shouldRetrievePayment) return null
+  const hasMatchingPayment =
+    currentPayment?.paymentId === paymentId &&
+    Boolean(currentPayment.paymentToken)
+  const shouldRetrievePayment = !hasMatchingPayment || !isStripeReturn
+
+  if (!shouldRetrievePayment) {
+    return null
+  }
 
   try {
     const retrievedPayment = await store

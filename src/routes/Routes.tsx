@@ -113,7 +113,7 @@ const routes: RouteObject[] = [
       {
         path: ROUTE.BOOK,
         element: <Product />,
-        loader: ({ request }) => productLoader(request),
+        loader: productLoader,
       },
       {
         path: ROUTE.CART,

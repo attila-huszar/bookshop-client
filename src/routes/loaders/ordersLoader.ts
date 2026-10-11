@@ -1,8 +1,15 @@
 import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { authLoader } from './authLoader'
 
-export const ordersLoader = () => {
-  void store.dispatch(
-    bookshopApi.endpoints.userOrders.initiate(undefined, { subscribe: false }),
+export const ordersLoader = async () => {
+  const isAuthenticated = await authLoader({ loginRequired: true })
+
+  if (!isAuthenticated) {
+    return
+  }
+
+  store.dispatch(
+    bookshopApi.util.prefetch('userOrders', undefined, { force: true }),
   )
 }

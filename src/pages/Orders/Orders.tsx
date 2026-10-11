@@ -26,7 +26,7 @@ const formatTotal = (amount: number, currency: string) => {
 }
 
 export function Orders() {
-  useUserOrdersQuery({ refetchOnMountOrArgChange: true })
+  useUserOrdersQuery()
   const { orders, ordersIsLoading, ordersError } =
     useAppSelector(ordersSelector)
   const { userData } = useAppSelector(userSelector)

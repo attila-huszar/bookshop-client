@@ -1,5 +1,6 @@
 import { vi } from 'vitest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 import { productLoader } from './productLoader'
 
 const { mockDispatch } = vi.hoisted(() => ({ mockDispatch: vi.fn() }))
@@ -15,24 +16,25 @@ afterEach(() => {
 
 describe('productLoader', () => {
   it('prefetches book details without delaying navigation until the response arrives', () => {
-    const initiate = vi.spyOn(bookshopApi.endpoints.book, 'initiate')
-    mockDispatch.mockReturnValue(
-      new Promise(() => {
-        // Keep the request pending to verify that navigation does not wait for it.
-      }),
-    )
+    const prefetch = vi.spyOn(bookshopApi.util, 'prefetch')
 
-    const result = productLoader(new Request('https://bookshop.test/book?id=1'))
+    const result = productLoader({
+      request: new Request('https://bookshop.test/book?id=1'),
+    })
 
     expect(result).toBeUndefined()
-    expect(initiate).toHaveBeenCalledWith(1, { subscribe: false })
+    expect(prefetch).toHaveBeenCalledWith('book', 1, {
+      ifOlderThan: cacheTimes.catalogue,
+    })
     expect(mockDispatch).toHaveBeenCalledWith(expect.any(Function))
   })
 
   it.each(['', '?id=invalid', '?id=0'])(
     'does not fetch an invalid book ID (%s)',
     (search) => {
-      productLoader(new Request(`https://bookshop.test/book${search}`))
+      productLoader({
+        request: new Request(`https://bookshop.test/book${search}`),
+      })
 
       expect(mockDispatch).not.toHaveBeenCalled()
     },

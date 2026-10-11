@@ -96,17 +96,23 @@ describe('authLoader', () => {
     vi.clearAllMocks()
   })
 
-  it('returns true immediately when already authenticated user is admin for admin route', async () => {
-    const { authLoader, mockDispatch } = await setup({
-      initialAccessToken: 'access-token',
-      initialUserData: createUser(UserRole.Admin),
-    })
+  it.each([
+    { role: UserRole.Admin, allowed: true },
+    { role: UserRole.User, allowed: false },
+  ])(
+    'checks cached $role access to admin routes without requesting data',
+    async ({ role, allowed }) => {
+      const { authLoader, mockDispatch } = await setup({
+        initialAccessToken: 'access-token',
+        initialUserData: createUser(role),
+      })
 
-    const result = await authLoader({ adminRequired: true })
+      const result = await authLoader({ adminRequired: true })
 
-    expect(result).toBe(true)
-    expect(mockDispatch).not.toHaveBeenCalled()
-  })
+      expect(result).toBe(allowed)
+      expect(mockDispatch).not.toHaveBeenCalled()
+    },
+  )
 
   it('returns false for protected route when token bootstrap fails', async () => {
     const { authLoader, mockFetchAuthTokens, mockDispatch } = await setup({
@@ -166,6 +172,33 @@ describe('authLoader', () => {
     expect(mockFetchAuthTokens).toHaveBeenCalledTimes(1)
     expect(mockProfileQuery).toHaveBeenCalledTimes(1)
   })
+
+  it('loads a missing profile using an existing token without refreshing it', async () => {
+    const { authLoader, mockFetchAuthTokens, mockProfileQuery } = await setup({
+      initialAccessToken: 'access-token',
+      profileAfterFetch: createUser(UserRole.Admin),
+    })
+
+    await expect(authLoader({ adminRequired: true })).resolves.toBe(true)
+    expect(mockFetchAuthTokens).not.toHaveBeenCalled()
+    expect(mockProfileQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    { route: 'public', options: {}, allowed: true },
+    { route: 'protected', options: { loginRequired: true }, allowed: false },
+    { route: 'admin', options: { adminRequired: true }, allowed: false },
+  ])(
+    'allows $route routes only when appropriate if the profile cannot be loaded',
+    async ({ options, allowed }) => {
+      const { authLoader, mockProfileQuery } = await setup({
+        initialAccessToken: 'access-token',
+      })
+
+      await expect(authLoader(options)).resolves.toBe(allowed)
+      expect(mockProfileQuery).toHaveBeenCalledTimes(1)
+    },
+  )
 
   it('deduplicates concurrent token bootstrap before querying the shared profile cache', async () => {
     const deferredToken = createDeferred()

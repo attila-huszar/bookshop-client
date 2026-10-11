@@ -1,16 +1,19 @@
 import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 
 export const landingPageLoader = () => {
   for (const property of ['newRelease', 'topSellers', 'recommended'] as const) {
-    void store.dispatch(
-      bookshopApi.endpoints.booksByProperty.initiate(property, {
-        subscribe: false,
+    store.dispatch(
+      bookshopApi.util.prefetch('booksByProperty', property, {
+        ifOlderThan: cacheTimes.featured,
       }),
     )
   }
 
-  void store.dispatch(
-    bookshopApi.endpoints.news.initiate(undefined, { subscribe: false }),
+  store.dispatch(
+    bookshopApi.util.prefetch('news', undefined, {
+      ifOlderThan: cacheTimes.featured,
+    }),
   )
 }

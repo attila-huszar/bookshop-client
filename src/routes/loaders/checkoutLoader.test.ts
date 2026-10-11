@@ -206,4 +206,28 @@ describe('checkoutLoader', () => {
     expect(mockPaymentRetrieve).not.toHaveBeenCalled()
     expect(mockStoreDispatch).not.toHaveBeenCalled()
   })
+
+  it('retrieves the requested payment when the cached token belongs to another payment', async () => {
+    mockStoreGetState.mockReturnValue({
+      payment: {
+        payment: {
+          paymentId: 'pi_previous_payment',
+          paymentToken: 'pi_previous_token',
+          amount: 1500,
+        },
+      },
+    })
+
+    const result = await checkoutLoader({
+      request: new Request(
+        'http://localhost/checkout?redirect_status=succeeded',
+      ),
+    })
+
+    expect(result).toBeNull()
+    expect(mockPaymentRetrieve).toHaveBeenCalledWith({
+      paymentId: 'pi_test_payment',
+      allowSucceeded: true,
+    })
+  })
 })
