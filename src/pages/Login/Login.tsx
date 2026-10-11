@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
-import { fetchUserProfile, login } from '@/store'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { ForgotPassword } from '@/components/ForgotPassword/ForgotPassword'
-import { FormikField } from '@/components/FormikField/FormikField'
+import { login } from '@/store'
+import {
+  AuthorizationMenu,
+  Button,
+  ForgotPassword,
+  FormikField,
+  IconButton,
+  toast,
+} from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { getErrorMessage, scrollToTop } from '@/helpers'
 import { loginSchema } from '@/validation'
 import { loginInitialValues } from '@/constants'
 import type { LoginRequest } from '@/types'
@@ -28,16 +30,13 @@ export function Login() {
 
   const handleSubmit = async (values: LoginRequest) => {
     try {
-      await dispatch(login(values)).unwrap()
-      const { firstName } = await dispatch(fetchUserProfile()).unwrap()
+      const { firstName } = await dispatch(login(values)).unwrap()
       toast.success(`Welcome back, ${firstName}!`)
       void navigate('/', { replace: true })
     } catch (error) {
-      const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error.message as string)
-          : 'Login failed, please try again later'
-      toast.error(errorMessage)
+      toast.error(
+        getErrorMessage(error, 'Login failed, please try again later'),
+      )
     }
   }
 
@@ -77,7 +76,7 @@ export function Login() {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}
@@ -89,7 +88,7 @@ export function Login() {
               <IconButton
                 icon={<QuestionIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="button"
                 title="Forgot Password?"
                 disabled={isSubmitting}

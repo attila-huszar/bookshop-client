@@ -1,38 +1,39 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { cartToLocalStorage, paymentToSessionStorage } from './middlewares'
-import { authorsReducer } from './slices/authors'
+import { setupListeners } from '@reduxjs/toolkit/query'
+import { configureAuthRequest } from '@/api/authRequest'
+import { bookshopApi } from './api/bookshopApi'
+import { persistenceMiddleware } from './persistenceMiddleware'
 import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
-import { cmsReducer } from './slices/cms'
-import { newsReducer } from './slices/news'
-import { ordersReducer } from './slices/orders'
 import { paymentReducer } from './slices/payment'
 import { userReducer } from './slices/user'
+import { expireAuthSession, fetchAuthTokens } from './thunks/user'
 
 const reducer = {
+  [bookshopApi.reducerPath]: bookshopApi.reducer,
   books: booksReducer,
-  authors: authorsReducer,
-  news: newsReducer,
   user: userReducer,
   cart: cartReducer,
-  orders: ordersReducer,
   payment: paymentReducer,
-  cms: cmsReducer,
 }
-
-const middlewares = [
-  cartToLocalStorage.middleware,
-  paymentToSessionStorage.middleware,
-]
 
 export const createAppStore = () =>
   configureStore({
     reducer,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(middlewares),
+      getDefaultMiddleware().concat(
+        bookshopApi.middleware,
+        persistenceMiddleware.middleware,
+      ),
   })
 
 export const store = createAppStore()
+setupListeners(store.dispatch)
+configureAuthRequest({
+  getAccessToken: () => store.getState().user.accessToken,
+  refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
+  expire: (accessToken) => store.dispatch(expireAuthSession(accessToken)),
+})
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

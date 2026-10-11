@@ -2,9 +2,13 @@ import { styled } from 'styled-components'
 import { media } from '@/styles'
 
 export const StyledProduct = styled.main`
+  --page-loading-height: calc(100dvh - 9.375rem);
+
   padding: 0 6.25rem;
 
   ${media.down('sm')`
+    --page-loading-height: calc(100dvh - 6.5rem);
+
     padding: 0 1rem;
   `}
 `
@@ -17,6 +21,7 @@ export const Breadcrumb = styled.button`
   font-weight: 700;
   border: none;
   background: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
 
   ${media.down('sm')`
@@ -46,15 +51,13 @@ export const ImageWrapper = styled.div`
   grid-column: 1 / 2;
   grid-row: 1 / 4;
   padding: 3rem;
-  background-color: #f4f4ff;
-  border: 1px solid #e5e5e5;
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--border-radius);
 
   img {
     border-radius: var(--border-radius);
-    box-shadow:
-      rgba(0, 0, 0, 0.19) 0px 10px 20px,
-      rgba(0, 0, 0, 0.23) 0px 6px 6px;
+    box-shadow: var(--shadow-book);
   }
 
   ${media.down('sm')`
@@ -84,7 +87,7 @@ export const BookAuthor = styled.p`
   font-size: 1.5rem;
   font-weight: 700;
   text-wrap: pretty;
-  color: var(--grey);
+  color: var(--color-on-surface-variant);
 
   &:empty::before {
     content: '';
@@ -109,7 +112,7 @@ export const Description = styled.div`
 
   p {
     font-size: 1.25rem;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
   }
 
   ${media.down('sm')`

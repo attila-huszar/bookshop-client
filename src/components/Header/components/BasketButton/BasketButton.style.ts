@@ -16,8 +16,8 @@ export const CartItemCount = styled.div`
   text-align: center;
   line-height: normal;
   border-radius: 10px;
-  color: white;
-  background-color: var(--orange);
+  color: var(--color-on-error);
+  background-color: var(--color-error);
   z-index: 6;
 
   ${media.down('sm')`

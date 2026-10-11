@@ -1,19 +1,18 @@
 import {
   booksSelector,
   decrementBooksCurrentPage,
-  fetchBooks,
   incrementBooksCurrentPage,
   setBooksCurrentPage,
 } from '@/store'
 import { IconButton } from '@/components'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { scrollToTop } from '@/helpers'
-import { ChevronLeftEndIcon, ChevronLeftIcon, EllipsisIcon } from '@/assets/svg'
+import { CaretLeftEndIcon, CaretLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
 export function Pagination() {
   const dispatch = useAppDispatch()
-  const { booksCurrentPage, booksTotal, booksPerPage, booksFilters } =
+  const { booksCurrentPage, booksTotal, booksPerPage } =
     useAppSelector(booksSelector)
 
   const totalPages = Math.ceil(booksTotal / booksPerPage)
@@ -60,11 +59,10 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage > 1) {
             dispatch(setBooksCurrentPage(1))
-            void dispatch(fetchBooks(booksFilters.active))
             scrollToTop()
           }
         }}
-        icon={<ChevronLeftEndIcon />}
+        icon={<CaretLeftEndIcon />}
         title="First Page"
         $size="sm"
         disabled={booksCurrentPage === 1}
@@ -73,11 +71,10 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage > 1) {
             dispatch(decrementBooksCurrentPage())
-            void dispatch(fetchBooks(booksFilters.active))
             scrollToTop()
           }
         }}
-        icon={<ChevronLeftIcon />}
+        icon={<CaretLeftIcon />}
         title="Previous Page"
         $size="sm"
         disabled={booksCurrentPage === 1}
@@ -93,7 +90,6 @@ export function Pagination() {
             key={`pageSelectBtn-${page}`}
             onClick={() => {
               dispatch(setBooksCurrentPage(page))
-              void dispatch(fetchBooks(booksFilters.active))
               scrollToTop()
             }}
             disabled={booksCurrentPage === page}
@@ -106,11 +102,10 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(incrementBooksCurrentPage())
-            void dispatch(fetchBooks(booksFilters.active))
             scrollToTop()
           }
         }}
-        icon={<ChevronLeftIcon />}
+        icon={<CaretLeftIcon />}
         title="Next Page"
         $size="sm"
         $flipH
@@ -120,11 +115,10 @@ export function Pagination() {
         onClick={() => {
           if (booksCurrentPage < booksTotal / booksPerPage) {
             dispatch(setBooksCurrentPage(Math.ceil(booksTotal / booksPerPage)))
-            void dispatch(fetchBooks(booksFilters.active))
             scrollToTop()
           }
         }}
-        icon={<ChevronLeftEndIcon />}
+        icon={<CaretLeftEndIcon />}
         title="Last Page"
         $size="sm"
         $flipH

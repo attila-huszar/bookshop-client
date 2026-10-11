@@ -12,8 +12,14 @@ export const StyledEditDialog = styled.dialog`
   padding: 1.125rem 1.5rem;
   border: none;
   border-radius: 10px;
-  background: var(--white);
+  background: var(--color-surface-container-high);
   box-shadow: var(--shadow);
+
+  fieldset {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
 `
 
 export const DefaultRow = styled.div`
@@ -64,7 +70,7 @@ export const FormButtons = styled.div`
 
 export const AddressBlock = styled.div`
   padding: 0.25rem 0.5rem 0;
-  border: 1px solid var(--light-grey);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
@@ -75,7 +81,7 @@ export const AddressBlock = styled.div`
 
 export const OrderItemBlock = styled.div`
   padding: 0.25rem 0.5rem 0;
-  border: 1px solid var(--light-grey);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
@@ -85,22 +91,22 @@ export const OrderItemBlock = styled.div`
 
   > div:not(:last-child) {
     margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--light-grey);
+    border-bottom: 1px solid var(--color-outline-variant);
   }
 `
 
 export const SectionHeader = styled.h3`
   font-size: 0.875rem;
   font-weight: 600;
-  color: #555;
+  color: var(--color-on-surface-variant);
   margin: 1rem 0 0.75rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--light-grey);
+  border-bottom: 2px solid var(--color-outline-variant);
 `
 
 export const MetadataBlock = styled.div`
   padding: 0.75rem;
-  background: var(--pearly-white);
+  background: var(--color-surface-container);
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
 
@@ -112,13 +118,13 @@ export const MetadataBlock = styled.div`
     > p {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #888;
+      color: var(--color-on-surface-variant);
       margin-bottom: 0.25rem;
     }
 
     > span {
       font-size: 0.875rem;
-      color: var(--black);
+      color: var(--color-on-surface);
       word-break: break-all;
     }
   }
@@ -140,7 +146,7 @@ export const BookTitleRow = styled(DefaultRow)`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--black);
+    color: var(--color-on-surface);
   }
 
   input[name='publishYear'] {

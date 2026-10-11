@@ -1,3 +1,4 @@
+export { appLoader } from './appLoader'
 export { authLoader } from './authLoader'
 export { landingPageLoader } from './landingPageLoader'
 export { shopLoader } from './shopLoader'

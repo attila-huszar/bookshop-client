@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        'lottie-react': 'lottie-react/build/index.es.js',
       },
     },
     server: {
@@ -94,6 +93,7 @@ export default defineConfig(({ mode }) => {
       restoreMocks: true,
       globals: true,
       environment: 'jsdom',
+      pool: 'vmThreads',
       include: ['src/**/*.test.{js,ts,jsx,tsx}'],
       exclude: ['node_modules', 'dist'],
       setupFiles: './src/setupTests.tsx',
@@ -118,7 +118,6 @@ export default defineConfig(({ mode }) => {
           'src/constants',
         ],
       },
-      threads: true,
       isolate: true,
       silent: false,
       watch: true,

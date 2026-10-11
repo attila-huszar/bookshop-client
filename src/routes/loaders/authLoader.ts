@@ -1,4 +1,5 @@
-import { fetchAuthTokens, fetchUserProfile, store } from '@/store'
+import { fetchAuthTokens, store, userSelector } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import { UserRole } from '@/types'
 
 type AuthLoaderOptions = {
@@ -7,15 +8,14 @@ type AuthLoaderOptions = {
 }
 
 const GUEST_BACKOFF_DELAY = 1_000
-const DEFAULT_GUEST_MAX_RETRIES = 4
+const GUEST_MAX_RETRIES = 4
 
 let tokenFailureCount = 0
 let tokenNextAttemptAt = 0
 let tokenFetchPromise: Promise<unknown> | null = null
-let profileFetchPromise: Promise<unknown> | null = null
 
-const canSkipTokenBootstrap = (maxRetries: number) =>
-  tokenFailureCount >= maxRetries || Date.now() < tokenNextAttemptAt
+const canSkipTokenBootstrap = () =>
+  tokenFailureCount >= GUEST_MAX_RETRIES || Date.now() < tokenNextAttemptAt
 
 const scheduleTokenRetry = () => {
   const delay = GUEST_BACKOFF_DELAY * 2 ** tokenFailureCount
@@ -32,56 +32,44 @@ export const authLoader = async ({
   loginRequired = false,
   adminRequired = false,
 }: AuthLoaderOptions = {}) => {
-  const getUserState = () => store.getState().user
-  const { accessToken, userData } = getUserState()
+  const getUserState = () => userSelector(store.getState())
+  const { accessToken } = getUserState()
   const requiresLogin = loginRequired || adminRequired
 
-  if (accessToken && userData) {
-    resetTokenRetry()
-    return adminRequired ? userData.role === UserRole.Admin : true
-  }
-
   if (!accessToken) {
-    if (!requiresLogin && canSkipTokenBootstrap(DEFAULT_GUEST_MAX_RETRIES))
+    if (!requiresLogin && canSkipTokenBootstrap()) {
       return true
-
-    try {
-      tokenFetchPromise ??= store.dispatch(fetchAuthTokens())
-      await tokenFetchPromise
-    } finally {
-      tokenFetchPromise = null
     }
+
+    tokenFetchPromise ??= store.dispatch(fetchAuthTokens()).finally(() => {
+      tokenFetchPromise = null
+    })
+    await tokenFetchPromise
 
     if (!getUserState().accessToken) {
-      if (!requiresLogin) scheduleTokenRetry()
+      if (!requiresLogin) {
+        scheduleTokenRetry()
+      }
+
       return !requiresLogin
     }
-
-    resetTokenRetry()
   }
 
-  const { userData: userDataAfterBootstrap } = getUserState()
+  resetTokenRetry()
 
-  if (!userDataAfterBootstrap) {
-    try {
-      profileFetchPromise ??= store.dispatch(fetchUserProfile())
-      await profileFetchPromise
-    } finally {
-      profileFetchPromise = null
-    }
-
-    const { userData: profile } = getUserState()
-
-    if (!profile) {
-      return !requiresLogin
-    }
-
-    if (adminRequired && profile.role !== UserRole.Admin) {
-      return false
-    }
-
-    return true
+  if (!getUserState().userData) {
+    await store.dispatch(
+      bookshopApi.endpoints.userProfile.initiate(undefined, {
+        subscribe: false,
+      }),
+    )
   }
 
-  return adminRequired ? userDataAfterBootstrap.role === UserRole.Admin : true
+  const { userData } = getUserState()
+
+  if (!userData) {
+    return !requiresLogin
+  }
+
+  return !adminRequired || userData.role === UserRole.Admin
 }

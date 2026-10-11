@@ -1,14 +1,15 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router'
 import { ExtraSpace, Footer, Header, Loading } from '@/components'
-import { StyledLayout } from './Layout.style'
+import { PageShadow, StyledLayout } from './Layout.style'
 
 export function Layout() {
   return (
     <StyledLayout>
+      <PageShadow aria-hidden="true" />
       <ExtraSpace />
       <Header />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<Loading fullScreen />}>
         <Outlet />
       </Suspense>
       <Footer />

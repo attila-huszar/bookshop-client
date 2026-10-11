@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { RootState } from '@/store'
+import type { AppDispatch, RootState } from '@/store'
 import { localStorageAdapter } from '@/helpers'
 import { cartKey } from '@/constants'
 import type { Cart, MinimalCart } from '@/types'
-import { fetchBookById } from './books'
+import { bookshopApi } from '../api/bookshopApi'
 
 const staleHydrationRejectValue = 'stale-hydration'
 
@@ -20,7 +20,11 @@ const toMinimalCart = (items: Cart[]): MinimalCart[] =>
 
 const matchesStorageCart = (cartItems: MinimalCart[]): boolean => {
   const storedCart = localStorageAdapter.get<MinimalCart[]>(cartKey)
-  if (!Array.isArray(storedCart)) return false
+
+  if (!Array.isArray(storedCart)) {
+    return false
+  }
+
   return toCartFingerprint(storedCart) === toCartFingerprint(cartItems)
 }
 
@@ -30,33 +34,22 @@ export const fetchCartItems = createAsyncThunk<
   { state: RootState; rejectValue: typeof staleHydrationRejectValue }
 >(
   'cart/fetchCartItems',
-  async (
-    { cartItems, force = false },
-    { getState, dispatch, rejectWithValue },
-  ) => {
-    const state = getState()
-
+  async ({ cartItems, force = false }, { dispatch, rejectWithValue }) => {
     const promises = cartItems.map(async (item) => {
-      const cachedBook = !force
-        ? state.books.books.find((book) => book.id === item.id)
-        : undefined
-
-      const book =
-        cachedBook ?? (await dispatch(fetchBookById(item.id)).unwrap())
-
-      const {
-        author,
-        genre,
-        description,
-        publishYear,
-        rating,
-        topSellers,
-        newRelease,
-        ...rest
-      } = book
+      const book = await dispatch(
+        bookshopApi.endpoints.book.initiate(item.id, {
+          subscribe: false,
+          forceRefetch: force,
+        }),
+      ).unwrap()
 
       return {
-        ...rest,
+        id: book.id,
+        title: book.title,
+        price: book.price,
+        discount: book.discount,
+        discountPrice: book.discountPrice,
+        imgUrl: book.imgUrl,
         quantity: item.quantity,
       }
     })
@@ -84,7 +77,8 @@ export const fetchCartItems = createAsyncThunk<
   {
     condition: ({ cartItems, force = false }, { getState }) => {
       const state = getState()
-      if (state.cart.cartIsLoading && !force) {
+
+      if (state.cart.currentRequestId !== null && !force) {
         return false
       }
 
@@ -103,3 +97,13 @@ export const fetchCartItems = createAsyncThunk<
 
 export const refreshCartItems = (cartItems: MinimalCart[]) =>
   fetchCartItems({ cartItems, force: true })
+
+export const restoreCartItems = () => (dispatch: AppDispatch) => {
+  const cartItems = localStorageAdapter.get<MinimalCart[]>(cartKey)
+
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return
+  }
+
+  return dispatch(fetchCartItems({ cartItems }))
+}

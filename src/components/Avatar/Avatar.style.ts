@@ -8,7 +8,7 @@ export const StyledAvatar = styled.div<StyleTypes>`
   width: ${({ $size }) => $size + 'px'};
   border: 2px solid transparent;
   border-radius: 9999px;
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--color-primary);
   cursor: pointer;
   transition: all 0.2s ease-out;
 
@@ -29,7 +29,7 @@ export const StyledAvatar = styled.div<StyleTypes>`
     left: 0;
     height: 100%;
     width: 100%;
-    background-color: #f7f7f775;
+    background-color: var(--color-avatar-overlay);
     border-radius: 9999px;
     transition: all 0.2s ease-out;
     ${({ $hoverControls }) => $hoverControls && 'clip-path: inset(75% 0 0 0);'}
@@ -55,7 +55,17 @@ export const IconOverlay = styled.div`
   width: 20px;
   height: 20px;
   opacity: 0;
-  transition: opacity 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    background-color 0.2s ease-out;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-error-container);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
 
   ${StyledAvatar}:hover & {
     opacity: 1;
@@ -74,8 +84,8 @@ export const RemoveAvatar = styled.button`
   padding: 0;
   margin: 0;
   cursor: pointer;
-  color: var(--orange);
-  background: var(--white);
+  color: var(--color-error);
+  background: var(--color-surface-container-lowest);
   box-shadow: var(--shadow);
   border: none;
   border-radius: 9999px;

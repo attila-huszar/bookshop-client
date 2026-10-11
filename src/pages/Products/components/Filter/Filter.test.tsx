@@ -1,69 +1,55 @@
+import { act } from 'react'
+import { Provider } from 'react-redux'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import {
-  fetchBooks,
-  setBooksCurrentPage,
-  setBooksFilterDiscount,
-  setBooksFilterGenre,
+  applyBooksFilters,
+  booksQueryArgs,
+  createAppStore,
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
 } from '@/store'
-import { useAppDispatch, useAppSelector, useBreakpoints } from '@/hooks'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppSelector as realUseAppSelector } from '@/hooks/redux'
 import { Filter } from './Filter'
 
-vi.mock('@/hooks', () => ({
-  useAppDispatch: vi.fn(),
-  useAppSelector: vi.fn(),
-  useBreakpoints: vi.fn(),
-}))
-
-vi.mock('@/store', () => ({
-  booksSelector: vi.fn(),
-  setBooksFilterGenre: vi.fn(),
-  setBooksFilterPrice: vi.fn(),
-  setBooksFilterDiscount: vi.fn(),
-  setBooksFilterPublishYear: vi.fn(),
-  setBooksFilterRating: vi.fn(),
-  setBooksCurrentPage: vi.fn(),
-  fetchBooks: vi.fn(),
-}))
-
 describe('Filter', () => {
-  const mockDispatch = vi.fn()
+  let store: ReturnType<typeof createAppStore>
 
-  beforeEach(() => {
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
-    vi.mocked(useBreakpoints).mockReturnValue({
-      width: 1024,
-      isMobile: false,
-      isTablet: false,
-    })
-    vi.mocked(useAppSelector).mockReturnValue({
-      booksFilters: {
-        active: {
-          genre: [],
-          price: [10, 50],
-          discount: 'allBooks',
-          publishYear: [1990, 2020],
-          rating: 3.5,
-        },
-        initial: {
-          genre: ['Fiction', 'Non-Fiction'],
-          price: [0, 100],
-          publishYear: [1900, 2020],
-        },
-      },
-    })
+  beforeEach(async () => {
+    store = createAppStore()
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+        genre: ['Fiction', 'Non-Fiction'],
+        price: [0, 100],
+        publishYear: [1900, 2020],
+      }),
+    )
+    store.dispatch(setBooksFilterPrice([10, 50]))
+    store.dispatch(setBooksFilterPublishYear([1990, 2020]))
+    store.dispatch(setBooksFilterRating(3.5))
+    vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
+    vi.mocked(useAppSelector).mockImplementation(realUseAppSelector)
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
+    act(() => {
+      store.dispatch(bookshopApi.util.resetApiState())
+    })
   })
 
-  it('should render the filter form with all inputs', () => {
-    render(<Filter />)
+  const renderFilter = () =>
+    render(
+      <Provider store={store}>
+        <Filter />
+      </Provider>,
+    )
+
+  it('renders the filter form with all inputs', () => {
+    renderFilter()
 
     expect(screen.getByText(/genre/i)).toBeInTheDocument()
     expect(screen.getByText(/^price$/i)).toBeInTheDocument()
@@ -74,51 +60,61 @@ describe('Filter', () => {
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
   })
 
-  it('should dispatch the correct action on form submission', async () => {
-    render(<Filter />)
+  it('waits quietly instead of showing draft controls when filter options are unavailable', () => {
+    store.dispatch(bookshopApi.util.resetApiState())
+    renderFilter()
 
-    const fictionCheckbox = screen.getByLabelText(/^fiction$/i)
-    await userEvent.click(fictionCheckbox)
-
-    const starButton = screen.getAllByRole('button', { name: /rating/i })[2]
-    if (!starButton) throw new Error('Star button not found')
-    await userEvent.click(starButton)
-
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    await userEvent.click(submitButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(
-        fetchBooks({
-          genre: ['Fiction'],
-          price: [10, 50],
-          discount: 'allBooks',
-          publishYear: [1990, 2020],
-          rating: 3.5,
-        }),
-      )
-    })
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre(['Fiction']))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(2.5))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /submit/i }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
   })
 
-  it('should reset the filters when reset button is clicked', async () => {
-    render(<Filter />)
+  it('keeps draft filters separate until submission updates the query arguments', async () => {
+    renderFilter()
 
-    const resetButton = screen.getByRole('button', { name: /reset/i })
-    await userEvent.click(resetButton)
+    await userEvent.click(screen.getByLabelText(/^fiction$/i))
+    const starButton = screen.getAllByRole('button', { name: /rating/i })[2]
+
+    if (!starButton) {
+      throw new Error('Star button not found')
+    }
+
+    await userEvent.click(starButton)
+    expect(booksQueryArgs(store.getState()).criteria).toBeUndefined()
+
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks())
+      expect(booksQueryArgs(store.getState())).toEqual({
+        currentPage: 1,
+        itemsPerPage: 8,
+        criteria: {
+          genre: ['Fiction'],
+          priceMin: 10,
+          priceMax: 50,
+          discount: 'allBooks',
+          publishYearMin: 1990,
+          publishYearMax: null,
+          rating: 2.5,
+        },
+      })
     })
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
-    expect(mockDispatch).toHaveBeenCalledWith(
-      setBooksFilterDiscount('allBooks'),
+  })
+
+  it('resets the draft and applied filters together', async () => {
+    store.dispatch(
+      applyBooksFilters(store.getState().books.booksFilters.active),
     )
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
+    renderFilter()
+
+    await userEvent.click(screen.getByRole('button', { name: /reset/i }))
+
+    expect(booksQueryArgs(store.getState()).criteria).toBeUndefined()
+    expect(store.getState().books.booksFilters.active).toEqual({
+      ...store.getState().books.booksFilters.initial,
+      genre: [],
+    })
   })
 })

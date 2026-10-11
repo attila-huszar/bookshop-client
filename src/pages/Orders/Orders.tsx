@@ -1,4 +1,5 @@
 import { ordersSelector, userSelector } from '@/store'
+import { useUserOrdersQuery } from '@/store/api/bookshopApi'
 import { Alert, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { formatDate, formatPaymentStatus, getPaidAtStatus } from '@/helpers'
@@ -20,16 +21,18 @@ import {
 
 const formatTotal = (amount: number, currency: string) => {
   const normalizedCurrency = (currency || defaultCurrency).toUpperCase()
+
   return `${amount.toLocaleString()} ${normalizedCurrency}`
 }
 
 export function Orders() {
+  useUserOrdersQuery()
   const { orders, ordersIsLoading, ordersError } =
     useAppSelector(ordersSelector)
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {
-    return <Loading message="Loading your orders" />
+    return <Loading message="Loading your orders" fullScreen />
   }
 
   if (ordersError) {
@@ -63,7 +66,9 @@ export function Orders() {
               <OrderMeta>
                 <p>
                   <span>Status:</span>{' '}
-                  {formatPaymentStatus(order.paymentStatus)}
+                  {order.paymentId
+                    ? formatPaymentStatus(order.paymentStatus)
+                    : 'Checkout not completed'}
                 </p>
                 <p>
                   <span>Total:</span> {formatTotal(order.total, order.currency)}
@@ -72,7 +77,7 @@ export function Orders() {
                   <span>Paid At:</span> {getPaidAtStatus(order)}
                 </p>
                 <p>
-                  <span>Payment ID:</span> {order.paymentId}
+                  <span>Payment ID:</span> {order.paymentId ?? 'Not linked yet'}
                 </p>
               </OrderMeta>
               <OrderItems>

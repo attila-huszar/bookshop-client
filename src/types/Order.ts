@@ -1,13 +1,8 @@
-import type { MinimalCart } from './Cart'
-import type {
-  PaymentIntent,
-  PaymentIntentShipping,
-  PaymentIntentStatus,
-} from './Stripe'
+import type { PaymentIntentShipping, PaymentIntentStatus } from './Stripe'
 
 export type Order = {
   id: number
-  paymentId: string
+  paymentId: string | null
   paymentStatus: PaymentIntentStatus
   total: number
   currency: string
@@ -31,48 +26,8 @@ export type OrderItem = {
   quantity: number
 }
 
-export type OrderUpdate = { paymentId: string } & Partial<
-  Omit<Order, 'paymentId' | 'id' | 'createdAt' | 'updatedAt' | 'paidAt'>
+export type CmsOrder = Order & { deletedAt: string | null }
+
+export type CmsOrderUpdate = { paymentId: string } & Partial<
+  Pick<Order, 'firstName' | 'lastName' | 'email' | 'shipping'>
 >
-
-export type PaymentIntentRequest = {
-  items: MinimalCart[]
-  expectedTotal: number
-}
-
-export type PaymentIntentResponse = Pick<
-  PaymentIntent,
-  | 'id'
-  | 'client_secret'
-  | 'amount'
-  | 'status'
-  | 'currency'
-  | 'receipt_email'
-  | 'shipping'
-  | 'created'
->
-
-export type PaymentSession = {
-  paymentId: string
-  paymentToken: string
-  amount: number
-}
-
-export type OrderSyncResponse = {
-  paymentId: string
-  paymentStatus: PaymentIntentStatus
-  amount: number
-  currency: string
-  receiptEmail: string | null
-  shipping: PaymentIntentShipping | null
-  finalizedAt: string | null
-  webhookUpdatedAt: string | null
-}
-
-export type OrderSyncIssueCode =
-  | 'timeout'
-  | 'retryable'
-  | 'unauthorized'
-  | 'unknown'
-
-export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'

@@ -28,70 +28,50 @@ const fontSize = {
 
 const colorMap = {
   primary: {
-    color: 'var(--white)',
-    background: 'var(--primary-color)',
-    outline: '3px solid var(--primary-color)',
-    hover: {
-      color: 'var(--primary-color)',
-      background: 'var(--white)',
-    },
+    color: 'var(--color-on-primary)',
+    background: 'var(--color-primary)',
+    accent: 'var(--color-primary)',
+    border: 'var(--color-primary)',
+    hover: 'var(--color-primary-hover)',
+    tint: 'var(--color-primary-container)',
   },
   secondary: {
-    color: 'var(--white)',
-    background: 'var(--secondary-dark)',
-    outline: '3px solid var(--secondary-dark)',
-    hover: {
-      color: 'var(--secondary-dark)',
-      background: 'var(--white)',
-    },
+    color: 'var(--color-on-secondary)',
+    background: 'var(--color-secondary)',
+    accent: 'var(--color-secondary)',
+    border: 'var(--color-secondary)',
+    hover: 'var(--color-secondary-hover)',
+    tint: 'var(--color-secondary-container)',
   },
   danger: {
-    color: 'var(--white)',
-    background: 'var(--orange)',
-    outline: '3px solid var(--orange)',
-    hover: {
-      color: 'var(--orange)',
-      background: 'var(--white)',
-    },
+    color: 'var(--color-on-error)',
+    background: 'var(--color-error)',
+    accent: 'var(--color-error)',
+    border: 'var(--color-error)',
+    hover: 'var(--color-error-hover)',
+    tint: 'var(--color-error-container)',
   },
-  invertedPrimary: {
-    color: 'var(--primary-color)',
-    background: 'var(--white)',
-    outline: '3px solid var(--primary-color)',
-    hover: {
-      color: 'var(--white)',
-      background: 'var(--primary-color)',
-    },
-  },
-  invertedSecondary: {
-    color: 'var(--secondary-dark)',
-    background: 'var(--white)',
-    outline: '3px solid var(--secondary-dark)',
-    hover: {
-      color: 'var(--white)',
-      background: 'var(--secondary-dark)',
-    },
-  },
-  invertedDanger: {
-    color: 'var(--orange)',
-    background: 'var(--white)',
-    outline: '3px solid var(--orange)',
-    hover: {
-      color: 'var(--white)',
-      background: 'var(--orange)',
-    },
+  neutral: {
+    color: 'var(--color-on-surface-variant)',
+    background: 'var(--color-surface-container-lowest)',
+    accent: 'var(--color-on-surface-variant)',
+    border: 'var(--color-outline)',
+    hover: 'var(--color-surface-container-high)',
+    tint: 'var(--color-surface-container-high)',
   },
 }
 
 function getTheme(color: StyleTypes['$color'] = 'primary', inverted?: boolean) {
-  if (inverted) {
-    return color === 'primary'
-      ? colorMap.invertedPrimary
-      : color === 'secondary'
-        ? colorMap.invertedSecondary
-        : colorMap.invertedDanger
+  const palette = colorMap[color]
+
+  return {
+    color: inverted ? palette.accent : palette.color,
+    background: inverted
+      ? 'var(--color-surface-container-lowest)'
+      : palette.background,
+    border: palette.border,
+    hover: inverted ? palette.tint : palette.hover,
   }
-  return colorMap[color]
 }
 
 export const StyledButton = styled.button<StyleTypes>`
@@ -108,26 +88,36 @@ export const StyledButton = styled.button<StyleTypes>`
   background-color: ${({ $color, $inverted }) =>
     getTheme($color, $inverted).background};
   box-shadow: ${({ $shadow }) =>
-    $shadow ? 'var(--primary-light) 0px 5px 10px' : undefined};
-  border: none;
+    $shadow ? 'var(--shadow-button)' : undefined};
+  border: 2px solid ${({ $color }) => getTheme($color).border};
   border-radius: 10px;
-  outline: ${({ $color, $inverted }) => getTheme($color, $inverted).outline};
-  outline-offset: -2px;
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition:
+    background-color 0.2s ease-out,
+    border-color 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 
-  &:hover {
-    color: ${({ $color, $inverted }) =>
-      getTheme($color, $inverted).hover.color};
-
+  &:hover:not(:disabled) {
     background-color: ${({ $color, $inverted }) =>
-      getTheme($color, $inverted).hover.background};
+      getTheme($color, $inverted).hover};
+    box-shadow: ${({ $shadow }) =>
+      $shadow ? 'var(--shadow-button-hover)' : undefined};
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: var(--shadow-button-pressed);
   }
 
   &:disabled {
-    color: var(--white);
-    background-color: var(--primary-faded);
-    outline: 3px solid var(--primary-faded);
+    color: var(--color-on-surface-variant);
+    background-color: var(--color-surface-container-high);
+    border-color: var(--color-surface-container-high);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 
   div {

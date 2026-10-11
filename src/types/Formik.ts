@@ -1,11 +1,3 @@
-import type { FieldInputProps, FieldMetaProps, FormikState } from 'formik'
-
-export type FormikProps = {
-  field: FieldInputProps<string>
-  form: FormikState<string>
-  meta: FieldMetaProps<string>
-}
-
 export type FormikInput = {
   showPassword?: boolean
   setShowPassword?: React.Dispatch<React.SetStateAction<boolean>>

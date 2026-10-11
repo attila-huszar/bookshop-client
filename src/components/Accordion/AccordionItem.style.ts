@@ -17,11 +17,11 @@ export const Header = styled.div<AccordionItemTypes>`
     height: 1.5rem;
     transition: transform 0.3s ease-out;
 
-    ${({ $isOpen }) => $isOpen && 'transform: scaleY(-1);'}
+    ${({ $isOpen }) => $isOpen && 'transform: rotate(180deg);'}
   }
 
   &:hover {
-    background-color: var(--pearly-white);
+    background-color: var(--color-surface-container);
   }
 `
 
@@ -46,5 +46,12 @@ export const Content = styled.div`
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
+    color: var(--color-on-surface-variant);
+    background-color: var(--color-surface-container-lowest);
+    transition: background-color 0.2s ease-out;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface-container-high);
+    }
   }
 `

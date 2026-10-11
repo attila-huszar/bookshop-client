@@ -10,7 +10,7 @@ export const Text = styled.p`
 export const SubscribeForm = styled.form`
   display: flex;
   width: min(100%, 32rem);
-  border: 2px solid var(--primary-color);
+  border: 2px solid var(--color-page-frame);
   border-radius: 10px;
   overflow: hidden;
 
@@ -21,7 +21,8 @@ export const SubscribeForm = styled.form`
     border: none;
     font-size: 1rem;
     font-weight: 600;
-    color: #6c6c6c;
+    color: var(--color-on-surface-variant);
+    background-color: var(--color-surface-container-lowest);
 
     &:focus-visible {
       outline: none;
@@ -34,14 +35,26 @@ export const SubscribeForm = styled.form`
     border: none;
     font-size: 1rem;
     font-weight: 700;
-    color: #fff;
-    background-color: var(--primary-color);
+    color: var(--color-on-tertiary);
+    background-color: var(--color-page-frame);
     cursor: pointer;
-    transition: all 0.2s ease-out;
+    transition:
+      color 0.2s ease-out,
+      background-color 0.2s ease-out;
 
-    &:hover {
-      color: var(--primary-color);
-      background-color: #fff;
+    &:hover:not(:disabled) {
+      color: var(--color-page-frame);
+      background-color: var(--color-surface-container-lowest);
+    }
+
+    &:disabled {
+      color: var(--color-on-surface-variant);
+      background-color: var(--color-surface-container-high);
+    }
+
+    &:focus-visible {
+      outline-color: var(--color-page-frame);
+      outline-offset: -3px;
     }
   }
 

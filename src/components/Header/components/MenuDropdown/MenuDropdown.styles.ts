@@ -10,7 +10,7 @@ export const StyledMenuDropdown = styled.div<{ $show: boolean }>`
   box-shadow: var(--shadow);
   transition: all 0.2s ease;
   z-index: 100;
-  background-color: var(--white);
+  background-color: var(--color-surface-container-high);
 
   ${({ $show }) => `
     grid-template-rows: ${$show ? '1fr' : '0fr'};

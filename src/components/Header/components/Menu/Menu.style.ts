@@ -10,7 +10,7 @@ export const MenuList = styled.ul`
   padding: 0;
   font-size: 1.25rem;
   list-style: none;
-  background-color: #eaeaea;
+  background-color: var(--color-surface-container-high);
   border-radius: var(--border-radius);
   z-index: 10;
   overflow: hidden;
@@ -27,7 +27,7 @@ export const MenuList = styled.ul`
     height: 100%;
     border-radius: 0;
     padding-top: 4rem;
-    background-color: var(--white);
+    background-color: var(--color-surface-container-lowest);
 
     li:first-child {
       border-radius: 0;

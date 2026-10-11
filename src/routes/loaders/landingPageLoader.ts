@@ -1,19 +1,19 @@
-import { fetchBooksByProperty, fetchNews, store } from '@/store'
+import { store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 
 export const landingPageLoader = () => {
-  if (!store.getState().books.booksReleases.length) {
-    void store.dispatch(fetchBooksByProperty('newRelease'))
+  for (const property of ['newRelease', 'topSellers', 'recommended'] as const) {
+    store.dispatch(
+      bookshopApi.util.prefetch('booksByProperty', property, {
+        ifOlderThan: cacheTimes.featured,
+      }),
+    )
   }
 
-  if (!store.getState().books.booksTopSellers.length) {
-    void store.dispatch(fetchBooksByProperty('topSellers'))
-  }
-
-  if (!store.getState().books.booksRecommended.length) {
-    void store.dispatch(fetchBooksByProperty('recommended'))
-  }
-
-  if (!store.getState().news.newsItems.length) {
-    void store.dispatch(fetchNews())
-  }
+  store.dispatch(
+    bookshopApi.util.prefetch('news', undefined, {
+      ifOlderThan: cacheTimes.featured,
+    }),
+  )
 }

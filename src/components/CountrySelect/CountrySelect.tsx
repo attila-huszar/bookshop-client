@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFormikContext } from 'formik'
-import { getCountryCodes } from '@/api'
+import { useCountryCodesQuery } from '@/store/api/bookshopApi'
 import { useClickOutside } from '@/hooks'
 import { defaultCountry } from '@/constants'
-import type { CountryData } from '@/types'
-import { CaretDownIcon } from '@/assets/svg'
+import { ChevronDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles'
 import {
   CountryFlag,
@@ -29,8 +28,15 @@ export function CountrySelect({
 }: CountrySelectProps) {
   const { setFieldValue, getFieldMeta, submitCount } =
     useFormikContext<Record<string, unknown>>()
+  const {
+    data: countries = {},
+    isLoading,
+    isError,
+  } = useCountryCodesQuery({
+    refetchOnFocus: false,
+    refetchOnReconnect: false,
+  })
   const [isOpen, setIsOpen] = useState(false)
-  const [countries, setCountries] = useState<CountryData>({})
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
@@ -59,20 +65,16 @@ export function CountrySelect({
       }
     } else if (!isOpen) {
       const timeoutId = setTimeout(() => setSearchQuery(''), 200)
+
       return () => clearTimeout(timeoutId)
     }
   }, [isOpen])
 
-  useEffect(() => {
-    const fetchCountries = async () => {
-      const data = await getCountryCodes()
-      setCountries(data)
-    }
-    void fetchCountries()
-  }, [])
-
   const countryList = Object.entries(countries).filter(([, name]) => {
-    if (!searchQuery) return true
+    if (!searchQuery) {
+      return true
+    }
+
     return name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
@@ -81,12 +83,18 @@ export function CountrySelect({
   }
 
   const onInputClick = () => {
-    if (readOnly) return
+    if (readOnly) {
+      return
+    }
+
     setIsOpen((prev) => !prev)
   }
 
   const onSelect = (code: string) => {
-    if (readOnly) return
+    if (readOnly) {
+      return
+    }
+
     void setFieldValue(fieldName, code, true)
     setIsOpen(false)
   }
@@ -100,18 +108,24 @@ export function CountrySelect({
         onClick={onInputClick}
         $valid={shouldShowError && !errorMessage}
         $error={shouldShowError && errorMessage}
+        aria-busy={isLoading}
         readOnly={readOnly}>
         <div>
           {hasSelection && (
             <CountryFlag
               src={getFlagUrl(selectedCountry)}
-              alt={`${countryName} flag`}
+              alt={`${countryName ?? selectedCountry} flag`}
               loading="lazy"
             />
           )}
-          <CountryName>{countryName ?? 'Select country...'}</CountryName>
+          <CountryName>
+            {countryName ??
+              (hasSelection
+                ? selectedCountry.toUpperCase()
+                : 'Select country...')}
+          </CountryName>
         </div>
-        <CaretDownIcon />
+        <ChevronDownIcon />
       </SelectedOption>
       {isOpen && !readOnly && (
         <DropdownList>
@@ -124,7 +138,15 @@ export function CountrySelect({
             onClick={(e) => e.stopPropagation()}
           />
           <OptionsList ref={listRef}>
-            {countryList.length > 0 ? (
+            {isLoading ? (
+              <OptionItem as="div" role="status" style={{ cursor: 'default' }}>
+                Loading countries…
+              </OptionItem>
+            ) : isError ? (
+              <OptionItem as="div" role="alert" style={{ cursor: 'default' }}>
+                Could not load countries
+              </OptionItem>
+            ) : countryList.length > 0 ? (
               countryList.map(([code, countryName]) => (
                 <OptionItem
                   key={code}

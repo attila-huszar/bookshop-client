@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { booksSelector } from '@/store'
-import { Alert } from '@/components/Alert/Alert'
-import { Card } from '@/components/Card/Card'
+import { useBooksQuery, useSearchOptionsQuery } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
+import { booksQueryArgs } from '@/store/selectors'
+import { Alert, Card, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
-import { FilterIcon } from '@/assets/svg'
+import { SlidersIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter, Pagination } from './components'
 import {
   FilterBackdrop,
@@ -13,10 +15,23 @@ import {
 } from './Products.style'
 
 export function Products() {
-  const { booksOnCurrentPage, booksError } = useAppSelector(booksSelector)
+  const queryArgs = useAppSelector(booksQueryArgs)
+
+  useBooksQuery(queryArgs, {
+    refetchOnMountOrArgChange: cacheTimes.catalogue,
+  })
+  useSearchOptionsQuery({
+    refetchOnMountOrArgChange: cacheTimes.reference,
+  })
+  const { booksOnCurrentPage, booksIsLoading, booksError } =
+    useAppSelector(booksSelector)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   const renderBooks = () => {
+    if (booksIsLoading) {
+      return <Loading message="Loading books" fullScreen />
+    }
+
     if (booksError) {
       return <Alert message="Error loading books" error={booksError} />
     }
@@ -46,7 +61,7 @@ export function Products() {
         type="button"
         onClick={() => setIsFilterOpen((prev) => !prev)}
         aria-label={isFilterOpen ? 'Close filters' : 'Open filters'}>
-        <FilterIcon />
+        <SlidersIcon />
       </FilterFloatingButton>
       <FilterBackdrop
         $visible={isFilterOpen}

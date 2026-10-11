@@ -1,23 +1,30 @@
-import { listAuthors, listBooks, listOrders, listUsers, store } from '@/store'
+import { store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import type { TabValue } from '@/pages/CMS/CMS'
+import { authLoader } from './authLoader'
 
-export const cmsLoader = (tab: TabValue) => {
+export const cmsLoader = async (tab: TabValue) => {
+  const isAdmin = await authLoader({ adminRequired: true })
+
+  if (!isAdmin) {
+    return
+  }
+
   switch (tab) {
     case 'orders':
-      void store.dispatch(listOrders())
+      store.dispatch(
+        bookshopApi.util.prefetch('cmsOrders', undefined, { force: true }),
+      )
       break
     case 'books':
-      void store.dispatch(listBooks())
-
-      if (store.getState().cms.authors.length === 0) {
-        void store.dispatch(listAuthors())
-      }
+      store.dispatch(bookshopApi.util.prefetch('cmsBooks', undefined))
+      store.dispatch(bookshopApi.util.prefetch('cmsAuthors', undefined))
       break
     case 'authors':
-      void store.dispatch(listAuthors())
+      store.dispatch(bookshopApi.util.prefetch('cmsAuthors', undefined))
       break
     case 'users':
-      void store.dispatch(listUsers())
+      store.dispatch(bookshopApi.util.prefetch('cmsUsers', undefined))
       break
   }
 }

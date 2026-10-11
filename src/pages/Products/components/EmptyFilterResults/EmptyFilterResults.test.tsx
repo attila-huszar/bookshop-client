@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import {
-  fetchBooks,
+  applyBooksFilters,
   setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
@@ -14,15 +14,6 @@ import { EmptyFilterResults } from './EmptyFilterResults'
 
 vi.mock('@/hooks', () => ({
   useAppDispatch: vi.fn(),
-}))
-
-vi.mock('@/store', () => ({
-  fetchBooks: vi.fn(),
-  setBooksFilterGenre: vi.fn(),
-  setBooksFilterPrice: vi.fn(),
-  setBooksFilterDiscount: vi.fn(),
-  setBooksFilterPublishYear: vi.fn(),
-  setBooksFilterRating: vi.fn(),
 }))
 
 describe('EmptyFilterResults', () => {
@@ -57,7 +48,7 @@ describe('EmptyFilterResults', () => {
     await userEvent.click(resetButton)
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(fetchBooks())
+      expect(mockDispatch).toHaveBeenCalledWith(applyBooksFilters())
     })
     expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
     expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))

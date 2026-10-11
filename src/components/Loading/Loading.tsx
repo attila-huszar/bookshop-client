@@ -9,11 +9,11 @@ type Props = {
 
 export function Loading({
   message = 'Loading',
-  color = 'var(--black)',
+  color = 'var(--color-on-surface)',
   fullScreen = false,
 }: Props) {
   return (
-    <StyledLoading $fullScreen={fullScreen}>
+    <StyledLoading $fullScreen={fullScreen} role="status">
       <LoadingIcon color={color} />
       <Text style={{ color }}>{message}</Text>
     </StyledLoading>

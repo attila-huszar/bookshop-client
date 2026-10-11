@@ -1,10 +1,10 @@
 import { useOutletContext } from 'react-router'
 import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
-import { Alert, IconButton } from '@/components'
+import { Alert, IconButton, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
-import { StyledTable } from '../../styles/CMS.style'
+import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Books = () => {
   const { books, booksLoading, booksError } = useAppSelector(cmsBooksSelector)
@@ -12,15 +12,20 @@ export const Books = () => {
   const {
     selectedItems,
     setSelectedItems,
-    setIsEditDialogOpen,
+    setIsDialogOpen,
+    setIsEditing,
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
+
+  if (booksLoading) {
+    return <Loading message="Loading books" fullScreen />
+  }
 
   if (booksError) {
     return <Alert message="Error loading books" error={booksError} />
   }
 
-  if (!booksLoading && books.length === 0) {
+  if (books.length === 0) {
     return <Alert message="No books found" />
   }
 
@@ -62,7 +67,7 @@ export const Books = () => {
             <th>Price</th>
             <th>-%</th>
             <th>Total</th>
-            <th style={{ width: 40, padding: 0 }}></th>
+            <th className="actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -75,17 +80,24 @@ export const Books = () => {
               <tr
                 key={book.id}
                 onClick={() => {
-                  setSelectedItems((prev) => ({
-                    ...prev,
-                    books: prev.books.includes(book.id)
-                      ? prev.books.filter((id) => id !== book.id)
-                      : [...prev.books, book.id],
-                  }))
+                  setIsEditing(false)
+                  setEditedItem(book)
+                  setIsDialogOpen(true)
                 }}
                 className={
                   selectedItems.books.includes(book.id) ? 'selected' : ''
                 }>
-                <td style={{ textAlign: 'center' }}>
+                <td
+                  style={{ textAlign: 'center' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedItems((prev) => ({
+                      ...prev,
+                      books: prev.books.includes(book.id)
+                        ? prev.books.filter((id) => id !== book.id)
+                        : [...prev.books, book.id],
+                    }))
+                  }}>
                   <input
                     type="checkbox"
                     checked={selectedItems.books.includes(book.id)}
@@ -120,16 +132,22 @@ export const Books = () => {
                 <td>{book.price}</td>
                 <td>{book.discount}</td>
                 <td>{book.discountPrice}</td>
-                <td style={{ padding: 0 }}>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsEditDialogOpen(true)
-                      setEditedItem(book)
-                    }}
-                    icon={<EditIcon />}
-                    $size="sm"
-                  />
+                <td className="actions">
+                  <TableActions>
+                    <IconButton
+                      type="button"
+                      title="Edit book"
+                      aria-label={`Edit book #${book.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsEditing(true)
+                        setIsDialogOpen(true)
+                        setEditedItem(book)
+                      }}
+                      icon={<EditIcon aria-hidden="true" />}
+                      $size="sm"
+                    />
+                  </TableActions>
                 </td>
               </tr>
             )

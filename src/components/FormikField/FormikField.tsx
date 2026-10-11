@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Field, useFormikContext } from 'formik'
-import { FormikInput, FormikProps } from '@/types'
+import { Field, type FieldProps, useFormikContext } from 'formik'
+import type { FormikInput } from '@/types'
 import { EyeHideIcon, EyeIcon } from '@/assets/svg'
 import {
   ErrorMessage,
@@ -62,7 +62,7 @@ export function FormikField({
   if (props.type === 'select') {
     return (
       <Field {...props}>
-        {({ field, form, meta }: FormikProps) => {
+        {({ field, form, meta }: FieldProps<string>) => {
           const shouldShowError = meta.touched && form.submitCount > 0
 
           return (
@@ -91,7 +91,7 @@ export function FormikField({
   if (props.type === 'textarea') {
     return (
       <Field {...props}>
-        {({ field, form, meta }: FormikProps) => {
+        {({ field, form, meta }: FieldProps<string>) => {
           const shouldShowError = meta.touched && form.submitCount > 0
 
           return (
@@ -115,7 +115,7 @@ export function FormikField({
 
   return (
     <Field {...props}>
-      {({ field, form, meta }: FormikProps) => {
+      {({ field, form, meta }: FieldProps<string>) => {
         const shouldShowError = meta.touched && form.submitCount > 0
 
         return (

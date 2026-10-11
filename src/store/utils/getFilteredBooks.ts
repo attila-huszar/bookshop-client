@@ -4,22 +4,27 @@ export const getFilteredBooks = (
   booksFilters: { active: Filters; initial: Filters },
   filters?: Filters,
 ): FilterActive | null => {
-  const { active, initial } = booksFilters
-  if (!filters) return null
+  const { initial } = booksFilters
+
+  if (!filters) {
+    return null
+  }
 
   const isFilterActive: Record<keyof FilterActive, boolean> = {
-    genre: active.genre.length > 0,
-    priceMin: active.price[0] !== initial.price[0],
-    priceMax: active.price[1] !== initial.price[1],
-    discount: active.discount !== initial.discount,
-    publishYearMin: active.publishYear[0] !== initial.publishYear[0],
-    publishYearMax: active.publishYear[1] !== initial.publishYear[1],
-    rating: active.rating !== initial.rating,
+    genre: filters.genre.length > 0,
+    priceMin: filters.price[0] !== initial.price[0],
+    priceMax: filters.price[1] !== initial.price[1],
+    discount: filters.discount !== initial.discount,
+    publishYearMin: filters.publishYear[0] !== initial.publishYear[0],
+    publishYearMax: filters.publishYear[1] !== initial.publishYear[1],
+    rating: filters.rating !== initial.rating,
   }
 
   const hasAnyFilter = Object.values(isFilterActive).some(Boolean)
 
-  if (!hasAnyFilter) return null
+  if (!hasAnyFilter) {
+    return null
+  }
 
   return {
     genre: isFilterActive.genre ? filters.genre : [],

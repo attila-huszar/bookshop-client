@@ -153,7 +153,7 @@ describe('checkoutLoader', () => {
     expect(mockSessionStorageRemove).not.toHaveBeenCalled()
   })
 
-  it('clears session payment key when payment retrieval fails', async () => {
+  it('keeps the session payment key when payment retrieval fails', async () => {
     mockStoreDispatch.mockReturnValue({
       unwrap: vi
         .fn()
@@ -164,7 +164,24 @@ describe('checkoutLoader', () => {
       request: new Request('http://localhost/checkout'),
     })
 
+    expect(mockSessionStorageRemove).not.toHaveBeenCalled()
+    expect(result).toBeNull()
+  })
+
+  it('clears an inaccessible guest payment so a new checkout can be started', async () => {
+    mockStoreDispatch.mockReturnValue({
+      unwrap: vi.fn().mockRejectedValue({
+        code: 'session_unavailable',
+        message: 'Access expired',
+      }),
+    })
+    const result = await checkoutLoader({
+      request: new Request('http://localhost/checkout'),
+    })
     expect(mockSessionStorageRemove).toHaveBeenCalledWith(paymentIdKey)
+    expect(mockStoreDispatch).toHaveBeenLastCalledWith({
+      type: 'payment/paymentSessionReset',
+    })
     expect(getResponseLocation(result)).toBe(ROUTE.HOME)
   })
 
@@ -188,5 +205,29 @@ describe('checkoutLoader', () => {
     expect(result).toBeNull()
     expect(mockPaymentRetrieve).not.toHaveBeenCalled()
     expect(mockStoreDispatch).not.toHaveBeenCalled()
+  })
+
+  it('retrieves the requested payment when the cached token belongs to another payment', async () => {
+    mockStoreGetState.mockReturnValue({
+      payment: {
+        payment: {
+          paymentId: 'pi_previous_payment',
+          paymentToken: 'pi_previous_token',
+          amount: 1500,
+        },
+      },
+    })
+
+    const result = await checkoutLoader({
+      request: new Request(
+        'http://localhost/checkout?redirect_status=succeeded',
+      ),
+    })
+
+    expect(result).toBeNull()
+    expect(mockPaymentRetrieve).toHaveBeenCalledWith({
+      paymentId: 'pi_test_payment',
+      allowSucceeded: true,
+    })
   })
 })

@@ -18,7 +18,6 @@ describe('VerifyEmail Component', () => {
       hash: '',
       state: null,
       key: 'default',
-      unstable_mask: undefined,
     })
 
     render(<VerifyEmail />)
@@ -33,7 +32,6 @@ describe('VerifyEmail Component', () => {
       hash: '',
       state: null,
       key: 'default',
-      unstable_mask: undefined,
     })
 
     render(<VerifyEmail />)
@@ -48,7 +46,6 @@ describe('VerifyEmail Component', () => {
       hash: '',
       state: null,
       key: 'default',
-      unstable_mask: undefined,
     })
 
     render(<VerifyEmail />)

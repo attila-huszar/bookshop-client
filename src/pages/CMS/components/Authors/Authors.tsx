@@ -1,10 +1,10 @@
 import { useOutletContext } from 'react-router'
 import { cmsAuthorsSelector } from '@/store'
-import { Alert, IconButton } from '@/components'
+import { Alert, IconButton, Loading } from '@/components'
 import { useAppSelector } from '@/hooks'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable } from '../../styles/CMS.style'
+import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Authors = () => {
   const { authors, authorsLoading, authorsError } =
@@ -12,15 +12,20 @@ export const Authors = () => {
   const {
     selectedItems,
     setSelectedItems,
-    setIsEditDialogOpen,
+    setIsDialogOpen,
+    setIsEditing,
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
+
+  if (authorsLoading) {
+    return <Loading message="Loading authors" fullScreen />
+  }
 
   if (authorsError) {
     return <Alert message="Error loading authors" error={authorsError} />
   }
 
-  if (!authorsLoading && authors.length === 0) {
+  if (authors.length === 0) {
     return <Alert message="No authors found" />
   }
 
@@ -60,7 +65,7 @@ export const Authors = () => {
             <th>Death</th>
             <th>Born</th>
             <th>Biography</th>
-            <th style={{ width: 40, padding: 0 }}></th>
+            <th className="actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -68,17 +73,24 @@ export const Authors = () => {
             <tr
               key={author.id}
               onClick={() => {
-                setSelectedItems({
-                  ...selectedItems,
-                  authors: selectedItems.authors.includes(author.id)
-                    ? selectedItems.authors.filter((id) => id !== author.id)
-                    : [...selectedItems.authors, author.id],
-                })
+                setIsEditing(false)
+                setEditedItem(author)
+                setIsDialogOpen(true)
               }}
               className={
                 selectedItems.authors.includes(author.id) ? 'selected' : ''
               }>
-              <td style={{ textAlign: 'center' }}>
+              <td
+                style={{ textAlign: 'center' }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedItems((prev) => ({
+                    ...prev,
+                    authors: prev.authors.includes(author.id)
+                      ? prev.authors.filter((id) => id !== author.id)
+                      : [...prev.authors, author.id],
+                  }))
+                }}>
                 <input
                   type="checkbox"
                   checked={selectedItems.authors.includes(author.id)}
@@ -109,16 +121,22 @@ export const Authors = () => {
                 }}>
                 {author.biography}
               </td>
-              <td style={{ padding: 0 }}>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setIsEditDialogOpen(true)
-                    setEditedItem(author)
-                  }}
-                  icon={<EditIcon />}
-                  $size="sm"
-                />
+              <td className="actions">
+                <TableActions>
+                  <IconButton
+                    type="button"
+                    title="Edit author"
+                    aria-label={`Edit author #${author.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsEditing(true)
+                      setIsDialogOpen(true)
+                      setEditedItem(author)
+                    }}
+                    icon={<EditIcon aria-hidden="true" />}
+                    $size="sm"
+                  />
+                </TableActions>
               </td>
             </tr>
           ))}

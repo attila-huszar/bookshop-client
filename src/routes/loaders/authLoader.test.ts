@@ -11,6 +11,7 @@ type SetupOptions = {
 }
 
 const createUser = (role: UserRole = UserRole.User): User => ({
+  uuid: '11111111-1111-4111-8111-111111111111',
   firstName: 'Test',
   lastName: 'User',
   email: 'test@example.com',
@@ -20,9 +21,9 @@ const createUser = (role: UserRole = UserRole.User): User => ({
     city: 'Budapest',
     country: 'HU',
     line1: 'line1',
-    line2: undefined,
+    line2: null,
     postal_code: '1111',
-    state: undefined,
+    state: null,
   },
   avatar: '',
   role,
@@ -46,7 +47,7 @@ const setup = async (options: SetupOptions = {}) => {
   }
 
   const mockFetchAuthTokens = vi.fn(() => ({ type: 'fetchAuthTokens' }))
-  const mockFetchUserProfile = vi.fn(() => ({ type: 'fetchUserProfile' }))
+  const mockProfileQuery = vi.fn(() => ({ type: 'userProfile/query' }))
 
   const mockDispatch = vi.fn(async (action: { type: string }) => {
     if (action.type === 'fetchAuthTokens') {
@@ -54,7 +55,7 @@ const setup = async (options: SetupOptions = {}) => {
       userState.accessToken = options.tokenAfterFetch ?? null
     }
 
-    if (action.type === 'fetchUserProfile') {
+    if (action.type === 'userProfile/query') {
       if (options.profileDispatchPromise) await options.profileDispatchPromise
       userState.userData = options.profileAfterFetch ?? null
     }
@@ -66,10 +67,16 @@ const setup = async (options: SetupOptions = {}) => {
 
   vi.doMock('@/store', () => ({
     fetchAuthTokens: mockFetchAuthTokens,
-    fetchUserProfile: mockFetchUserProfile,
+    userSelector: () => userState,
     store: {
       dispatch: mockDispatch,
       getState: mockGetState,
+    },
+  }))
+
+  vi.doMock('@/store/api/bookshopApi', () => ({
+    bookshopApi: {
+      endpoints: { userProfile: { initiate: mockProfileQuery } },
     },
   }))
 
@@ -79,7 +86,7 @@ const setup = async (options: SetupOptions = {}) => {
     authLoader,
     mockDispatch,
     mockFetchAuthTokens,
-    mockFetchUserProfile,
+    mockProfileQuery,
   }
 }
 
@@ -89,17 +96,23 @@ describe('authLoader', () => {
     vi.clearAllMocks()
   })
 
-  it('returns true immediately when already authenticated user is admin for admin route', async () => {
-    const { authLoader, mockDispatch } = await setup({
-      initialAccessToken: 'access-token',
-      initialUserData: createUser(UserRole.Admin),
-    })
+  it.each([
+    { role: UserRole.Admin, allowed: true },
+    { role: UserRole.User, allowed: false },
+  ])(
+    'checks cached $role access to admin routes without requesting data',
+    async ({ role, allowed }) => {
+      const { authLoader, mockDispatch } = await setup({
+        initialAccessToken: 'access-token',
+        initialUserData: createUser(role),
+      })
 
-    const result = await authLoader({ adminRequired: true })
+      const result = await authLoader({ adminRequired: true })
 
-    expect(result).toBe(true)
-    expect(mockDispatch).not.toHaveBeenCalled()
-  })
+      expect(result).toBe(allowed)
+      expect(mockDispatch).not.toHaveBeenCalled()
+    },
+  )
 
   it('returns false for protected route when token bootstrap fails', async () => {
     const { authLoader, mockFetchAuthTokens, mockDispatch } = await setup({
@@ -135,34 +148,59 @@ describe('authLoader', () => {
   })
 
   it('fetches profile after successful token bootstrap', async () => {
-    const { authLoader, mockFetchAuthTokens, mockFetchUserProfile } =
-      await setup({
-        tokenAfterFetch: 'access-token',
-        profileAfterFetch: createUser(UserRole.User),
-      })
+    const { authLoader, mockFetchAuthTokens, mockProfileQuery } = await setup({
+      tokenAfterFetch: 'access-token',
+      profileAfterFetch: createUser(UserRole.User),
+    })
 
     const result = await authLoader({ loginRequired: true })
 
     expect(result).toBe(true)
     expect(mockFetchAuthTokens).toHaveBeenCalledTimes(1)
-    expect(mockFetchUserProfile).toHaveBeenCalledTimes(1)
+    expect(mockProfileQuery).toHaveBeenCalledTimes(1)
   })
 
   it('rejects admin route when loaded profile is non-admin', async () => {
-    const { authLoader, mockFetchAuthTokens, mockFetchUserProfile } =
-      await setup({
-        tokenAfterFetch: 'access-token',
-        profileAfterFetch: createUser(UserRole.User),
-      })
+    const { authLoader, mockFetchAuthTokens, mockProfileQuery } = await setup({
+      tokenAfterFetch: 'access-token',
+      profileAfterFetch: createUser(UserRole.User),
+    })
 
     const result = await authLoader({ adminRequired: true })
 
     expect(result).toBe(false)
     expect(mockFetchAuthTokens).toHaveBeenCalledTimes(1)
-    expect(mockFetchUserProfile).toHaveBeenCalledTimes(1)
+    expect(mockProfileQuery).toHaveBeenCalledTimes(1)
   })
 
-  it('deduplicates concurrent token/profile bootstrap dispatches', async () => {
+  it('loads a missing profile using an existing token without refreshing it', async () => {
+    const { authLoader, mockFetchAuthTokens, mockProfileQuery } = await setup({
+      initialAccessToken: 'access-token',
+      profileAfterFetch: createUser(UserRole.Admin),
+    })
+
+    await expect(authLoader({ adminRequired: true })).resolves.toBe(true)
+    expect(mockFetchAuthTokens).not.toHaveBeenCalled()
+    expect(mockProfileQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    { route: 'public', options: {}, allowed: true },
+    { route: 'protected', options: { loginRequired: true }, allowed: false },
+    { route: 'admin', options: { adminRequired: true }, allowed: false },
+  ])(
+    'allows $route routes only when appropriate if the profile cannot be loaded',
+    async ({ options, allowed }) => {
+      const { authLoader, mockProfileQuery } = await setup({
+        initialAccessToken: 'access-token',
+      })
+
+      await expect(authLoader(options)).resolves.toBe(allowed)
+      expect(mockProfileQuery).toHaveBeenCalledTimes(1)
+    },
+  )
+
+  it('deduplicates concurrent token bootstrap before querying the shared profile cache', async () => {
     const deferredToken = createDeferred()
     const deferredProfile = createDeferred()
 
@@ -184,6 +222,6 @@ describe('authLoader', () => {
 
     await expect(firstCall).resolves.toBe(true)
     await expect(secondCall).resolves.toBe(true)
-    expect(mockDispatch).toHaveBeenCalledTimes(2)
+    expect(mockDispatch).toHaveBeenCalledTimes(3)
   })
 })

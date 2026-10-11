@@ -7,7 +7,7 @@ export const StyledAlert = styled.div<{ $fullScreen?: boolean }>`
   align-items: center;
   gap: 2rem;
   padding-top: 2rem;
-  color: var(--black);
+  color: var(--color-on-surface);
 
   ${({ $fullScreen }) => $fullScreen && 'height: 100vh;'}
 

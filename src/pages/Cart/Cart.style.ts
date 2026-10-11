@@ -60,7 +60,7 @@ export const Book = styled.div<{ $hasSeparator: boolean }>`
 
     &:hover {
       border-radius: var(--border-radius);
-      background-color: var(--secondary-hover);
+      background-color: var(--color-surface-container-low);
     }
   }
 
@@ -70,7 +70,7 @@ export const Book = styled.div<{ $hasSeparator: boolean }>`
     position: absolute;
     height: 1px;
     width: 100%;
-    background-color: var(--light-grey);
+    background-color: var(--color-surface-container-high);
   }
 
   ${media.down('sm')`
@@ -91,8 +91,8 @@ export const ImageWrapper = styled.div`
   align-items: center;
   height: 7.5rem;
   width: 6rem;
-  background-color: #f4f4ff;
-  border: 1px solid #e5e5e5;
+  background-color: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--border-radius);
 
   img {
@@ -100,9 +100,7 @@ export const ImageWrapper = styled.div`
     width: 4.5rem;
     object-fit: cover;
     border-radius: var(--border-radius);
-    box-shadow:
-      rgba(0, 0, 0, 0.19) 0px 5px 10px,
-      rgba(0, 0, 0, 0.23) 0px 3px 3px;
+    box-shadow: var(--shadow-book);
   }
 
   ${media.down('sm')`
@@ -174,7 +172,7 @@ export const TotalPrice = styled.div`
   margin: 2rem 0;
   padding: 1rem 2rem;
   border-radius: 10px;
-  background-color: var(--pearly-white);
+  background-color: var(--color-surface-container);
   text-align: right;
 
   div {
@@ -188,7 +186,7 @@ export const TotalPrice = styled.div`
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
     font-size: 1.25rem;
-    border-bottom: 1px solid var(--light-grey);
+    border-bottom: 1px solid var(--color-outline-variant);
   }
 
   h4 {
@@ -243,7 +241,7 @@ export const EmptyCart = styled.div`
   gap: 2rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--grey);
+  color: var(--color-on-surface-variant);
 
   > svg {
     height: 10rem;

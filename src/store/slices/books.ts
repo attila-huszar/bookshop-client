@@ -1,23 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import {
-  fetchBookById,
-  fetchBooks,
-  fetchBooksByAuthor,
-  fetchBooksByProperty,
-  fetchBooksBySearch,
-  fetchBookSearchOptions,
-} from '@/store/thunks/books'
-import { BookState, Filters } from '@/types'
-import { addBooksToCache } from '../utils'
+import type { BooksState, Filters } from '@/types'
+import { bookshopApi } from '../api/bookshopApi'
+import { getFilteredBooks } from '../utils/getFilteredBooks'
 
-const initialState: BookState = {
-  books: [],
-  booksTotal: 0,
+const initialState: BooksState = {
+  booksAppliedFilters: undefined,
   booksCurrentPage: 1,
   booksPerPage: 8,
-  booksOnCurrentPage: [],
-  bookIsLoading: false,
-  booksError: null,
   booksFilters: {
     initial: {
       genre: [],
@@ -34,15 +23,17 @@ const initialState: BookState = {
       rating: 0.5,
     },
   },
-  booksRecommended: [],
-  booksTopSellers: [],
-  booksReleases: [],
 }
 
 const booksSlice = createSlice({
   name: 'books',
   initialState,
   reducers: {
+    applyBooksFilters: (state, action: PayloadAction<Filters | undefined>) => {
+      state.booksAppliedFilters =
+        getFilteredBooks(state.booksFilters, action.payload) ?? undefined
+      state.booksCurrentPage = 1
+    },
     incrementBooksCurrentPage: (state) => {
       state.booksCurrentPage += 1
     },
@@ -94,60 +85,28 @@ const booksSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchBooks.pending, (state) => {
-        state.booksError = null
-      })
-      .addCase(fetchBooks.fulfilled, (state, action) => {
-        addBooksToCache(state, action.payload.books)
-        state.booksOnCurrentPage = action.payload.books
-        state.booksTotal = action.payload.total
-        state.booksError = null
-      })
-      .addCase(fetchBooks.rejected, (state, action) => {
-        state.booksError = action.error.message ?? 'Failed to fetch books'
-      })
-      .addCase(fetchBookById.pending, (state) => {
-        state.booksError = null
-        state.bookIsLoading = true
-      })
-      .addCase(fetchBookById.fulfilled, (state, action) => {
-        addBooksToCache(state, action.payload)
-        state.booksError = null
-        state.bookIsLoading = false
-      })
-      .addCase(fetchBookById.rejected, (state, action) => {
-        state.booksError = action.error.message ?? 'Failed to fetch book'
-        state.bookIsLoading = false
-      })
-      .addCase(fetchBooksByProperty.fulfilled, (state, action) => {
-        addBooksToCache(state, action.payload)
-        if (action.meta.arg === 'topSellers')
-          state.booksTopSellers = action.payload
-        if (action.meta.arg === 'newRelease')
-          state.booksReleases = action.payload
-        if (action.meta.arg === 'recommended')
-          state.booksRecommended = action.payload
-      })
-      .addCase(fetchBooksBySearch.fulfilled, (state, action) => {
-        addBooksToCache(state, action.payload)
-      })
-      .addCase(fetchBooksByAuthor.fulfilled, (state, action) => {
-        addBooksToCache(state, action.payload)
-      })
-      .addCase(fetchBookSearchOptions.fulfilled, (state, action) => {
+    builder.addMatcher(
+      bookshopApi.endpoints.searchOptions.matchFulfilled,
+      (state, action) => {
+        const firstLoad = state.booksFilters.initial.price.length === 0
+
         state.booksFilters.initial = {
           ...state.booksFilters.initial,
           ...action.payload,
         }
-        state.booksFilters.active.price = action.payload.price
-        state.booksFilters.active.publishYear = action.payload.publishYear
-      })
+
+        if (firstLoad) {
+          state.booksFilters.active.price = action.payload.price
+          state.booksFilters.active.publishYear = action.payload.publishYear
+        }
+      },
+    )
   },
 })
 
 export const booksReducer = booksSlice.reducer
 export const {
+  applyBooksFilters,
   incrementBooksCurrentPage,
   decrementBooksCurrentPage,
   setBooksCurrentPage,

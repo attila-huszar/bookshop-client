@@ -1,10 +1,9 @@
 import { useImperativeHandle, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
-import { postUserLogin } from '@/api'
-import { updateUserProfile } from '@/store'
-import { Button, FormikField, IconButton } from '@/components'
-import { useAppDispatch, useClickOutside } from '@/hooks'
+import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
+import { Button, FormikField, IconButton, toast } from '@/components'
+import { useClickOutside } from '@/hooks'
+import { getErrorMessage } from '@/helpers'
 import { accountPasswordSchema } from '@/validation'
 import { passwordChangeInitialValues } from '@/constants'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
@@ -21,7 +20,7 @@ type Props = { email: string; ref: React.Ref<PasswordDialogHandle> }
 export function PasswordDialog({ email, ref }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const dispatch = useAppDispatch()
+  const [updateUserProfile] = useUpdateUserProfileMutation()
 
   useImperativeHandle(ref, () => ({
     showModal: () => dialogRef.current?.showModal(),
@@ -44,29 +43,21 @@ export function PasswordDialog({ email, ref }: Props) {
   ) => {
     if (values.currentPassword !== values.newPassword) {
       try {
-        await postUserLogin({
-          email,
-          password: values.currentPassword,
-        })
-      } catch {
-        toast.error('Current password invalid', {
-          id: 'password-change-fail',
-        })
-        return
-      }
-
-      const result = await dispatch(
-        updateUserProfile({ password: values.newPassword }),
-      )
-
-      if (result.meta.requestStatus === 'fulfilled') {
+        await updateUserProfile({
+          password: values.newPassword,
+          currentPassword: values.currentPassword,
+        }).unwrap()
         handleClose()
         actions.resetForm()
         toast.success('Password changed successfully')
-      } else {
-        toast.error('Failed to change password, please try again later', {
-          id: 'password-change-fail',
-        })
+      } catch (error) {
+        toast.error(
+          getErrorMessage(
+            error,
+            'Failed to change password, please try again later',
+          ),
+          { id: 'password-change-fail' },
+        )
       }
     } else {
       toast.error('Password must be different from current password', {
@@ -126,7 +117,7 @@ export function PasswordDialog({ email, ref }: Props) {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}

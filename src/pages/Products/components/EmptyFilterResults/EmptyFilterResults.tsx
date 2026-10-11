@@ -1,5 +1,5 @@
 import {
-  fetchBooks,
+  applyBooksFilters,
   setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
@@ -8,14 +8,14 @@ import {
 } from '@/store'
 import { Button } from '@/components'
 import { useAppDispatch } from '@/hooks'
-import { EmptyFilterResultIcon } from '@/assets/svg'
+import { FilterCircleXmarkIcon } from '@/assets/svg'
 import { StyledEmptyFilterResults } from './EmptyFilterResults.style'
 
 export function EmptyFilterResults() {
   const dispatch = useAppDispatch()
 
   const handleFormReset = () => {
-    void dispatch(fetchBooks())
+    dispatch(applyBooksFilters())
     dispatch(setBooksFilterGenre([]))
     dispatch(setBooksFilterPrice([]))
     dispatch(setBooksFilterDiscount('allBooks'))
@@ -26,7 +26,7 @@ export function EmptyFilterResults() {
   return (
     <StyledEmptyFilterResults>
       <div role="img" aria-label="no results">
-        <EmptyFilterResultIcon color="var(--grey)" />
+        <FilterCircleXmarkIcon color="var(--color-on-surface-variant)" />
       </div>
       <p>Sorry, no results match your filter criteria.</p>
       <p>Please try adjusting your filters or searching again.</p>

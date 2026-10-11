@@ -19,7 +19,7 @@ export const NotFoundSection = styled.section`
   h2 {
     font-size: 14rem;
     line-height: normal;
-    color: #ffce1a;
+    color: var(--color-primary);
   }
 
   h3 {
@@ -31,7 +31,7 @@ export const NotFoundSection = styled.section`
     margin: 1.5rem 0;
     font-size: 1.5rem;
     line-height: normal;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
   }
 `
 
@@ -40,8 +40,14 @@ export const BackButton = styled.button`
   padding: 0 1rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffce1a;
+  color: var(--color-primary);
   border: none;
   background: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
+  transition: background-color 0.2s ease-out;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+  }
 `

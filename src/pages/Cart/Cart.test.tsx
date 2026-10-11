@@ -5,11 +5,22 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { ROUTE } from '@/routes'
-import { paymentCreate, paymentCreateReset, refreshCartItems } from '@/store'
+import {
+  createAppStore,
+  paymentCreate,
+  paymentCreateReset,
+  refreshCartItems,
+  type RootState,
+} from '@/store'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { sessionStorageAdapter } from '@/helpers'
 import { paymentIdKey } from '@/constants'
-import type { Cart as CartType } from '@/types'
+import type {
+  CartState,
+  Cart as CartType,
+  PaymentState,
+  UserState,
+} from '@/types'
 import { Cart } from './Cart'
 
 vi.mock('@/store', async (importOriginal) => {
@@ -22,33 +33,26 @@ vi.mock('@/store', async (importOriginal) => {
   }
 })
 
-const mockCartState = {
-  cartItems: [] as CartType[],
-  cartIsLoading: false,
+const mockCartState: CartState = {
+  cartItems: [],
+  currentRequestId: null,
   cartError: null,
 }
 
-const mockPaymentState = {
+const mockPaymentState: PaymentState = {
   payment: null,
   paymentIsLoading: false,
   paymentCreateError: null,
   paymentCreateIssueCode: null,
   paymentRetrieveError: null,
-  paymentCancelError: null,
 }
 
-const mockUserState = {
-  userData: null,
+const mockUserState: UserState = {
   accessToken: null,
-  userIsLoading: false,
-  userIsUpdating: false,
-  tokenError: null,
-  userError: null,
-  loginError: null,
-  registerError: null,
 }
 
 describe('Cart component', () => {
+  const initialState = createAppStore().getState()
   const mockNavigate = vi.fn()
   const mockDispatch = vi.fn()
   const mockCartItems: CartType[] = [
@@ -76,12 +80,13 @@ describe('Cart component', () => {
     })
 
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: mockPaymentState,
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     mockDispatch.mockImplementation(() => ({
@@ -98,12 +103,13 @@ describe('Cart component', () => {
 
   it('should display loading when cart is loading', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
-        cart: { ...mockCartState, cartIsLoading: true },
+      const mockState: RootState = {
+        ...initialState,
+        cart: { ...mockCartState, currentRequestId: 'cart-request' },
         payment: mockPaymentState,
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     render(<Cart />, { wrapper: Providers })
@@ -113,7 +119,8 @@ describe('Cart component', () => {
 
   it('should display cart error when cart fetch fails', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: {
           ...mockCartState,
           cartError: 'Failed to fetch cart items',
@@ -121,7 +128,7 @@ describe('Cart component', () => {
         payment: mockPaymentState,
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     render(<Cart />, { wrapper: Providers })
@@ -209,12 +216,13 @@ describe('Cart component', () => {
 
   it('should display an error toast on payment error', async () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: { ...mockPaymentState, paymentCreateError: 'Payment failed' },
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     render(<Cart />, { wrapper: Providers })
@@ -237,7 +245,8 @@ describe('Cart component', () => {
     }))
 
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: {
           ...mockPaymentState,
@@ -247,7 +256,7 @@ describe('Cart component', () => {
         },
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     vi.mocked(useCart).mockReturnValue({
@@ -285,22 +294,21 @@ describe('Cart component', () => {
     const mockRefreshCartItemsThunk = vi.fn()
     vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
 
-    let paymentState = {
+    let paymentState: PaymentState = {
       ...mockPaymentState,
-      paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
+      paymentCreateIssueCode: 'price_conflict',
       paymentCreateError:
-        'Prices have been updated in your cart. Please review before checkout.' as
-          | string
-          | null,
+        'Prices have been updated in your cart. Please review before checkout.',
     }
 
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: paymentState,
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     mockDispatch.mockImplementation((action: { type?: string }) => {
@@ -334,19 +342,20 @@ describe('Cart component', () => {
     const mockRefreshCartItemsThunk = vi.fn()
     vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
 
-    let paymentState = {
+    let paymentState: PaymentState = {
       ...mockPaymentState,
-      paymentCreateIssueCode: 'price_conflict' as 'price_conflict' | null,
-      paymentCreateError: '' as string | null,
+      paymentCreateIssueCode: 'price_conflict',
+      paymentCreateError: '',
     }
 
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: paymentState,
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     mockDispatch.mockImplementation((action: { type?: string }) => {
@@ -377,7 +386,8 @@ describe('Cart component', () => {
 
   it('should redirect to checkout when payment session exists', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState = {
+      const mockState: RootState = {
+        ...initialState,
         cart: mockCartState,
         payment: {
           ...mockPaymentState,
@@ -389,7 +399,7 @@ describe('Cart component', () => {
         },
         user: mockUserState,
       }
-      return selector(mockState as Parameters<typeof selector>[0])
+      return selector(mockState)
     })
 
     render(<Cart />, { wrapper: Providers })

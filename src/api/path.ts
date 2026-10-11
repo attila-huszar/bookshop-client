@@ -34,8 +34,13 @@ export const PATH = {
   cms: {
     orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
+    restore: {
+      orders: `${P.cms}/restore/${P.orders}`,
+      users: `${P.cms}/restore/${P.users}`,
+    },
     books: `${P.cms}/${P.books}`,
     authors: `${P.cms}/${P.authors}`,
+    emailOutbox: `${P.cms}/email-outbox`,
     productImage: `${P.cms}/product-image`,
   },
   logs: P.logs,

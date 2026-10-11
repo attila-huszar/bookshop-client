@@ -26,9 +26,9 @@ export const Details = styled.div`
   position: relative;
   margin-bottom: 2rem;
   padding: 1rem 1.5rem;
-  border: 1px solid var(--light-grey);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 10px;
-  background-color: var(--pearly-white);
+  background-color: var(--color-surface-container);
 
   > h5 {
     margin-bottom: 1rem;
@@ -107,11 +107,11 @@ export const Address = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--black);
+    color: var(--color-on-surface);
   }
 
   select[name='country']:disabled {
-    color: var(--black);
+    color: var(--color-on-surface);
   }
 
   select[name='country'],
@@ -120,7 +120,7 @@ export const Address = styled.div`
   }
 
   option[hidden] {
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
   }
 
   ${media.down('sm')`

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom/vitest'
 import React from 'react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router'
@@ -18,8 +18,14 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
 }
 
 beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = vi.fn()
-  HTMLDialogElement.prototype.close = vi.fn()
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement,
+  ) {
+    this.setAttribute('open', '')
+  })
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute('open')
+  })
 })
 
 afterEach(() => {
@@ -46,11 +52,18 @@ vi.mock('@/hooks', () => ({
 }))
 
 vi.mock('react-hot-toast', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-    loading: vi.fn(),
-  },
+  toast: Object.assign(
+    vi.fn(() => ''),
+    {
+      error: vi.fn(),
+      success: vi.fn(),
+      loading: vi.fn(),
+      custom: vi.fn(),
+      promise: vi.fn(),
+    },
+  ),
+  Toaster: () => null,
+  useToasterStore: () => ({ toasts: [] }),
 }))
 
 vi.mock('@/services', () => ({

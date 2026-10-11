@@ -1,10 +1,7 @@
-import type {
-  AddressParam,
-  PaymentIntent,
-  PaymentIntentConfirmParams,
-} from '@stripe/stripe-js'
+import type { PaymentIntent } from '@stripe/stripe-js'
 
 export type {
+  Address as StripeAddress,
   PaymentIntent,
   StripeAddressElementOptions,
   StripeElementsOptions,
@@ -15,5 +12,3 @@ export type {
 
 export type PaymentIntentStatus = PaymentIntent.Status
 export type PaymentIntentShipping = PaymentIntent.Shipping
-export type ConfirmPaymentShipping = PaymentIntentConfirmParams.Shipping
-export type StripeAddress = AddressParam

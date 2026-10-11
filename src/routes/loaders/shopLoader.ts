@@ -1,10 +1,17 @@
-import { fetchBooks, fetchBookSearchOptions, store } from '@/store'
+import { booksQueryArgs, store } from '@/store'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 
 export const shopLoader = () => {
-  const activeFilters = store.getState().books.booksFilters.active
-  void store.dispatch(fetchBooks(activeFilters))
+  store.dispatch(
+    bookshopApi.util.prefetch('books', booksQueryArgs(store.getState()), {
+      ifOlderThan: cacheTimes.catalogue,
+    }),
+  )
 
-  if (!activeFilters.price.length) {
-    void store.dispatch(fetchBookSearchOptions())
-  }
+  store.dispatch(
+    bookshopApi.util.prefetch('searchOptions', undefined, {
+      ifOlderThan: cacheTimes.reference,
+    }),
+  )
 }

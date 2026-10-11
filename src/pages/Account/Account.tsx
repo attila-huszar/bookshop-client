@@ -1,22 +1,29 @@
 import { ChangeEvent, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { Form, Formik } from 'formik'
-import { updateAvatar, updateUserProfile, userSelector } from '@/store'
+import { userSelector } from '@/store'
 import {
+  useUpdateAvatarMutation,
+  useUpdateUserProfileMutation,
+} from '@/store/api/bookshopApi'
+import {
+  Alert,
   Avatar,
   Button,
   CountrySelect,
   FormikField,
   IconButton,
+  Loading,
   PasswordDialog,
+  toast,
 } from '@/components'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import { useAppSelector } from '@/hooks'
+import { getErrorMessage } from '@/helpers'
 import {
   accountBasicSchema,
   addressSchema,
   validateImageFile,
 } from '@/validation'
-import type { StripeAddress, UserUpdate } from '@/types'
+import type { StripeAddress, UserProfileUpdate } from '@/types'
 import { EditIcon, SpinnerIcon } from '@/assets/svg'
 import {
   Address,
@@ -31,22 +38,45 @@ import {
 } from './Account.style'
 
 export function Account() {
-  const { userData, userIsUpdating } = useAppSelector(userSelector)
+  const { userData, userIsLoading, userError } = useAppSelector(userSelector)
+  const [updateUserProfile, profileUpdate] = useUpdateUserProfileMutation()
+  const [updateAvatar, avatarUpdate] = useUpdateAvatarMutation()
+  const userIsUpdating = profileUpdate.isLoading || avatarUpdate.isLoading
   const [editingUserInfo, setEditingUserInfo] = useState(false)
   const [editingAddress, setEditingAddress] = useState(false)
   const inputFile = useRef<HTMLInputElement>(null)
   const passwordDialog = useRef<HTMLDialogElement>(null)
-  const dispatch = useAppDispatch()
 
-  if (!userData) return null
+  if (userIsLoading) {
+    return <Loading message="Loading your account" fullScreen />
+  }
 
-  const handleUserInfoSubmit = async (values: UserUpdate) => {
-    await dispatch(updateUserProfile(values))
-    setEditingUserInfo(false)
+  if (!userData) {
+    return (
+      <Alert
+        message="Could not load your account"
+        error={userError ?? undefined}
+      />
+    )
+  }
+
+  const handleUserInfoSubmit = async ({
+    firstName,
+    lastName,
+    phone,
+  }: UserProfileUpdate) => {
+    try {
+      await updateUserProfile({ firstName, lastName, phone }).unwrap()
+      setEditingUserInfo(false)
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error, 'Failed to update contact information'),
+      )
+    }
   }
 
   const handleAddressSubmit = async (values: StripeAddress) => {
-    const updateData: UserUpdate = {
+    const updateData: UserProfileUpdate = {
       address: {
         line1: values.line1,
         line2: values.line2,
@@ -56,8 +86,12 @@ export function Account() {
         country: values.country,
       },
     }
-    await dispatch(updateUserProfile(updateData))
-    setEditingAddress(false)
+    try {
+      await updateUserProfile(updateData).unwrap()
+      setEditingAddress(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update address'))
+    }
   }
 
   const handleUserInfoReset = () => setEditingUserInfo(false)
@@ -68,18 +102,23 @@ export function Account() {
     const fileInput = e.target
     const files = fileInput.files
 
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) {
+      return
+    }
 
     const file = files[0]
     const { valid, error } = validateImageFile(file)
 
     if (!valid && error) {
       toast.error(error, { id: 'upload-error' })
+
       return
     }
 
     const formData = new FormData()
-    if (file) formData.append('avatar', file)
+    if (file) {
+      formData.append('avatar', file)
+    }
     void uploadAvatarFile(formData)
 
     fileInput.value = ''
@@ -88,11 +127,10 @@ export function Account() {
   const uploadAvatarFile = async (formData: FormData) => {
     toast.loading('Uploading avatar...', { id: 'avatar-upload' })
 
-    const result = await dispatch(updateAvatar(formData))
-
-    if (result.meta.requestStatus === 'fulfilled') {
+    try {
+      await updateAvatar(formData).unwrap()
       toast.success('Avatar updated successfully', { id: 'avatar-upload' })
-    } else {
+    } catch {
       toast.error('Failed to update avatar, please try again later', {
         id: 'avatar-upload',
       })
@@ -121,7 +159,7 @@ export function Account() {
             <div>
               <AvatarPanel>
                 <Avatar
-                  imgUrl={avatar}
+                  imgUrl={avatar ?? undefined}
                   onClick={handleAvatarClick}
                   title="Change Profile Picture"
                   $size={160}
@@ -160,7 +198,7 @@ export function Account() {
                     firstName,
                     lastName,
                     email,
-                    phone: phone || '',
+                    phone: phone ?? '',
                   }}
                   enableReinitialize
                   validationSchema={accountBasicSchema}
@@ -215,7 +253,7 @@ export function Account() {
                       </GeneralLine>
                       {editingUserInfo && (
                         <ButtonWrapper>
-                          <Button type="reset" $size="sm" $inverted>
+                          <Button type="reset" $size="sm" $color="neutral">
                             Cancel
                           </Button>
                           <Button
@@ -325,7 +363,7 @@ export function Account() {
                     </AddressLine>
                     {editingAddress && (
                       <ButtonWrapper>
-                        <Button $size="sm" type="reset" $inverted>
+                        <Button $size="sm" type="reset" $color="neutral">
                           Cancel
                         </Button>
                         <Button

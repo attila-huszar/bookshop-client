@@ -12,20 +12,20 @@ export const PageSelectButton = styled.button`
   height: 1.75rem;
   width: 1.75rem;
   font-size: 0.875rem;
+  color: var(--color-on-surface-variant);
   background: none;
-  border: 2px solid var(--light-black);
+  border: 2px solid var(--color-on-surface-variant);
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition: background-color 0.2s ease-out;
 
-  &:hover {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
   }
 
   &:disabled {
-    color: var(--white);
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--color-on-primary);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 `

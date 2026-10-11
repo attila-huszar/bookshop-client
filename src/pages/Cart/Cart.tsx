@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { toast } from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes'
 import {
@@ -15,15 +14,18 @@ import {
   paymentCreate,
   paymentCreateReset,
   paymentSelector,
-  paymentStateReset,
+  paymentSessionReset,
   refreshCartItems,
 } from '@/store'
-import { Alert } from '@/components/Alert/Alert'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { InfoDialog } from '@/components/InfoDialog/InfoDialog'
-import { Loading } from '@/components/Loading/Loading'
-import { Price } from '@/components/Price/Price'
+import {
+  Alert,
+  Button,
+  IconButton,
+  InfoDialog,
+  Loading,
+  Price,
+  toast,
+} from '@/components'
 import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
 import { enforceMinMax, scrollToTop, sessionStorageAdapter } from '@/helpers'
 import {
@@ -193,7 +195,7 @@ export function Cart() {
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(paymentStateReset())
+    dispatch(paymentSessionReset())
   }
 
   const navigateToBooks = () => {
@@ -201,7 +203,7 @@ export function Cart() {
   }
 
   if (cartIsLoading) {
-    return <Loading message="Loading Cart" />
+    return <Loading message="Loading Cart" fullScreen />
   }
 
   if (cartError) {
@@ -250,7 +252,7 @@ export function Cart() {
                   icon={<MinusIcon />}
                   title="Remove quantity"
                   $size="sm"
-                  $color="var(--grey)"
+                  $color="var(--color-on-surface-variant)"
                   disabled={item.quantity <= 1}
                 />
                 <input
@@ -267,7 +269,7 @@ export function Cart() {
                   icon={<PlusIcon />}
                   title="Add quantity"
                   $size="sm"
-                  $color="var(--grey)"
+                  $color="var(--color-on-surface-variant)"
                   disabled={item.quantity >= maxItemQuantity}
                 />
               </Quantity>
@@ -291,7 +293,7 @@ export function Cart() {
                   icon={<BinIcon />}
                   title="Remove from cart"
                   $size="sm"
-                  $color="var(--orange)"
+                  $color="var(--color-error)"
                 />
               </RemoveItem>
             </Fragment>
@@ -327,7 +329,7 @@ export function Cart() {
             onClick={handleCartClear}
             disabled={isCheckoutBusy}
             title="Reset Cart"
-            $color="var(--mid-grey)"
+            $color="var(--color-outline)"
             $outline
           />
           <Button

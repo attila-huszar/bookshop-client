@@ -1,88 +1,142 @@
 import { createSelector } from '@reduxjs/toolkit'
+import { bookshopApi } from './api/bookshopApi'
 import type { RootState } from './store'
 
-export const booksSelector = (state: RootState) => state.books
+export const booksQueryArgs = createSelector(
+  [
+    (state: Pick<RootState, 'books'>) => state.books.booksCurrentPage,
+    (state: Pick<RootState, 'books'>) => state.books.booksPerPage,
+    (state: Pick<RootState, 'books'>) => state.books.booksAppliedFilters,
+  ],
+  (currentPage, itemsPerPage, criteria) => ({
+    currentPage,
+    itemsPerPage,
+    criteria,
+  }),
+)
 
-export const authorsSelector = (state: RootState) => state.authors
+const message = (error: unknown): string | null =>
+  error &&
+  typeof error === 'object' &&
+  'message' in error &&
+  typeof error.message === 'string'
+    ? error.message
+    : null
+
+const isQueryLoading = (query: {
+  isUninitialized: boolean
+  isLoading: boolean
+  data?: unknown
+}) => query.isUninitialized || (query.isLoading && query.data === undefined)
+
+const selectBooksPageQuery = createSelector([booksQueryArgs], (args) =>
+  bookshopApi.endpoints.books.select(args),
+)
+
+/** Presentation values derived from UI state and the relevant query entries. */
+export const booksSelector = createSelector(
+  [
+    (state: RootState) => state.books,
+    (state: RootState) => selectBooksPageQuery(state)(state),
+    bookshopApi.endpoints.booksByProperty.select('newRelease'),
+    bookshopApi.endpoints.booksByProperty.select('topSellers'),
+    bookshopApi.endpoints.booksByProperty.select('recommended'),
+    bookshopApi.endpoints.searchOptions.select(),
+  ],
+  (ui, page, releases, sellers, recommended, searchOptions) => ({
+    ...ui,
+    booksTotal: page.data?.total ?? 0,
+    booksOnCurrentPage: page.data?.books ?? [],
+    booksIsLoading:
+      page.isUninitialized || (page.isLoading && !page.data?.books.length),
+    booksFiltersLoading: isQueryLoading(searchOptions),
+    booksFiltersError: message(searchOptions.error),
+    booksReleases: releases.data ?? [],
+    booksTopSellers: sellers.data ?? [],
+    booksRecommended: recommended.data ?? [],
+    booksError: message(
+      page.error ?? releases.error ?? sellers.error ?? recommended.error,
+    ),
+  }),
+)
 
 export const authorByIdSelector =
-  (id: number | undefined) => (state: RootState) => {
-    if (id === undefined) return null
+  (id: number | undefined) => (state: RootState) =>
+    id === undefined
+      ? null
+      : (bookshopApi.endpoints.author.select(id)(state).data ?? null)
 
-    return state.authors.authorArray.find((author) => author.id === id) ?? null
-  }
+export const newsSelector = createSelector(
+  [bookshopApi.endpoints.news.select()],
+  (q) => ({
+    newsItems: q.data ?? [],
+    newsIsLoading: isQueryLoading(q),
+    newsError: message(q.error),
+  }),
+)
 
-export const newsSelector = (state: RootState) => state.news
+export const ordersSelector = createSelector(
+  [bookshopApi.endpoints.userOrders.select()],
+  (q) => ({
+    orders: q.data ?? [],
+    ordersIsLoading: isQueryLoading(q),
+    ordersError: message(q.error),
+  }),
+)
 
-export const userSelector = (state: RootState) => state.user
-
-export const cartSelector = (state: RootState) => state.cart
-
-export const ordersSelector = (state: RootState) => state.orders
-
+export const userSelector = createSelector(
+  [
+    (state: RootState) => state.user,
+    bookshopApi.endpoints.userProfile.select(),
+  ],
+  (session, profile) => ({
+    ...session,
+    userData: session.accessToken ? (profile.data ?? null) : null,
+    userIsLoading: Boolean(session.accessToken) && isQueryLoading(profile),
+    userError: session.accessToken ? message(profile.error) : null,
+  }),
+)
+export const cartSelector = createSelector(
+  [(state: Pick<RootState, 'cart'>) => state.cart],
+  (cart) => ({
+    ...cart,
+    cartIsLoading: cart.currentRequestId !== null,
+  }),
+)
 export const paymentSelector = (state: RootState) => state.payment
 
 export const cmsBooksSelector = createSelector(
-  [
-    (state: RootState) => state.cms.books,
-    (state: RootState) => state.cms.booksLoading,
-    (state: RootState) => state.cms.booksError,
-  ],
-  (books, booksLoading, booksError) => ({
-    books,
-    booksLoading,
-    booksError,
+  [bookshopApi.endpoints.cmsBooks.select()],
+  (q) => ({
+    books: q.data ?? [],
+    booksLoading: isQueryLoading(q),
+    booksError: message(q.error),
   }),
 )
 
 export const cmsAuthorsSelector = createSelector(
-  [
-    (state: RootState) => state.cms.authors,
-    (state: RootState) => state.cms.authorsLoading,
-    (state: RootState) => state.cms.authorsError,
-  ],
-  (authors, authorsLoading, authorsError) => ({
-    authors,
-    authorsLoading,
-    authorsError,
+  [bookshopApi.endpoints.cmsAuthors.select()],
+  (q) => ({
+    authors: q.data ?? [],
+    authorsLoading: isQueryLoading(q),
+    authorsError: message(q.error),
   }),
 )
 
 export const cmsUsersSelector = createSelector(
-  [
-    (state: RootState) => state.cms.users,
-    (state: RootState) => state.cms.usersLoading,
-    (state: RootState) => state.cms.usersError,
-  ],
-  (users, usersLoading, usersError) => ({
-    users,
-    usersLoading,
-    usersError,
+  [bookshopApi.endpoints.cmsUsers.select()],
+  (q) => ({
+    users: q.data ?? [],
+    usersLoading: isQueryLoading(q),
+    usersError: message(q.error),
   }),
 )
 
 export const cmsOrdersSelector = createSelector(
-  [
-    (state: RootState) => state.cms.orders,
-    (state: RootState) => state.cms.ordersLoading,
-    (state: RootState) => state.cms.ordersError,
-  ],
-  (orders, ordersLoading, ordersError) => ({
-    orders,
-    ordersLoading,
-    ordersError,
-  }),
-)
-
-export const cmsNewsSelector = createSelector(
-  [
-    (state: RootState) => state.cms.news,
-    (state: RootState) => state.cms.newsLoading,
-    (state: RootState) => state.cms.newsError,
-  ],
-  (news, newsIsLoading, newsError) => ({
-    news,
-    newsIsLoading,
-    newsError,
+  [bookshopApi.endpoints.cmsOrders.select()],
+  (q) => ({
+    orders: q.data ?? [],
+    ordersLoading: isQueryLoading(q),
+    ordersError: message(q.error),
   }),
 )

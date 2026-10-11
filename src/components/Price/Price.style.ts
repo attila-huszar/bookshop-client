@@ -54,7 +54,7 @@ export const Currency = styled.span`
 export const Strikethrough = styled.span`
   position: relative;
   font-size: inherit;
-  color: var(--grey);
+  color: var(--color-on-surface-variant);
 
   &::after {
     content: '';

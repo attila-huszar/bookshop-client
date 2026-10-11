@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { StyleTypes } from '@/components/Button/Button.types'
+import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles'
 
 export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
@@ -10,7 +10,7 @@ export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
   width: auto;
   padding: 0.375rem;
   border-radius: 10px;
-  background-color: var(--light-grey);
+  background-color: var(--color-surface-container-high);
 
   ${({ $mobileOpen }) => media.down('sm')`
     position: fixed;
@@ -26,7 +26,7 @@ export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
     visibility: ${$mobileOpen ? 'visible' : 'hidden'};
     pointer-events: ${$mobileOpen ? 'auto' : 'none'};
     transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-raised);
   `}
 `
 
@@ -126,36 +126,10 @@ export const ButtonWrapper = styled.div`
   margin-bottom: 0.5rem;
 `
 
-export const CustomButton = styled.button<StyleTypes>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+export const CustomButton = styled(StyledButton)`
   height: 1.5rem;
   width: ${({ $inverted }) => ($inverted ? '3rem' : '6rem')};
   font-size: 0.75rem;
-  font-weight: 700;
-  color: ${({ $inverted }) => ($inverted ? 'var(--primary-color)' : '#fff')};
-  background-color: ${({ $inverted }) =>
-    $inverted ? '#fff' : 'var(--primary-color)'};
-  box-shadow: ${({ $shadow }) =>
-    $shadow ? '#ffce1a50 0px 5px 10px' : undefined};
-  border: none;
   border-radius: var(--border-radius);
-  outline: 1px solid var(--primary-color);
-  outline-offset: -1px;
-  cursor: pointer;
-  transition: all 0.2s ease-out;
-
-  &:hover {
-    color: ${({ $inverted }) => ($inverted ? '#fff' : 'var(--primary-color)')};
-    background-color: ${({ $inverted }) =>
-      $inverted ? 'var(--primary-color)' : '#fff'};
-  }
-
-  &:disabled {
-    color: #fff;
-    background-color: var(--primary-faded);
-    outline: 1px solid var(--primary-faded);
-  }
+  border-width: 1px;
 `

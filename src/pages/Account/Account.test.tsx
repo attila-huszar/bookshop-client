@@ -2,7 +2,11 @@ import { Providers } from '@/setupTests'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+import {
+  useUpdateAvatarMutation,
+  useUpdateUserProfileMutation,
+} from '@/store/api/bookshopApi'
+import { useAppSelector } from '@/hooks'
 import { Account } from './Account'
 
 vi.mock('@/services', () => ({
@@ -11,8 +15,12 @@ vi.mock('@/services', () => ({
 
 vi.mock('@/store', () => ({
   userSelector: vi.fn(),
-  updateUser: vi.fn(),
-  updateAvatar: vi.fn(),
+}))
+
+vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+  useUpdateAvatarMutation: vi.fn(),
+  useUpdateUserProfileMutation: vi.fn(),
 }))
 
 vi.mock('@/components', async (importOriginal) => {
@@ -23,19 +31,11 @@ vi.mock('@/components', async (importOriginal) => {
   }
 })
 
-vi.mock(import('react-hot-toast'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-  }
-})
-
 describe('Account page', () => {
-  const mockDispatch = vi.fn(() =>
-    Promise.resolve({ url: 'mock-avatar-url', meta: {} }),
-  ) as unknown as ReturnType<typeof useAppDispatch>
+  const mockDispatch = vi.fn()
 
   beforeEach(() => {
+    mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve({}) })
     vi.mocked(useAppSelector).mockReturnValue({
       userData: {
         firstName: 'July',
@@ -51,7 +51,14 @@ describe('Account page', () => {
       },
       userIsUpdating: false,
     })
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
+    vi.mocked(useUpdateUserProfileMutation).mockReturnValue([
+      mockDispatch,
+      { isLoading: false, reset: vi.fn() },
+    ])
+    vi.mocked(useUpdateAvatarMutation).mockReturnValue([
+      mockDispatch,
+      { isLoading: false, reset: vi.fn() },
+    ])
   })
 
   it('should render the account page with user information', () => {
@@ -60,6 +67,34 @@ describe('Account page', () => {
     expect(screen.getByRole('heading', { name: /hello/i })).toBeInTheDocument()
     expect(screen.getByText(/general information/i)).toBeInTheDocument()
     expect(screen.getByText(/address line 1/i)).toBeInTheDocument()
+  })
+
+  it('shows loading while the account profile is unavailable', () => {
+    vi.mocked(useAppSelector).mockReturnValue({
+      userData: null,
+      userIsLoading: true,
+      userError: null,
+    })
+
+    render(<Account />, { wrapper: Providers })
+
+    expect(screen.getByText('Loading your account')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Could not load your account'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows a failed profile request instead of leaving the account blank', () => {
+    vi.mocked(useAppSelector).mockReturnValue({
+      userData: null,
+      userIsLoading: false,
+      userError: 'Network unavailable',
+    })
+
+    render(<Account />, { wrapper: Providers })
+
+    expect(screen.getByText('Could not load your account')).toBeInTheDocument()
+    expect(screen.getByText('Network unavailable')).toBeInTheDocument()
   })
 
   it('should enable editing the general information section when edit is clicked', async () => {

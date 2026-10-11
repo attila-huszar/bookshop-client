@@ -22,7 +22,7 @@ export const SearchField = styled.input`
   border: none;
   border-radius: 10px;
   outline: none;
-  background-color: var(--light-grey);
+  background-color: var(--color-surface-container-high);
 
   &::-webkit-input-placeholder {
     white-space: nowrap;
@@ -45,7 +45,7 @@ export const Dropdown = styled.div<SearchTypes>`
   width: 100%;
   padding: 0.125rem 0.5rem 0.5rem;
   border-radius: 0 0 10px 10px;
-  background-color: var(--light-grey);
+  background-color: var(--color-surface-container-high);
 
   ${({ $show }) => $show && 'display: block;'}
 `
@@ -60,8 +60,13 @@ export const SearchButton = styled.button`
   padding: 0;
   background-color: transparent;
   border: none;
-  outline: inherit;
+  border-radius: var(--border-radius);
   cursor: pointer;
+  transition: background-color 0.2s ease-out;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+  }
 `
 
 export const ClearButton = styled.button`
@@ -69,13 +74,21 @@ export const ClearButton = styled.button`
   right: 0.875rem;
   top: 50%;
   transform: translateY(-50%);
-  height: 1rem;
-  width: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+  width: 1.25rem;
   padding: 0;
   background-color: transparent;
   border: none;
-  outline: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
+  transition: background-color 0.2s ease-out;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+  }
 `
 
 export const DropdownList = styled.ul`
@@ -86,7 +99,7 @@ export const DropdownList = styled.ul`
   padding: 0;
   font-size: 0.775rem;
   list-style: none;
-  background-color: var(--white);
+  background-color: var(--color-surface-container-lowest);
   border-radius: var(--border-radius);
   z-index: 10;
   overflow-y: auto;
@@ -96,7 +109,7 @@ export const DropdownList = styled.ul`
   `}
 
   li:hover {
-    background-color: var(--secondary-hover);
+    background-color: var(--color-surface-container-low);
   }
 
   li:first-child {
@@ -125,13 +138,13 @@ export const MenuItem = styled.div`
     width: 2rem;
     object-fit: cover;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-popover);
   }
 
   svg {
     flex-shrink: 0;
     margin-left: auto;
-    color: var(--grey);
+    color: var(--color-on-surface-variant);
   }
 
   @container search-results (max-width: 12rem) {
@@ -168,5 +181,5 @@ export const NoResults = styled.li`
   height: 3.5rem;
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  color: var(--light-black);
+  color: var(--color-on-surface-variant);
 `

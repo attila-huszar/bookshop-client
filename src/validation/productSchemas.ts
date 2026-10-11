@@ -2,16 +2,19 @@ import * as Yup from 'yup'
 
 export const bookSchema = Yup.object().shape({
   title: Yup.string()
+    .trim()
     .min(2, 'Min 2 characters')
     .max(100, 'Max 100 characters')
     .required('Required'),
-  authorId: Yup.string().test('valid-author', 'Required', (value) => !!value),
-  publishYear: Yup.number().positive('+').required('Required'),
+  authorId: Yup.number().integer().positive().required('Required'),
+  publishYear: Yup.number().integer().positive('+').required('Required'),
   description: Yup.string()
+    .trim()
     .min(10, 'Min 10 characters')
     .max(500, 'Max 500 characters')
     .required('Required'),
   genre: Yup.string()
+    .trim()
     .min(2, 'Min 2 characters')
     .max(50, 'Max 50 characters')
     .required('Required'),
@@ -35,18 +38,37 @@ export const bookSchema = Yup.object().shape({
 
 export const authorSchema = Yup.object().shape({
   name: Yup.string()
+    .trim()
     .min(2, 'Min 2 characters')
     .max(50, 'Max 50 characters')
     .required('Required'),
   fullName: Yup.string()
+    .trim()
+    .transform((value: string | undefined) =>
+      value === '' ? undefined : value,
+    )
     .min(2, 'Min 2 characters')
     .max(100, 'Max 100 characters'),
-  birthYear: Yup.number().positive('+'),
-  deathYear: Yup.number().positive('+'),
+  birthYear: Yup.string().matches(/^[1-9]\d*$/, {
+    message: 'Positive whole year required',
+    excludeEmptyString: true,
+  }),
+  deathYear: Yup.string().matches(/^[1-9]\d*$/, {
+    message: 'Positive whole year required',
+    excludeEmptyString: true,
+  }),
   homeland: Yup.string()
+    .trim()
+    .transform((value: string | undefined) =>
+      value === '' ? undefined : value,
+    )
     .min(2, 'Min 2 characters')
     .max(50, 'Max 50 characters'),
   biography: Yup.string()
+    .trim()
+    .transform((value: string | undefined) =>
+      value === '' ? undefined : value,
+    )
     .min(10, 'Min 10 characters')
     .max(500, 'Max 500 characters'),
 })

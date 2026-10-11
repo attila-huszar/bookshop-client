@@ -1,20 +1,16 @@
-import { Toaster } from 'react-hot-toast'
 import { Routes } from '@/routes'
+import { useUserProfileQuery } from '@/store/api/bookshopApi'
+import { AppToaster } from '@/components'
+import { useAppSelector } from '@/hooks'
 import { GlobalStyle } from '@/styles'
 
 function App() {
+  const accessToken = useAppSelector((state) => state.user.accessToken)
+  useUserProfileQuery({ skip: !accessToken })
+
   return (
     <>
-      <Toaster
-        containerStyle={{ marginTop: '2rem' }}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            fontSize: '1.125rem',
-            textAlign: 'center',
-          },
-        }}
-      />
+      <AppToaster />
       <Routes />
       <GlobalStyle />
     </>

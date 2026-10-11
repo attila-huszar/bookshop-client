@@ -1,26 +1,24 @@
 import type { StripeAddress } from './Stripe'
 
 export type User = {
+  uuid: string
   firstName: string
   lastName: string
   email: string
   country: string
-  phone: string
-  address: StripeAddress
-  avatar: string
+  phone: string | null
+  address: StripeAddress | null
+  avatar: string | null
   role: UserRole
 }
 
-export type UserWithMetadata = User & {
+/** Admin response adds account metadata without exposing credentials. */
+export type CmsUser = User & {
   id: number
-  uuid: string
   verified: boolean
-  verificationToken: string | null
-  verificationExpires: string | null
-  passwordResetToken: string | null
-  passwordResetExpires: string | null
   createdAt: string
   updatedAt: string
+  deletedAt: string | null
 }
 
 export enum UserRole {
@@ -51,8 +49,20 @@ export type LoginResponse = {
   firstName: string
 }
 
-export type UserUpdate = Partial<User> & {
+export type CmsUserCreate = Omit<User, 'uuid'> & {
+  password: string
+  verified: boolean
+}
+
+export type CmsUserUpdate = Pick<User, 'uuid'> &
+  Partial<Omit<CmsUserCreate, 'password'>>
+
+export type UserProfileUpdate = Partial<
+  Pick<User, 'firstName' | 'lastName' | 'country' | 'phone' | 'address'>
+> & {
+  avatar?: null
   password?: string
+  currentPassword?: string
 }
 
 export type CountryData = Record<string, string>

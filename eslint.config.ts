@@ -55,6 +55,11 @@ export default defineConfig(
       ],
       '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/consistent-generic-constructors': 'off',
+      // String defaults may intentionally treat empty text as absent.
+      '@typescript-eslint/prefer-nullish-coalescing': [
+        'error',
+        { ignorePrimitives: { string: true } },
+      ],
       'prettier/prettier': 'warn',
     },
     linterOptions: {

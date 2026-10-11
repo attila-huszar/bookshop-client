@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { getUserCountry } from '@/api'
-import { register } from '@/store'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu/AuthorizationMenu'
-import { Button } from '@/components/Button/Button'
-import { IconButton } from '@/components/Button/IconButton'
-import { CountrySelect } from '@/components/CountrySelect/CountrySelect'
-import { FormikField } from '@/components/FormikField/FormikField'
-import { useAppDispatch } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { useRegisterMutation } from '@/store/api/bookshopApi'
+import {
+  AuthorizationMenu,
+  Button,
+  CountrySelect,
+  FormikField,
+  IconButton,
+  toast,
+} from '@/components'
+import { getErrorMessage, scrollToTop } from '@/helpers'
 import { registrationSchema } from '@/validation'
 import { defaultCountry, registrationInitialValues } from '@/constants'
 import { RegisterRequest } from '@/types'
@@ -18,7 +19,7 @@ import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles'
 
 export function Registration() {
-  const dispatch = useAppDispatch()
+  const [register] = useRegisterMutation()
   const [country, setCountry] = useState(defaultCountry)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -37,17 +38,15 @@ export function Registration() {
 
   const handleSubmit = async (values: RegisterRequest) => {
     try {
-      const { email } = await dispatch(register(values)).unwrap()
+      const { email } = await register(values).unwrap()
       toast.success(
         `${email} registered successfully, please verify your email address`,
       )
       void navigate('/', { replace: true })
     } catch (error) {
-      const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error.message as string)
-          : 'Registration failed, please try again later'
-      toast.error(errorMessage)
+      toast.error(
+        getErrorMessage(error, 'Registration failed, please try again later'),
+      )
     }
   }
 
@@ -108,7 +107,7 @@ export function Registration() {
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
-                $color="var(--mid-grey)"
+                $color="var(--color-outline)"
                 type="reset"
                 title="Back"
                 disabled={isSubmitting}

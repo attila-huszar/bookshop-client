@@ -39,11 +39,11 @@ export const FormChangeLinks = styled.div`
   }
 
   a:hover {
-    color: var(--primary-color);
+    color: var(--color-primary);
   }
 
   a.active {
-    background-color: var(--light-grey);
+    background-color: var(--color-surface-container-high);
   }
 
   ${media.down('sm')`

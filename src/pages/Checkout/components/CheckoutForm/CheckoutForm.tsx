@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import {
   LinkAuthenticationElement,
@@ -11,10 +10,12 @@ import { ROUTE } from '@/routes'
 import {
   paymentCancel,
   paymentSelector,
-  paymentStateReset,
+  paymentSessionReset,
   userSelector,
 } from '@/store'
+import { toast } from '@/components'
 import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
+import { getErrorMessage } from '@/helpers/errors'
 import { defaultCurrency } from '@/constants'
 import type { StripePaymentElementOptions } from '@/types'
 
@@ -76,13 +77,13 @@ export function CheckoutForm() {
 
     try {
       await dispatch(paymentCancel({ paymentId })).unwrap()
-      dispatch(paymentStateReset())
+      dispatch(paymentSessionReset())
       void navigate(`/${ROUTE.CART}`, { replace: true })
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Unable to cancel checkout right now. Please try again.'
+      const errorMessage = getErrorMessage(
+        error,
+        'Unable to cancel checkout right now. Please try again.',
+      )
 
       setCancelError(errorMessage)
       toast.error(errorMessage, { id: 'checkout-cancel-error' })
@@ -152,7 +153,7 @@ export function CheckoutForm() {
           type="button"
           onClick={() => void retryPayment()}
           disabled={isLoading || !stripe || !elements}
-          style={{ backgroundColor: 'var(--mid-grey)' }}>
+          style={{ backgroundColor: 'var(--color-primary)' }}>
           <span>Retry Payment Now</span>
         </button>
       )}
@@ -160,7 +161,7 @@ export function CheckoutForm() {
         type="button"
         onClick={() => void handleCancel()}
         disabled={isLoading || isCanceling}
-        style={{ backgroundColor: 'var(--grey)' }}>
+        style={{ backgroundColor: 'var(--color-on-surface-variant)' }}>
         <span>
           {isCanceling
             ? 'Canceling checkout...'
