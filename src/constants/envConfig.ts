@@ -1,15 +1,9 @@
-import { log } from '@/services'
-
 function getEnvVar(key: string, defaultValue?: string | null): string {
   const importEnv = import.meta.env as Record<string, string>
   const value = importEnv[key]
 
   if (value === undefined || value === '') {
     if (defaultValue !== undefined) {
-      void log.warn(
-        `Environment variable ${key} is not set. Using default: ${defaultValue}`,
-      )
-
       return defaultValue ?? ''
     }
 
