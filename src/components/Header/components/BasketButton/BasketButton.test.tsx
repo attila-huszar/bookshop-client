@@ -2,8 +2,18 @@ import { useNavigate } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { useAppSelector } from '@/hooks'
+import { useAppSelector } from '@/hooks/redux'
 import { BasketButton } from './BasketButton'
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppSelector: vi.fn(),
+}))
 
 describe('BasketButton', () => {
   const mockNavigate = vi.fn()
@@ -41,7 +51,7 @@ describe('BasketButton', () => {
   it('should navigate to the cart page when the button is clicked', async () => {
     render(<BasketButton />)
 
-    await userEvent.click(screen.getByRole('button', { name: /basket/i }))
+    await userEvent.click(screen.getByRole('button', { name: /cart/i }))
     expect(mockNavigate).toHaveBeenCalledWith('/cart')
   })
 

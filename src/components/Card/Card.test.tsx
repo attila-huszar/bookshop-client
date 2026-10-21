@@ -2,9 +2,19 @@ import { MemoryRouter, useNavigate } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { useCart } from '@/hooks'
+import { useCart } from '@/hooks/useCart'
 import { Book } from '@/types'
 import { Card } from './Card'
+
+vi.mock('@/hooks/useCart', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCart')>()),
+  useCart: vi.fn(),
+}))
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
 
 describe('Card', () => {
   const mockBook: Partial<Book> = {

@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledAccount = styled.main`
   padding: 0 6.25rem 4rem;

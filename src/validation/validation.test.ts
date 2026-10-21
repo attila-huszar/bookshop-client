@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import { describe, expect, it } from 'vitest'
 import { orderSchema } from './orderSchemas'
 import { authorSchema, bookSchema } from './productSchemas'
@@ -40,6 +41,18 @@ const order = {
 }
 
 describe('form validation', () => {
+  it('translates validation messages at validation time after switching language', async () => {
+    await expect(nameSchema.validate('')).rejects.toThrow('Required')
+    await i18n.changeLanguage('hu')
+    await expect(nameSchema.validate('')).rejects.toThrow('Kötelező')
+    await expect(nameSchema.validate('a'.repeat(101))).rejects.toThrow(
+      'Legfeljebb 100 karakter',
+    )
+    await expect(
+      bookSchema.validateAt('price', { price: 'invalid' }),
+    ).rejects.toThrow('Érvénytelen érték')
+  })
+
   it('accepts international names and punctuation while sharing trimming and length limits', async () => {
     for (const name of ['李', 'O’Connor', 'Anne-Marie', 'محمد']) {
       expect(await nameSchema.validate(` ${name} `)).toBe(name)

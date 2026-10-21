@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router'
 import { render, screen } from '@testing-library/react'
-import { ROUTE } from '@/routes'
+import { ROUTE } from '@/routes/route'
 import { AuthorizationMenu } from './AuthorizationMenu'
 
 describe('AuthorizationMenu', () => {

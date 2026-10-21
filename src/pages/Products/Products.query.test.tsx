@@ -4,16 +4,15 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { baseRequest } from '@/api'
-import { applyBooksFilters, booksQueryArgs, createAppStore } from '@/store'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { useAppSelector as realUseAppSelector } from '@/hooks/redux'
+import { booksQueryArgs } from '@/store/selectors'
+import { applyBooksFilters } from '@/store/slices/books'
+import { createAppStore } from '@/store/store'
 import type { Book } from '@/types'
 import { Products } from './Products'
 
-vi.mock('@/components', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/components')>()),
+vi.mock('@/components/Card', () => ({
   Card: ({ book }: { book: Book }) => <div>{book.title}</div>,
 }))
 
@@ -35,8 +34,6 @@ describe('catalogue query subscriptions', () => {
         genre: ['Fiction'],
       }),
     )
-    vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
-    vi.mocked(useAppSelector).mockImplementation(realUseAppSelector)
   })
 
   afterEach(() => {

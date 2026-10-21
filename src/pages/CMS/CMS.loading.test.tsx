@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { CMS } from './CMS'
@@ -11,9 +11,6 @@ import { Authors } from './components/Authors/Authors'
 import { Books } from './components/Books/Books'
 import { Orders } from './components/Orders/Orders'
 import { Users } from './components/Users/Users'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 let store: ReturnType<typeof createAppStore>
 

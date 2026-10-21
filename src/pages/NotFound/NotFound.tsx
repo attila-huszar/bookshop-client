@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import books from '@/assets/image/books.png'
 import {
@@ -8,6 +9,8 @@ import {
 } from './NotFound.style'
 
 export function NotFound() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
 
   const handleGoBack = () => {
@@ -22,15 +25,15 @@ export function NotFound() {
   return (
     <StyledNotFound>
       <ImageWrapper>
-        <img src={books} alt="books" />
+        <img src={books} alt="" />
       </ImageWrapper>
       <NotFoundSection>
         <h2>404</h2>
-        <h3>Looks like you've got lost...</h3>
-        <h4>The page you're looking for doesn't exist or has been moved.</h4>
+        <h3>{t('notFound.title')}</h3>
+        <h4>{t('notFound.description')}</h4>
       </NotFoundSection>
       <BackButton type="button" onClick={handleGoBack}>
-        Go Back
+        {t('common.actions.goBack')}
       </BackButton>
     </StyledNotFound>
   )

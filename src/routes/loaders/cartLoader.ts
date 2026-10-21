@@ -1,8 +1,8 @@
 import { replace } from 'react-router'
-import { ROUTE } from '@/routes'
-import { store } from '@/store'
-import { sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey } from '@/constants'
+import { ROUTE } from '@/routes/route'
+import { store } from '@/store/store'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { paymentIdKey } from '@/constants/keys'
 import { appLoader } from './appLoader'
 
 export const cartLoader = async () => {

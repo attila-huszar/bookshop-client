@@ -1,40 +1,31 @@
-import { authRequest, PATH } from '.'
 import type {
   PaymentIntentRequest,
   PaymentIntentResponse,
   PaymentSession,
 } from '@/types'
+import { authRequest } from './authRequest'
+import { PATH } from './path'
 
-export const getPaymentIntent = async (
-  paymentId: string,
-): Promise<PaymentIntentResponse> => {
-  const response = await authRequest.get<PaymentIntentResponse>(
-    `${PATH.payments}/${paymentId}`,
-    { credentials: 'include' },
-  )
-  return await response.json()
-}
+export const getPaymentIntent = (paymentId: string) =>
+  authRequest
+    .get(`${PATH.payments}/${paymentId}`, { credentials: 'include' })
+    .json<PaymentIntentResponse>()
 
-export const postPaymentIntent = async (
+export const postPaymentIntent = (
   payment: PaymentIntentRequest,
   clientIdempotencyKey: string,
-): Promise<PaymentSession> => {
-  const response = await authRequest.post<PaymentSession>(PATH.payments, {
-    json: payment,
-    credentials: 'include',
-    headers: {
-      'Idempotency-Key': clientIdempotencyKey,
-    },
-  })
-  return await response.json()
-}
+) =>
+  authRequest
+    .post(PATH.payments, {
+      json: payment,
+      credentials: 'include',
+      headers: {
+        'Idempotency-Key': clientIdempotencyKey,
+      },
+    })
+    .json<PaymentSession>()
 
-export const deletePaymentIntent = async (
-  paymentId: string,
-): Promise<PaymentIntentResponse> => {
-  const response = await authRequest.delete<PaymentIntentResponse>(
-    `${PATH.payments}/${paymentId}`,
-    { credentials: 'include' },
-  )
-  return await response.json()
-}
+export const deletePaymentIntent = (paymentId: string) =>
+  authRequest
+    .delete(`${PATH.payments}/${paymentId}`, { credentials: 'include' })
+    .json<PaymentIntentResponse>()

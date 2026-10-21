@@ -1,13 +1,18 @@
 import { FC } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import {
   useAddUserMutation,
   useUpdateUserMutation,
 } from '@/store/api/bookshopApi'
-import { Button, CountrySelect, FormikField, toast } from '@/components'
-import { formatDate, getErrorMessage } from '@/helpers'
-import { userCreateSchema, userSchema } from '@/validation'
-import { type CmsUser, UserRole } from '@/types'
+import { toast } from '@/components/AppToaster'
+import { Button } from '@/components/Button'
+import { CountrySelect } from '@/components/CountrySelect'
+import { FormikField } from '@/components/FormikField'
+import { getErrorMessage } from '@/helpers/errors'
+import { formatDate } from '@/helpers/formatDate'
+import { userCreateSchema, userSchema } from '@/validation/userSchemas'
+import { type CmsUser, type CmsUserCreate, UserRole } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
   AddressBlock,
@@ -19,9 +24,7 @@ import {
   UserRoleRow,
 } from '../../styles'
 
-const initialUserValues: CmsUser = {
-  id: 0,
-  uuid: '',
+const initialUserValues: CmsUserCreate = {
   email: '',
   firstName: '',
   lastName: '',
@@ -38,12 +41,8 @@ const initialUserValues: CmsUser = {
     state: '',
   },
   verified: false,
-  createdAt: '',
-  updatedAt: '',
-  deletedAt: null,
+  password: '',
 }
-
-type UserFormValues = CmsUser & { password: string }
 
 type Props = {
   editedItem: CmsUser | null
@@ -52,55 +51,51 @@ type Props = {
 }
 
 export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
+  const { t } = useTranslation()
+
   const [addUser] = useAddUserMutation()
   const [updateUser] = useUpdateUserMutation()
 
+  const initialValues: CmsUserCreate = editedItem
+    ? {
+        email: editedItem.email,
+        firstName: editedItem.firstName,
+        lastName: editedItem.lastName,
+        country: editedItem.country,
+        phone: editedItem.phone,
+        address: editedItem.address,
+        avatar: editedItem.avatar,
+        role: editedItem.role,
+        verified: editedItem.verified,
+        password: '',
+      }
+    : initialUserValues
+
   const handleSubmit = async (
-    values: UserFormValues,
-    actions: FormikHelpers<UserFormValues>,
+    values: CmsUserCreate,
+    actions: FormikHelpers<CmsUserCreate>,
   ) => {
     try {
-      const {
-        email,
-        firstName,
-        lastName,
-        country,
-        phone,
-        address,
-        avatar,
-        role,
-        verified,
-      } = values
-      const userValues = {
-        email,
-        firstName,
-        lastName,
-        country,
-        phone,
-        address,
-        avatar,
-        role,
-        verified,
-      }
-
       if (editedItem) {
+        const { password, ...userValues } = values
+
         await updateUser({ ...userValues, uuid: editedItem.uuid }).unwrap()
       } else {
-        await addUser({ ...userValues, password: values.password }).unwrap()
+        await addUser(values).unwrap()
       }
 
       actions.resetForm()
-      toast.success(`User ${editedItem ? 'updated' : 'added'} successfully`)
+      toast.success(t('cms.saved', { entity: t('cms.user') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
+      toast.error(getErrorMessage(error, t('common.unexpectedError')))
     }
   }
 
   return (
     <Formik
       key="users"
-      initialValues={{ ...(editedItem ?? initialUserValues), password: '' }}
+      initialValues={initialValues}
       validationSchema={editedItem ? userSchema : userCreateSchema}
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => (
@@ -108,14 +103,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
           <fieldset disabled={readOnly}>
             {editedItem && (
               <>
-                <SectionHeader>User Information</SectionHeader>
+                <SectionHeader>
+                  {t('cms.information', { entity: t('cms.user') })}
+                </SectionHeader>
                 <MetadataBlock>
                   <div>
-                    <p>User ID</p>
+                    <p>{t('cms.recordId', { entity: t('cms.user') })}</p>
                     <span>{editedItem.id}</span>
                   </div>
                   <div>
-                    <p>Created At</p>
+                    <p>{t('common.fields.createdAt')}</p>
                     <span>
                       {editedItem.createdAt
                         ? formatDate(editedItem.createdAt)
@@ -123,7 +120,7 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                     </span>
                   </div>
                   <div>
-                    <p>Updated At</p>
+                    <p>{t('common.fields.updatedAt')}</p>
                     <span>
                       {editedItem.updatedAt
                         ? formatDate(editedItem.updatedAt)
@@ -135,42 +132,50 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <Row>
               <div>
-                <p>First Name</p>
+                <p>{t('common.fields.firstName')}</p>
                 <FormikField
                   name="firstName"
-                  placeholder="First Name"
+                  placeholder={t('common.fields.firstName')}
                   type="text"
                 />
               </div>
               <div>
-                <p>Last Name</p>
+                <p>{t('common.fields.lastName')}</p>
                 <FormikField
                   name="lastName"
-                  placeholder="Last Name"
+                  placeholder={t('common.fields.lastName')}
                   type="text"
                 />
               </div>
             </Row>
             <Row>
               <div>
-                <p>Email</p>
-                <FormikField name="email" placeholder="Email" type="email" />
+                <p>{t('common.fields.email')}</p>
+                <FormikField
+                  name="email"
+                  placeholder={t('common.fields.email')}
+                  type="email"
+                />
               </div>
               <div>
-                <p>Phone</p>
-                <FormikField name="phone" placeholder="Phone" type="text" />
+                <p>{t('common.fields.phone')}</p>
+                <FormikField
+                  name="phone"
+                  placeholder={t('common.fields.phone')}
+                  type="text"
+                />
               </div>
             </Row>
             <Row>
               <div>
-                <p>Country at Registration</p>
+                <p>{t('cms.countryRegistration')}</p>
                 <CountrySelect fieldName="country" readOnly={readOnly} />
               </div>
               <div>
-                <p>Avatar URL</p>
+                <p>{t('common.fields.avatarUrl')}</p>
                 <FormikField
                   name="avatar"
-                  placeholder="Avatar URL"
+                  placeholder={t('common.fields.avatarUrl')}
                   type="text"
                 />
               </div>
@@ -178,10 +183,10 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             {!editedItem && (
               <FullRow>
                 <div>
-                  <p>Password</p>
+                  <p>{t('common.fields.password')}</p>
                   <FormikField
                     name="password"
-                    placeholder="Password"
+                    placeholder={t('common.fields.password')}
                     type="password"
                     autoComplete="new-password"
                   />
@@ -190,71 +195,71 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <UserRoleRow>
               <div>
-                <p>Role</p>
+                <p>{t('common.fields.role')}</p>
                 <FormikField name="role" type="select">
                   {Object.values(UserRole).map((role) => (
                     <option key={role} value={role}>
-                      {role}
+                      {t(`cms.roles.${role}`)}
                     </option>
                   ))}
                 </FormikField>
               </div>
               <div className="centered-checkbox">
-                <p>Verified</p>
+                <p>{t('common.fields.verified')}</p>
                 <div style={{ display: 'flex', height: '100%' }}>
                   <FormikField name="verified" type="checkbox" />
                 </div>
               </div>
             </UserRoleRow>
             <AddressBlock>
-              <p>Address</p>
+              <p>{t('common.fields.address')}</p>
               <Row>
                 <div>
-                  <p>Line 1</p>
+                  <p>{t('common.fields.line1')}</p>
                   <FormikField
                     name="address.line1"
-                    placeholder="Line 1"
+                    placeholder={t('common.fields.line1')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Line 2</p>
+                  <p>{t('common.fields.line2')}</p>
                   <FormikField
                     name="address.line2"
-                    placeholder="Line 2"
+                    placeholder={t('common.fields.line2')}
                     type="text"
                   />
                 </div>
               </Row>
               <Row>
                 <div>
-                  <p>City</p>
+                  <p>{t('common.fields.city')}</p>
                   <FormikField
                     name="address.city"
-                    placeholder="City"
+                    placeholder={t('common.fields.city')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>State</p>
+                  <p>{t('common.fields.state')}</p>
                   <FormikField
                     name="address.state"
-                    placeholder="State"
+                    placeholder={t('common.fields.state')}
                     type="text"
                   />
                 </div>
               </Row>
               <Row>
                 <div>
-                  <p>Postal Code</p>
+                  <p>{t('common.fields.postalCode')}</p>
                   <FormikField
                     name="address.postal_code"
-                    placeholder="Postal Code"
+                    placeholder={t('common.fields.postalCode')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Country</p>
+                  <p>{t('common.fields.country')}</p>
                   <CountrySelect
                     fieldName="address.country"
                     readOnly={readOnly}
@@ -264,13 +269,13 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             </AddressBlock>
             {editedItem && (
               <>
-                <SectionHeader>Read-Only Metadata</SectionHeader>
-                <FullRow>
+                <SectionHeader>{t('cms.metadata')}</SectionHeader>
+                <MetadataBlock>
                   <div>
-                    <p>UUID</p>
-                    <FormikField name="uuid" type="text" readOnly />
+                    <p>{t('common.fields.uuid')}</p>
+                    <span>{editedItem.uuid}</span>
                   </div>
-                </FullRow>
+                </MetadataBlock>
               </>
             )}
           </fieldset>
@@ -281,14 +286,17 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               $size="sm"
               $color="neutral"
               disabled={isSubmitting}>
-              {readOnly ? 'Close' : 'Cancel'}
+              {readOnly
+                ? t('common.actions.close')
+                : t('common.actions.cancel')}
             </Button>
             {!readOnly && (
               <Button
                 type="submit"
                 $size="sm"
                 disabled={!dirty || isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={22} />} Save
+                {isSubmitting && <SpinnerIcon height={22} />}
+                {t('common.actions.save')}
               </Button>
             )}
           </FormButtons>

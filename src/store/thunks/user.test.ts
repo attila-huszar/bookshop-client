@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as usersApi from '@/api'
+import * as usersApi from '@/api/users'
 import { UserRole } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 import { userSelector } from '../selectors'

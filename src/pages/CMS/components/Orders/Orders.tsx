@@ -1,9 +1,13 @@
 import { Fragment, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsOrdersSelector } from '@/store'
-import { Alert, IconButton, Loading } from '@/components'
-import { useAppSelector } from '@/hooks'
-import { formatDate, formatPaymentStatus, getPaidAtStatus } from '@/helpers'
+import { cmsOrdersSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { IconButton } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
+import { formatPaymentStatus } from '@/helpers/checkout'
+import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, EnvelopeIcon } from '@/assets/svg'
 import { TableActions } from '../../styles/CMS.style'
@@ -11,6 +15,8 @@ import { OrderEmails } from './OrderEmails'
 import { OrdersTable } from './Orders.style'
 
 export const Orders = () => {
+  const { t } = useTranslation()
+
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
   const {
     orders: allOrders,
@@ -30,11 +36,11 @@ export const Orders = () => {
   )
 
   if (ordersLoading) {
-    return <Loading message="Loading orders" fullScreen />
+    return <Loading message={t('cms.ordersLoading')} fullScreen />
   }
 
   if (ordersError) {
-    return <Alert message="Error loading orders" error={ordersError} />
+    return <Alert message={t('cms.ordersError')} error={ordersError} />
   }
 
   if (orders.length === 0) {
@@ -42,7 +48,7 @@ export const Orders = () => {
       <Alert
         type="info"
         message={
-          showDeletedOrders ? 'No deleted orders found' : 'No orders found'
+          showDeletedOrders ? t('cms.ordersRemovedEmpty') : t('cms.ordersEmpty')
         }
       />
     )
@@ -67,6 +73,7 @@ export const Orders = () => {
             <th>
               <input
                 type="checkbox"
+                aria-label={t('common.selectAll')}
                 checked={allSelected}
                 onChange={() =>
                   allSelected
@@ -81,15 +88,15 @@ export const Orders = () => {
                 }
               />
             </th>
-            <th>ID</th>
-            <th>PaymentID</th>
-            <th>Status</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Total</th>
-            <th>Created</th>
-            <th>Paid At</th>
-            <th className="actions">Actions</th>
+            <th>{t('common.fields.id')}</th>
+            <th>{t('common.fields.paymentId')}</th>
+            <th>{t('common.fields.status')}</th>
+            <th>{t('common.fields.name')}</th>
+            <th>{t('common.fields.email')}</th>
+            <th>{t('common.fields.total')}</th>
+            <th>{t('common.fields.createdAt')}</th>
+            <th>{t('common.fields.paidAt')}</th>
+            <th className="actions">{t('common.fields.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -118,7 +125,10 @@ export const Orders = () => {
                     }}>
                     <input
                       type="checkbox"
-                      aria-label={`Select order #${order.id}`}
+                      aria-label={t('cms.selectRecord', {
+                        entity: t('common.fields.order').toLocaleLowerCase(),
+                        id: order.id,
+                      })}
                       checked={selectedItems.orders.includes(order.id)}
                       onClick={(e) => e.stopPropagation()}
                       onChange={() => {
@@ -134,7 +144,7 @@ export const Orders = () => {
                   <td>{order.id}</td>
                   <td>
                     <p style={{ width: 96, wordWrap: 'break-word' }}>
-                      {order.paymentId ?? 'Draft'}
+                      {order.paymentId ?? t('orders.draft')}
                     </p>
                   </td>
                   <td>{formatPaymentStatus(order.paymentStatus)}</td>
@@ -155,8 +165,13 @@ export const Orders = () => {
                     <TableActions>
                       <IconButton
                         type="button"
-                        title="Edit order"
-                        aria-label={`Edit order #${order.id}`}
+                        title={t('cms.edit', {
+                          entity: t('common.fields.order').toLocaleLowerCase(),
+                        })}
+                        aria-label={t('cms.editRecord', {
+                          entity: t('common.fields.order').toLocaleLowerCase(),
+                          id: order.id,
+                        })}
                         disabled={!order.paymentId}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -172,8 +187,19 @@ export const Orders = () => {
                           type="button"
                           $size="sm"
                           icon={<EnvelopeIcon aria-hidden="true" />}
-                          title={`${expandedOrderId === order.id ? 'Hide' : 'Show'} emails`}
-                          aria-label={`${expandedOrderId === order.id ? 'Hide' : 'Show'} emails for order #${order.id}`}
+                          title={t(
+                            expandedOrderId === order.id
+                              ? 'cms.hideEmails'
+                              : 'cms.showEmails',
+                          )}
+                          aria-label={t('cms.orderEmails', {
+                            action: t(
+                              expandedOrderId === order.id
+                                ? 'cms.hideEmails'
+                                : 'cms.showEmails',
+                            ),
+                            id: order.id,
+                          })}
                           aria-expanded={expandedOrderId === order.id}
                           aria-controls={`order-${order.id}-emails`}
                           onClick={(event) => {
@@ -190,7 +216,7 @@ export const Orders = () => {
                 {expandedOrderId === order.id && order.paymentId && (
                   <tr className="email-history" id={`order-${order.id}-emails`}>
                     <td colSpan={10} className="email-history-cell">
-                      <h3>Emails for order #{order.id}</h3>
+                      <h3>{t('cms.emailsForOrder', { id: order.id })}</h3>
                       <OrderEmails paymentId={order.paymentId} />
                     </td>
                   </tr>

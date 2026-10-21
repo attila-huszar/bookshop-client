@@ -1,13 +1,16 @@
 import { replace } from 'react-router'
-import { ROUTE } from '@/routes'
-import { paymentRetrieve, paymentSessionReset, store } from '@/store'
-import { getErrorCode, sessionStorageAdapter } from '@/helpers'
-import { isSuccessPaymentIntentStatus } from '@/helpers/paymentStatus'
+import { ROUTE } from '@/routes/route'
+import { paymentSessionReset } from '@/store/slices/payment'
+import { store } from '@/store/store'
+import { paymentRetrieve } from '@/store/thunks/payment'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { isSuccessPaymentIntentStatus } from '@/helpers/checkout'
+import { getErrorCode } from '@/helpers/errors'
+import { paymentIdKey } from '@/constants/keys'
 import {
   checkoutQueryParams,
-  paymentIdKey,
   paymentSessionUnavailableCode,
-} from '@/constants'
+} from '@/constants/payments'
 import { authLoader } from './authLoader'
 
 export const checkoutLoader = async ({ request }: { request: Request }) => {

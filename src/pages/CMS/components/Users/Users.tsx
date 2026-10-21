@@ -1,12 +1,17 @@
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsUsersSelector } from '@/store'
-import { Alert, IconButton, Loading } from '@/components'
-import { useAppSelector } from '@/hooks'
+import { cmsUsersSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { IconButton } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
 import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Users = () => {
+  const { t } = useTranslation()
+
   const {
     users: allUsers,
     usersLoading,
@@ -25,17 +30,19 @@ export const Users = () => {
   )
 
   if (usersLoading) {
-    return <Loading message="Loading users" fullScreen />
+    return <Loading message={t('cms.usersLoading')} fullScreen />
   }
 
   if (usersError) {
-    return <Alert message="Error loading users" error={usersError} />
+    return <Alert message={t('cms.usersError')} error={usersError} />
   }
 
   if (users.length === 0) {
     return (
       <Alert
-        message={showDeletedUsers ? 'No deleted users found' : 'No users found'}
+        message={
+          showDeletedUsers ? t('cms.usersRemovedEmpty') : t('cms.usersEmpty')
+        }
       />
     )
   }
@@ -59,6 +66,7 @@ export const Users = () => {
             <th>
               <input
                 type="checkbox"
+                aria-label={t('common.selectAll')}
                 checked={allSelected}
                 onChange={() =>
                   allSelected
@@ -73,17 +81,17 @@ export const Users = () => {
                 }
               />
             </th>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Address</th>
-            <th>Avatar</th>
-            <th>Verified</th>
-            <th>Created</th>
-            <th>Updated</th>
-            <th className="actions">Actions</th>
+            <th>{t('common.fields.id')}</th>
+            <th>{t('common.fields.firstName')}</th>
+            <th>{t('common.fields.lastName')}</th>
+            <th>{t('common.fields.email')}</th>
+            <th>{t('common.fields.role')}</th>
+            <th>{t('common.fields.address')}</th>
+            <th>{t('common.fields.avatar')}</th>
+            <th>{t('common.fields.verified')}</th>
+            <th>{t('common.fields.createdAt')}</th>
+            <th>{t('common.fields.updatedAt')}</th>
+            <th className="actions">{t('common.fields.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -113,7 +121,10 @@ export const Users = () => {
                   <input
                     type="checkbox"
                     checked={selectedItems.users.includes(user.id)}
-                    aria-label={`Select user #${user.id}`}
+                    aria-label={t('cms.selectRecord', {
+                      entity: t('cms.user').toLocaleLowerCase(),
+                      id: user.id,
+                    })}
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => {
                       setSelectedItems((prev) => ({
@@ -129,14 +140,18 @@ export const Users = () => {
                 <td>{user.firstName}</td>
                 <td>{user.lastName}</td>
                 <td>{user.email}</td>
-                <td>{user.role}</td>
+                <td>{t(`cms.roles.${user.role}`)}</td>
                 <td>
                   {user.address &&
                     Object.values(user.address).filter(Boolean).join(', ')}
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   {user.avatar && (
-                    <img src={user.avatar} alt="User avatar" height={32} />
+                    <img
+                      src={user.avatar}
+                      alt={t('cms.userAvatar')}
+                      height={32}
+                    />
                   )}
                 </td>
                 <td style={{ textAlign: 'center' }}>
@@ -164,8 +179,13 @@ export const Users = () => {
                   <TableActions>
                     <IconButton
                       type="button"
-                      title="Edit user"
-                      aria-label={`Edit user #${user.id}`}
+                      title={t('cms.edit', {
+                        entity: t('cms.user').toLocaleLowerCase(),
+                      })}
+                      aria-label={t('cms.editRecord', {
+                        entity: t('cms.user').toLocaleLowerCase(),
+                        id: user.id,
+                      })}
                       disabled={showDeletedUsers}
                       onClick={(e) => {
                         e.stopPropagation()

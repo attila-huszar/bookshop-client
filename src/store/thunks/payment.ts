@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { HTTPError } from 'ky'
 import {
@@ -5,19 +6,19 @@ import {
   getPaymentIntent,
   postPaymentIntent,
 } from '@/api/payments'
-import { log } from '@/services'
-import { sessionStorageAdapter } from '@/helpers'
+import { log } from '@/services/logger'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { getApiError, getErrorMessage, toAppError } from '@/helpers/errors'
+import { paymentIdempotencyKey } from '@/constants/keys'
+import { paymentSessionUnavailableCode } from '@/constants/payments'
 import {
-  paymentIdempotencyKey,
-  paymentSessionUnavailableCode,
-} from '@/constants'
-import { handleError } from '@/errors'
-import {
+  ApiError,
   PaymentCreateIssueCode,
   PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentSession,
 } from '@/types'
+import { PaymentErrorCode } from '@/types/ApiError'
 
 type StoredPaymentIdempotency = {
   fingerprint: string
@@ -45,6 +46,7 @@ const getClientIdempotencyKey = (payment: PaymentIntentRequest): string => {
 type PaymentCreateRejectValue = {
   code: PaymentCreateIssueCode
   message: string
+  apiError?: ApiError
 }
 
 export const paymentCreate = createAsyncThunk<
@@ -61,11 +63,11 @@ export const paymentCreate = createAsyncThunk<
     )
 
     if (!paymentToken) {
-      throw new Error('Invalid response from server: missing payment token')
+      throw new Error(i18n.t('checkout.invalidResponse'))
     }
 
     if (!paymentId) {
-      throw new Error('Invalid response from server: missing payment ID')
+      throw new Error(i18n.t('checkout.invalidResponse'))
     }
 
     sessionStorageAdapter.remove(paymentIdempotencyKey)
@@ -74,32 +76,18 @@ export const paymentCreate = createAsyncThunk<
     if (error instanceof HTTPError && error.response.status === 410) {
       sessionStorageAdapter.remove(paymentIdempotencyKey)
     }
-    if (error instanceof HTTPError && error.response.status === 409) {
-      const fallbackMessage =
-        'Prices have been updated in your cart. Please review before checkout.'
-      const formattedError = handleError({
-        error,
-        message: fallbackMessage,
-      })
-      const finalMessage = formattedError.message?.trim() || fallbackMessage
-
+    if (getApiError(error)?.code === PaymentErrorCode.PriceConflict) {
       return rejectWithValue({
         code: 'price_conflict',
-        message: finalMessage,
+        message: getErrorMessage(error, i18n.t('checkout.priceChanged')),
+        apiError: getApiError(error),
       })
     }
 
-    const fallbackMessage = 'Order creation failed'
-    const formattedError = handleError({
-      error,
-      message: fallbackMessage,
-    })
-    const finalMessage = formattedError.message?.trim() || fallbackMessage
-    void log.error(finalMessage, { error })
-
     return rejectWithValue({
       code: 'unknown',
-      message: finalMessage,
+      message: getErrorMessage(error, i18n.t('checkout.createError')),
+      apiError: getApiError(error),
     })
   }
 })
@@ -123,29 +111,26 @@ export const paymentRetrieve = createAsyncThunk<
       ) {
         return rejectWithValue({
           code: paymentSessionUnavailableCode,
-          message:
-            'This payment session is no longer accessible. Please start a new checkout.',
+          message: i18n.t('checkout.sessionUnavailable'),
         })
       }
-      throw error
+      throw toAppError(error, i18n.t('checkout.error'))
     }
     const { client_secret: retrievedPaymentToken, amount, status } = payment
 
     if (status === 'canceled' || (status === 'succeeded' && !allowSucceeded)) {
       return rejectWithValue({
         code: paymentSessionUnavailableCode,
-        message: 'This payment session has ended. Please start a new checkout.',
+        message: i18n.t('checkout.sessionEnded'),
       })
     }
 
     if (!retrievedPaymentToken) {
-      throw new Error(
-        'Invalid response from payment service: missing client secret',
-      )
+      throw new Error(i18n.t('checkout.invalidResponse'))
     }
 
     if (typeof amount !== 'number' || amount <= 0) {
-      throw new Error('Invalid payment amount in response')
+      throw new Error(i18n.t('checkout.invalidResponse'))
     }
 
     return { paymentId, paymentToken: retrievedPaymentToken, status, amount }
@@ -157,32 +142,13 @@ export const paymentCancel = createAsyncThunk(
   async ({ paymentId }: { paymentId: string }) => {
     if (!paymentId) {
       void log.warn('Failed to cancel Stripe payment intent: missing paymentId')
-      throw new Error(
-        'Unable to cancel checkout right now: missing payment ID.',
-      )
+      throw new Error(i18n.t('checkout.missingPaymentId'))
     }
 
     try {
       await deletePaymentIntent(paymentId)
-    } catch (stripeError) {
-      void log.warn('Failed to cancel Stripe payment intent', {
-        error: stripeError,
-        paymentId,
-      })
-
-      if (stripeError instanceof Error) {
-        throw new Error(
-          `Unable to cancel checkout right now: ${stripeError.message}`,
-          { cause: stripeError },
-        )
-      }
-
-      throw new Error(
-        'Unable to cancel checkout right now. Please try again.',
-        {
-          cause: stripeError,
-        },
-      )
+    } catch (error) {
+      throw toAppError(error, i18n.t('checkout.cancelError'))
     }
   },
 )

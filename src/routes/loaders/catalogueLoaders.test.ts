@@ -1,15 +1,15 @@
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
-import { store } from '@/store'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
+import { store } from '@/store/store'
 import { landingPageLoader } from './landingPageLoader'
 import { productLoader } from './productLoader'
 import { shopLoader } from './shopLoader'
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/store/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/store')>()
 
   return { ...actual, store: actual.createAppStore() }
 })

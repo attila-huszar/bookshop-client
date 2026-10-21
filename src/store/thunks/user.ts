@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { postUserLogin, postUserLogout, retrieveAuthTokens } from '@/api'
+import { postUserLogin, postUserLogout, retrieveAuthTokens } from '@/api/users'
 import type { LoginRequest, LoginResponse } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 import { paymentSessionReset } from '../slices/payment'

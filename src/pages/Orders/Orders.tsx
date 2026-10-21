@@ -1,9 +1,13 @@
-import { ordersSelector, userSelector } from '@/store'
+import { useTranslation } from 'react-i18next'
+import { i18n } from '@/i18n'
 import { useUserOrdersQuery } from '@/store/api/bookshopApi'
-import { Alert, Loading } from '@/components'
-import { useAppSelector } from '@/hooks'
-import { formatDate, formatPaymentStatus, getPaidAtStatus } from '@/helpers'
-import { defaultCurrency } from '@/constants'
+import { ordersSelector, userSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
+import { formatPaymentStatus } from '@/helpers/checkout'
+import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
+import { defaultCurrency } from '@/constants/defaultValues'
 import { imagePlaceholder } from '@/assets/svg'
 import {
   OrderCard,
@@ -22,24 +26,26 @@ import {
 const formatTotal = (amount: number, currency: string) => {
   const normalizedCurrency = (currency || defaultCurrency).toUpperCase()
 
-  return `${amount.toLocaleString()} ${normalizedCurrency}`
+  return `${amount.toLocaleString(i18n.resolvedLanguage ?? 'en')} ${normalizedCurrency}`
 }
 
 export function Orders() {
+  const { t } = useTranslation()
+
   useUserOrdersQuery()
   const { orders, ordersIsLoading, ordersError } =
     useAppSelector(ordersSelector)
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {
-    return <Loading message="Loading your orders" fullScreen />
+    return <Loading message={t('orders.loading')} fullScreen />
   }
 
   if (ordersError) {
     return (
       <StyledOrders>
-        <h2>Recent Orders</h2>
-        <Alert message="Failed to load your orders." error={ordersError} />
+        <h2>{t('orders.title')}</h2>
+        <Alert message={t('orders.error')} error={ordersError} />
       </StyledOrders>
     )
   }
@@ -51,33 +57,39 @@ export function Orders() {
   return (
     <StyledOrders>
       <h2>
-        {userData?.firstName ? `${userData.firstName}'s` : 'Your'} Recent Orders
+        {userData?.firstName
+          ? t('orders.namedTitle', { name: userData.firstName })
+          : t('orders.yourTitle')}
       </h2>
       {sortedOrders.length === 0 ? (
-        <Alert type="info" message="You have no orders yet." />
+        <Alert type="info" message={t('orders.empty')} />
       ) : (
         <OrdersList>
           {sortedOrders.map((order) => (
             <OrderCard key={order.id}>
               <OrderHeader>
-                <h4>Order #{order.id}</h4>
-                <p>Placed: {formatDate(order.createdAt)}</p>
+                <h4>{t('checkout.order', { number: order.id })}</h4>
+                <p>
+                  {t('orders.placed', { date: formatDate(order.createdAt) })}
+                </p>
               </OrderHeader>
               <OrderMeta>
                 <p>
-                  <span>Status:</span>{' '}
+                  <span>{t('orders.status')}</span>{' '}
                   {order.paymentId
                     ? formatPaymentStatus(order.paymentStatus)
-                    : 'Checkout not completed'}
+                    : t('orders.incomplete')}
                 </p>
                 <p>
-                  <span>Total:</span> {formatTotal(order.total, order.currency)}
+                  <span>{t('cart.total')}</span>{' '}
+                  {formatTotal(order.total, order.currency)}
                 </p>
                 <p>
-                  <span>Paid At:</span> {getPaidAtStatus(order)}
+                  <span>{t('orders.paidAt')}</span> {getPaidAtStatus(order)}
                 </p>
                 <p>
-                  <span>Payment ID:</span> {order.paymentId ?? 'Not linked yet'}
+                  <span>{t('orders.paymentId')}</span>{' '}
+                  {order.paymentId ?? t('orders.notLinked')}
                 </p>
               </OrderMeta>
               <OrderItems>
@@ -96,7 +108,9 @@ export function Orders() {
                         <span style={{ fontWeight: 500 }}>{item.title}</span>
                         {item.author ? (
                           <span>
-                            <span style={{ fontStyle: 'italic' }}>by</span>{' '}
+                            <span style={{ fontStyle: 'italic' }}>
+                              {t('common.by')}
+                            </span>{' '}
                             {item.author}
                           </span>
                         ) : null}

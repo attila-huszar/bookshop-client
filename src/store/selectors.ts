@@ -1,4 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
+import { getApiError } from '@/helpers/errors'
+import type { ApiError } from '@/types/ApiError'
 import { bookshopApi } from './api/bookshopApi'
 import type { RootState } from './store'
 
@@ -15,13 +17,20 @@ export const booksQueryArgs = createSelector(
   }),
 )
 
-const message = (error: unknown): string | null =>
-  error &&
-  typeof error === 'object' &&
-  'message' in error &&
-  typeof error.message === 'string'
+const message = (error: unknown): string | ApiError | null => {
+  const apiError = getApiError(error)
+
+  if (apiError) {
+    return apiError
+  }
+
+  return error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
     ? error.message
     : null
+}
 
 const isQueryLoading = (query: {
   isUninitialized: boolean

@@ -1,5 +1,5 @@
-import { baseRequest } from './baseRequest'
 import { PATH } from './path'
+import { transport } from './transport'
 
 export const enum LogLevel {
   Debug = 'debug',
@@ -35,7 +35,7 @@ export function sendLog(
   message: string,
   meta?: unknown,
 ): void {
-  void baseRequest
+  void transport
     .post(PATH.logs, {
       json: {
         level,

@@ -1,24 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
-import { login } from '@/store'
-import {
-  AuthorizationMenu,
-  Button,
-  ForgotPassword,
-  FormikField,
-  IconButton,
-  toast,
-} from '@/components'
-import { useAppDispatch } from '@/hooks'
-import { getErrorMessage, scrollToTop } from '@/helpers'
-import { loginSchema } from '@/validation'
-import { loginInitialValues } from '@/constants'
+import { login } from '@/store/thunks/user'
+import { toast } from '@/components/AppToaster'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
+import { Button, IconButton } from '@/components/Button'
+import { ForgotPassword } from '@/components/ForgotPassword'
+import { FormikField } from '@/components/FormikField'
+import { useAppDispatch } from '@/hooks/redux'
+import { getErrorMessage } from '@/helpers/errors'
+import { scrollToTop } from '@/helpers/scrollToTop'
+import { loginSchema } from '@/validation/userSchemas'
+import { loginInitialValues } from '@/constants/defaultValues'
 import type { LoginRequest } from '@/types'
 import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 
 export function Login() {
+  const { t } = useTranslation()
+
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
@@ -31,12 +32,10 @@ export function Login() {
   const handleSubmit = async (values: LoginRequest) => {
     try {
       const { firstName } = await dispatch(login(values)).unwrap()
-      toast.success(`Welcome back, ${firstName}!`)
+      toast.success(t('auth.welcome', { name: firstName }))
       void navigate('/', { replace: true })
     } catch (error) {
-      toast.error(
-        getErrorMessage(error, 'Login failed, please try again later'),
-      )
+      toast.error(getErrorMessage(error, t('auth.loginError')))
     }
   }
 
@@ -53,19 +52,19 @@ export function Login() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>Email</p>
+            <p>{t('common.fields.email')}</p>
             <FormikField
               name="email"
-              placeholder="Email"
+              placeholder={t('common.fields.email')}
               type="email"
               inputMode="email"
               autoComplete="username"
               focus
             />
-            <p>Password</p>
+            <p>{t('common.fields.password')}</p>
             <FormikField
               name="password"
-              placeholder="Password"
+              placeholder={t('common.fields.password')}
               type={showPassword ? 'text' : 'password'}
               inputMode="text"
               autoComplete="current-password"
@@ -78,19 +77,20 @@ export function Login() {
                 $size="lg"
                 $color="var(--color-outline)"
                 type="reset"
-                title="Back"
+                title={t('common.actions.back')}
                 disabled={isSubmitting}
                 onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Login
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('auth.login')}
               </Button>
               <IconButton
                 icon={<QuestionIcon />}
                 $size="lg"
                 $color="var(--color-outline)"
                 type="button"
-                title="Forgot Password?"
+                title={t('auth.forgotPassword')}
                 disabled={isSubmitting}
                 onClick={handleDialogOpen}
               />

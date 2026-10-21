@@ -1,13 +1,14 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useOutletContext } from 'react-router'
+import { i18n } from '@/i18n'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { toast } from '@/components'
+import { toast } from '@/components/AppToaster'
 import {
   type CmsOrder,
   type CMSOutletContext,
@@ -17,9 +18,6 @@ import {
 import { CMS } from './CMS'
 import { Orders } from './components/Orders/Orders'
 import { Users } from './components/Users/Users'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 const order: CmsOrder = {
   id: 1,
@@ -155,6 +153,35 @@ function renderCMS(tab = 'orders') {
 }
 
 describe('CMS deletion controls', () => {
+  it('translates controls and confirmations after a language change without changing request values', async () => {
+    renderCMS()
+    const selectOrder = await screen.findByRole('checkbox', {
+      name: 'Select order #1',
+    })
+
+    await act(async () => {
+      await i18n.changeLanguage('hu')
+    })
+
+    expect(screen.getByRole('link', { name: 'Rendelések' })).toBeInTheDocument()
+    await userEvent.click(selectOrder)
+    await userEvent.click(screen.getByRole('button', { name: 'Eltávolítás' }))
+    const dialog = screen.getByRole('dialog')
+    expect(
+      within(dialog).getByText(/eltávolítja a kijelölt tételeket/i),
+    ).toBeInTheDocument()
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Eltávolítás' }),
+    )
+
+    await waitFor(() => {
+      expect(authRequest.delete).toHaveBeenCalledWith(
+        'cms/orders',
+        expect.objectContaining({ json: { orderIds: [1] } }),
+      )
+    })
+  })
+
   it('shows pending confirmation and prevents repeated removal requests', async () => {
     let completeRequest!: (value: Response) => void
     const pending = new Promise<Response>((resolve) => {

@@ -1,4 +1,5 @@
-import { restoreCartItems, store } from '@/store'
+import { store } from '@/store/store'
+import { restoreCartItems } from '@/store/thunks/cart'
 import { authLoader } from './authLoader'
 
 let bootstrapPromise: Promise<null> | null = null

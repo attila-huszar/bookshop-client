@@ -1,7 +1,8 @@
+import { i18n } from '@/i18n'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import type { AppDispatch, RootState } from '@/store'
-import { localStorageAdapter } from '@/helpers'
-import { cartKey } from '@/constants'
+import type { AppDispatch, RootState } from '@/store/store'
+import { localStorageAdapter } from '@/helpers/browserStorage'
+import { cartKey } from '@/constants/keys'
 import type { Cart, MinimalCart } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 
@@ -65,7 +66,7 @@ export const fetchCartItems = createAsyncThunk<
       settledItems.every((item) => item.status === 'rejected')
 
     if (allFailed) {
-      throw new Error('Failed to fetch cart items')
+      throw new Error(i18n.t('cart.error'))
     }
 
     if (!force && !matchesStorageCart(cartItems)) {

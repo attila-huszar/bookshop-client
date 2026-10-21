@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
-import { ROUTE } from '@/routes'
-import { paymentIdKey } from '@/constants'
+import { ROUTE } from '@/routes/route'
+import { paymentIdKey } from '@/constants/keys'
 import { checkoutLoader } from './checkoutLoader'
 
 const {
@@ -25,8 +25,9 @@ vi.mock('./authLoader', () => ({
   authLoader: mockAuthLoader,
 }))
 
-vi.mock('@/helpers', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/helpers')>()
+vi.mock('@/helpers/browserStorage', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/helpers/browserStorage')>()
 
   return {
     ...actual,
@@ -38,16 +39,24 @@ vi.mock('@/helpers', async (importOriginal) => {
   }
 })
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/store/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/store')>()
 
   return {
     ...actual,
-    paymentRetrieve: mockPaymentRetrieve,
     store: {
       getState: mockStoreGetState,
       dispatch: mockStoreDispatch,
     },
+  }
+})
+
+vi.mock('@/store/thunks/payment', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/thunks/payment')>()
+
+  return {
+    ...actual,
+    paymentRetrieve: Object.assign(mockPaymentRetrieve, actual.paymentRetrieve),
   }
 })
 

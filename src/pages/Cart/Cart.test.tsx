@@ -1,20 +1,18 @@
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { ROUTE } from '@/routes'
-import {
-  createAppStore,
-  paymentCreate,
-  paymentCreateReset,
-  refreshCartItems,
-  type RootState,
-} from '@/store'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey } from '@/constants'
+import { ROUTE } from '@/routes/route'
+import { paymentCreateReset } from '@/store/slices/payment'
+import { createAppStore, type RootState } from '@/store/store'
+import { refreshCartItems } from '@/store/thunks/cart'
+import { paymentCreate } from '@/store/thunks/payment'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useCart } from '@/hooks/useCart'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { paymentIdKey } from '@/constants/keys'
 import type {
   CartState,
   Cart as CartType,
@@ -23,13 +21,35 @@ import type {
 } from '@/types'
 import { Cart } from './Cart'
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/hooks/useCart', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCart')>()),
+  useCart: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppSelector: vi.fn(),
+  useAppDispatch: vi.fn(),
+}))
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+
+vi.mock('@/store/thunks/cart', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/thunks/cart')>()
   return {
     ...actual,
-    orderCreate: vi.fn(),
-    refreshCartItems: vi.fn(),
-    paymentCreate: vi.fn(),
+    refreshCartItems: Object.assign(vi.fn(), actual.refreshCartItems),
+  }
+})
+
+vi.mock('@/store/thunks/payment', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/thunks/payment')>()
+  return {
+    ...actual,
+    paymentCreate: Object.assign(vi.fn(), actual.paymentCreate),
   }
 })
 

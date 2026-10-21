@@ -1,14 +1,30 @@
 import { useNavigate } from 'react-router'
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { useAppDispatch, useDebounce } from '@/hooks'
+import { useAppDispatch } from '@/hooks/redux'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { Search } from './Search'
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+
+vi.mock('@/hooks/useDebouncedCallback', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useDebouncedCallback')>()),
+  useDebouncedCallback: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppDispatch: vi.fn(),
+}))
 
 const httpResponse = (data: unknown) =>
   ky.get('https://bookshop.test/mock', {
@@ -49,7 +65,7 @@ describe('Search', () => {
   beforeEach(() => {
     store = createAppStore()
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    vi.mocked(useDebounce).mockImplementation((fn) => fn)
+    vi.mocked(useDebouncedCallback).mockImplementation((fn) => fn)
     vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
   })
 
@@ -76,7 +92,7 @@ describe('Search', () => {
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByText('Test Title')).toBeInTheDocument()
@@ -125,7 +141,7 @@ describe('Search', () => {
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Author')
 
     expect(await screen.findByText('Second Book')).toBeInTheDocument()
@@ -157,7 +173,7 @@ describe('Search', () => {
     )
 
     render(<Search />, { wrapper: Providers })
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(screen.getByRole('button', { name: 'Search' })).toHaveAttribute(
@@ -180,7 +196,7 @@ describe('Search', () => {
       )
     })
 
-    expect(screen.getByRole('textbox', { name: 'search' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('')
     expect(screen.getByText('No search results...')).not.toBeVisible()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
@@ -191,7 +207,7 @@ describe('Search', () => {
     )
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -209,7 +225,7 @@ describe('Search', () => {
         pendingHttpResponse(options?.signal, httpSignals),
       )
       const { unmount } = render(<Search />, { wrapper: Providers })
-      const input = screen.getByRole('textbox', { name: 'search' })
+      const input = screen.getByRole('textbox', { name: 'Search' })
       fireEvent.change(input, { target: { value: 'Test' } })
 
       await waitFor(() => expect(httpSignals).toHaveLength(2))
@@ -266,7 +282,7 @@ describe('Search', () => {
       return httpResponse([])
     })
     render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: 'Author' },
     })
 
@@ -288,7 +304,7 @@ describe('Search', () => {
     )
     await waitFor(() => expect(httpSignals).toHaveLength(1))
     render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: 'Test' },
     })
     await waitFor(() => expect(httpSignals).toHaveLength(2))

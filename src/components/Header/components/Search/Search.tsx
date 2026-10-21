@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
-import { ROUTE } from '@/routes'
+import { ROUTE } from '@/routes/route'
 import { bookshopApi } from '@/store/api/bookshopApi'
-import { useAppDispatch, useClickOutside, useDebounce } from '@/hooks'
-import { searchSchema } from '@/validation'
+import { useAppDispatch } from '@/hooks/redux'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { searchSchema } from '@/validation/userSchemas'
 import type { Book } from '@/types'
 import {
   imagePlaceholder,
@@ -26,6 +29,8 @@ import {
 } from './Search.style'
 
 export function Search() {
+  const { t } = useTranslation()
+
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<Book[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -35,7 +40,7 @@ export function Search() {
   const searchRef = useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const debouncedSearchResults = useDebounce(getSearchResults)
+  const debouncedSearchResults = useDebouncedCallback(getSearchResults)
 
   useClickOutside(searchRef, () => setSearchOpen(false))
 
@@ -80,7 +85,7 @@ export function Search() {
 
       if (booksSearchResponse.error || authorsSearchResponse.error) {
         pendingRequests.current = []
-        setSearchError('Could not load search results. Please try again.')
+        setSearchError(t('catalogue.searchError'))
         setIsSearching(false)
 
         return
@@ -180,9 +185,9 @@ export function Search() {
               id="search-books"
               type="text"
               name="search"
-              aria-label="search"
+              aria-label={t('catalogue.search')}
               aria-busy={isSearching}
-              placeholder="What are you looking for?"
+              placeholder={t('catalogue.searchPlaceholder')}
               autoComplete="off"
               onChange={(e) => handleSearchChange(e, handleChange)}
               onClick={handleClick}
@@ -218,7 +223,7 @@ export function Search() {
                           <div>
                             <TextBold>{book.title}</TextBold>
                             <p>
-                              <i>by </i>
+                              <i>{t('common.by')} </i>
                               <span>{book.author}</span>
                             </p>
                           </div>
@@ -230,14 +235,14 @@ export function Search() {
                 </DropdownList>
               ) : (
                 <DropdownList>
-                  <NoResults>No search results...</NoResults>
+                  <NoResults>{t('catalogue.noResults')}</NoResults>
                 </DropdownList>
               )}
             </Dropdown>
             <SearchButton
               type="submit"
-              title="Search"
-              aria-label="Search"
+              title={t('catalogue.search')}
+              aria-label={t('catalogue.search')}
               aria-busy={isSearching}>
               {isSearching ? (
                 <SpinnerIcon width={16} height={16} aria-hidden="true" />
@@ -252,7 +257,7 @@ export function Search() {
                   handleReset()
                   document.getElementById('search-books')?.focus()
                 }}
-                title="Clear">
+                title={t('common.actions.clear')}>
                 <XMarkIcon color="var(--color-on-surface-variant)" />
               </ClearButton>
             )}

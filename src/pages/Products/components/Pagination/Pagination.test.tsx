@@ -5,11 +5,11 @@ import {
   decrementBooksCurrentPage,
   incrementBooksCurrentPage,
   setBooksCurrentPage,
-} from '@/store'
-import { useAppDispatch, useAppSelector } from '@/hooks'
+} from '@/store/slices/books'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { Pagination } from './Pagination'
 
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/redux', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
 }))

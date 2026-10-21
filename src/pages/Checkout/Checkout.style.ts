@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledCheckout = styled.section`
   --page-loading-height: calc(100dvh - 4rem);
@@ -89,6 +89,56 @@ export const StyledCheckout = styled.section`
 
   #payment-element {
     margin: 1rem 0;
+  }
+
+  .checkout-review {
+    h3,
+    p {
+      margin-bottom: 0.5rem;
+    }
+
+    ul {
+      display: grid;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  .checkout-terms {
+    label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    input {
+      flex-shrink: 0;
+      width: 1.125rem;
+      height: 1.125rem;
+      margin-top: 0.2rem;
+      accent-color: var(--color-primary);
+    }
+
+    p {
+      margin-top: 0.5rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    a {
+      text-decoration: underline;
+    }
   }
 
   button {

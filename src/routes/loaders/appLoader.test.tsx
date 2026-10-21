@@ -4,28 +4,28 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
-import { store } from '@/store'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
+import { store } from '@/store/store'
 import { paymentCreate } from '@/store/thunks/payment'
 import { BasketButton } from '@/components/Header/components/BasketButton/BasketButton'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdKey } from '@/constants'
+import {
+  localStorageAdapter,
+  sessionStorageAdapter,
+} from '@/helpers/browserStorage'
+import { cartKey, paymentIdKey } from '@/constants/keys'
 import type { Book } from '@/types'
 import { appLoader } from './appLoader'
 import { authLoader } from './authLoader'
 import { cartLoader } from './cartLoader'
 
-vi.unmock('@/hooks')
-vi.unmock('react-router')
-
-vi.mock('@/routes', () => ({
+vi.mock('@/routes/route', () => ({
   ROUTE: { CART: 'cart', CHECKOUT: 'checkout' },
 }))
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/store/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/store')>()
 
   return { ...actual, store: actual.createAppStore() }
 })
@@ -108,7 +108,7 @@ describe('appLoader saved basket restoration', () => {
       renderRoute(path)
 
       expect(
-        await screen.findByRole('button', { name: 'Basket' }),
+        await screen.findByRole('button', { name: 'Cart' }),
       ).toBeInTheDocument()
       expect(await screen.findByText('2')).toBeInTheDocument()
       expect(authLoader).toHaveBeenCalledTimes(1)
@@ -210,7 +210,7 @@ describe('appLoader saved basket restoration', () => {
     renderRoute()
 
     expect(
-      await screen.findByRole('button', { name: 'Basket' }),
+      await screen.findByRole('button', { name: 'Cart' }),
     ).toBeInTheDocument()
     expect(store.getState().cart.currentRequestId).not.toBeNull()
     expect(screen.queryByText('2')).not.toBeInTheDocument()
@@ -258,7 +258,7 @@ describe('appLoader saved basket restoration', () => {
     renderRoute()
     await waitFor(() =>
       expect(store.getState().cart.cartError).toBe(
-        'Failed to fetch cart items',
+        'Failed to load your cart. Please try again.',
       ),
     )
     expect(baseRequest.get).toHaveBeenCalledTimes(1)

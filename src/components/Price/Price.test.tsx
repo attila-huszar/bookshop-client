@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { i18n } from '@/i18n'
+import { act, render, screen } from '@testing-library/react'
 import { Price } from './Price'
 
 const defaultProps = {
@@ -8,6 +9,18 @@ const defaultProps = {
 }
 
 describe('Price Component', () => {
+  it('updates decimal formatting when the interface language changes', async () => {
+    render(<Price {...defaultProps} price={12.5} />)
+
+    expect(screen.getByText('12.50')).toBeInTheDocument()
+
+    await act(async () => {
+      await i18n.changeLanguage('hu')
+    })
+
+    expect(screen.getByText('12,50')).toBeInTheDocument()
+  })
+
   it('should render without discount in card component', () => {
     render(<Price {...defaultProps} />)
 

@@ -1,6 +1,6 @@
 import { styled } from 'styled-components'
 import { StyledButton } from '@/components/Button/Button.style'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
   position: sticky;

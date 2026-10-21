@@ -1,9 +1,9 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { Avatar } from './Avatar'
 
 describe('Avatar', () => {

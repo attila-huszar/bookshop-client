@@ -1,12 +1,15 @@
 import { useImperativeHandle, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik } from 'formik'
-import { postPasswordReset } from '@/api'
-import { Button, FormikField, IconButton, toast } from '@/components'
-import { useClickOutside } from '@/hooks'
-import { forgotPasswordSchema } from '@/validation'
-import { handleError } from '@/errors'
+import { postPasswordReset } from '@/api/users'
+import { toast } from '@/components/AppToaster'
+import { Button, IconButton } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { getErrorMessage } from '@/helpers/errors'
+import { forgotPasswordSchema } from '@/validation/userSchemas'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledForgotPassword } from './ForgotPassword.style'
 
 type PasswordDialogHandle = {
@@ -17,6 +20,8 @@ type PasswordDialogHandle = {
 type Props = { ref: React.Ref<PasswordDialogHandle> }
 
 export function ForgotPassword({ ref }: Props) {
+  const { t } = useTranslation()
+
   const forgotPassRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(ref, () => ({
@@ -37,41 +42,35 @@ export function ForgotPassword({ ref }: Props) {
     actions: { resetForm: () => void },
   ) => {
     try {
-      const resetResponse = await postPasswordReset(values.email)
+      await postPasswordReset(values.email)
 
-      toast.success(resetResponse.message, {
+      toast.success(t('auth.resetSent'), {
         id: 'passwordReset',
       })
 
       handleClose()
       actions.resetForm()
     } catch (error) {
-      const formattedError = handleError({
-        error,
-        message: 'Password reset failed, please try again later',
+      toast.error(getErrorMessage(error, t('auth.resetError')), {
+        id: 'passwordReset',
       })
-
-      toast.error(formattedError.message, { id: 'passwordReset' })
     }
   }
 
   return (
     <StyledForgotPassword ref={forgotPassRef} onCancel={handleClose}>
-      <h2>Forgotten Password</h2>
-      <p>
-        Enter your email address and we'll send you a link to reset your
-        password.
-      </p>
+      <h2>{t('auth.forgotPasswordTitle')}</h2>
+      <p>{t('auth.resetHelp')}</p>
       <Formik
         initialValues={{ email: '' }}
         validationSchema={forgotPasswordSchema}
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>Email</p>
+            <p>{t('common.fields.email')}</p>
             <FormikField
               name="email"
-              placeholder="Email"
+              placeholder={t('common.fields.email')}
               type="email"
               inputMode="email"
               autoComplete="email"
@@ -82,12 +81,13 @@ export function ForgotPassword({ ref }: Props) {
                 $size="lg"
                 $color="var(--color-outline)"
                 type="reset"
-                title="Back"
+                title={t('common.actions.back')}
                 disabled={isSubmitting}
                 onClick={handleClose}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Send Email
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('auth.sendEmail')}
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

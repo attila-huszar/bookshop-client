@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { StyledDialog } from '@/styles'
+import { StyledDialog } from '@/styles/dialog.styles'
 
 export const StyledForgotPassword = styled(StyledDialog)`
   h2 {

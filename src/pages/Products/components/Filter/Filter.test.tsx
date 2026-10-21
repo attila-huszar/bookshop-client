@@ -2,18 +2,15 @@ import { act } from 'react'
 import { Provider } from 'react-redux'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { vi } from 'vitest'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { booksQueryArgs } from '@/store/selectors'
 import {
   applyBooksFilters,
-  booksQueryArgs,
-  createAppStore,
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { bookshopApi } from '@/store/api/bookshopApi'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { useAppSelector as realUseAppSelector } from '@/hooks/redux'
+} from '@/store/slices/books'
+import { createAppStore } from '@/store/store'
 import { Filter } from './Filter'
 
 describe('Filter', () => {
@@ -31,8 +28,6 @@ describe('Filter', () => {
     store.dispatch(setBooksFilterPrice([10, 50]))
     store.dispatch(setBooksFilterPublishYear([1990, 2020]))
     store.dispatch(setBooksFilterRating(3.5))
-    vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
-    vi.mocked(useAppSelector).mockImplementation(realUseAppSelector)
   })
 
   afterEach(() => {

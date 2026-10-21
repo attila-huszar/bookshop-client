@@ -1,51 +1,62 @@
-import { RefObject, useEffect } from 'react'
+import { type RefObject, useEffect, useEffectEvent } from 'react'
 
 export const useClickOutside = (
   refs: RefObject<HTMLElement | null> | RefObject<HTMLElement | null>[],
   onOutsideClick: () => void,
 ): void => {
-  useEffect(() => {
-    const handler = (event: PointerEvent) => {
-      const target = event.target as Node | null
-      if (!target) return
+  const onPointerDown = useEffectEvent((event: PointerEvent) => {
+    const target = event.target
 
-      const refArray = Array.isArray(refs) ? refs : [refs]
-      const elements = refArray
-        .map((ref) => ref.current)
-        .filter((el): el is HTMLElement => !!el)
-      if (elements.length === 0) return
+    if (!(target instanceof Node)) {
+      return
+    }
 
-      const dialog = elements.find(
-        (el): el is HTMLDialogElement =>
-          (typeof HTMLDialogElement !== 'undefined' &&
-            el instanceof HTMLDialogElement) ||
-          el.tagName === 'DIALOG',
-      )
-      if (dialog && !dialog.open) return
+    const refArray = Array.isArray(refs) ? refs : [refs]
+    const elements = refArray
+      .map((ref) => ref.current)
+      .filter((el): el is HTMLElement => el !== null)
 
-      if (dialog && target === dialog) {
-        const rect = dialog.getBoundingClientRect()
-        const isWithinDialogBox =
-          event.clientX >= rect.left &&
-          event.clientX <= rect.right &&
-          event.clientY >= rect.top &&
-          event.clientY <= rect.bottom
+    if (elements.length === 0) {
+      return
+    }
 
-        if (isWithinDialogBox) return
-        onOutsideClick()
+    const dialog = elements.find(
+      (el): el is HTMLDialogElement => el.tagName === 'DIALOG',
+    )
+
+    if (dialog && !dialog.open) {
+      return
+    }
+
+    if (dialog && target === dialog) {
+      const rect = dialog.getBoundingClientRect()
+      const isWithinDialogBox =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+
+      if (isWithinDialogBox) {
         return
       }
 
-      const isClickInside = elements.some((el) => el.contains(target))
-      if (isClickInside) return
-
       onOutsideClick()
+
+      return
     }
 
-    document.addEventListener('pointerdown', handler)
+    if (elements.some((el) => el.contains(target))) {
+      return
+    }
+
+    onOutsideClick()
+  })
+
+  useEffect(() => {
+    document.addEventListener('pointerdown', onPointerDown)
 
     return () => {
-      document.removeEventListener('pointerdown', handler)
+      document.removeEventListener('pointerdown', onPointerDown)
     }
-  }, [refs, onOutsideClick])
+  }, [])
 }

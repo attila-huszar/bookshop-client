@@ -1,17 +1,25 @@
-import { useEffect, useState } from 'react'
-import { breakpoints } from '@/styles'
+import { useSyncExternalStore } from 'react'
+import { breakpoints } from '@/styles/media.breakpoints'
+
+const subscribe = (onChange: () => void) => {
+  window.addEventListener('resize', onChange)
+
+  return () => window.removeEventListener('resize', onChange)
+}
+
+const getBreakpoint = () => {
+  if (window.innerWidth < breakpoints.sm) {
+    return 'mobile'
+  }
+
+  return window.innerWidth < breakpoints.md ? 'tablet' : 'desktop'
+}
 
 export const useBreakpoints = () => {
-  const [width, setWidth] = useState(window.innerWidth)
+  const breakpoint = useSyncExternalStore(subscribe, getBreakpoint)
 
-  useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const isMobile = width < breakpoints.sm
-  const isTablet = width >= breakpoints.sm && width < breakpoints.md
-
-  return { width, isMobile, isTablet }
+  return {
+    isMobile: breakpoint === 'mobile',
+    isTablet: breakpoint === 'tablet',
+  }
 }

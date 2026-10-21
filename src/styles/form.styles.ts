@@ -132,6 +132,6 @@ export type FormTypes = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 > & {
-  $valid: boolean
-  $error: boolean | string | undefined
+  $valid?: boolean
+  $error?: boolean | string
 }

@@ -1,40 +1,37 @@
-import { Providers } from '@/setupTests'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { ROUTE } from '@/routes'
+import { ROUTE } from '@/routes/route'
 import { Menu } from './Menu'
-
-declare const global: typeof globalThis
 
 describe('Menu component', () => {
   it('should render the menu button', () => {
-    render(<Menu />, { wrapper: Providers })
+    render(<Menu />, { wrapper: MemoryRouter })
 
     const button = screen.getByTitle('Menu')
     expect(button).toBeInTheDocument()
   })
 
-  it('should navigate to home page when clicking home link', async () => {
-    render(<Menu />, { wrapper: Providers })
+  it.each([
+    { link: 'Home', initialPath: `/${ROUTE.BOOKS}`, destination: 'Home page' },
+    { link: 'Shop', initialPath: '/', destination: 'Book catalogue' },
+  ])(
+    'navigates to $link when its link is clicked',
+    async ({ link, initialPath, destination }) => {
+      render(
+        <MemoryRouter initialEntries={[initialPath]}>
+          <Menu />
+          <Routes>
+            <Route path="/" element={<p>Home page</p>} />
+            <Route path={`/${ROUTE.BOOKS}`} element={<p>Book catalogue</p>} />
+          </Routes>
+        </MemoryRouter>,
+      )
 
-    const menuButton = screen.getByTitle('Menu')
-    await userEvent.click(menuButton)
+      await userEvent.click(screen.getByTitle('Menu'))
+      await userEvent.click(screen.getByRole('link', { name: link }))
 
-    const homeLink = screen.getByText('Home')
-    await userEvent.click(homeLink)
-
-    expect(global.window.location.pathname).toBe('/')
-  })
-
-  it('should navigate to shop page when clicking shop link', async () => {
-    render(<Menu />, { wrapper: Providers })
-
-    const menuButton = screen.getByTitle('Menu')
-    await userEvent.click(menuButton)
-
-    const shopLink = screen.getByText('Shop')
-    await userEvent.click(shopLink)
-
-    expect(global.window.location.pathname).toContain(ROUTE.BOOKS)
-  })
+      expect(await screen.findByText(destination)).toBeInTheDocument()
+    },
+  )
 })

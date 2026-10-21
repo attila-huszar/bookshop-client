@@ -1,11 +1,16 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { ordersSelector, userSelector } from '@/store'
-import { useAppSelector } from '@/hooks'
+import { ordersSelector, userSelector } from '@/store/selectors'
+import { useAppSelector } from '@/hooks/redux'
 import { Orders } from './Orders'
 
-vi.mock('@/store', () => ({
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppSelector: vi.fn(),
+}))
+
+vi.mock('@/store/selectors', () => ({
   ordersSelector: vi.fn(),
   userSelector: vi.fn(),
 }))

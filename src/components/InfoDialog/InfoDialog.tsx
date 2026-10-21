@@ -1,11 +1,14 @@
 import { RefObject } from 'react'
-import { Alert, Button, Loading } from '@/components'
+import { useTranslation } from 'react-i18next'
+import { Alert } from '@/components/Alert'
+import { Button } from '@/components/Button'
+import { Loading } from '@/components/Loading'
 import { StyledInfoDialog } from './InfoDialog.style'
 
 type InfoDialogProps = {
   dialogRef: RefObject<HTMLDialogElement | null>
   message: string
-  error?: string | null
+  error?: unknown
   reloadButton?: boolean
   backButton?: boolean
 }
@@ -17,6 +20,8 @@ export function InfoDialog({
   reloadButton,
   backButton,
 }: InfoDialogProps) {
+  const { t } = useTranslation()
+
   return (
     <StyledInfoDialog ref={dialogRef}>
       {error ? (
@@ -25,10 +30,14 @@ export function InfoDialog({
         <Loading message={message} />
       )}
       {reloadButton && (
-        <Button onClick={() => window.location.reload()}>Reload Page</Button>
+        <Button onClick={() => window.location.reload()}>
+          {t('common.actions.reloadPage')}
+        </Button>
       )}
       {backButton && (
-        <Button onClick={() => window.location.replace('/')}>Go Back</Button>
+        <Button onClick={() => window.location.replace('/')}>
+          {t('common.actions.goBack')}
+        </Button>
       )}
     </StyledInfoDialog>
   )

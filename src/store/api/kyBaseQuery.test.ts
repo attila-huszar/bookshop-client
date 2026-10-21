@@ -1,17 +1,22 @@
 import { createElement } from 'react'
 import { Provider, useSelector } from 'react-redux'
+import { i18n } from '@/i18n'
 import { act, render, waitFor } from '@testing-library/react'
 import { HTTPError } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authRequest, configureAuthRequest } from '@/api/authRequest'
 import { baseRequest } from '@/api/baseRequest'
 import { uploadProductImage } from '@/api/cms'
+import { LogLevel, sendLog } from '@/api/logs'
 import {
   deletePaymentIntent,
   getPaymentIntent,
   postPaymentIntent,
 } from '@/api/payments'
+import { transport } from '@/api/transport'
 import { postUserLogout, retrieveAuthTokens } from '@/api/users'
+import { log } from '@/services/logger'
+import { getErrorMessage } from '@/helpers/errors'
 import { authSessionChanged } from '../slices/user'
 import { store as appStore, createAppStore, type RootState } from '../store'
 import { expireAuthSession, fetchAuthTokens } from '../thunks/user'
@@ -93,6 +98,37 @@ afterEach(() => {
 })
 
 describe('Ky-backed RTK Query transport', () => {
+  it('preserves API codes and validation details in the cache for translation at display time', async () => {
+    const failure = {
+      code: 'VALIDATION_ERROR',
+      validation: [
+        {
+          path: ['email'],
+          code: 'invalid_format',
+          origin: 'string',
+          format: 'email',
+        },
+      ],
+    }
+    fetchMock.mockResolvedValueOnce(jsonResponse(failure, 400))
+    const result = await store.dispatch(
+      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+    )
+
+    expect(result.error).toMatchObject({ ...failure, status: 400 })
+    expect(getErrorMessage(result.error, 'Fallback')).toBe(
+      'Email: Invalid Email',
+    )
+
+    await act(() => i18n.changeLanguage('hu'))
+
+    const cached = bookshopApi.endpoints.book.select(7)(store.getState())
+    expect(getErrorMessage(cached.error, 'Fallback')).toBe(
+      `${i18n.t('common.fields.email')}: ${i18n.t('validation.email')}`,
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it.each(['expired-token', null])(
     'logs out with cookies and no token refresh for session %s',
     async (token) => {
@@ -244,6 +280,8 @@ describe('Ky-backed RTK Query transport', () => {
 
     expect(refreshRequest?.credentials).toBe('include')
     expect(refreshRequest?.headers.has('authorization')).toBe(false)
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
   it('expires the session without looping when the refreshed token is also rejected', async () => {
@@ -268,6 +306,8 @@ describe('Ky-backed RTK Query transport', () => {
     expect(accessToken).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(JSON.parse(JSON.stringify(result.error))).toEqual(result.error)
+    expect(vi.spyOn(log, 'warn')).toHaveBeenCalledTimes(1)
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
   it('returns a serializable refresh failure without retrying the request', async () => {
@@ -279,7 +319,10 @@ describe('Ky-backed RTK Query transport', () => {
       }),
     )
 
-    expect(result.error).toEqual({ message: 'Session expired' })
+    expect(result.error).toEqual({
+      code: 'UNKNOWN_API_ERROR',
+      message: 'Session expired',
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
@@ -379,6 +422,8 @@ describe('Ky-backed RTK Query transport', () => {
     await query
     expect(requestSignal?.aborted).toBe(true)
     expect(refresh).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
   it('handles successful no-content responses without trying to parse JSON', async () => {
@@ -400,13 +445,113 @@ describe('Ky-backed RTK Query transport', () => {
       bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
-    expect(malformed.error).toHaveProperty('message', expect.any(String))
-    fetchMock.mockRejectedValueOnce(new Error('Offline'))
+    expect(malformed.error).toMatchObject({
+      code: 'UNKNOWN_API_ERROR',
+      message: i18n.t('common.requestFailed'),
+    })
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
     const offline = await store.dispatch(
       bookshopApi.endpoints.book.initiate(8, { subscribe: false }),
     )
 
-    expect(offline.error).toHaveProperty('message', expect.any(String))
+    expect(offline.error).toMatchObject({
+      code: 'UNKNOWN_API_ERROR',
+      message: i18n.t('common.requestFailed'),
+    })
+  })
+})
+
+describe('request failure logging', () => {
+  it('logs HTTP response details once without including query parameters', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ code: 'BAD_REQUEST' }, 400))
+
+    await expect(
+      baseRequest.get('books', { searchParams: { title: 'Search text' } }),
+    ).rejects.toBeInstanceOf(HTTPError)
+
+    expect(vi.spyOn(log, 'warn')).toHaveBeenCalledExactlyOnceWith(
+      'HTTP request failed',
+      {
+        method: 'GET',
+        path: '/api/books',
+        status: 400,
+        error: { code: 'BAD_REQUEST' },
+      },
+    )
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
+  })
+
+  it('logs only the final failure after retries finish', async () => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(jsonResponse({ code: 'INTERNAL_ERROR' }, 503)),
+    )
+
+    await expect(
+      baseRequest.get('books', { retry: { limit: 2, delay: () => 0 } }),
+    ).rejects.toBeInstanceOf(HTTPError)
+
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(vi.spyOn(log, 'error')).toHaveBeenCalledExactlyOnceWith(
+      'Request failed',
+      {
+        method: 'GET',
+        path: '/api/books',
+        status: 503,
+        error: { code: 'INTERNAL_ERROR' },
+      },
+    )
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+  })
+
+  it('does not log a failure recovered by a retry', async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({}, 503))
+      .mockResolvedValueOnce(jsonResponse([]))
+
+    await baseRequest.get('books', { retry: { limit: 1, delay: () => 0 } })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
+  })
+
+  it('logs a network failure once without replacing its original cause', async () => {
+    const cause = new TypeError('Failed to fetch')
+    fetchMock.mockRejectedValueOnce(cause)
+
+    await expect(baseRequest.get('books')).rejects.toHaveProperty(
+      'cause',
+      cause,
+    )
+
+    expect(vi.spyOn(log, 'error')).toHaveBeenCalledExactlyOnceWith(
+      'Request failed',
+      {
+        method: 'GET',
+        path: '/api/books',
+        name: 'NetworkError',
+      },
+    )
+  })
+
+  it('does not report failed log uploads as another request failure', async () => {
+    const loggingClient = transport.extend({
+      prefix: 'https://bookshop.test/api',
+      retry: 0,
+    })
+    vi.spyOn(transport, 'post').mockImplementation(loggingClient.post)
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, 400))
+
+    sendLog(LogLevel.Error, 'Request failed')
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+    await expect(
+      vi.mocked(transport.post).mock.results[0]!.value,
+    ).rejects.toBeInstanceOf(HTTPError)
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 })
 

@@ -3,11 +3,17 @@ import { useLocation, useNavigate } from 'react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
+import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api/users'
 import { PasswordReset } from './PasswordReset'
 
-vi.mock('@/api', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/api')>()
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+  useLocation: vi.fn(),
+}))
+
+vi.mock('@/api/users', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/users')>()
   return {
     ...actual,
     postVerifyPasswordReset: vi.fn(),

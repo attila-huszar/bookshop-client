@@ -1,5 +1,5 @@
-import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { store } from '@/store/store'
 import type { TabValue } from '@/pages/CMS/CMS'
 import { authLoader } from './authLoader'
 

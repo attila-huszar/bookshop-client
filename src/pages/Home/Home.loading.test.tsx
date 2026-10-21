@@ -3,17 +3,14 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { baseRequest } from '@/api'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { Recommended } from '@/components/Recommended/Recommended'
+import { Recommended } from '@/components/Recommended'
 import type { Book } from '@/types'
 import { News } from './components/News/News'
 import { Releases } from './components/Releases/Releases'
 import { TopSellers } from './components/TopSellers/TopSellers'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 let store: ReturnType<typeof createAppStore>
 

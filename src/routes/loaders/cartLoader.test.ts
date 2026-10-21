@@ -1,18 +1,21 @@
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
-import { store } from '@/store'
+import { baseRequest } from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
+import { store } from '@/store/store'
 import { paymentCreate } from '@/store/thunks/payment'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdKey } from '@/constants'
+import {
+  localStorageAdapter,
+  sessionStorageAdapter,
+} from '@/helpers/browserStorage'
+import { cartKey, paymentIdKey } from '@/constants/keys'
 import { authLoader } from './authLoader'
 import { cartLoader } from './cartLoader'
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/store/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/store')>()
 
   return { ...actual, store: actual.createAppStore() }
 })

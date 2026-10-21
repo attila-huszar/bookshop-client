@@ -1,9 +1,15 @@
 import { FC } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useUpdateOrderMutation } from '@/store/api/bookshopApi'
-import { Button, CountrySelect, FormikField, toast } from '@/components'
-import { formatDate, formatPaymentStatus, getErrorMessage } from '@/helpers'
-import { orderCustomerUpdateSchema } from '@/validation'
+import { toast } from '@/components/AppToaster'
+import { Button } from '@/components/Button'
+import { CountrySelect } from '@/components/CountrySelect'
+import { FormikField } from '@/components/FormikField'
+import { formatPaymentStatus } from '@/helpers/checkout'
+import { getErrorMessage } from '@/helpers/errors'
+import { formatDate } from '@/helpers/formatDate'
+import { orderCustomerUpdateSchema } from '@/validation/orderSchemas'
 import type { CmsOrderUpdate, Order } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 import {
@@ -16,6 +22,11 @@ import {
   SectionHeader,
 } from '../../styles'
 
+type OrderFormValues = Pick<
+  Order,
+  'firstName' | 'lastName' | 'email' | 'shipping'
+>
+
 type Props = {
   editedItem: Order | null
   onClose: () => void
@@ -23,6 +34,8 @@ type Props = {
 }
 
 export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
+  const { t } = useTranslation()
+
   const [updateOrder] = useUpdateOrderMutation()
 
   if (!editedItem) {
@@ -31,7 +44,17 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
 
   const isReadOnly = readOnly === true || !editedItem.paymentId
 
-  const handleSubmit = async (values: Order, actions: FormikHelpers<Order>) => {
+  const initialValues: OrderFormValues = {
+    firstName: editedItem.firstName ?? '',
+    lastName: editedItem.lastName ?? '',
+    email: editedItem.email ?? '',
+    shipping: editedItem.shipping,
+  }
+
+  const handleSubmit = async (
+    values: OrderFormValues,
+    actions: FormikHelpers<OrderFormValues>,
+  ) => {
     if (!editedItem.paymentId) {
       return
     }
@@ -46,44 +69,44 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       }
       await updateOrder(payload).unwrap()
       actions.resetForm()
-      toast.success('Order updated successfully')
+      toast.success(t('cms.saved', { entity: t('common.fields.order') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
+      toast.error(getErrorMessage(error, t('common.unexpectedError')))
     }
   }
 
   return (
     <Formik
       key="orders"
-      initialValues={editedItem}
+      initialValues={initialValues}
       validationSchema={orderCustomerUpdateSchema}
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => {
         return (
           <Form>
-            {!editedItem.paymentId && (
-              <p>
-                Draft order — no payment linked yet. Editing is unavailable.
-              </p>
-            )}
+            {!editedItem.paymentId && <p>{t('cms.draftReadOnly')}</p>}
             <fieldset disabled={isReadOnly}>
-              <SectionHeader>Order Information</SectionHeader>
+              <SectionHeader>
+                {t('cms.information', { entity: t('common.fields.order') })}
+              </SectionHeader>
               <MetadataBlock>
                 <div>
-                  <p>Order ID</p>
+                  <p>
+                    {t('cms.recordId', { entity: t('common.fields.order') })}
+                  </p>
                   <span>{editedItem.id}</span>
                 </div>
                 <div>
-                  <p>Created At</p>
+                  <p>{t('common.fields.createdAt')}</p>
                   <span>{formatDate(editedItem.createdAt)}</span>
                 </div>
                 <div>
-                  <p>Updated At</p>
+                  <p>{t('common.fields.updatedAt')}</p>
                   <span>{formatDate(editedItem.updatedAt)}</span>
                 </div>
                 <div>
-                  <p>Paid At</p>
+                  <p>{t('common.fields.paidAt')}</p>
                   <div
                     style={{
                       display: 'flex',
@@ -94,22 +117,21 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   </div>
                 </div>
               </MetadataBlock>
-              <SectionHeader>Payment Details</SectionHeader>
+              <SectionHeader>{t('cms.paymentDetails')}</SectionHeader>
               <Row>
                 <div>
-                  <p>Payment ID</p>
+                  <p>{t('common.fields.paymentId')}</p>
                   <FormikField
-                    name="paymentId"
-                    placeholder="Payment ID"
+                    value={editedItem.paymentId ?? ''}
+                    placeholder={t('common.fields.paymentId')}
                     type="text"
                     readOnly
                   />
                 </div>
                 <div>
-                  <p>Payment Status</p>
+                  <p>{t('common.fields.paymentStatus')}</p>
                   <FormikField
-                    name="paymentStatus"
-                    placeholder="Payment Status"
+                    placeholder={t('common.fields.paymentStatus')}
                     type="text"
                     value={formatPaymentStatus(editedItem.paymentStatus)}
                     readOnly
@@ -118,117 +140,121 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               </Row>
               <Row>
                 <div>
-                  <p>Total</p>
+                  <p>{t('common.fields.total')}</p>
                   <FormikField
-                    name="total"
-                    placeholder="Total"
+                    value={editedItem.total}
+                    placeholder={t('common.fields.total')}
                     type="number"
                     readOnly
                   />
                 </div>
                 <div>
-                  <p>Currency</p>
+                  <p>{t('common.fields.currency')}</p>
                   <FormikField
-                    name="currency"
+                    value={editedItem.currency}
                     readOnly
-                    placeholder="Currency"
+                    placeholder={t('common.fields.currency')}
                     type="text"
                   />
                 </div>
               </Row>
-              <SectionHeader>Customer Information</SectionHeader>
+              <SectionHeader>{t('cms.customerInformation')}</SectionHeader>
               <Row>
                 <div>
-                  <p>First Name</p>
+                  <p>{t('common.fields.firstName')}</p>
                   <FormikField
                     name="firstName"
-                    placeholder="First Name"
+                    placeholder={t('common.fields.firstName')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Last Name</p>
+                  <p>{t('common.fields.lastName')}</p>
                   <FormikField
                     name="lastName"
-                    placeholder="Last Name"
+                    placeholder={t('common.fields.lastName')}
                     type="text"
                   />
                 </div>
               </Row>
               <Row>
                 <div>
-                  <p>Email</p>
-                  <FormikField name="email" placeholder="Email" type="email" />
+                  <p>{t('common.fields.email')}</p>
+                  <FormikField
+                    name="email"
+                    placeholder={t('common.fields.email')}
+                    type="email"
+                  />
                 </div>
               </Row>
-              <SectionHeader>Shipping Address</SectionHeader>
+              <SectionHeader>{t('cms.shippingAddress')}</SectionHeader>
               <Row>
                 <div>
-                  <p>Name</p>
+                  <p>{t('common.fields.name')}</p>
                   <FormikField
                     name="shipping.name"
-                    placeholder="Name"
+                    placeholder={t('common.fields.name')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>Phone</p>
+                  <p>{t('common.fields.phone')}</p>
                   <FormikField
                     name="shipping.phone"
-                    placeholder="Phone"
+                    placeholder={t('common.fields.phone')}
                     type="text"
                   />
                 </div>
               </Row>
               <AddressBlock>
-                <p>Address</p>
+                <p>{t('common.fields.address')}</p>
                 <Row>
                   <div>
-                    <p>Line 1</p>
+                    <p>{t('common.fields.line1')}</p>
                     <FormikField
                       name="shipping.address.line1"
-                      placeholder="Line 1"
+                      placeholder={t('common.fields.line1')}
                       type="text"
                     />
                   </div>
                   <div>
-                    <p>Line 2</p>
+                    <p>{t('common.fields.line2')}</p>
                     <FormikField
                       name="shipping.address.line2"
-                      placeholder="Line 2"
+                      placeholder={t('common.fields.line2')}
                       type="text"
                     />
                   </div>
                 </Row>
                 <Row>
                   <div>
-                    <p>City</p>
+                    <p>{t('common.fields.city')}</p>
                     <FormikField
                       name="shipping.address.city"
-                      placeholder="City"
+                      placeholder={t('common.fields.city')}
                       type="text"
                     />
                   </div>
                   <div>
-                    <p>State</p>
+                    <p>{t('common.fields.state')}</p>
                     <FormikField
                       name="shipping.address.state"
-                      placeholder="State"
+                      placeholder={t('common.fields.state')}
                       type="text"
                     />
                   </div>
                 </Row>
                 <Row>
                   <div>
-                    <p>Postal Code</p>
+                    <p>{t('common.fields.postalCode')}</p>
                     <FormikField
                       name="shipping.address.postal_code"
-                      placeholder="Postal Code"
+                      placeholder={t('common.fields.postalCode')}
                       type="text"
                     />
                   </div>
                   <div>
-                    <p>Country</p>
+                    <p>{t('common.fields.country')}</p>
                     <CountrySelect
                       fieldName="shipping.address.country"
                       readOnly={isReadOnly}
@@ -236,65 +262,65 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   </div>
                 </Row>
               </AddressBlock>
-              <SectionHeader>Order Items</SectionHeader>
+              <SectionHeader>{t('cms.orderItems')}</SectionHeader>
               <OrderItemBlock>
-                <p>Items</p>
-                {editedItem.items?.map((item, idx) => (
+                <p>{t('common.fields.items')}</p>
+                {editedItem.items?.map((item) => (
                   <div key={item.id}>
                     <OrderItemRow>
                       <div>
-                        <p>ID</p>
+                        <p>{t('common.fields.id')}</p>
                         <FormikField
-                          name={`items.${idx}.id`}
+                          value={item.id}
                           readOnly
-                          placeholder="ID"
+                          placeholder={t('common.fields.id')}
                           type="number"
                         />
                       </div>
                       <div>
-                        <p>Author</p>
+                        <p>{t('common.fields.author')}</p>
                         <FormikField
-                          name={`items.${idx}.author`}
+                          value={item.author ?? ''}
                           readOnly
-                          placeholder="Author"
+                          placeholder={t('common.fields.author')}
                           type="text"
                         />
                       </div>
                       <div>
-                        <p>Title</p>
+                        <p>{t('common.fields.title')}</p>
                         <FormikField
-                          name={`items.${idx}.title`}
+                          value={item.title}
                           readOnly
-                          placeholder="Title"
+                          placeholder={t('common.fields.title')}
                           type="text"
                         />
                       </div>
                     </OrderItemRow>
                     <Row>
                       <div>
-                        <p>Price</p>
+                        <p>{t('common.fields.price')}</p>
                         <FormikField
-                          name={`items.${idx}.price`}
+                          value={item.price}
                           readOnly
-                          placeholder="Price"
+                          placeholder={t('common.fields.price')}
                           type="number"
                         />
                       </div>
                       <div>
-                        <p>Discount</p>
+                        <p>{t('common.fields.discount')}</p>
                         <FormikField
-                          name={`items.${idx}.discount`}
+                          value={item.discount}
                           readOnly
-                          placeholder="Discount"
+                          placeholder={t('common.fields.discount')}
                           type="number"
                         />
                       </div>
                       <div>
-                        <p>Quantity</p>
+                        <p>{t('common.fields.quantity')}</p>
                         <FormikField
-                          name={`items.${idx}.quantity`}
+                          value={item.quantity}
                           readOnly
-                          placeholder="Quantity"
+                          placeholder={t('common.fields.quantity')}
                           type="number"
                         />
                       </div>
@@ -310,14 +336,17 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 $size="sm"
                 $color="neutral"
                 disabled={isSubmitting}>
-                {isReadOnly ? 'Close' : 'Cancel'}
+                {isReadOnly
+                  ? t('common.actions.close')
+                  : t('common.actions.cancel')}
               </Button>
               {!isReadOnly && (
                 <Button
                   type="submit"
                   $size="sm"
                   disabled={!dirty || isSubmitting}>
-                  {isSubmitting && <SpinnerIcon height={22} />} Save
+                  {isSubmitting && <SpinnerIcon height={22} />}
+                  {t('common.actions.save')}
                 </Button>
               )}
             </FormButtons>

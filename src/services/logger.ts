@@ -1,4 +1,4 @@
-import { LogLevel, sendLog } from '@/api'
+import { LogLevel, sendLog } from '@/api/logs'
 
 class Logger {
   info(message: string, meta?: unknown): void {

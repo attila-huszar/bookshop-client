@@ -1,5 +1,6 @@
 import { FC, useEffect } from 'react'
-import { useClickOutside } from '@/hooks'
+import { useTranslation } from 'react-i18next'
+import { useClickOutside } from '@/hooks/useClickOutside'
 import { SpinnerIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
 import type { ButtonColor } from '../Button/Button.types'
@@ -22,10 +23,12 @@ export const ConfirmDialog: FC<Props> = ({
   setIsDialogOpen,
   handleConfirm,
   message,
-  buttonText = 'OK',
+  buttonText,
   buttonColor = 'primary',
   isLoading = false,
 }) => {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (isDialogOpen) {
       ref.current?.showModal()
@@ -61,14 +64,14 @@ export const ConfirmDialog: FC<Props> = ({
           onClick={() => setIsDialogOpen(false)}
           $color="neutral"
           disabled={isLoading}>
-          Cancel
+          {t('common.actions.cancel')}
         </Button>
         <Button
           onClick={handleConfirm}
           $color={buttonColor}
           disabled={isLoading}>
           {isLoading && <SpinnerIcon height={22} aria-hidden="true" />}
-          {buttonText}
+          {buttonText ?? t('common.actions.ok')}
         </Button>
       </div>
     </StyledConfirmDialog>

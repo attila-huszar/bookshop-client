@@ -4,6 +4,7 @@ import {
   paymentCreate,
   paymentRetrieve,
 } from '@/store/thunks/payment'
+import { getApiError } from '@/helpers/errors'
 import { PaymentState } from '@/types'
 
 const initialState: PaymentState = {
@@ -45,7 +46,9 @@ const paymentSlice = createSlice({
         state.payment = null
         state.paymentIsLoading = false
         state.paymentCreateError =
-          action.payload?.message ?? 'Failed to create payment'
+          action.payload?.apiError ??
+          action.payload?.message ??
+          'checkout.createError'
         state.paymentCreateIssueCode = action.payload?.code ?? 'unknown'
       })
       .addCase(paymentRetrieve.pending, (state) => {
@@ -66,8 +69,9 @@ const paymentSlice = createSlice({
         state.paymentIsLoading = false
         state.paymentRetrieveError =
           action.payload?.message ??
+          getApiError(action.error) ??
           action.error.message ??
-          'Failed to retrieve payment'
+          'checkout.error'
       })
       .addCase(paymentCancel.pending, (state) => {
         state.paymentIsLoading = true

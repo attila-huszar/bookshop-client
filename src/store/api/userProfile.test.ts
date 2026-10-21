@@ -1,6 +1,7 @@
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest, PATH } from '@/api'
+import { authRequest } from '@/api/authRequest'
+import { PATH } from '@/api/path'
 import { UserRole } from '@/types'
 import { userSelector } from '../selectors'
 import { authSessionChanged } from '../slices/user'
@@ -88,11 +89,11 @@ describe('user profile cache', () => {
     mutation.reset()
   })
 
-  it('preserves the server password error as a serializable mutation failure', async () => {
+  it('preserves the server password code as a serializable mutation failure', async () => {
     const patch = vi
       .spyOn(authRequest, 'patch')
       .mockImplementation(() =>
-        httpResponse({ error: 'Current password is incorrect' }, 400),
+        httpResponse({ code: 'CURRENT_PASSWORD_INCORRECT' }, 400),
       )
     const mutation = store.dispatch(
       bookshopApi.endpoints.updateUserProfile.initiate(fields),
@@ -100,7 +101,8 @@ describe('user profile cache', () => {
 
     await expect(mutation.unwrap()).rejects.toEqual({
       status: 400,
-      message: 'Current password is incorrect',
+      code: 'CURRENT_PASSWORD_INCORRECT',
+      message: 'Your current password is incorrect.',
     })
     expect(patch).toHaveBeenCalledWith(
       PATH.users.profile,
@@ -116,6 +118,7 @@ describe('user profile cache', () => {
     )
 
     await expect(mutation.unwrap()).rejects.toEqual({
+      code: 'UNKNOWN_API_ERROR',
       message: 'Request failed',
     })
     mutation.reset()

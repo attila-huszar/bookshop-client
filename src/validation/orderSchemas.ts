@@ -1,4 +1,5 @@
 import * as Yup from 'yup'
+import { i18n } from '@/i18n'
 import { maxItemQuantity } from '@/constants/defaultValues'
 import {
   emailSchema,
@@ -6,21 +7,27 @@ import {
   optionalAddressSchema,
   phoneSchema,
 } from './userSchemas'
+import './locale'
 
 export const orderItemSchema = Yup.object().shape({
-  id: Yup.number().integer().positive().required('Required'),
-  title: Yup.string().required('Required'),
+  id: Yup.number()
+    .integer()
+    .positive()
+    .required(() => i18n.t('validation.required')),
+  title: Yup.string().required(() => i18n.t('validation.required')),
   author: Yup.string().nullable(),
-  price: Yup.number().positive('Must be positive').required('Required'),
+  price: Yup.number()
+    .positive(() => i18n.t('validation.positive'))
+    .required(() => i18n.t('validation.required')),
   discount: Yup.number()
-    .min(0, 'Min 0%')
-    .max(100, 'Max 100%')
-    .required('Required'),
+    .min(0, () => i18n.t('validation.minimum', { min: '0%' }))
+    .max(100, () => i18n.t('validation.maximum', { max: '100%' }))
+    .required(() => i18n.t('validation.required')),
   quantity: Yup.number()
-    .integer('Must be integer')
-    .positive('Must be positive')
+    .integer(() => i18n.t('validation.integer'))
+    .positive(() => i18n.t('validation.positive'))
     .max(maxItemQuantity)
-    .required('Required'),
+    .required(() => i18n.t('validation.required')),
 })
 
 export const orderSchema = Yup.object().shape({
@@ -39,7 +46,7 @@ export const orderSchema = Yup.object().shape({
   items: Yup.array()
     .of(orderItemSchema)
     .min(1)
-    .required('Order items are required'),
+    .required(() => i18n.t('validation.orderItems')),
   total: Yup.number().min(0).required(),
   currency: Yup.string()
     .matches(/^[A-Za-z]{3}$/)

@@ -1,6 +1,6 @@
-import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
+import { store } from '@/store/store'
 
 export const landingPageLoader = () => {
   for (const property of ['newRelease', 'topSellers', 'recommended'] as const) {

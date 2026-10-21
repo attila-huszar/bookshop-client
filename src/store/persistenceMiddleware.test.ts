@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as usersApi from '@/api/users'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants'
+import {
+  localStorageAdapter,
+  sessionStorageAdapter,
+} from '@/helpers/browserStorage'
+import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
 import { cartAdd, cartClear } from './slices/cart'
 import { paymentSessionReset } from './slices/payment'
 import { createAppStore } from './store'

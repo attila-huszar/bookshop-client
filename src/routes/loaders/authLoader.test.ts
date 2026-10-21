@@ -65,13 +65,19 @@ const setup = async (options: SetupOptions = {}) => {
 
   const mockGetState = vi.fn(() => ({ user: userState }))
 
-  vi.doMock('@/store', () => ({
-    fetchAuthTokens: mockFetchAuthTokens,
-    userSelector: () => userState,
+  vi.doMock('@/store/store', () => ({
     store: {
       dispatch: mockDispatch,
       getState: mockGetState,
     },
+  }))
+
+  vi.doMock('@/store/thunks/user', () => ({
+    fetchAuthTokens: mockFetchAuthTokens,
+  }))
+
+  vi.doMock('@/store/selectors', () => ({
+    userSelector: () => userState,
   }))
 
   vi.doMock('@/store/api/bookshopApi', () => ({

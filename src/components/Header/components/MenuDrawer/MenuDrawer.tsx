@@ -1,6 +1,7 @@
 import { FC, ReactNode, RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { IconButton } from '@/components'
+import { useTranslation } from 'react-i18next'
+import { IconButton } from '@/components/Button'
 import { XMarkIcon } from '@/assets/svg'
 import {
   Backdrop,
@@ -21,6 +22,8 @@ export const MenuDrawer: FC<Props> = ({
   children,
   onClose,
 }) => {
+  const { t } = useTranslation()
+
   return createPortal(
     <>
       <Backdrop $show={show} onClick={onClose} />
@@ -29,7 +32,7 @@ export const MenuDrawer: FC<Props> = ({
           <IconButton
             onClick={onClose}
             icon={<XMarkIcon />}
-            title="Close menu"
+            title={t('navigation.closeMenu')}
             $size="md"
           />
         </DrawerCloseButton>

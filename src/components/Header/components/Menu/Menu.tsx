@@ -1,14 +1,18 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { IconButton } from '@/components'
-import { useBreakpoints, useClickOutside } from '@/hooks'
-import { menuLinks } from '@/constants'
+import { IconButton } from '@/components/Button'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { menuLinks } from '@/constants/links'
 import { MenuIcon } from '@/assets/svg'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
 import { MenuItem, MenuList, StyledMenu } from './Menu.style'
 
 export function Menu() {
+  const { t } = useTranslation()
+
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -31,7 +35,7 @@ export function Menu() {
           <Link to={link.path} onClick={() => setMenuOpen(false)}>
             <MenuItem>
               <link.Icon />
-              <span>{link.name}</span>
+              <span>{t(link.name)}</span>
             </MenuItem>
           </Link>
         </li>
@@ -41,7 +45,11 @@ export function Menu() {
 
   return (
     <StyledMenu ref={menuRef}>
-      <IconButton onClick={toggleMenu} icon={<MenuIcon />} title="Menu" />
+      <IconButton
+        onClick={toggleMenu}
+        icon={<MenuIcon />}
+        title={t('navigation.menu')}
+      />
       {isMobile ? (
         <MenuDrawer show={menuOpen} onClose={toggleMenu} drawerRef={drawerRef}>
           {menuList}

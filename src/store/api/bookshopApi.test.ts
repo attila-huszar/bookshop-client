@@ -1,7 +1,8 @@
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as usersApi from '@/api/users'
-import { authRequest, baseRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
+import { baseRequest } from '@/api/baseRequest'
 import type { Book, BookWithAuthorId } from '@/types'
 import { authSessionChanged } from '../slices/user'
 import { createAppStore } from '../store'
@@ -201,6 +202,6 @@ describe('server-data cache', () => {
     )
     expect(
       bookshopApi.endpoints.book.select(7)(store.getState()).error,
-    ).toEqual({ message: 'Book unavailable' })
+    ).toEqual({ code: 'UNKNOWN_API_ERROR', message: 'Book unavailable' })
   })
 })

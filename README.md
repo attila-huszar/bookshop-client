@@ -47,6 +47,8 @@ Configure the client `.env`:
 
 Vite environment values are public. Keep Stripe secret keys in the backend.
 
+Before testing payments, publish English and Hungarian terms in the admin CMS under **Terms and Conditions**.
+
 Complete the [backend setup](https://github.com/attila-huszar/bookshop-server#setup), including server dependencies, credentials, the database choice, Docker's Loki plugin, and Stripe test webhook forwarding. The backend supports SQLite/Drizzle or MongoDB/Mongoose; select one with its `COMPOSE_PROFILES` setting.
 
 ## Local development

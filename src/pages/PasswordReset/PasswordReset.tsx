@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
+import { i18n } from '@/i18n'
 import { Form, Formik } from 'formik'
-import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
-import { Button, FormikField, Loading, toast } from '@/components'
-import { resetPasswordSchema } from '@/validation'
-import { passwordResetInitialValues } from '@/constants'
-import { handleError } from '@/errors'
+import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api/users'
+import { toast } from '@/components/AppToaster'
+import { Button } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { Loading } from '@/components/Loading'
+import { getErrorMessage } from '@/helpers/errors'
+import { resetPasswordSchema } from '@/validation/userSchemas'
+import { passwordResetInitialValues } from '@/constants/defaultValues'
 import { SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
 type PasswordResetVerification =
@@ -16,6 +21,8 @@ type PasswordResetVerification =
   | { status: 'invalid' }
 
 export function PasswordReset() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
@@ -28,7 +35,7 @@ export function PasswordReset() {
 
   useEffect(() => {
     if (!tokenParam) {
-      toast.error('Invalid or missing password reset token')
+      toast.error(i18n.t('auth.invalidResetToken'))
       void navigate('/', { replace: true })
       return
     }
@@ -42,15 +49,10 @@ export function PasswordReset() {
         const response = await postVerifyPasswordReset(tokenParam)
         setVerification({ status: 'ready', token: response.token })
 
-        toast.success('Please enter your new password')
+        toast.success(i18n.t('auth.enterNewPassword'))
       } catch (error) {
-        const formattedError = handleError({
-          error,
-          message: 'Password reset failed, please try again later',
-        })
-
         setVerification({ status: 'invalid' })
-        toast.error(formattedError.message)
+        toast.error(getErrorMessage(error, i18n.t('auth.resetError')))
 
         void navigate('/', { replace: true })
       }
@@ -64,34 +66,27 @@ export function PasswordReset() {
     newPasswordConfirmation: string
   }) => {
     if (verification.status !== 'ready') {
-      toast.error('Invalid or expired token')
+      toast.error(t('auth.expiredToken'))
       return
     }
 
     if (values.newPassword !== values.newPasswordConfirmation) {
-      toast.error('Passwords do not match')
+      toast.error(t('auth.passwordMismatch'))
       return
     }
 
     try {
-      const response = await postPasswordResetSubmit(
-        verification.token,
-        values.newPassword,
-      )
-      toast.success(response.message)
+      await postPasswordResetSubmit(verification.token, values.newPassword)
+      toast.success(t('auth.passwordChanged'))
 
       void navigate('/login', { replace: true })
     } catch (error) {
-      const formattedError = handleError({
-        error,
-        message: 'Error changing password, please try again later',
-      })
-      toast.error(formattedError.message)
+      toast.error(getErrorMessage(error, t('auth.passwordChangeError')))
     }
   }
 
   if (verification.status === 'verifying') {
-    return <Loading message="Verifying" fullScreen />
+    return <Loading message={t('auth.verifying')} fullScreen />
   }
 
   if (verification.status === 'invalid') {
@@ -100,8 +95,8 @@ export function PasswordReset() {
 
   return (
     <StyledPasswordReset>
-      <h2>Password Reset</h2>
-      <p>Please enter your new password below.</p>
+      <h2>{t('auth.passwordReset')}</h2>
+      <p>{t('auth.passwordResetHelp')}</p>
       <Formik
         initialValues={passwordResetInitialValues}
         validationSchema={resetPasswordSchema}
@@ -109,19 +104,19 @@ export function PasswordReset() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>New Password</p>
+            <p>{t('auth.newPassword')}</p>
             <FormikField
               name="newPassword"
-              placeholder="New Password"
+              placeholder={t('auth.newPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
-            <p>Confirm New Password</p>
+            <p>{t('auth.confirmNewPassword')}</p>
             <FormikField
               name="newPasswordConfirmation"
-              placeholder="Confirm New Password"
+              placeholder={t('auth.confirmNewPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
@@ -129,7 +124,8 @@ export function PasswordReset() {
             />
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Submit
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('common.actions.submit')}
               </Button>
             </ButtonWrapper>
           </Form>

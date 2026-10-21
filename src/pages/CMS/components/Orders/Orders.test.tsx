@@ -4,14 +4,11 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import type { CmsOrder, CMSOutletContext, EmailOutboxEntry } from '@/types'
 import { Orders } from './Orders'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 const order: CmsOrder = {
   id: 1,

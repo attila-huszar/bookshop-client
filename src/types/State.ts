@@ -1,3 +1,4 @@
+import type { ApiError } from './ApiError'
 import type { Cart } from './Cart'
 import type { FilterActive, Filters } from './Filters'
 import type { PaymentCreateIssueCode, PaymentSession } from './Payment'
@@ -25,7 +26,7 @@ export type CartState = {
 export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean
-  paymentCreateError: string | null
+  paymentCreateError: string | ApiError | null
   paymentCreateIssueCode: PaymentCreateIssueCode | null
-  paymentRetrieveError: string | null
+  paymentRetrieveError: string | ApiError | null
 }

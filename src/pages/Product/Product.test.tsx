@@ -2,22 +2,25 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { useBookQuery } from '@/store/api/bookshopApi'
-import { useCart } from '@/hooks'
+import { useCart } from '@/hooks/useCart'
 import { Product } from './Product'
 
-vi.mock('@/components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components')>()
+vi.mock('@/hooks/useCart', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCart')>()),
+  useCart: vi.fn(),
+}))
 
-  return {
-    ...actual,
-    Price: () => <div>Price</div>,
-    Button: ({ children }: { children: React.ReactNode }) => (
-      <button>{children}</button>
-    ),
-  }
-})
+vi.mock('@/components/Price', () => ({
+  Price: () => <div>Price</div>,
+}))
 
-vi.mock('@/components/Recommended/Recommended', () => ({
+vi.mock('@/components/Button', () => ({
+  Button: ({ children }: { children: React.ReactNode }) => (
+    <button>{children}</button>
+  ),
+}))
+
+vi.mock('@/components/Recommended', () => ({
   Recommended: () => <div>Recommended</div>,
 }))
 

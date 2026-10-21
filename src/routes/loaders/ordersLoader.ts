@@ -1,5 +1,5 @@
-import { store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { store } from '@/store/store'
 import { authLoader } from './authLoader'
 
 export const ordersLoader = async () => {

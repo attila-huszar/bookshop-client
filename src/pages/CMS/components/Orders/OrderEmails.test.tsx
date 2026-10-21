@@ -5,16 +5,13 @@ import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as usersApi from '@/api/users'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { logout } from '@/store/thunks/user'
 import type { EmailOutboxEntry } from '@/types'
 import { CMS } from '../../CMS'
 import { OrderEmails } from './OrderEmails'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 const entry: EmailOutboxEntry = {
   id: 'order-confirmed-pi_test',
@@ -204,7 +201,7 @@ describe('Order emails', () => {
     expect(await screen.findByText('reader@example.com')).toBeInTheDocument()
     expect(screen.getByText('Sent', { selector: 'span' })).toBeInTheDocument()
     expect(
-      screen.getByRole('columnheader', { name: 'Last update' }),
+      screen.getByRole('columnheader', { name: 'Updated At' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('columnheader', { name: 'Queue processed' }),

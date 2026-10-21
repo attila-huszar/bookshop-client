@@ -1,12 +1,17 @@
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsAuthorsSelector, cmsBooksSelector } from '@/store'
-import { Alert, IconButton, Loading } from '@/components'
-import { useAppSelector } from '@/hooks'
+import { cmsAuthorsSelector, cmsBooksSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { IconButton } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
 import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Books = () => {
+  const { t } = useTranslation()
+
   const { books, booksLoading, booksError } = useAppSelector(cmsBooksSelector)
   const { authors } = useAppSelector(cmsAuthorsSelector)
   const {
@@ -18,15 +23,15 @@ export const Books = () => {
   } = useOutletContext<CMSOutletContext>()
 
   if (booksLoading) {
-    return <Loading message="Loading books" fullScreen />
+    return <Loading message={t('catalogue.loading')} fullScreen />
   }
 
   if (booksError) {
-    return <Alert message="Error loading books" error={booksError} />
+    return <Alert message={t('catalogue.error')} error={booksError} />
   }
 
   if (books.length === 0) {
-    return <Alert message="No books found" />
+    return <Alert message={t('catalogue.empty')} />
   }
 
   const allSelected =
@@ -45,6 +50,7 @@ export const Books = () => {
             <th>
               <input
                 type="checkbox"
+                aria-label={t('common.selectAll')}
                 checked={allSelected}
                 onChange={() =>
                   allSelected
@@ -59,22 +65,22 @@ export const Books = () => {
                 }
               />
             </th>
-            <th>ID</th>
-            <th>Cover</th>
-            <th>Author</th>
-            <th>Title</th>
-            <th>Genre</th>
-            <th>Price</th>
+            <th>{t('common.fields.id')}</th>
+            <th>{t('common.fields.cover')}</th>
+            <th>{t('common.fields.author')}</th>
+            <th>{t('common.fields.title')}</th>
+            <th>{t('common.fields.genre')}</th>
+            <th>{t('common.fields.price')}</th>
             <th>-%</th>
-            <th>Total</th>
-            <th className="actions">Actions</th>
+            <th>{t('common.fields.total')}</th>
+            <th className="actions">{t('common.fields.actions')}</th>
           </tr>
         </thead>
         <tbody>
           {sortedBooks.map((book) => {
             const author =
               authors.find((author) => author.id === book.authorId)?.name ??
-              'Unknown Author'
+              t('common.unknownAuthor')
 
             return (
               <tr
@@ -100,6 +106,10 @@ export const Books = () => {
                   }}>
                   <input
                     type="checkbox"
+                    aria-label={t('cms.selectRecord', {
+                      entity: t('catalogue.book').toLocaleLowerCase(),
+                      id: book.id,
+                    })}
                     checked={selectedItems.books.includes(book.id)}
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => {
@@ -136,8 +146,13 @@ export const Books = () => {
                   <TableActions>
                     <IconButton
                       type="button"
-                      title="Edit book"
-                      aria-label={`Edit book #${book.id}`}
+                      title={t('cms.edit', {
+                        entity: t('catalogue.book').toLocaleLowerCase(),
+                      })}
+                      aria-label={t('cms.editRecord', {
+                        entity: t('catalogue.book').toLocaleLowerCase(),
+                        id: book.id,
+                      })}
                       onClick={(e) => {
                         e.stopPropagation()
                         setIsEditing(true)

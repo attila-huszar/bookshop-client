@@ -1,13 +1,16 @@
 import { useImperativeHandle, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik } from 'formik'
 import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
-import { Button, FormikField, IconButton, toast } from '@/components'
-import { useClickOutside } from '@/hooks'
-import { getErrorMessage } from '@/helpers'
-import { accountPasswordSchema } from '@/validation'
-import { passwordChangeInitialValues } from '@/constants'
+import { toast } from '@/components/AppToaster'
+import { Button, IconButton } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { getErrorMessage } from '@/helpers/errors'
+import { accountPasswordSchema } from '@/validation/userSchemas'
+import { passwordChangeInitialValues } from '@/constants/defaultValues'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledPasswordDialog } from './PasswordDialog.style'
 
 type PasswordDialogHandle = {
@@ -18,6 +21,8 @@ type PasswordDialogHandle = {
 type Props = { email: string; ref: React.Ref<PasswordDialogHandle> }
 
 export function PasswordDialog({ email, ref }: Props) {
+  const { t } = useTranslation()
+
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [updateUserProfile] = useUpdateUserProfileMutation()
@@ -49,18 +54,14 @@ export function PasswordDialog({ email, ref }: Props) {
         }).unwrap()
         handleClose()
         actions.resetForm()
-        toast.success('Password changed successfully')
+        toast.success(t('auth.passwordChanged'))
       } catch (error) {
-        toast.error(
-          getErrorMessage(
-            error,
-            'Failed to change password, please try again later',
-          ),
-          { id: 'password-change-fail' },
-        )
+        toast.error(getErrorMessage(error, t('auth.passwordChangeError')), {
+          id: 'password-change-fail',
+        })
       }
     } else {
-      toast.error('Password must be different from current password', {
+      toast.error(t('auth.passwordDifferent'), {
         id: 'password-change-fail',
       })
     }
@@ -72,8 +73,8 @@ export function PasswordDialog({ email, ref }: Props) {
       role="dialog"
       aria-modal
       onCancel={handleClose}
-      aria-label="Change Password">
-      <h2>Change Password</h2>
+      aria-label={t('auth.changePassword')}>
+      <h2>{t('auth.changePassword')}</h2>
       <Formik
         initialValues={passwordChangeInitialValues}
         validationSchema={accountPasswordSchema}
@@ -86,28 +87,28 @@ export function PasswordDialog({ email, ref }: Props) {
               value={email}
               autoComplete="username"
             />
-            <p>Current Password</p>
+            <p>{t('auth.currentPassword')}</p>
             <FormikField
               name="currentPassword"
-              placeholder="Current Password"
+              placeholder={t('auth.currentPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
-            <p>New Password</p>
+            <p>{t('auth.newPassword')}</p>
             <FormikField
               name="newPassword"
-              placeholder="New Password"
+              placeholder={t('auth.newPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
-            <p>Confirm New Password</p>
+            <p>{t('auth.confirmNewPassword')}</p>
             <FormikField
               name="newPasswordConfirmation"
-              placeholder="Confirm New Password"
+              placeholder={t('auth.confirmNewPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
@@ -119,12 +120,13 @@ export function PasswordDialog({ email, ref }: Props) {
                 $size="lg"
                 $color="var(--color-outline)"
                 type="reset"
-                title="Back"
+                title={t('common.actions.back')}
                 disabled={isSubmitting}
                 onClick={handleClose}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Submit
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('common.actions.submit')}
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

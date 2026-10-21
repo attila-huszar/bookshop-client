@@ -1,6 +1,6 @@
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from './api/bookshopApi'
 import {
   booksQueryArgs,
@@ -81,9 +81,9 @@ describe('initial query loading', () => {
     await request
 
     expect(ordersSelector(store.getState()).ordersIsLoading).toBe(false)
-    expect(ordersSelector(store.getState()).ordersError).toBe(
-      'Network unavailable',
-    )
+    expect(ordersSelector(store.getState()).ordersError).toEqual({
+      code: 'UNKNOWN_API_ERROR',
+    })
   })
 
   it.each([

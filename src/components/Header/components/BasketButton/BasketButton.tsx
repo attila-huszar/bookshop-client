@@ -1,15 +1,19 @@
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import { cartSelector, paymentSelector } from '@/store'
-import { Button, IconButton } from '@/components'
-import { useAppSelector, useBreakpoints } from '@/hooks'
-import { sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey } from '@/constants'
+import { ROUTE } from '@/routes/route'
+import { cartSelector, paymentSelector } from '@/store/selectors'
+import { Button, IconButton } from '@/components/Button'
+import { useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { paymentIdKey } from '@/constants/keys'
 import type { Cart } from '@/types'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
 export function BasketButton() {
+  const { t } = useTranslation()
+
   const { cartItems } = useAppSelector(cartSelector)
   const { payment } = useAppSelector(paymentSelector)
   const { isMobile } = useBreakpoints()
@@ -33,15 +37,15 @@ export function BasketButton() {
         <IconButton
           onClick={handleCartClick}
           icon={<CartIcon />}
-          title={isCheckingOut ? 'Checkout' : 'Basket'}
+          title={isCheckingOut ? t('checkout.title') : t('cart.title')}
         />
       ) : (
         <Button
           onClick={handleCartClick}
           $size="smMd"
           $icon={<CartIcon />}
-          title={isCheckingOut ? 'Checkout' : 'Basket'}>
-          {isCheckingOut ? 'Checkout' : 'Basket'}
+          title={isCheckingOut ? t('checkout.title') : t('cart.title')}>
+          {isCheckingOut ? t('checkout.title') : t('cart.title')}
         </Button>
       )}
       {cartCount > 0 && <CartItemCount>{cartCount}</CartItemCount>}

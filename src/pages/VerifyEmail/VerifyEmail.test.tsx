@@ -3,6 +3,12 @@ import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { VerifyEmail } from './VerifyEmail'
 
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+  useLocation: vi.fn(),
+}))
+
 describe('VerifyEmail Component', () => {
   const mockNavigate = vi.fn()
 

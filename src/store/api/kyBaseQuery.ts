@@ -1,9 +1,10 @@
+import { i18n } from '@/i18n'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { HTTPError, type Options } from 'ky'
 import { authRequest } from '@/api/authRequest'
 import { baseRequest } from '@/api/baseRequest'
-import { getErrorMessage } from '@/helpers/errors'
-import { handleError } from '@/errors'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { type ApiError, HttpErrorCode } from '@/types/ApiError'
 
 type KyQueryArgs = Pick<
   Options,
@@ -14,7 +15,8 @@ type KyQueryArgs = Pick<
   authenticated?: boolean
 }
 
-type QueryError = { message: string; status?: number }
+/** Serializable query failure; retain codes for retranslation beyond the initial message. */
+type QueryError = ApiError & { message: string; status?: number }
 type QueryMeta = { response: Response }
 
 /** Reuse Ky's transport/auth hooks; RTK Query owns caching and cancellation. */
@@ -39,10 +41,8 @@ export const kyBaseQuery: BaseQueryFn<
   } catch (error: unknown) {
     return {
       error: {
-        message:
-          error instanceof HTTPError
-            ? handleError({ error, message: 'Request failed' }).message
-            : getErrorMessage(error, 'Request failed'),
+        ...(getApiError(error) ?? { code: HttpErrorCode.UnknownResponse }),
+        message: getErrorMessage(error, i18n.t('common.requestFailed')),
         ...(error instanceof HTTPError
           ? { status: error.response.status }
           : {}),

@@ -1,11 +1,17 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
-import { ROUTE } from '@/routes'
+import { ROUTE } from '@/routes/route'
 import { useBookQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { Alert, Button, Loading, Price, Recommended } from '@/components'
-import { useBreakpoints, useCart } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { Alert } from '@/components/Alert'
+import { Button } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { Price } from '@/components/Price'
+import { Recommended } from '@/components/Recommended'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { useCart } from '@/hooks/useCart'
+import { scrollToTop } from '@/helpers/scrollToTop'
 import type { Book } from '@/types'
 import { CartAddIcon, ChevronLeftIcon, imagePlaceholder } from '@/assets/svg'
 import {
@@ -20,6 +26,8 @@ import {
 } from './Product.style'
 
 export function Product() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const id = searchParams.get('id')
@@ -59,12 +67,12 @@ export function Product() {
   return (
     <>
       <StyledProduct>
-        <Breadcrumb onClick={handleGoBack} title="Go back">
+        <Breadcrumb onClick={handleGoBack} title={t('common.actions.goBack')}>
           <ChevronLeftIcon height={18} />
-          Book Details
+          {t('catalogue.details')}
         </Breadcrumb>
         {!book && id && isFetching ? (
-          <Loading message="Loading book details" fullScreen />
+          <Loading message={t('catalogue.detailsLoading')} fullScreen />
         ) : book ? (
           <DetailsSection>
             <ImageWrapper>
@@ -78,14 +86,14 @@ export function Product() {
               />
             </ImageWrapper>
             <BookTitle>{book.title}</BookTitle>
-            <BookAuthor>{book.author ?? 'Unknown Author'}</BookAuthor>
+            <BookAuthor>{book.author ?? t('common.unknownAuthor')}</BookAuthor>
             <Price
               component="product"
               price={book.price}
               discount={book.discount}
             />
             <Description>
-              <h2>Summary</h2>
+              <h2>{t('catalogue.summary')}</h2>
               <p>{book.description}</p>
             </Description>
             <ButtonWrapper>
@@ -94,12 +102,16 @@ export function Product() {
                 $icon={!isBookInCart && <CartAddIcon />}
                 $size={isMobile ? 'md' : 'lg'}
                 $textSize={isMobile ? 'md' : 'lg'}>
-                {isBookInCart ? 'View in Basket' : 'Add to Basket'}
+                {isBookInCart
+                  ? t('catalogue.viewBasket')
+                  : t('catalogue.addToBasket')}
               </Button>
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          (isError || !id) && <Alert message="Book not found" backButton />
+          (isError || !id) && (
+            <Alert message={t('catalogue.notFound')} backButton />
+          )
         )}
       </StyledProduct>
       <Recommended />

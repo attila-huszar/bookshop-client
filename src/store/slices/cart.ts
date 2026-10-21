@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { fetchCartItems } from '@/store/thunks/cart'
-import { maxItemQuantity } from '@/constants'
+import { maxItemQuantity } from '@/constants/defaultValues'
 import type { Book, Cart, CartState } from '@/types'
 
 const initialState: CartState = {
@@ -108,7 +108,7 @@ const cartSlice = createSlice({
         }
 
         if (action.payload !== 'stale-hydration') {
-          state.cartError = action.error.message ?? 'Failed to fetch cart items'
+          state.cartError = action.error.message ?? 'cart.error'
         }
         state.currentRequestId = null
       })

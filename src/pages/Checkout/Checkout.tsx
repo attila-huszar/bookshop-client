@@ -1,14 +1,20 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation } from 'react-router'
+import { i18n, shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { paymentSelector } from '@/store'
-import { InfoDialog, Loading, toast } from '@/components'
-import { useAppSelector } from '@/hooks'
-import { sessionStorageAdapter } from '@/helpers'
-import { checkoutQueryParams, paymentIdKey, stripeKey } from '@/constants'
-import { handleError } from '@/errors'
+import { paymentSelector } from '@/store/selectors'
+import { toast } from '@/components/AppToaster'
+import { InfoDialog } from '@/components/InfoDialog'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
+import { log } from '@/services/logger'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { stripeKey } from '@/constants/envConfig'
+import { paymentIdKey } from '@/constants/keys'
+import { checkoutQueryParams } from '@/constants/payments'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
 import { AddressForm, CheckoutForm } from './components'
@@ -23,9 +29,9 @@ const stripePromise = loadStripe(stripeKey)
 
 function StripeErrorFallback({ error }: FallbackProps) {
   useEffect(() => {
-    void handleError({ error })
+    log.error('Stripe checkout failed', { error })
     sessionStorageAdapter.remove(paymentIdKey)
-    toast('No Checkout Session found. Redirecting to home page...', {
+    toast(i18n.t('checkout.missingSession'), {
       icon: '🔄',
       id: 'no-checkout-session',
     })
@@ -35,6 +41,8 @@ function StripeErrorFallback({ error }: FallbackProps) {
 }
 
 export function Checkout() {
+  const { t, i18n } = useTranslation()
+
   const location = useLocation()
   const { payment, paymentIsLoading, paymentRetrieveError } =
     useAppSelector(paymentSelector)
@@ -55,7 +63,7 @@ export function Checkout() {
   if (paymentIsLoading) {
     return (
       <StyledCheckout>
-        <InfoDialog dialogRef={ref} message="Loading your checkout" />
+        <InfoDialog dialogRef={ref} message={t('checkout.loading')} />
       </StyledCheckout>
     )
   }
@@ -65,7 +73,7 @@ export function Checkout() {
       <StyledCheckout>
         <InfoDialog
           dialogRef={ref}
-          message="Failed to load checkout, please try again later."
+          message={t('checkout.error')}
           error={paymentRetrieveError}
           reloadButton
           backButton
@@ -75,6 +83,7 @@ export function Checkout() {
   }
 
   const options: StripeElementsOptions = {
+    locale: shopLanguage(i18n.resolvedLanguage),
     clientSecret: checkoutPaymentToken,
     appearance: { theme: 'stripe', variables: {} },
     loader: 'auto',
@@ -88,7 +97,7 @@ export function Checkout() {
           {isStripeReturn ? (
             <Suspense
               fallback={
-                <Loading message="Loading payment status" fullScreen />
+                <Loading message={t('checkout.statusLoading')} fullScreen />
               }>
               <PaymentStatus />
             </Suspense>

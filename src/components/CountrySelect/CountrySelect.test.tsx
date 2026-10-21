@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { Provider } from 'react-redux'
+import { i18n } from '@/i18n'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Form, Formik } from 'formik'
@@ -55,6 +56,22 @@ const renderCountries = () =>
   )
 
 describe('country reference data', () => {
+  it('localizes country names without refetching or changing cached data', async () => {
+    renderCountries()
+    expect(await screen.findByText('Hungary')).toBeInTheDocument()
+
+    await act(async () => {
+      await i18n.changeLanguage('hu')
+    })
+
+    expect(screen.getByText('Magyarország')).toBeInTheDocument()
+    expect(screen.getByText('Egyesült Államok')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(
+      bookshopApi.endpoints.countryCodes.select()(store.getState()).data?.hu,
+    ).toBe('Hungary')
+  })
+
   it('shows loading instead of no matches while country data is pending', async () => {
     let completeRequest!: (response: Response) => void
     const response = new Promise<Response>((resolve) => {

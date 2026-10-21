@@ -4,14 +4,13 @@ import {
   cartQuantityRemove,
   cartQuantitySet,
   cartRemove,
-  cartSelector,
-} from '@/store'
+} from '@/store/slices/cart'
 import type { Book, Cart } from '@/types'
 import { useAppDispatch, useAppSelector } from './redux'
 
 export function useCart() {
   const dispatch = useAppDispatch()
-  const { cartItems } = useAppSelector(cartSelector)
+  const cartItems = useAppSelector((state) => state.cart.cartItems)
   const addToCart = (payload: Book) => dispatch(cartAdd(payload))
   const removeFromCart = (payload: Cart) => dispatch(cartRemove(payload))
   const addQuantity = (payload: Cart) => dispatch(cartQuantityAdd(payload))

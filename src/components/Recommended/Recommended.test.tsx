@@ -7,18 +7,15 @@ import { createAppStore } from '@/store/store'
 import type { Book } from '@/types'
 import { Recommended } from './Recommended'
 
-vi.unmock('@/hooks')
+vi.mock('@/components/Card', () => ({
+  Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
+}))
 
-vi.mock('@/components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components')>()
-  return {
-    ...actual,
-    Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
-    SwiperComponent: ({ children }: { children: React.ReactNode }) => (
-      <div>{children}</div>
-    ),
-  }
-})
+vi.mock('@/components/SwiperComponent', () => ({
+  SwiperComponent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}))
 
 const book: Book = {
   id: 1,

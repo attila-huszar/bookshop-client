@@ -3,18 +3,15 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { authRequest } from '@/api'
-import { store } from '@/store'
+import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { store } from '@/store/store'
 import { Orders } from '@/pages/Orders/Orders'
 import { authLoader } from './authLoader'
 import { ordersLoader } from './ordersLoader'
 
-vi.unmock('@/hooks')
-vi.unmock('react-router')
-
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
+vi.mock('@/store/store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/store/store')>()
 
   return { ...actual, store: actual.createAppStore() }
 })

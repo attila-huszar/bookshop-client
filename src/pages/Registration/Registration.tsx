@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
-import { getUserCountry } from '@/api'
+import { getUserCountry } from '@/api/users'
 import { useRegisterMutation } from '@/store/api/bookshopApi'
+import { toast } from '@/components/AppToaster'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
+import { Button, IconButton } from '@/components/Button'
+import { CountrySelect } from '@/components/CountrySelect'
+import { FormikField } from '@/components/FormikField'
+import { getErrorMessage } from '@/helpers/errors'
+import { scrollToTop } from '@/helpers/scrollToTop'
+import { registrationSchema } from '@/validation/userSchemas'
 import {
-  AuthorizationMenu,
-  Button,
-  CountrySelect,
-  FormikField,
-  IconButton,
-  toast,
-} from '@/components'
-import { getErrorMessage, scrollToTop } from '@/helpers'
-import { registrationSchema } from '@/validation'
-import { defaultCountry, registrationInitialValues } from '@/constants'
+  defaultCountry,
+  registrationInitialValues,
+} from '@/constants/defaultValues'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 
 export function Registration() {
+  const { t } = useTranslation()
+
   const [register] = useRegisterMutation()
   const [country, setCountry] = useState(defaultCountry)
   const [showPassword, setShowPassword] = useState(false)
@@ -39,14 +43,10 @@ export function Registration() {
   const handleSubmit = async (values: RegisterRequest) => {
     try {
       const { email } = await register(values).unwrap()
-      toast.success(
-        `${email} registered successfully, please verify your email address`,
-      )
+      toast.success(t('auth.registered', { email: email }))
       void navigate('/', { replace: true })
     } catch (error) {
-      toast.error(
-        getErrorMessage(error, 'Registration failed, please try again later'),
-      )
+      toast.error(getErrorMessage(error, t('auth.registerError')))
     }
   }
 
@@ -60,61 +60,66 @@ export function Registration() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>First Name</p>
+            <p>{t('common.fields.firstName')}</p>
             <FormikField
               name="firstName"
-              placeholder="First Name"
+              placeholder={t('common.fields.firstName')}
               autoComplete="given-name"
               focus
             />
-            <p>Last Name</p>
+            <p>{t('common.fields.lastName')}</p>
             <FormikField
               name="lastName"
-              placeholder="Last Name"
+              placeholder={t('common.fields.lastName')}
               autoComplete="family-name"
             />
-            <p>Email</p>
+            <p>{t('common.fields.email')}</p>
             <FormikField
               name="email"
-              placeholder="Email"
+              placeholder={t('common.fields.email')}
               type="email"
               inputMode="email"
               autoComplete="email"
             />
-            <p>Password</p>
+            <p>{t('common.fields.password')}</p>
             <FormikField
               name="password"
-              placeholder="Password"
+              placeholder={t('common.fields.password')}
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               autoComplete="new-password"
             />
-            <p>Password Confirm</p>
+            <p>{t('auth.confirmPassword')}</p>
             <FormikField
               name="passwordConfirmation"
-              placeholder="Confirm Password"
+              placeholder={t('auth.confirmPassword')}
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               autoComplete="new-password"
             />
-            <p>Country</p>
+            <p>{t('common.fields.country')}</p>
             <CountrySelect initial={country} />
-            <p>Upload Avatar</p>
-            <FormikField name="avatar" type="file" />
+            <p>{t('auth.uploadAvatar')}</p>
+            <FormikField
+              name="avatar"
+              type="file"
+              aria-label={t('auth.uploadAvatar')}
+            />
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
                 $color="var(--color-outline)"
                 type="reset"
-                title="Back"
+                title={t('common.actions.back')}
                 disabled={isSubmitting}
                 onClick={() => void navigate('/')}
               />
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Register
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('auth.register')}
               </Button>
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>

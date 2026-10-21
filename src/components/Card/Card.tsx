@@ -1,12 +1,16 @@
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import { Button, Price } from '@/components'
-import { useCart } from '@/hooks'
+import { ROUTE } from '@/routes/route'
+import { Button } from '@/components/Button'
+import { Price } from '@/components/Price'
+import { useCart } from '@/hooks/useCart'
 import { Book } from '@/types'
 import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import { Description, Details, Image, StyledCard, Title } from './Card.style'
 
 export function Card({ book }: { book: Book }) {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const { cartItems, addToCart } = useCart()
   const isBookInCart = cartItems.some((item) => item.id === book.id)
@@ -38,7 +42,9 @@ export function Card({ book }: { book: Book }) {
               handleCartAction()
             }}
             $icon={!isBookInCart && <CartAddIcon />}>
-            {isBookInCart ? 'View in Basket' : 'Add to Basket'}
+            {isBookInCart
+              ? t('catalogue.viewBasket')
+              : t('catalogue.addToBasket')}
           </Button>
         </Details>
       </Link>

@@ -1,8 +1,19 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { useAppSelector, useCart } from '@/hooks'
+import { useAppSelector } from '@/hooks/redux'
+import { useCart } from '@/hooks/useCart'
 import { Products } from './Products'
+
+vi.mock('@/hooks/useCart', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useCart')>()),
+  useCart: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppSelector: vi.fn(),
+}))
 
 vi.mock('./components', () => ({
   Filter: () => <div>Filter component</div>,
@@ -26,8 +37,8 @@ describe('Products Page', () => {
 
   it('should render books and pagination when books are present', async () => {
     const booksOnCurrentPage = [
-      { id: 1, title: 'Test Book 1' },
-      { id: 2, title: 'Test Book 2' },
+      { id: 1, title: 'Test Book 1', price: 10, discount: 0 },
+      { id: 2, title: 'Test Book 2', price: 20, discount: 0 },
     ]
 
     vi.mocked(useAppSelector).mockReturnValue({

@@ -1,4 +1,6 @@
-import { defaultCurrencySymbol } from '@/constants'
+import { useTranslation } from 'react-i18next'
+import { formatAmount } from '@/helpers/checkout'
+import { defaultCurrencySymbol } from '@/constants/defaultValues'
 import {
   Currency,
   Strikethrough,
@@ -20,6 +22,14 @@ export function Price({
   discount,
   currency = defaultCurrencySymbol,
 }: Props) {
+  const { i18n } = useTranslation()
+  const formatPrice = (amount: number) =>
+    formatAmount(
+      amount,
+      i18n.resolvedLanguage,
+      Number.isInteger(amount) ? 0 : 2,
+    )
+
   const componentMap = {
     card: StyledPriceCard,
     product: StyledPriceProduct,
@@ -29,9 +39,7 @@ export function Price({
   const Component = componentMap[component]
 
   const discountPrice = price - (price * discount) / 100
-  const formattedPrice = Number.isInteger(discountPrice)
-    ? discountPrice
-    : discountPrice.toFixed(2)
+  const formattedPrice = formatPrice(discountPrice)
 
   return (
     <Component>
@@ -43,14 +51,14 @@ export function Price({
           </span>
           <Strikethrough>
             <Currency>{currency}</Currency>
-            <span>{price}</span>
+            <span>{formatPrice(price)}</span>
           </Strikethrough>
         </p>
       ) : (
         <p>
           <span>
             <Currency>{currency}</Currency>
-            <span>{price}</span>
+            <span>{formatPrice(price)}</span>
           </span>
         </p>
       )}

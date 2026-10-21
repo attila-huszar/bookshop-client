@@ -5,8 +5,8 @@ import { productLoader } from './productLoader'
 
 const { mockDispatch } = vi.hoisted(() => ({ mockDispatch: vi.fn() }))
 
-vi.mock('@/store', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store')>()),
+vi.mock('@/store/store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/store')>()),
   store: { dispatch: mockDispatch },
 }))
 

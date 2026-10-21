@@ -1,12 +1,17 @@
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsAuthorsSelector } from '@/store'
-import { Alert, IconButton, Loading } from '@/components'
-import { useAppSelector } from '@/hooks'
+import { cmsAuthorsSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { IconButton } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { useAppSelector } from '@/hooks/redux'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
 import { StyledTable, TableActions } from '../../styles/CMS.style'
 
 export const Authors = () => {
+  const { t } = useTranslation()
+
   const { authors, authorsLoading, authorsError } =
     useAppSelector(cmsAuthorsSelector)
   const {
@@ -18,15 +23,15 @@ export const Authors = () => {
   } = useOutletContext<CMSOutletContext>()
 
   if (authorsLoading) {
-    return <Loading message="Loading authors" fullScreen />
+    return <Loading message={t('cms.authorsLoading')} fullScreen />
   }
 
   if (authorsError) {
-    return <Alert message="Error loading authors" error={authorsError} />
+    return <Alert message={t('cms.authorsError')} error={authorsError} />
   }
 
   if (authors.length === 0) {
-    return <Alert message="No authors found" />
+    return <Alert message={t('cms.authorsEmpty')} />
   }
 
   const allSelected =
@@ -45,6 +50,7 @@ export const Authors = () => {
             <th>
               <input
                 type="checkbox"
+                aria-label={t('common.selectAll')}
                 checked={allSelected}
                 onChange={() =>
                   allSelected
@@ -59,13 +65,13 @@ export const Authors = () => {
                 }
               />
             </th>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Birth</th>
-            <th>Death</th>
-            <th>Born</th>
-            <th>Biography</th>
-            <th className="actions">Actions</th>
+            <th>{t('common.fields.id')}</th>
+            <th>{t('common.fields.name')}</th>
+            <th>{t('common.fields.birth')}</th>
+            <th>{t('common.fields.death')}</th>
+            <th>{t('common.fields.homeland')}</th>
+            <th>{t('common.fields.biography')}</th>
+            <th className="actions">{t('common.fields.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -93,6 +99,10 @@ export const Authors = () => {
                 }}>
                 <input
                   type="checkbox"
+                  aria-label={t('cms.selectRecord', {
+                    entity: t('common.fields.author').toLocaleLowerCase(),
+                    id: author.id,
+                  })}
                   checked={selectedItems.authors.includes(author.id)}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => {
@@ -125,8 +135,13 @@ export const Authors = () => {
                 <TableActions>
                   <IconButton
                     type="button"
-                    title="Edit author"
-                    aria-label={`Edit author #${author.id}`}
+                    title={t('cms.edit', {
+                      entity: t('common.fields.author').toLocaleLowerCase(),
+                    })}
+                    aria-label={t('cms.editRecord', {
+                      entity: t('common.fields.author').toLocaleLowerCase(),
+                      id: author.id,
+                    })}
                     onClick={(e) => {
                       e.stopPropagation()
                       setIsEditing(true)

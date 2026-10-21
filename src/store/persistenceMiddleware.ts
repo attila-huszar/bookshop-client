@@ -1,6 +1,9 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { localStorageAdapter, sessionStorageAdapter } from '@/helpers'
-import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants'
+import {
+  localStorageAdapter,
+  sessionStorageAdapter,
+} from '@/helpers/browserStorage'
+import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
 import {
   cartAdd,
   cartClear,

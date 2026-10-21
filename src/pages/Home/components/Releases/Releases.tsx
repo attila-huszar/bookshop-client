@@ -1,10 +1,12 @@
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import { booksSelector } from '@/store'
+import { ROUTE } from '@/routes/route'
 import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { Button } from '@/components'
-import { useAppSelector, useBreakpoints } from '@/hooks'
+import { booksSelector } from '@/store/selectors'
+import { Button } from '@/components/Button'
+import { useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
 import {
   ImageItem,
   ImageWrapper,
@@ -16,6 +18,8 @@ import {
 } from './Releases.style'
 
 export function Releases() {
+  const { t } = useTranslation()
+
   useBooksByPropertyQuery('newRelease', {
     refetchOnMountOrArgChange: cacheTimes.featured,
   })
@@ -28,19 +32,14 @@ export function Releases() {
   return (
     <StyledReleases>
       <Welcome>
-        <h2>New Releases This Week</h2>
-        <p>
-          It's time to update your reading list with some of the latest and
-          greatest releases in the literary world. From heart-pumping thrillers
-          to captivating memoirs, this week's new releases offer something for
-          everyone.
-        </p>
+        <h2>{t('home.releases')}</h2>
+        <p>{t('home.releasesDescription')}</p>
         <Button
           onClick={() => void navigate(`/${ROUTE.BOOKS}`)}
           $shadow
           $size="wide"
           $textSize="lg">
-          Find Your Next Read
+          {t('home.findBook')}
         </Button>
       </Welcome>
       {featuredBooks.length > 0 &&

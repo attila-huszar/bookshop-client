@@ -1,13 +1,17 @@
 import { useEffect } from 'react'
-import { booksSelector } from '@/store'
+import { useTranslation } from 'react-i18next'
 import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { Card, SwiperComponent } from '@/components'
-import { useAppSelector } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { booksSelector } from '@/store/selectors'
+import { Card } from '@/components/Card'
+import { SwiperComponent } from '@/components/SwiperComponent'
+import { useAppSelector } from '@/hooks/redux'
+import { scrollToTop } from '@/helpers/scrollToTop'
 import { StyledRecommended } from './Recommended.style'
 
 export function Recommended() {
+  const { t } = useTranslation()
+
   useBooksByPropertyQuery('recommended', {
     refetchOnMountOrArgChange: cacheTimes.featured,
     refetchOnFocus: false,
@@ -25,7 +29,7 @@ export function Recommended() {
 
   return (
     <StyledRecommended>
-      <h2>Recommended for you</h2>
+      <h2>{t('home.recommended')}</h2>
       <SwiperComponent>
         {booksRecommended.map((book) => (
           <Card key={book.id} book={book} />

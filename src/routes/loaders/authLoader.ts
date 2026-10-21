@@ -1,5 +1,7 @@
-import { fetchAuthTokens, store, userSelector } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { userSelector } from '@/store/selectors'
+import { store } from '@/store/store'
+import { fetchAuthTokens } from '@/store/thunks/user'
 import { UserRole } from '@/types'
 
 type AuthLoaderOptions = {

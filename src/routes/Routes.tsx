@@ -8,7 +8,8 @@ import {
 } from 'react-router'
 import { Home } from '@/pages/Home/Home'
 import { Layout } from '@/pages/Layout/Layout'
-import { Alert, Loading } from '@/components'
+import { Alert } from '@/components/Alert'
+import { Loading } from '@/components/Loading'
 import {
   appLoader,
   authLoader,
@@ -59,6 +60,9 @@ const PasswordReset = lazy(() =>
 )
 const Checkout = lazy(() =>
   import('@/pages/Checkout/Checkout').then((m) => ({ default: m.Checkout })),
+)
+const Terms = lazy(() =>
+  import('@/pages/Terms/Terms').then((module) => ({ default: module.Terms })),
 )
 
 const CMS = lazy(() =>
@@ -121,6 +125,7 @@ const routes: RouteObject[] = [
       },
       { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
+      { path: `${ROUTE.TERMS}/:version?`, element: <Terms /> },
       {
         element: <PublicRoute />,
         children: [

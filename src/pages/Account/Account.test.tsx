@@ -1,4 +1,4 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
@@ -6,14 +6,15 @@ import {
   useUpdateAvatarMutation,
   useUpdateUserProfileMutation,
 } from '@/store/api/bookshopApi'
-import { useAppSelector } from '@/hooks'
+import { useAppSelector } from '@/hooks/redux'
 import { Account } from './Account'
 
-vi.mock('@/services', () => ({
-  uploadImage: vi.fn(),
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppSelector: vi.fn(),
 }))
 
-vi.mock('@/store', () => ({
+vi.mock('@/store/selectors', () => ({
   userSelector: vi.fn(),
 }))
 
@@ -23,13 +24,9 @@ vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
   useUpdateUserProfileMutation: vi.fn(),
 }))
 
-vi.mock('@/components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components')>()
-  return {
-    ...actual,
-    CountrySelect: () => <div>Country Select Mock</div>,
-  }
-})
+vi.mock('@/components/CountrySelect', () => ({
+  CountrySelect: () => <div>Country Select Mock</div>,
+}))
 
 describe('Account page', () => {
   const mockDispatch = vi.fn()
@@ -39,7 +36,9 @@ describe('Account page', () => {
     vi.mocked(useAppSelector).mockReturnValue({
       userData: {
         firstName: 'July',
+        lastName: 'Reader',
         email: 'july@test.com',
+        phone: null,
         avatar: 'avatar_url',
         address: {
           line1: '',
@@ -121,9 +120,11 @@ describe('Account page', () => {
     await userEvent.click(saveButton)
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/first name/i)).toHaveValue(
-        'UpdatedName',
-      )
+      expect(mockDispatch).toHaveBeenCalledWith({
+        firstName: 'UpdatedName',
+        lastName: 'Reader',
+        phone: '',
+      })
     })
   })
 
@@ -135,7 +136,7 @@ describe('Account page', () => {
     const avatarButton = screen.getByTitle(/change profile picture/i)
     await userEvent.click(avatarButton)
 
-    const fileInput = screen.getByLabelText(/Change avatar/i)
+    const fileInput = screen.getByLabelText(/Change Profile Picture/i)
     await userEvent.upload(fileInput, file)
 
     // Avatar upload triggers dispatch with the file

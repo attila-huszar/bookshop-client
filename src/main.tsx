@@ -1,9 +1,10 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
+import './i18n'
+import { store } from '@/store/store'
+import { log } from '@/services/logger'
 import App from './App.tsx'
-import { log } from './services'
-import { store } from './store'
 
 const container = document.getElementById('root')!
 const root = createRoot(container, {
@@ -16,7 +17,9 @@ const root = createRoot(container, {
 root.render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <Suspense fallback={null}>
+        <App />
+      </Suspense>
     </Provider>
   </StrictMode>,
 )

@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
-import { postVerifyEmail } from '@/api'
-import { ROUTE } from '@/routes'
-import { Loading, toast } from '@/components'
-import { handleError } from '@/errors'
+import { i18n } from '@/i18n'
+import { postVerifyEmail } from '@/api/users'
+import { ROUTE } from '@/routes/route'
+import { toast } from '@/components/AppToaster'
+import { Loading } from '@/components/Loading'
+import { getErrorMessage } from '@/helpers/errors'
 
 export function VerifyEmail() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const { search } = useLocation()
   const queryParams = new URLSearchParams(search)
@@ -19,23 +24,19 @@ export function VerifyEmail() {
 
     const verifyEmailToken = async () => {
       try {
-        toast.loading('Verifying email...', { id: 'verify' })
+        toast.loading(i18n.t('auth.verifyingEmail'), { id: 'verify' })
 
         const response = await postVerifyEmail(token)
 
-        toast.success(
-          `${response.email} successfully verified, you can now log in.`,
-          { id: 'verify' },
-        )
+        toast.success(i18n.t('auth.verified', { email: response.email }), {
+          id: 'verify',
+        })
 
         void navigate(`/${ROUTE.LOGIN}`, { replace: true })
       } catch (error) {
-        const formattedError = handleError({
-          error,
-          message: 'Verification failed, please try again later.',
+        toast.error(getErrorMessage(error, i18n.t('auth.verifyError')), {
+          id: 'verify',
         })
-
-        toast.error(formattedError.message, { id: 'verify' })
 
         void navigate('/', { replace: true })
       }
@@ -44,5 +45,5 @@ export function VerifyEmail() {
     void verifyEmailToken()
   }, [navigate, token])
 
-  return <Loading message="Verifying" fullScreen />
+  return <Loading message={t('auth.verifying')} fullScreen />
 }

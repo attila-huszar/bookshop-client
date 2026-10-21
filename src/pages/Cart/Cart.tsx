@@ -6,33 +6,33 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import {
-  cartClear,
-  cartSelector,
-  paymentCreate,
-  paymentCreateReset,
-  paymentSelector,
-  paymentSessionReset,
-  refreshCartItems,
-} from '@/store'
-import {
-  Alert,
-  Button,
-  IconButton,
-  InfoDialog,
-  Loading,
-  Price,
-  toast,
-} from '@/components'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { enforceMinMax, scrollToTop, sessionStorageAdapter } from '@/helpers'
+import { i18n } from '@/i18n'
+import { ROUTE } from '@/routes/route'
+import { cartSelector, paymentSelector } from '@/store/selectors'
+import { cartClear } from '@/store/slices/cart'
+import { paymentCreateReset, paymentSessionReset } from '@/store/slices/payment'
+import { refreshCartItems } from '@/store/thunks/cart'
+import { paymentCreate } from '@/store/thunks/payment'
+import { Alert } from '@/components/Alert'
+import { toast } from '@/components/AppToaster'
+import { Button, IconButton } from '@/components/Button'
+import { InfoDialog } from '@/components/InfoDialog'
+import { Loading } from '@/components/Loading'
+import { Price } from '@/components/Price'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useCart } from '@/hooks/useCart'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { formatAmount } from '@/helpers/checkout'
+import { enforceMinMax } from '@/helpers/enforceMinMax'
+import { getErrorMessage } from '@/helpers/errors'
+import { scrollToTop } from '@/helpers/scrollToTop'
 import {
   defaultCurrencySymbol,
   maxItemQuantity,
-  paymentIdKey,
-} from '@/constants'
+} from '@/constants/defaultValues'
+import { paymentIdKey } from '@/constants/keys'
 import type { Cart } from '@/types'
 import {
   BinIcon,
@@ -61,6 +61,8 @@ import {
 } from './Cart.style'
 
 export function Cart() {
+  const { t, i18n: translations } = useTranslation()
+
   const navigate = useNavigate()
   const {
     cartItems,
@@ -111,9 +113,14 @@ export function Cart() {
     if (!isPriceConflict) hasHandledPriceConflictRef.current = false
     if (paymentCreateError == null) return
 
-    toast.error(paymentCreateError, {
-      id: 'payment-error',
-    })
+    toast.error(
+      typeof paymentCreateError === 'string'
+        ? i18n.t(paymentCreateError, { defaultValue: paymentCreateError })
+        : getErrorMessage(paymentCreateError, i18n.t('checkout.createError')),
+      {
+        id: 'payment-error',
+      },
+    )
 
     if (isPriceConflict) {
       if (!hasHandledPriceConflictRef.current) {
@@ -167,7 +174,7 @@ export function Cart() {
     if (isCheckoutBusy) return
 
     if (!cartItems.length) {
-      toast.error('Cart is empty', { id: 'cart-empty' })
+      toast.error(t('cart.empty'), { id: 'cart-empty' })
       return
     }
 
@@ -203,18 +210,14 @@ export function Cart() {
   }
 
   if (cartIsLoading) {
-    return <Loading message="Loading Cart" fullScreen />
+    return <Loading message={t('cart.loading')} fullScreen />
   }
 
   if (cartError) {
     return (
       <StyledCart>
-        <h2>Cart</h2>
-        <Alert
-          message="Failed to load your cart. Please try again."
-          error={cartError}
-          backButton
-        />
+        <h2>{t('cart.title')}</h2>
+        <Alert message={t('cart.error')} error={cartError} backButton />
       </StyledCart>
     )
   }
@@ -222,13 +225,13 @@ export function Cart() {
   if (cartItems.length) {
     return (
       <StyledCart>
-        <h2>Cart</h2>
+        <h2>{t('cart.title')}</h2>
         <CartGrid>
           <HeaderRow>
-            <p>Books in basket</p>
-            <LabelQuantity>Quantity</LabelQuantity>
-            <LabelPrice>Price</LabelPrice>
-            <LabelPrice>Total</LabelPrice>
+            <p>{t('cart.books')}</p>
+            <LabelQuantity>{t('common.fields.quantity')}</LabelQuantity>
+            <LabelPrice>{t('common.fields.price')}</LabelPrice>
+            <LabelPrice>{t('common.fields.total')}</LabelPrice>
           </HeaderRow>
           {cartItems.map((item: Cart, index) => (
             <Fragment key={item.id}>
@@ -250,7 +253,7 @@ export function Cart() {
                 <IconButton
                   onClick={() => handleRemoveQuantity(item)}
                   icon={<MinusIcon />}
-                  title="Remove quantity"
+                  title={t('cart.decrease')}
                   $size="sm"
                   $color="var(--color-on-surface-variant)"
                   disabled={item.quantity <= 1}
@@ -258,7 +261,7 @@ export function Cart() {
                 <input
                   value={item.quantity}
                   onChange={(e) => handleSetQuantity(item, e)}
-                  title="Set quantity"
+                  title={t('cart.quantity')}
                   type="number"
                   inputMode="numeric"
                   min={1}
@@ -267,7 +270,7 @@ export function Cart() {
                 <IconButton
                   onClick={() => handleAddQuantity(item)}
                   icon={<PlusIcon />}
-                  title="Add quantity"
+                  title={t('cart.increase')}
                   $size="sm"
                   $color="var(--color-on-surface-variant)"
                   disabled={item.quantity >= maxItemQuantity}
@@ -291,7 +294,7 @@ export function Cart() {
                 <IconButton
                   onClick={() => removeFromCart(item)}
                   icon={<BinIcon />}
-                  title="Remove from cart"
+                  title={t('cart.remove')}
                   $size="sm"
                   $color="var(--color-error)"
                 />
@@ -300,35 +303,38 @@ export function Cart() {
           ))}
         </CartGrid>
         <TotalPrice>
-          <h3>Price Summary</h3>
+          <h3>{t('cart.summary')}</h3>
           {!!discount && (
             <div>
-              <h4>Subtotal:</h4>
+              <h4>{t('cart.subtotal')}</h4>
               <h4>
-                {defaultCurrencySymbol} {price.toFixed(2)}
+                {defaultCurrencySymbol}{' '}
+                {formatAmount(price, translations.resolvedLanguage)}
               </h4>
-              <h4>Discount:</h4>
+              <h4>{t('cart.discount')}</h4>
               <h4>
-                {defaultCurrencySymbol} -{discount.toFixed(2)}
+                {defaultCurrencySymbol} -
+                {formatAmount(discount, translations.resolvedLanguage)}
               </h4>
             </div>
           )}
           <div>
-            <p>Total:</p>
+            <p>{t('cart.total')}</p>
             <p>
-              {defaultCurrencySymbol} {discountPrice.toFixed(2)}
+              {defaultCurrencySymbol}{' '}
+              {formatAmount(discountPrice, translations.resolvedLanguage)}
             </p>
           </div>
         </TotalPrice>
         <ButtonWrapper>
           <Button onClick={navigateToBooks} disabled={isCheckoutBusy} $inverted>
-            Back to Shop
+            {t('common.actions.backToShop')}
           </Button>
           <IconButton
             icon={<BinIcon />}
             onClick={handleCartClear}
             disabled={isCheckoutBusy}
-            title="Reset Cart"
+            title={t('cart.reset')}
             $color="var(--color-outline)"
             $outline
           />
@@ -337,16 +343,12 @@ export function Cart() {
             disabled={isCheckoutBusy}
             $icon={isCheckoutBusy ? <SpinnerIcon /> : <CartIcon />}
             $shadow>
-            {isCheckoutBusy ? 'Checking out' : 'Checkout'}
+            {isCheckoutBusy ? t('cart.checkingOut') : t('checkout.title')}
           </Button>
         </ButtonWrapper>
         <InfoDialog
           dialogRef={dialogRef}
-          message={
-            paymentIsLoading
-              ? 'Creating checkout session...'
-              : 'Checkout session ready. Redirecting...'
-          }
+          message={paymentIsLoading ? t('cart.creating') : t('cart.ready')}
         />
       </StyledCart>
     )
@@ -354,12 +356,12 @@ export function Cart() {
 
   return (
     <StyledCart>
-      <h2>Cart</h2>
+      <h2>{t('cart.title')}</h2>
       <EmptyCart>
         <CartEmptyIcon />
-        <p>Your cart is empty</p>
+        <p>{t('cart.empty')}</p>
         <Button type="button" onClick={navigateToBooks} $icon={<CartIcon />}>
-          Go Shopping
+          {t('cart.shop')}
         </Button>
       </EmptyCart>
     </StyledCart>

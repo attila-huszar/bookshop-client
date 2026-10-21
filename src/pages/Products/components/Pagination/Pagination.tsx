@@ -1,16 +1,19 @@
+import { useTranslation } from 'react-i18next'
+import { booksSelector } from '@/store/selectors'
 import {
-  booksSelector,
   decrementBooksCurrentPage,
   incrementBooksCurrentPage,
   setBooksCurrentPage,
-} from '@/store'
-import { IconButton } from '@/components'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+} from '@/store/slices/books'
+import { IconButton } from '@/components/Button'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { scrollToTop } from '@/helpers/scrollToTop'
 import { CaretLeftEndIcon, CaretLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
 export function Pagination() {
+  const { t } = useTranslation()
+
   const dispatch = useAppDispatch()
   const { booksCurrentPage, booksTotal, booksPerPage } =
     useAppSelector(booksSelector)
@@ -63,7 +66,7 @@ export function Pagination() {
           }
         }}
         icon={<CaretLeftEndIcon />}
-        title="First Page"
+        title={t('pagination.first')}
         $size="sm"
         disabled={booksCurrentPage === 1}
       />
@@ -75,7 +78,7 @@ export function Pagination() {
           }
         }}
         icon={<CaretLeftIcon />}
-        title="Previous Page"
+        title={t('pagination.previous')}
         $size="sm"
         disabled={booksCurrentPage === 1}
       />
@@ -93,7 +96,7 @@ export function Pagination() {
               scrollToTop()
             }}
             disabled={booksCurrentPage === page}
-            aria-label={`Page ${page}`}>
+            aria-label={t('pagination.page', { page: page })}>
             {page}
           </PageSelectButton>
         )
@@ -106,7 +109,7 @@ export function Pagination() {
           }
         }}
         icon={<CaretLeftIcon />}
-        title="Next Page"
+        title={t('pagination.next')}
         $size="sm"
         $flipH
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
@@ -119,7 +122,7 @@ export function Pagination() {
           }
         }}
         icon={<CaretLeftEndIcon />}
-        title="Last Page"
+        title={t('pagination.last')}
         $size="sm"
         $flipH
         disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}

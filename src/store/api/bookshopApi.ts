@@ -6,6 +6,7 @@ import {
 } from '@reduxjs/toolkit/query/react'
 import { PATH } from '@/api/path'
 import type {
+  AcceptPaymentTermsRequest,
   Author,
   AuthorCreate,
   AuthorReference,
@@ -25,8 +26,12 @@ import type {
   Filters,
   News,
   Order,
+  PaymentTermsReview,
+  PublishTermsRequest,
   RegisterRequest,
   RegisterResponse,
+  TermsAcceptance,
+  TermsDocument,
   User,
   UserProfileUpdate,
 } from '@/types'
@@ -40,10 +45,67 @@ type SearchOptions = Pick<Filters, 'genre' | 'price' | 'publishYear'>
 export const bookshopApi = createApi({
   reducerPath: 'bookshopApi',
   baseQuery: kyBaseQuery,
-  tagTypes: ['Book', 'Author', 'News', 'Order', 'User', 'Profile'],
+  tagTypes: [
+    'Book',
+    'Author',
+    'News',
+    'Order',
+    'User',
+    'Profile',
+    'CheckoutTerms',
+    'TermsDocument',
+  ],
   refetchOnFocus: true,
   refetchOnReconnect: true,
   endpoints: (build) => ({
+    termsDocument: build.query<TermsDocument | null, string | undefined>({
+      query: (version) => ({
+        url: version ? `${PATH.terms}/${version}` : PATH.terms,
+      }),
+      providesTags: (_result, _error, version) =>
+        version ? [] : ['TermsDocument'],
+    }),
+    cmsTerms: build.query<TermsDocument | null, void>({
+      query: () => ({ url: PATH.cms.terms, authenticated: true }),
+      providesTags: ['TermsDocument'],
+    }),
+    publishTerms: build.mutation<TermsDocument, PublishTermsRequest>({
+      query: (request) => ({
+        url: PATH.cms.terms,
+        method: 'post',
+        json: request,
+        authenticated: true,
+      }),
+      invalidatesTags: (_result, error) =>
+        error ? [] : ['TermsDocument', 'CheckoutTerms'],
+    }),
+    paymentTerms: build.query<PaymentTermsReview, string>({
+      query: (paymentId) => ({
+        url: `${PATH.payments}/${paymentId}/terms`,
+        authenticated: true,
+        credentials: 'include',
+      }),
+      keepUnusedDataFor: 0,
+      providesTags: ['CheckoutTerms'],
+    }),
+    acceptPaymentTerms: build.mutation<
+      TermsAcceptance,
+      AcceptPaymentTermsRequest
+    >({
+      query: (request) => ({
+        url: `${PATH.payments}/${request.paymentId}/terms`,
+        method: 'post',
+        authenticated: true,
+        credentials: 'include',
+        json: {
+          accepted: request.accepted,
+          version: request.version,
+          language: request.language,
+        },
+      }),
+      invalidatesTags: (_result, error) =>
+        error?.status === 412 ? ['CheckoutTerms'] : [],
+    }),
     books: build.query<{ books: Book[]; total: number }, BooksQueryArgs>({
       query: (arg) => ({
         url: PATH.books,
@@ -291,6 +353,11 @@ export const bookshopApi = createApi({
 })
 
 export const {
+  useTermsDocumentQuery,
+  useCmsTermsQuery,
+  usePublishTermsMutation,
+  usePaymentTermsQuery,
+  useAcceptPaymentTermsMutation,
   useBooksQuery,
   useBookQuery,
   useBooksByPropertyQuery,

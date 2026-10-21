@@ -1,4 +1,4 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import { Footer } from './Footer'

@@ -1,6 +1,7 @@
-import { booksQueryArgs, store } from '@/store'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
+import { booksQueryArgs } from '@/store/selectors'
+import { store } from '@/store/store'
 
 export const shopLoader = () => {
   store.dispatch(
