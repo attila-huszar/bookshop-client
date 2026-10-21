@@ -4,8 +4,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as privateApi from '@/api/authRequest'
 import * as usersApi from '@/api/users'
-import { authRequest } from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { logout } from '@/store/thunks/user'
@@ -38,7 +38,7 @@ beforeEach(() => {
   store = createAppStore()
   entries = [entry]
   total = 26
-  vi.spyOn(authRequest, 'get').mockImplementation(() =>
+  vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
     ky.get('https://bookshop.test/mock', {
       retry: 0,
       fetch: () =>
@@ -79,7 +79,7 @@ describe('Order emails', () => {
     const pending = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.mocked(authRequest.get).mockImplementation(() =>
+    vi.mocked(privateApi.authRequest).mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => pending,
@@ -121,19 +121,19 @@ describe('Order emails', () => {
 
     fireEvent.change(input, { target: { value: ' r ' } })
     await act(() => vi.advanceTimersByTimeAsync(300))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     fireEvent.change(input, { target: { value: 're' } })
     await act(() => vi.advanceTimersByTimeAsync(299))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     fireEvent.change(input, { target: { value: 'reader' } })
     await act(() => vi.advanceTimersByTimeAsync(299))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     await act(() => vi.advanceTimersByTimeAsync(1))
-    expect(authRequest.get).toHaveBeenCalledTimes(2)
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { ...criteria, search: 'reader' },
@@ -153,7 +153,7 @@ describe('Order emails', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { ...criteria, page: 2, search: 'reader' },
@@ -168,7 +168,7 @@ describe('Order emails', () => {
     expect(input).toHaveValue('')
     expect(input).toHaveFocus()
     expect(screen.getByText('26 emails · Page 1 of 2')).toBeInTheDocument()
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({ searchParams: criteria }),
     )
@@ -216,14 +216,14 @@ describe('Order emails', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next' }))
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({ searchParams: { ...criteria, page: 2 } }),
       ),
     )
     await user.selectOptions(screen.getByLabelText('Status'), 'failed')
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({
           searchParams: { ...criteria, status: 'failed' },
@@ -236,7 +236,7 @@ describe('Order emails', () => {
     )
     await user.type(screen.getByLabelText('Recipient'), 'reader@example.com')
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({
           searchParams: {
@@ -272,7 +272,7 @@ describe('Order emails', () => {
 
   it('keeps refresh available after a request fails', async () => {
     const user = userEvent.setup()
-    vi.mocked(authRequest.get).mockRejectedValueOnce(
+    vi.mocked(privateApi.authRequest).mockRejectedValueOnce(
       new Error('Network unavailable'),
     )
     renderOutbox()

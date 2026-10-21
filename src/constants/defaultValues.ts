@@ -23,7 +23,7 @@ export const registrationInitialValues = {
   email: '',
   password: '',
   passwordConfirmation: '',
-  country: '',
+  country: defaultCountry,
   avatar: null,
 }
 

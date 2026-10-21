@@ -1,10 +1,16 @@
+import { i18n } from '@/i18n'
+import type { BaseQueryApi } from '@reduxjs/toolkit/query'
 import {
   createApi,
   type TypedUseQueryStateOptions,
   type TypedUseQueryStateResult,
   type TypedUseQuerySubscriptionOptions,
 } from '@reduxjs/toolkit/query/react'
+import { HTTPError, type Options } from 'ky'
+import { authRequest } from '@/api/authRequest'
+import { baseRequest } from '@/api/baseRequest'
 import { PATH } from '@/api/path'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
 import type {
   AcceptPaymentTermsRequest,
   Author,
@@ -35,16 +41,45 @@ import type {
   User,
   UserProfileUpdate,
 } from '@/types'
+import { HttpErrorCode } from '@/types/ApiError'
 import { type BooksQueryArgs, booksSearchParams } from './booksQuery'
 import { cacheTimes } from './cacheTimes'
-import { kyBaseQuery } from './kyBaseQuery'
+
+type QueryArgs = Options & {
+  url: string
+  /** Use token/refresh handling, including cookie-based guest checkout. */
+  withAuth?: boolean
+}
+
+/** Adapt Ky results and retain structured error codes for display-time translation. */
+const baseQuery = async (args: QueryArgs, { signal }: BaseQueryApi) => {
+  const { url, withAuth = false, ...options } = args
+
+  try {
+    const client = withAuth ? authRequest : baseRequest
+    const response = await client(url, { ...options, signal })
+    const data = response.status === 204 ? null : await response.json<unknown>()
+
+    return { data, meta: { response } }
+  } catch (error: unknown) {
+    return {
+      error: {
+        ...(getApiError(error) ?? { code: HttpErrorCode.UnknownResponse }),
+        message: getErrorMessage(error, i18n.t('common.requestFailed')),
+        ...(error instanceof HTTPError
+          ? { status: error.response.status }
+          : {}),
+      },
+    }
+  }
+}
 
 type SearchOptions = Pick<Filters, 'genre' | 'price' | 'publishYear'>
 
 /** One server-data cache. Ky still owns cookies and single-flight token refresh. */
 export const bookshopApi = createApi({
   reducerPath: 'bookshopApi',
-  baseQuery: kyBaseQuery,
+  baseQuery,
   tagTypes: [
     'Book',
     'Author',
@@ -66,7 +101,7 @@ export const bookshopApi = createApi({
         version ? [] : ['TermsDocument'],
     }),
     cmsTerms: build.query<TermsDocument | null, void>({
-      query: () => ({ url: PATH.cms.terms, authenticated: true }),
+      query: () => ({ url: PATH.cms.terms, withAuth: true }),
       providesTags: ['TermsDocument'],
     }),
     publishTerms: build.mutation<TermsDocument, PublishTermsRequest>({
@@ -74,7 +109,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.terms,
         method: 'post',
         json: request,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: (_result, error) =>
         error ? [] : ['TermsDocument', 'CheckoutTerms'],
@@ -82,7 +117,7 @@ export const bookshopApi = createApi({
     paymentTerms: build.query<PaymentTermsReview, string>({
       query: (paymentId) => ({
         url: `${PATH.payments}/${paymentId}/terms`,
-        authenticated: true,
+        withAuth: true,
         credentials: 'include',
       }),
       keepUnusedDataFor: 0,
@@ -95,7 +130,7 @@ export const bookshopApi = createApi({
       query: (request) => ({
         url: `${PATH.payments}/${request.paymentId}/terms`,
         method: 'post',
-        authenticated: true,
+        withAuth: true,
         credentials: 'include',
         json: {
           accepted: request.accepted,
@@ -167,11 +202,11 @@ export const bookshopApi = createApi({
       keepUnusedDataFor: cacheTimes.countryCodes,
     }),
     userOrders: build.query<Order[], void>({
-      query: () => ({ url: PATH.orders, authenticated: true }),
+      query: () => ({ url: PATH.orders, withAuth: true }),
       providesTags: ['Order'],
     }),
     userProfile: build.query<User, void>({
-      query: () => ({ url: PATH.users.profile, authenticated: true }),
+      query: () => ({ url: PATH.users.profile, withAuth: true }),
       providesTags: ['Profile'],
     }),
     register: build.mutation<RegisterResponse, RegisterRequest>({
@@ -195,7 +230,7 @@ export const bookshopApi = createApi({
         url: PATH.users.profile,
         method: 'patch',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Profile', 'User'],
     }),
@@ -204,31 +239,31 @@ export const bookshopApi = createApi({
         url: PATH.users.avatar,
         method: 'post',
         body,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Profile', 'User'],
     }),
     cmsBooks: build.query<BookWithAuthorId[], void>({
-      query: () => ({ url: PATH.cms.books, authenticated: true }),
+      query: () => ({ url: PATH.cms.books, withAuth: true }),
       providesTags: ['Book'],
     }),
     cmsAuthors: build.query<Author[], void>({
-      query: () => ({ url: PATH.cms.authors, authenticated: true }),
+      query: () => ({ url: PATH.cms.authors, withAuth: true }),
       providesTags: ['Author'],
     }),
     cmsOrders: build.query<CmsOrder[], void>({
-      query: () => ({ url: PATH.cms.orders, authenticated: true }),
+      query: () => ({ url: PATH.cms.orders, withAuth: true }),
       providesTags: ['Order'],
     }),
     cmsUsers: build.query<CmsUser[], void>({
-      query: () => ({ url: PATH.cms.users, authenticated: true }),
+      query: () => ({ url: PATH.cms.users, withAuth: true }),
       providesTags: ['User'],
     }),
     cmsEmailOutbox: build.query<EmailOutboxResponse, EmailOutboxQuery>({
       query: (criteria) => ({
         url: PATH.cms.emailOutbox,
         searchParams: criteria,
-        authenticated: true,
+        withAuth: true,
       }),
       keepUnusedDataFor: 0,
     }),
@@ -237,7 +272,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.books,
         method: 'post',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Book'],
     }),
@@ -246,7 +281,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.books,
         method: 'patch',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Book'],
     }),
@@ -255,7 +290,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.books,
         method: 'delete',
         json: { bookIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Book'],
     }),
@@ -264,7 +299,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.authors,
         method: 'post',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Author', 'Book'],
     }),
@@ -273,7 +308,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.authors,
         method: 'patch',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Author', 'Book'],
     }),
@@ -282,7 +317,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.authors,
         method: 'delete',
         json: { authorIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Author', 'Book'],
     }),
@@ -291,7 +326,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.users,
         method: 'post',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['User', 'Profile'],
     }),
@@ -300,7 +335,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.users,
         method: 'patch',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['User', 'Profile'],
     }),
@@ -309,7 +344,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.users,
         method: 'delete',
         json: { userIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['User', 'Profile'],
     }),
@@ -318,7 +353,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.restore.users,
         method: 'patch',
         json: { userIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['User', 'Profile'],
     }),
@@ -327,7 +362,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.orders,
         method: 'patch',
         json,
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Order'],
     }),
@@ -336,7 +371,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.orders,
         method: 'delete',
         json: { orderIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Order'],
     }),
@@ -345,7 +380,7 @@ export const bookshopApi = createApi({
         url: PATH.cms.restore.orders,
         method: 'patch',
         json: { orderIds },
-        authenticated: true,
+        withAuth: true,
       }),
       invalidatesTags: ['Order'],
     }),
@@ -384,14 +419,14 @@ export const {
 type QueryState<Result> = TypedUseQueryStateResult<
   Result,
   void,
-  typeof kyBaseQuery
+  typeof baseQuery
 >
 
 type QueryOptions<
   Result,
   Selected extends Record<string, unknown>,
 > = TypedUseQuerySubscriptionOptions &
-  TypedUseQueryStateOptions<Result, void, typeof kyBaseQuery, Selected>
+  TypedUseQueryStateOptions<Result, void, typeof baseQuery, Selected>
 
 /**
  * Subscribes to catalogue filter options without a query argument.

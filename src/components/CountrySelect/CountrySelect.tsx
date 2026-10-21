@@ -4,7 +4,6 @@ import { useFormikContext } from 'formik'
 import { useCountryCodesQuery } from '@/store/api/bookshopApi'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { getFlagUrl } from '@/helpers/getFlagUrl'
-import { defaultCountry } from '@/constants/defaultValues'
 import { ChevronDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles/form.styles'
 import {
@@ -18,20 +17,23 @@ import {
 } from './CountrySelect.style'
 
 interface CountrySelectProps {
-  initial?: string
   fieldName?: string
   readOnly?: boolean
 }
 
 export function CountrySelect({
-  initial = defaultCountry,
   fieldName = 'country',
   readOnly = false,
 }: CountrySelectProps) {
   const { t, i18n } = useTranslation()
 
-  const { setFieldValue, getFieldMeta, submitCount, validateField } =
-    useFormikContext<Record<string, unknown>>()
+  const {
+    setFieldValue,
+    setFieldTouched,
+    getFieldMeta,
+    submitCount,
+    validateField,
+  } = useFormikContext<Record<string, unknown>>()
   const previousLanguage = useRef(i18n.resolvedLanguage)
 
   useEffect(() => {
@@ -69,9 +71,7 @@ export function CountrySelect({
 
   const meta = getFieldMeta(fieldName)
   const selectedCountry =
-    typeof meta.value === 'string'
-      ? meta.value.toLowerCase()
-      : initial.toLowerCase()
+    typeof meta.value === 'string' ? meta.value.toLowerCase() : ''
   const hasSelection = Boolean(selectedCountry)
   const displayNames = new Intl.DisplayNames([i18n.resolvedLanguage ?? 'en'], {
     type: 'region',
@@ -127,6 +127,7 @@ export function CountrySelect({
       return
     }
 
+    void setFieldTouched(fieldName, true, false)
     void setFieldValue(fieldName, code, true)
     setIsOpen(false)
   }

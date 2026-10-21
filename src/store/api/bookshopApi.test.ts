@@ -1,14 +1,34 @@
-import ky from 'ky'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as usersApi from '@/api/users'
-import { authRequest } from '@/api/authRequest'
-import { baseRequest } from '@/api/baseRequest'
-import type { Book, BookWithAuthorId } from '@/types'
+import { createElement, type ReactNode } from 'react'
+import { Provider, useSelector } from 'react-redux'
+import { i18n } from '@/i18n'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  expectTypeOf,
+  it,
+  vi,
+} from 'vitest'
+import * as privateApi from '@/api/authRequest'
+import * as publicApi from '@/api/baseRequest'
+import { PATH } from '@/api/path'
+import { log } from '@/services/logger'
+import { getErrorMessage } from '@/helpers/errors'
+import type { Book, BookWithAuthorId, Filters } from '@/types'
+import { UserRole } from '@/types'
+import { booksQueryArgs, userSelector } from '../selectors'
+import { applyBooksFilters } from '../slices/books'
 import { authSessionChanged } from '../slices/user'
-import { createAppStore } from '../store'
-import { refreshCartItems } from '../thunks/cart'
-import { fetchAuthTokens, logout } from '../thunks/user'
-import { bookshopApi } from './bookshopApi'
+import { store as appStore, createAppStore, type RootState } from '../store'
+import { expireAuthSession, fetchAuthTokens } from '../thunks/user'
+import {
+  bookshopApi,
+  useSearchOptionsQuery,
+  useUserProfileQuery,
+} from './bookshopApi'
+import { booksSearchParams, buildBookCriteria } from './booksQuery'
 
 const book: Book = {
   id: 7,
@@ -26,33 +46,162 @@ const book: Book = {
   newRelease: false,
 }
 
-const httpResponse = (data: unknown) =>
-  ky.get('https://bookshop.test/mock', {
-    retry: 0,
-    fetch: () =>
-      Promise.resolve(
-        new Response(JSON.stringify(data), {
-          headers: { 'content-type': 'application/json' },
-        }),
-      ),
-  })
-
 const cmsBook: BookWithAuthorId = { ...book, authorId: 1 }
+
+const profile = {
+  uuid: '11111111-1111-4111-8111-111111111111',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test@example.com',
+  country: 'us',
+  phone: null,
+  address: null,
+  avatar: null,
+  role: UserRole.User,
+}
+const fields = { currentPassword: 'WrongPass123!', password: 'NewPass456!' }
+const searchOptions: Pick<Filters, 'genre' | 'price' | 'publishYear'> = {
+  genre: ['Fiction', 'Drama'],
+  price: [0, 100],
+  publishYear: [1900, 2024],
+}
+
+const jsonResponse = (
+  data: unknown,
+  status = 200,
+  headers?: Record<string, string>,
+) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json', ...headers },
+  })
+const requestOf = (input: RequestInfo | URL): Request =>
+  input instanceof Request ? input : new Request(input)
+
 let store: ReturnType<typeof createAppStore>
+let accessToken: string | null
+let refresh: ReturnType<
+  typeof vi.fn<() => Promise<{ accessToken: string | null }>>
+>
+let expire: ReturnType<typeof vi.fn<(accessToken: string) => void>>
+let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>
+let capturedRequests: Request[]
 
 beforeEach(() => {
   store = createAppStore()
-  vi.spyOn(baseRequest, 'get').mockImplementation(() => httpResponse(book))
-  vi.spyOn(authRequest, 'get').mockImplementation(() => httpResponse([cmsBook]))
-  vi.spyOn(authRequest, 'patch').mockImplementation(() => httpResponse(cmsBook))
-})
-afterEach(() => {
-  store.dispatch(bookshopApi.util.resetApiState())
-  vi.restoreAllMocks()
-  vi.useRealTimers()
+  store.dispatch(authSessionChanged('old-token'))
+  accessToken = 'old-token'
+  refresh = vi
+    .fn<() => Promise<{ accessToken: string | null }>>()
+    .mockImplementation(() => Promise.resolve({ accessToken }))
+  expire = vi.fn((rejectedToken: string) => {
+    if (accessToken === rejectedToken) {
+      accessToken = null
+    }
+  })
+  privateApi.configureAuthRequest({
+    getAccessToken: () => accessToken,
+    refresh,
+    expire,
+  })
+  fetchMock = vi.fn<typeof fetch>().mockImplementation((input) => {
+    const request = requestOf(input)
+    const isCmsBook = new URL(request.url).pathname.endsWith('/cms/books')
+
+    return Promise.resolve(
+      jsonResponse(
+        isCmsBook ? (request.method === 'PATCH' ? cmsBook : [cmsBook]) : book,
+      ),
+    )
+  })
+  capturedRequests = []
+  const mockFetch: typeof fetch = (input, options) => {
+    capturedRequests.push(requestOf(input).clone())
+
+    return fetchMock(input, options)
+  }
+
+  vi.stubGlobal('fetch', mockFetch)
+
+  // Use real Ky/hooks with an absolute test URL; no network/provider calls.
+  const publicClient = publicApi.baseRequest.extend({
+    prefix: 'https://bookshop.test/api',
+    retry: 0,
+  })
+  const privateClient = privateApi.authRequest.extend({
+    prefix: 'https://bookshop.test/api',
+    retry: 0,
+  })
+
+  Object.assign(
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(publicClient),
+    publicClient,
+  )
+  Object.assign(
+    vi.spyOn(privateApi, 'authRequest').mockImplementation(privateClient),
+    privateClient,
+  )
 })
 
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  privateApi.configureAuthRequest({
+    getAccessToken: () => appStore.getState().user.accessToken,
+    refresh: () => appStore.dispatch(fetchAuthTokens()).unwrap(),
+    expire: (rejectedToken) =>
+      appStore.dispatch(expireAuthSession(rejectedToken)),
+  })
+})
+
+function StoreProvider({ children }: { children: ReactNode }) {
+  return createElement(Provider, { store, children })
+}
+
 describe('server-data cache', () => {
+  it('reuses the unfiltered cache after submitting full displayed ranges', async () => {
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+        ...searchOptions,
+        price: [0.25, 99.75],
+      }),
+    )
+    fetchMock.mockResolvedValue(
+      jsonResponse([book], 200, { 'x-total-count': '1' }),
+    )
+    const originalArgs = booksQueryArgs(store.getState())
+    await store
+      .dispatch(
+        bookshopApi.endpoints.books.initiate(originalArgs, {
+          subscribe: false,
+        }),
+      )
+      .unwrap()
+
+    store.dispatch(
+      applyBooksFilters({
+        ...store.getState().books.booksFilters.active,
+        price: [0, 100],
+      }),
+    )
+    const submittedArgs = booksQueryArgs(store.getState())
+
+    expect(submittedArgs).toEqual(originalArgs)
+    expect(submittedArgs.criteria).toBeUndefined()
+    await store
+      .dispatch(
+        bookshopApi.endpoints.books.initiate(submittedArgs, {
+          subscribe: false,
+        }),
+      )
+      .unwrap()
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
   it('deduplicates concurrent queries without a second entity slice', async () => {
     const a = store.dispatch(
       bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
@@ -62,7 +211,7 @@ describe('server-data cache', () => {
     )
 
     await Promise.all([a.unwrap(), b.unwrap()])
-    expect(baseRequest.get).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(store.getState().books).not.toHaveProperty('books')
     expect(bookshopApi.endpoints.book.select(7)(store.getState()).data).toEqual(
       book,
@@ -81,10 +230,20 @@ describe('server-data cache', () => {
       discountPrice: 12,
     }
 
-    vi.mocked(baseRequest.get).mockImplementation(() => httpResponse(changed))
-    vi.mocked(authRequest.get).mockImplementation(() =>
-      httpResponse([{ ...changed, authorId: 1 }]),
-    )
+    fetchMock.mockImplementation((input) => {
+      const request = requestOf(input)
+      const isCmsBook = new URL(request.url).pathname.endsWith('/cms/books')
+
+      return Promise.resolve(
+        jsonResponse(
+          isCmsBook
+            ? request.method === 'PATCH'
+              ? { ...changed, authorId: 1 }
+              : [{ ...changed, authorId: 1 }]
+            : changed,
+        ),
+      )
+    })
     const mutation = store.dispatch(
       bookshopApi.endpoints.updateBook.initiate({
         id: 7,
@@ -107,32 +266,8 @@ describe('server-data cache', () => {
     cmsQuery.unsubscribe()
   })
 
-  it('forces fresh prices for checkout recovery instead of replaying a cached book', async () => {
-    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] })
-    await store
-      .dispatch(bookshopApi.endpoints.book.initiate(7, { subscribe: false }))
-      .unwrap()
-
-    await vi.advanceTimersByTimeAsync(2 * 60 * 1000)
-    expect(
-      bookshopApi.endpoints.book.select(7)(store.getState()).data?.price,
-    ).toBe(10)
-
-    vi.mocked(baseRequest.get).mockImplementation(() =>
-      httpResponse({ ...book, price: 20 }),
-    )
-    expect(
-      (
-        await store
-          .dispatch(refreshCartItems([{ id: 7, quantity: 1 }]))
-          .unwrap()
-      )[0]?.price,
-    ).toBe(20)
-    expect(baseRequest.get).toHaveBeenCalledTimes(2)
-  })
-
   it('refreshes retained recommendations after a CMS book edit even with focus/reconnect refetch disabled', async () => {
-    vi.mocked(baseRequest.get).mockImplementation(() => httpResponse([book]))
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse([book])))
     const query = store.dispatch(
       bookshopApi.endpoints.booksByProperty.initiate('recommended', {
         subscriptionOptions: {
@@ -145,7 +280,15 @@ describe('server-data cache', () => {
     await query.unwrap()
     const changed = { ...book, title: 'Updated recommendation' }
 
-    vi.mocked(baseRequest.get).mockImplementation(() => httpResponse([changed]))
+    fetchMock.mockImplementation((input) =>
+      Promise.resolve(
+        jsonResponse(
+          requestOf(input).method === 'PATCH'
+            ? { ...changed, authorId: 1 }
+            : [changed],
+        ),
+      ),
+    )
     await store
       .dispatch(
         bookshopApi.endpoints.updateBook.initiate({
@@ -161,47 +304,575 @@ describe('server-data cache', () => {
         ).data?.[0]?.title,
       ).toBe(changed.title)
     })
-    expect(baseRequest.get).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
     query.unsubscribe()
   })
 
-  it('clears private queries when logout succeeds', async () => {
-    await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, []),
-    )
-    expect(
-      bookshopApi.endpoints.userOrders.select()(store.getState()).isSuccess,
-    ).toBe(true)
-    vi.spyOn(usersApi, 'postUserLogout').mockResolvedValue({ success: true })
-    await store.dispatch(logout()).unwrap()
-    expect(
-      bookshopApi.endpoints.userOrders.select()(store.getState())
-        .isUninitialized,
-    ).toBe(true)
-  })
-
-  it('clears private data when the refresh session expires', async () => {
-    store.dispatch(authSessionChanged('old-token'))
-    await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, []),
-    )
-    vi.spyOn(usersApi, 'retrieveAuthTokens').mockResolvedValue({
-      accessToken: null,
-    })
-    await store.dispatch(fetchAuthTokens()).unwrap()
-    expect(
-      bookshopApi.endpoints.userOrders.select()(store.getState())
-        .isUninitialized,
-    ).toBe(true)
-  })
-
   it('stores serializable failures rather than thrown provider objects', async () => {
-    vi.mocked(baseRequest.get).mockRejectedValue(new Error('Book unavailable'))
+    vi.mocked(publicApi.baseRequest).mockRejectedValue(
+      new Error('Book unavailable'),
+    )
     await store.dispatch(
       bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
     )
     expect(
       bookshopApi.endpoints.book.select(7)(store.getState()).error,
     ).toEqual({ code: 'UNKNOWN_API_ERROR', message: 'Book unavailable' })
+  })
+})
+
+describe('catalogue filter criteria', () => {
+  const initial: Filters = {
+    ...searchOptions,
+    genre: [],
+    discount: 'allBooks',
+    rating: 0.5,
+  }
+
+  it.each([
+    {
+      name: 'full ranges',
+      initialPrice: [0, 100],
+      price: [0, 100],
+      publishYear: [1900, 2024],
+    },
+    {
+      name: 'cleared ranges',
+      initialPrice: [0, 100],
+      price: [],
+      publishYear: [],
+    },
+    {
+      name: 'outward-rounded prices',
+      initialPrice: [0.25, 99.75],
+      price: [0, 100],
+      publishYear: [1900, 2024],
+    },
+  ])('omits criteria for $name', ({ initialPrice, price, publishYear }) => {
+    expect(
+      buildBookCriteria(
+        { ...initial, price: initialPrice },
+        { ...initial, price, publishYear },
+      ),
+    ).toBeUndefined()
+  })
+
+  it('retains submitted bounds when reference ranges are not available yet', () => {
+    expect(
+      buildBookCriteria(
+        { ...initial, price: [], publishYear: [] },
+        { ...initial, price: [0, 50], publishYear: [2000, 2024] },
+      ),
+    ).toEqual({
+      discountPrice_gte: 0,
+      discountPrice_lte: 50,
+      publishYear_gte: 2000,
+      publishYear_lte: 2024,
+    })
+  })
+
+  it.each<{
+    name: string
+    filters: Partial<Filters>
+    expected: Record<string, string>
+  }>([
+    {
+      name: 'lower price',
+      filters: { price: [25, 100] },
+      expected: { discountPrice_gte: '25' },
+    },
+    {
+      name: 'upper price',
+      filters: { price: [0, 75] },
+      expected: { discountPrice_lte: '75' },
+    },
+    {
+      name: 'zero upper price',
+      filters: { price: [0, 0] },
+      expected: { discountPrice_lte: '0' },
+    },
+    {
+      name: 'lower publication year',
+      filters: { publishYear: [2000, 2024] },
+      expected: { publishYear_gte: '2000' },
+    },
+    {
+      name: 'upper publication year',
+      filters: { publishYear: [1900, 2000] },
+      expected: { publishYear_lte: '2000' },
+    },
+  ])(
+    'sends the $name bound without the unchanged bound',
+    ({ filters, expected }) => {
+      const criteria = buildBookCriteria(initial, { ...initial, ...filters })
+
+      expect(
+        Object.fromEntries(
+          booksSearchParams({
+            currentPage: 1,
+            itemsPerPage: 8,
+            criteria,
+          }),
+        ),
+      ).toEqual({ page: '1', limit: '8', ...expected })
+    },
+  )
+
+  it('retains selected genres, discount mode, and rating with full ranges', () => {
+    const criteria = buildBookCriteria(initial, {
+      ...initial,
+      genre: ['Science & nature'],
+      discount: 'fullPriceOnly',
+      rating: 2.5,
+    })
+
+    expect(
+      Object.fromEntries(
+        booksSearchParams({
+          currentPage: 1,
+          itemsPerPage: 8,
+          criteria,
+        }),
+      ),
+    ).toEqual({
+      page: '1',
+      limit: '8',
+      genre: 'Science & nature',
+      discount: '0',
+      rating_gte: '2.5',
+    })
+  })
+})
+
+describe('user profile cache', () => {
+  it('deduplicates profile reads and derives the user view without a slice copy', async () => {
+    const get = fetchMock.mockImplementation(() =>
+      Promise.resolve(jsonResponse(profile)),
+    )
+    const queries = [1, 2].map(() =>
+      store.dispatch(
+        bookshopApi.endpoints.userProfile.initiate(undefined, {
+          subscribe: false,
+        }),
+      ),
+    )
+
+    await Promise.all(queries.map((query) => query.unwrap()))
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(store.getState().user).not.toHaveProperty('userData')
+    expect(userSelector(store.getState()).userData).toEqual(profile)
+  })
+
+  it('refreshes the subscribed profile after an account update', async () => {
+    const request = fetchMock.mockImplementation(() =>
+      Promise.resolve(jsonResponse(profile)),
+    )
+    const query = store.dispatch(bookshopApi.endpoints.userProfile.initiate())
+    await query.unwrap()
+
+    const updated = { ...profile, firstName: 'Updated' }
+    request.mockImplementation(() => Promise.resolve(jsonResponse(updated)))
+    const mutation = store.dispatch(
+      bookshopApi.endpoints.updateUserProfile.initiate({
+        firstName: 'Updated',
+      }),
+    )
+    await mutation.unwrap()
+
+    await vi.waitFor(() => {
+      expect(userSelector(store.getState()).userData?.firstName).toBe('Updated')
+    })
+    expect(request).toHaveBeenCalledTimes(3)
+    query.unsubscribe()
+    mutation.reset()
+  })
+
+  it('preserves the server password code as a serializable mutation failure', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ code: 'CURRENT_PASSWORD_INCORRECT' }, 400),
+    )
+    const mutation = store.dispatch(
+      bookshopApi.endpoints.updateUserProfile.initiate(fields),
+    )
+
+    await expect(mutation.unwrap()).rejects.toEqual({
+      status: 400,
+      code: 'CURRENT_PASSWORD_INCORRECT',
+      message: 'Your current password is incorrect.',
+    })
+    const request = capturedRequests[0]!
+    expect(new URL(request.url).pathname).toBe('/api/' + PATH.users.profile)
+    expect(request.method).toBe('PATCH')
+    expect(await request.json()).toEqual(fields)
+    mutation.reset()
+  })
+
+  it('provides a fallback for failures without an error message', async () => {
+    vi.mocked(privateApi.authRequest).mockRejectedValue(undefined)
+    const mutation = store.dispatch(
+      bookshopApi.endpoints.updateUserProfile.initiate(fields),
+    )
+
+    await expect(mutation.unwrap()).rejects.toEqual({
+      code: 'UNKNOWN_API_ERROR',
+      message: 'Request failed',
+    })
+    mutation.reset()
+  })
+})
+
+describe('options-only query hooks', () => {
+  beforeEach(() => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(jsonResponse(searchOptions)),
+    )
+  })
+
+  it('reads the existing endpoint cache without arguments or another request', async () => {
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData(
+        'searchOptions',
+        undefined,
+        searchOptions,
+      ),
+    )
+
+    const { result } = renderHook(() => useSearchOptionsQuery(), {
+      wrapper: StoreProvider,
+    })
+
+    expectTypeOf(result.current.data).toEqualTypeOf<
+      typeof searchOptions | undefined
+    >()
+    expect(result.current.data).toEqual(searchOptions)
+    expect(result.current.isSuccess).toBe(true)
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+  })
+
+  it('supports skipping and infers the selected result when enabled', async () => {
+    const { result, rerender } = renderHook(
+      ({ skip }) =>
+        useSearchOptionsQuery({
+          skip,
+          selectFromResult: ({ data }) => ({ genres: data?.genre ?? [] }),
+        }),
+      { initialProps: { skip: true }, wrapper: StoreProvider },
+    )
+
+    expectTypeOf(result.current.genres).toEqualTypeOf<string[]>()
+    expectTypeOf(result.current).not.toHaveProperty('data')
+    expectTypeOf(result.current.refetch).toBeFunction()
+    expect(result.current.genres).toEqual([])
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+
+    rerender({ skip: false })
+
+    await waitFor(() => {
+      expect(result.current.genres).toEqual(searchOptions.genre)
+    })
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
+    expect(
+      bookshopApi.endpoints.searchOptions.select()(store.getState()).data,
+    ).toEqual(searchOptions)
+  })
+})
+
+describe('Ky adapter', () => {
+  it('preserves API codes and validation details in the cache for translation at display time', async () => {
+    const failure = {
+      code: 'VALIDATION_ERROR',
+      validation: [
+        {
+          path: ['email'],
+          code: 'invalid_format',
+          origin: 'string',
+          format: 'email',
+        },
+      ],
+    }
+    fetchMock.mockResolvedValueOnce(jsonResponse(failure, 400))
+    const result = await store.dispatch(
+      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+    )
+
+    expect(result.error).toMatchObject({ ...failure, status: 400 })
+    expect(getErrorMessage(result.error, 'Fallback')).toBe(
+      'Email: Invalid Email',
+    )
+
+    await act(() => i18n.changeLanguage('hu'))
+
+    const cached = bookshopApi.endpoints.book.select(7)(store.getState())
+    expect(getErrorMessage(cached.error, 'Fallback')).toBe(
+      `${i18n.t('common.fields.email')}: ${i18n.t('validation.email')}`,
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps public queries anonymous and maps pagination headers and filters', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse([], 200, { 'x-total-count': '42' }),
+    )
+    const result = await store
+      .dispatch(
+        bookshopApi.endpoints.books.initiate(
+          {
+            currentPage: 2,
+            itemsPerPage: 10,
+            criteria: {
+              genre: ['Science & nature', 'Fiction'],
+              discountPrice_gte: 0,
+              discountPrice_lte: 20,
+              discount_gte: 1,
+              publishYear_gte: 2000,
+              publishYear_lte: 2025,
+              rating_gte: 3.5,
+            },
+          },
+          { subscribe: false },
+        ),
+      )
+      .unwrap()
+
+    expect(result).toEqual({ books: [], total: 42 })
+    const request = requestOf(fetchMock.mock.calls[0]![0])
+    const params = new URL(request.url).searchParams
+
+    expect(params.getAll('genre')).toEqual(['Science & nature', 'Fiction'])
+    expect(Object.fromEntries(params)).toMatchObject({
+      page: '2',
+      limit: '10',
+      discountPrice_gte: '0',
+      discountPrice_lte: '20',
+      discount_gte: '1',
+      publishYear_gte: '2000',
+      publishYear_lte: '2025',
+      rating_gte: '3.5',
+    })
+    expect(request.headers.has('authorization')).toBe(false)
+    expect(request.headers.get('ngrok-skip-browser-warning')).toBe('true')
+    expect(refresh).not.toHaveBeenCalled()
+  })
+
+  it('encodes search text as a query value rather than extra parameters', async () => {
+    await store
+      .dispatch(
+        bookshopApi.endpoints.bookSearch.initiate('A & B?genre=Fake', {
+          subscribe: false,
+        }),
+      )
+      .unwrap()
+    const params = new URL(requestOf(fetchMock.mock.calls[0]![0]).url)
+      .searchParams
+
+    expect(params.get('title')).toBe('A & B?genre=Fake')
+    expect(params.has('genre')).toBe(false)
+  })
+
+  it('sends authenticated CMS mutation methods and JSON bodies', async () => {
+    await store
+      .dispatch(
+        bookshopApi.endpoints.updateBook.initiate({ id: 7, title: 'Updated' }),
+      )
+      .unwrap()
+    await store
+      .dispatch(bookshopApi.endpoints.hardDeleteBooks.initiate([7]))
+      .unwrap()
+    const patch = capturedRequests[0]!
+    const remove = capturedRequests[1]!
+
+    expect(patch.method).toBe('PATCH')
+    expect(patch.headers.get('authorization')).toBe('Bearer old-token')
+    expect(await patch.json()).toEqual({ id: 7, title: 'Updated' })
+    expect(remove.method).toBe('DELETE')
+    expect(await remove.json()).toEqual({ bookIds: [7] })
+  })
+
+  it('accepts Ky request options and methods without shorthand functions', async () => {
+    const api = bookshopApi.injectEndpoints({
+      endpoints: (build) => ({
+        requestOptionsProbe: build.query<unknown, void>({
+          query: () => ({
+            url: 'books',
+            method: 'OPTIONS',
+            cache: 'no-store',
+          }),
+        }),
+      }),
+    })
+
+    await store.dispatch(api.endpoints.requestOptionsProbe.initiate()).unwrap()
+
+    expect(capturedRequests[0]?.method).toBe('OPTIONS')
+    expect(capturedRequests[0]?.cache).toBe('no-store')
+  })
+
+  it('allows guest checkout queries to use auth handling with cookies and no Bearer token', async () => {
+    accessToken = null
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        terms: null,
+        order: { items: [], total: 10, currency: 'eur' },
+      }),
+    )
+
+    await store
+      .dispatch(
+        bookshopApi.endpoints.paymentTerms.initiate('pi_guest', {
+          subscribe: false,
+        }),
+      )
+      .unwrap()
+
+    const request = capturedRequests[0]!
+    expect(new URL(request.url).pathname).toBe('/api/payments/pi_guest/terms')
+    expect(request.credentials).toBe('include')
+    expect(request.headers.has('Authorization')).toBe(false)
+    expect(refresh).not.toHaveBeenCalled()
+  })
+
+  it('returns a serializable refresh failure without retrying the request', async () => {
+    refresh.mockRejectedValue(new Error('Session expired'))
+    fetchMock.mockResolvedValueOnce(jsonResponse([], 401))
+    const result = await store.dispatch(
+      bookshopApi.endpoints.userOrders.initiate(undefined, {
+        subscribe: false,
+      }),
+    )
+
+    expect(result.error).toEqual({
+      code: 'UNKNOWN_API_ERROR',
+      message: 'Session expired',
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    { reason: 'the account no longer exists', refreshedAccessToken: null },
+    {
+      reason: 'the refreshed token is rejected',
+      refreshedAccessToken: 'new-token',
+    },
+  ])(
+    'stops subscribed profile requests and clears private data when $reason',
+    async ({ refreshedAccessToken }) => {
+      store.dispatch(authSessionChanged('old-token'))
+      await store.dispatch(
+        bookshopApi.util.upsertQueryData('userOrders', undefined, []),
+      )
+      privateApi.configureAuthRequest({
+        getAccessToken: () => store.getState().user.accessToken,
+        refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
+        expire: (rejectedToken) =>
+          store.dispatch(expireAuthSession(rejectedToken)),
+      })
+      fetchMock.mockImplementation((input) => {
+        const path = new URL(requestOf(input).url).pathname
+
+        return Promise.resolve(
+          path.endsWith('/users/refresh')
+            ? jsonResponse({ accessToken: refreshedAccessToken })
+            : jsonResponse({ error: 'Session unavailable' }, 401),
+        )
+      })
+
+      const view = renderHook(
+        () => {
+          const sessionToken = useSelector(
+            (state: RootState) => state.user.accessToken,
+          )
+
+          return useUserProfileQuery({ skip: !sessionToken })
+        },
+        { wrapper: StoreProvider },
+      )
+
+      await waitFor(() => {
+        expect(store.getState().user.accessToken).toBeNull()
+        expect(
+          bookshopApi.endpoints.userOrders.select()(store.getState())
+            .isUninitialized,
+        ).toBe(true)
+      })
+      await act(async () => {
+        store.dispatch(bookshopApi.internalActions.onFocus())
+        store.dispatch(bookshopApi.internalActions.onOnline())
+
+        await Promise.resolve()
+      })
+
+      expect(
+        capturedRequests.map((request) => new URL(request.url).pathname),
+      ).toEqual([
+        '/api/users/profile',
+        '/api/users/refresh',
+        ...(refreshedAccessToken ? ['/api/users/profile'] : []),
+      ])
+      expect(capturedRequests[1]?.credentials).toBe('include')
+      view.unmount()
+    },
+  )
+
+  it('forwards aborts to the actual Ky request', async () => {
+    let requestSignal: AbortSignal | undefined
+
+    fetchMock.mockImplementation((input) => {
+      requestSignal = requestOf(input).signal
+
+      return new Promise<Response>((_resolve, reject) => {
+        requestSignal!.addEventListener(
+          'abort',
+          () => reject(new DOMException('Aborted', 'AbortError')),
+          { once: true },
+        )
+      })
+    })
+    const query = store.dispatch(
+      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+    )
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+    query.abort()
+    await query
+    expect(requestSignal?.aborted).toBe(true)
+    expect(refresh).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
+  })
+
+  it('handles successful no-content responses without trying to parse JSON', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
+    const result = await store
+      .dispatch(bookshopApi.endpoints.hardDeleteBooks.initiate([7]))
+      .unwrap()
+
+    expect(result).toBeNull()
+  })
+
+  it('returns malformed JSON and network failures as query errors', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('not json', {
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+    const malformed = await store.dispatch(
+      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+    )
+
+    expect(malformed.error).toMatchObject({
+      code: 'UNKNOWN_API_ERROR',
+      message: i18n.t('common.requestFailed'),
+    })
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const offline = await store.dispatch(
+      bookshopApi.endpoints.book.initiate(8, { subscribe: false }),
+    )
+
+    expect(offline.error).toMatchObject({
+      code: 'UNKNOWN_API_ERROR',
+      message: i18n.t('common.requestFailed'),
+    })
   })
 })

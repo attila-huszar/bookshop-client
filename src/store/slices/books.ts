@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { BooksState, Filters } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
-import { getFilteredBooks } from '../utils/getFilteredBooks'
+import { buildBookCriteria } from '../api/booksQuery'
 
 const initialState: BooksState = {
   booksAppliedFilters: undefined,
@@ -30,8 +30,10 @@ const booksSlice = createSlice({
   initialState,
   reducers: {
     applyBooksFilters: (state, action: PayloadAction<Filters | undefined>) => {
-      state.booksAppliedFilters =
-        getFilteredBooks(state.booksFilters, action.payload) ?? undefined
+      state.booksAppliedFilters = buildBookCriteria(
+        state.booksFilters.initial,
+        action.payload,
+      )
       state.booksCurrentPage = 1
     },
     incrementBooksCurrentPage: (state) => {

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { booksSelector } from '@/store/selectors'
 import {
   decrementBooksCurrentPage,
   incrementBooksCurrentPage,
@@ -11,14 +10,16 @@ import { scrollToTop } from '@/helpers/scrollToTop'
 import { CaretLeftEndIcon, CaretLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
-export function Pagination() {
+export function Pagination({ total }: { total: number }) {
   const { t } = useTranslation()
 
   const dispatch = useAppDispatch()
-  const { booksCurrentPage, booksTotal, booksPerPage } =
-    useAppSelector(booksSelector)
+  const booksCurrentPage = useAppSelector(
+    (state) => state.books.booksCurrentPage,
+  )
+  const booksPerPage = useAppSelector((state) => state.books.booksPerPage)
 
-  const totalPages = Math.ceil(booksTotal / booksPerPage)
+  const totalPages = Math.ceil(total / booksPerPage)
   const currentPage = booksCurrentPage
 
   const getPageNumbers = () => {
@@ -103,7 +104,7 @@ export function Pagination() {
       })}
       <IconButton
         onClick={() => {
-          if (booksCurrentPage < booksTotal / booksPerPage) {
+          if (booksCurrentPage < total / booksPerPage) {
             dispatch(incrementBooksCurrentPage())
             scrollToTop()
           }
@@ -112,12 +113,12 @@ export function Pagination() {
         title={t('pagination.next')}
         $size="sm"
         $flipH
-        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
+        disabled={booksCurrentPage === Math.ceil(total / booksPerPage)}
       />
       <IconButton
         onClick={() => {
-          if (booksCurrentPage < booksTotal / booksPerPage) {
-            dispatch(setBooksCurrentPage(Math.ceil(booksTotal / booksPerPage)))
+          if (booksCurrentPage < total / booksPerPage) {
+            dispatch(setBooksCurrentPage(Math.ceil(total / booksPerPage)))
             scrollToTop()
           }
         }}
@@ -125,7 +126,7 @@ export function Pagination() {
         title={t('pagination.last')}
         $size="sm"
         $flipH
-        disabled={booksCurrentPage === Math.ceil(booksTotal / booksPerPage)}
+        disabled={booksCurrentPage === Math.ceil(total / booksPerPage)}
       />
     </StyledPagination>
   )

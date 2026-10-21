@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useLoaderData, useNavigate } from 'react-router'
+import { skipToken } from '@reduxjs/toolkit/query'
+import type { productLoader } from '@/routes/loaders/productLoader'
 import { ROUTE } from '@/routes/route'
 import { useBookQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
@@ -29,8 +31,7 @@ export function Product() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const id = searchParams.get('id')
+  const id = useLoaderData<typeof productLoader>()
   const { cartItems, addToCart } = useCart()
   const { isMobile } = useBreakpoints()
 
@@ -38,8 +39,7 @@ export function Product() {
     currentData: book,
     isFetching,
     isError,
-  } = useBookQuery(Number(id), {
-    skip: !id,
+  } = useBookQuery(id ?? skipToken, {
     refetchOnMountOrArgChange: cacheTimes.catalogue,
   })
   const isBookInCart = cartItems.some((item) => item.id === book?.id)

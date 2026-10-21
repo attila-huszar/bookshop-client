@@ -14,7 +14,7 @@ const GUEST_MAX_RETRIES = 4
 
 let tokenFailureCount = 0
 let tokenNextAttemptAt = 0
-let tokenFetchPromise: Promise<unknown> | null = null
+let tokenFetchPromise: Promise<void> | null = null
 
 const canSkipTokenBootstrap = () =>
   tokenFailureCount >= GUEST_MAX_RETRIES || Date.now() < tokenNextAttemptAt
@@ -39,20 +39,24 @@ export const authLoader = async ({
   const requiresLogin = loginRequired || adminRequired
 
   if (!accessToken) {
-    if (!requiresLogin && canSkipTokenBootstrap()) {
+    if (!tokenFetchPromise && !requiresLogin && canSkipTokenBootstrap()) {
       return true
     }
 
-    tokenFetchPromise ??= store.dispatch(fetchAuthTokens()).finally(() => {
-      tokenFetchPromise = null
-    })
+    tokenFetchPromise ??= store
+      .dispatch(fetchAuthTokens())
+      .then(() => {
+        // Concurrent route loaders share one bootstrap attempt and retry budget.
+        if (!getUserState().accessToken) {
+          scheduleTokenRetry()
+        }
+      })
+      .finally(() => {
+        tokenFetchPromise = null
+      })
     await tokenFetchPromise
 
     if (!getUserState().accessToken) {
-      if (!requiresLogin) {
-        scheduleTokenRetry()
-      }
-
       return !requiresLogin
     }
   }

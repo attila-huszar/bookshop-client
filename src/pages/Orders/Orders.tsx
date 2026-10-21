@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { i18n } from '@/i18n'
 import { useUserOrdersQuery } from '@/store/api/bookshopApi'
-import { ordersSelector, userSelector } from '@/store/selectors'
+import { userSelector } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { Loading } from '@/components/Loading'
 import { useAppSelector } from '@/hooks/redux'
@@ -32,9 +32,11 @@ const formatTotal = (amount: number, currency: string) => {
 export function Orders() {
   const { t } = useTranslation()
 
-  useUserOrdersQuery()
-  const { orders, ordersIsLoading, ordersError } =
-    useAppSelector(ordersSelector)
+  const {
+    data: orders = [],
+    isLoading: ordersIsLoading,
+    error: ordersError,
+  } = useUserOrdersQuery()
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {

@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import 'rc-slider/assets/index.css'
 import { Field, Form, Formik } from 'formik'
 import Slider from 'rc-slider'
-import { booksSelector } from '@/store/selectors'
+import { useSearchOptionsQuery } from '@/store/api/bookshopApi'
+import { cacheTimes } from '@/store/api/cacheTimes'
 import {
   applyBooksFilters,
   setBooksFilterDiscount,
@@ -16,7 +17,6 @@ import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { enforceMinMax } from '@/helpers/enforceMinMax'
-import { generateFilterArray } from '@/helpers/generateFilterArray'
 import { discountOptions, filterInitialValues } from '@/constants/defaultValues'
 import type { DiscountChangeEvent, Filters, InputEvent } from '@/types'
 import { StarIcon, StarOutlineIcon } from '@/assets/svg'
@@ -40,8 +40,11 @@ type FilterProps = {
 export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   const { t } = useTranslation()
 
-  const { booksFilters, booksFiltersLoading, booksFiltersError } =
-    useAppSelector(booksSelector)
+  const booksFilters = useAppSelector((state) => state.books.booksFilters)
+  const { isLoading: booksFiltersLoading, error: booksFiltersError } =
+    useSearchOptionsQuery({
+      refetchOnMountOrArgChange: cacheTimes.reference,
+    })
   const dispatch = useAppDispatch()
 
   const [priceMinInitialFloat = 0, priceMaxInitialFloat = 500] =
@@ -71,21 +74,9 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   const handleFormSubmit = () => {
     dispatch(
       applyBooksFilters({
-        genre: booksFilters.active.genre,
-        price: generateFilterArray(
-          priceMin,
-          priceMax,
-          priceMinInitial,
-          priceMaxInitial,
-        ) as number[],
-        discount: booksFilters.active.discount,
-        publishYear: generateFilterArray(
-          yearMin,
-          yearMax,
-          yearMinInitial,
-          yearMaxInitial,
-        ) as number[],
-        rating: booksFilters.active.rating,
+        ...booksFilters.active,
+        price: [priceMin, priceMax],
+        publishYear: [yearMin, yearMax],
       }),
     )
     if (isMobileOpen) {

@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { ROUTE } from '@/routes/route'
-import { cartSelector, paymentSelector } from '@/store/selectors'
 import { cartClear } from '@/store/slices/cart'
 import { paymentCreateReset, paymentSessionReset } from '@/store/slices/payment'
 import { refreshCartItems } from '@/store/thunks/cart'
@@ -71,13 +70,20 @@ export function Cart() {
     removeQuantity,
     setQuantity,
   } = useCart()
-  const { cartIsLoading, cartError } = useAppSelector(cartSelector)
-  const {
-    payment,
-    paymentIsLoading,
-    paymentCreateError,
-    paymentCreateIssueCode,
-  } = useAppSelector(paymentSelector)
+  const cartIsLoading = useAppSelector(
+    (state) => state.cart.currentRequestId !== null,
+  )
+  const cartError = useAppSelector((state) => state.cart.cartError)
+  const payment = useAppSelector((state) => state.payment.payment)
+  const paymentIsLoading = useAppSelector(
+    (state) => state.payment.paymentIsLoading,
+  )
+  const paymentCreateError = useAppSelector(
+    (state) => state.payment.paymentCreateError,
+  )
+  const paymentCreateIssueCode = useAppSelector(
+    (state) => state.payment.paymentCreateIssueCode,
+  )
   const dispatch = useAppDispatch()
   const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)

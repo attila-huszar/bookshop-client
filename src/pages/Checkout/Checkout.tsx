@@ -5,7 +5,6 @@ import { Navigate, useLocation } from 'react-router'
 import { i18n, shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { paymentSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Loading } from '@/components/Loading'
@@ -44,8 +43,13 @@ export function Checkout() {
   const { t, i18n } = useTranslation()
 
   const location = useLocation()
-  const { payment, paymentIsLoading, paymentRetrieveError } =
-    useAppSelector(paymentSelector)
+  const payment = useAppSelector((state) => state.payment.payment)
+  const paymentIsLoading = useAppSelector(
+    (state) => state.payment.paymentIsLoading,
+  )
+  const paymentRetrieveError = useAppSelector(
+    (state) => state.payment.paymentRetrieveError,
+  )
   const [checkoutPaymentToken] = useState(payment?.paymentToken)
   const ref = useRef<HTMLDialogElement>(null)
 

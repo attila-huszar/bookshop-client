@@ -3,9 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { booksSelector } from '@/store/selectors'
 import { Button } from '@/components/Button'
-import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import {
   ImageItem,
@@ -20,11 +18,10 @@ import {
 export function Releases() {
   const { t } = useTranslation()
 
-  useBooksByPropertyQuery('newRelease', {
+  const { data: booksReleases = [] } = useBooksByPropertyQuery('newRelease', {
     refetchOnMountOrArgChange: cacheTimes.featured,
   })
   const navigate = useNavigate()
-  const { booksReleases } = useAppSelector(booksSelector)
   const { isMobile } = useBreakpoints()
 
   const featuredBooks = booksReleases.slice(0, 3)

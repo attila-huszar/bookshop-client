@@ -3,8 +3,11 @@ import { store } from '@/store/store'
 import type { TabValue } from '@/pages/CMS/CMS'
 import { authLoader } from './authLoader'
 
-export const cmsLoader = async (tab: TabValue) => {
+export const cmsLoader = async (tab: TabValue, request: Request) => {
+  request.signal.throwIfAborted()
+
   const isAdmin = await authLoader({ adminRequired: true })
+  request.signal.throwIfAborted()
 
   if (!isAdmin) {
     return

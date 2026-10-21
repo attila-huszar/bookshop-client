@@ -79,27 +79,23 @@ export function Account() {
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const fileInput = e.target
     const files = fileInput.files
+    const file = files?.[0]
 
-    if (!files || files.length === 0) {
+    if (!file) {
       return
     }
 
-    const file = files[0]
+    fileInput.value = ''
     const { valid, error } = validateImageFile(file)
 
     if (!valid && error) {
       toast.error(error, { id: 'upload-error' })
-
       return
     }
 
     const formData = new FormData()
-    if (file) {
-      formData.append('avatar', file)
-    }
+    formData.append('avatar', file)
     void uploadAvatarFile(formData)
-
-    fileInput.value = ''
   }
 
   const uploadAvatarFile = async (formData: FormData) => {
@@ -108,8 +104,8 @@ export function Account() {
     try {
       await updateAvatar(formData).unwrap()
       toast.success(t('account.avatarUpdated'), { id: 'avatar-upload' })
-    } catch {
-      toast.error(t('account.avatarError'), {
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('account.avatarError')), {
         id: 'avatar-upload',
       })
     }
@@ -122,8 +118,6 @@ export function Account() {
   if (userData) {
     const { email, firstName, lastName, phone, address, avatar, country } =
       userData
-
-    const defaultCountry = address?.country ?? country
 
     return (
       <StyledAccount>
@@ -151,6 +145,7 @@ export function Account() {
                   name="avatarChangeInput"
                   aria-label={t('account.changeAvatar')}
                   onChange={handleAvatarChange}
+                  disabled={userIsUpdating}
                   accept="image/*"
                   ref={inputFile}
                   style={{
@@ -267,7 +262,7 @@ export function Account() {
                   city: address?.city ?? '',
                   state: address?.state ?? '',
                   postal_code: address?.postal_code ?? '',
-                  country: address?.country ?? '',
+                  country: address?.country ?? country,
                 }}
                 enableReinitialize
                 validationSchema={addressSchema}
@@ -332,10 +327,7 @@ export function Account() {
                     <AddressLine>
                       <div>
                         <p>{t('common.fields.country')}</p>
-                        <CountrySelect
-                          initial={defaultCountry}
-                          readOnly={!editingAddress}
-                        />
+                        <CountrySelect readOnly={!editingAddress} />
                       </div>
                     </AddressLine>
                     {editingAddress && (

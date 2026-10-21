@@ -1,12 +1,12 @@
 import type { ApiError } from './ApiError'
 import type { Cart } from './Cart'
-import type { FilterActive, Filters } from './Filters'
+import type { BookCriteria, Filters } from './Filters'
 import type { PaymentCreateIssueCode, PaymentSession } from './Payment'
 
 export type BooksState = {
   booksCurrentPage: number
   booksPerPage: number
-  booksAppliedFilters: FilterActive | undefined
+  booksAppliedFilters: BookCriteria | undefined
   booksFilters: {
     initial: Filters
     active: Filters

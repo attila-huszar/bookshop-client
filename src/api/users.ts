@@ -33,20 +33,22 @@ export const postUserLogout = async () => {
   }
 }
 
-export const postVerifyEmail = (token: string) =>
+export const postVerifyEmail = sharePendingTokenRequest((token) =>
   baseRequest
     .post(PATH.users.verification, { json: { token } })
-    .json<{ email: string }>()
+    .json<{ email: string }>(),
+)
 
 export const postPasswordReset = (email: string) =>
   baseRequest
     .post(PATH.users.passwordResetRequest, { json: { email } })
     .json<{ message: string }>()
 
-export const postVerifyPasswordReset = (token: string) =>
+export const postVerifyPasswordReset = sharePendingTokenRequest((token) =>
   baseRequest
     .post(PATH.users.passwordResetToken, { json: { token } })
-    .json<{ token: string }>()
+    .json<{ token: string }>(),
+)
 
 export const postPasswordResetSubmit = (token: string, password: string) =>
   baseRequest
@@ -62,5 +64,26 @@ export const getUserCountry = async () => {
     return { country: country ?? defaultCountry }
   } catch {
     return { country: defaultCountry }
+  }
+}
+
+/** Share pending requests per token without caching success or failure. */
+function sharePendingTokenRequest<T>(send: (token: string) => Promise<T>) {
+  const pending = new Map<string, Promise<T>>()
+
+  return (token: string) => {
+    const existing = pending.get(token)
+
+    if (existing) {
+      return existing
+    }
+
+    const request = send(token).finally(() => {
+      pending.delete(token)
+    })
+
+    pending.set(token, request)
+
+    return request
   }
 }

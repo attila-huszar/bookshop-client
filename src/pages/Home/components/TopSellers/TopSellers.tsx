@@ -1,19 +1,16 @@
 import { useTranslation } from 'react-i18next'
 import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { booksSelector } from '@/store/selectors'
 import { Card } from '@/components/Card'
 import { SwiperComponent } from '@/components/SwiperComponent'
-import { useAppSelector } from '@/hooks/redux'
 import { StyledTopSellers } from './TopSellers.style'
 
 export function TopSellers() {
   const { t } = useTranslation()
 
-  useBooksByPropertyQuery('topSellers', {
+  const { data: booksTopSellers = [] } = useBooksByPropertyQuery('topSellers', {
     refetchOnMountOrArgChange: cacheTimes.featured,
   })
-  const { booksTopSellers } = useAppSelector(booksSelector)
 
   if (!booksTopSellers.length) {
     return null

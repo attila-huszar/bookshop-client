@@ -4,14 +4,13 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { uploadProductImage } from '@/api/cms'
 import {
   useAddBookMutation,
+  useCmsAuthorsQuery,
   useUpdateBookMutation,
 } from '@/store/api/bookshopApi'
-import { cmsAuthorsSelector } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { FormikField } from '@/components/FormikField'
-import { useAppSelector } from '@/hooks/redux'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
@@ -58,8 +57,11 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
 
   const [addBook] = useAddBookMutation()
   const [updateBook] = useUpdateBookMutation()
-  const { authors, authorsLoading, authorsError } =
-    useAppSelector(cmsAuthorsSelector)
+  const {
+    data: authors = [],
+    isLoading: authorsLoading,
+    error: authorsError,
+  } = useCmsAuthorsQuery()
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const productImageInputRef = useRef<HTMLInputElement>(null)

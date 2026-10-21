@@ -120,6 +120,71 @@ describe('checkoutLoader', () => {
     expect(mockAuthLoader).not.toHaveBeenCalled()
   })
 
+  it('uses the Stripe return payment instead of an older stored checkout', async () => {
+    mockSessionStorageGet.mockReturnValue('pi_previous_payment')
+
+    const result = await checkoutLoader({
+      request: new Request(
+        'http://localhost/checkout?payment_intent=pi_returned&payment_intent_client_secret=secret_returned&redirect_status=succeeded',
+      ),
+    })
+
+    expect(mockSessionStorageSet).toHaveBeenCalledExactlyOnceWith(
+      paymentIdKey,
+      'pi_returned',
+    )
+    expect(getResponseLocation(result)).toBe(
+      '/checkout?redirect_status=succeeded',
+    )
+    expect(mockAuthLoader).not.toHaveBeenCalled()
+    expect(mockStoreDispatch).not.toHaveBeenCalled()
+  })
+
+  it('does not retrieve a payment after navigation is cancelled during auth', async () => {
+    let finishAuth!: (allowed: boolean) => void
+    mockAuthLoader.mockReturnValue(
+      new Promise<boolean>((resolve) => {
+        finishAuth = resolve
+      }),
+    )
+    const controller = new AbortController()
+    const loading = checkoutLoader({
+      request: new Request('http://localhost/checkout', {
+        signal: controller.signal,
+      }),
+    })
+
+    controller.abort()
+    finishAuth(true)
+
+    await expect(loading).rejects.toMatchObject({ name: 'AbortError' })
+    expect(mockStoreDispatch).not.toHaveBeenCalled()
+  })
+
+  it('does not clear a payment session after a cancelled navigation returns an access error', async () => {
+    let failRetrieve!: (error: unknown) => void
+    mockStoreDispatch.mockReturnValue({
+      unwrap: () =>
+        new Promise((_resolve, reject) => {
+          failRetrieve = reject
+        }),
+    })
+    const controller = new AbortController()
+    const loading = checkoutLoader({
+      request: new Request('http://localhost/checkout', {
+        signal: controller.signal,
+      }),
+    })
+    await Promise.resolve()
+
+    controller.abort()
+    failRetrieve({ code: 'session_unavailable' })
+
+    await expect(loading).rejects.toMatchObject({ name: 'AbortError' })
+    expect(mockSessionStorageRemove).not.toHaveBeenCalled()
+    expect(mockStoreDispatch).toHaveBeenCalledTimes(1)
+  })
+
   it('redirects to status flow when retrieved payment is already successful', async () => {
     mockStoreGetState.mockReturnValue({
       payment: {

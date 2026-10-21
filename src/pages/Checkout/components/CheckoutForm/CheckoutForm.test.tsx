@@ -5,6 +5,7 @@ import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePaymentTermsQuery } from '@/store/api/bookshopApi'
+import { userSelector } from '@/store/selectors'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { CheckoutForm } from './CheckoutForm'
@@ -78,9 +79,12 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useStripe).mockReturnValue({} as ReturnType<typeof useStripe>)
   vi.mocked(useElements).mockReturnValue({} as ReturnType<typeof useElements>)
-  vi.mocked(useAppSelector).mockReturnValue({
-    userData: { email: 'reader@example.com' },
-    payment: { paymentId: 'pi_test', paymentToken: 'test', amount: 1200 },
+  vi.mocked(useAppSelector).mockImplementation((selector) => {
+    if (selector === userSelector) {
+      return { userData: { email: 'reader@example.com' } }
+    }
+
+    return { paymentId: 'pi_test', paymentToken: 'test', amount: 1200 }
   })
   vi.mocked(useAppDispatch).mockReturnValue(vi.fn())
   vi.mocked(usePaymentSubmit).mockReturnValue(submitState)

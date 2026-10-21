@@ -170,7 +170,7 @@ const routes: RouteObject[] = [
     loader: checkoutLoader,
   },
   {
-    element: <ProtectedRoute />,
+    element: <ProtectedRoute adminRequired />,
     loader: () => authLoader({ adminRequired: true }),
     children: [
       {
@@ -184,22 +184,22 @@ const routes: RouteObject[] = [
           {
             path: 'orders',
             element: <CMSOrders />,
-            loader: () => cmsLoader('orders'),
+            loader: ({ request }) => cmsLoader('orders', request),
           },
           {
             path: 'books',
             element: <CMSBooks />,
-            loader: () => cmsLoader('books'),
+            loader: ({ request }) => cmsLoader('books', request),
           },
           {
             path: 'authors',
             element: <CMSAuthors />,
-            loader: () => cmsLoader('authors'),
+            loader: ({ request }) => cmsLoader('authors', request),
           },
           {
             path: 'users',
             element: <CMSUsers />,
-            loader: () => cmsLoader('users'),
+            loader: ({ request }) => cmsLoader('users', request),
           },
           {
             path: '*',

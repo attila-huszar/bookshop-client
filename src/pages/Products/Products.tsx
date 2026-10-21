@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useBooksQuery, useSearchOptionsQuery } from '@/store/api/bookshopApi'
+import { useBooksQuery } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
-import { booksSelector } from '@/store/selectors'
 import { booksQueryArgs } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { Card } from '@/components/Card'
@@ -19,21 +18,20 @@ import {
 
 export function Products() {
   const { t } = useTranslation()
-
   const queryArgs = useAppSelector(booksQueryArgs)
-
-  useBooksQuery(queryArgs, {
+  const {
+    currentData: page,
+    isFetching,
+    error: booksError,
+  } = useBooksQuery(queryArgs, {
     refetchOnMountOrArgChange: cacheTimes.catalogue,
   })
-  useSearchOptionsQuery({
-    refetchOnMountOrArgChange: cacheTimes.reference,
-  })
-  const { booksOnCurrentPage, booksIsLoading, booksError } =
-    useAppSelector(booksSelector)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
+  const books = page?.books ?? []
+
   const renderBooks = () => {
-    if (booksIsLoading) {
+    if (isFetching && !page) {
       return <Loading message={t('catalogue.loading')} fullScreen />
     }
 
@@ -41,14 +39,14 @@ export function Products() {
       return <Alert message={t('catalogue.error')} error={booksError} />
     }
 
-    return booksOnCurrentPage.length ? (
+    return books.length ? (
       <>
         <ProductsGrid>
-          {booksOnCurrentPage.map((book) => (
+          {books.map((book) => (
             <Card key={book.id} book={book} />
           ))}
         </ProductsGrid>
-        <Pagination />
+        <Pagination total={page?.total ?? 0} />
       </>
     ) : (
       <EmptyFilterResults />

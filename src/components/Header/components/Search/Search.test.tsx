@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { useAppDispatch } from '@/hooks/redux'
@@ -75,7 +75,7 @@ describe('Search', () => {
   })
 
   it('queries books and authors and navigates to the selected result', async () => {
-    const get = vi.spyOn(baseRequest, 'get').mockImplementation((url) =>
+    const get = vi.spyOn(publicApi, 'baseRequest').mockImplementation((url) =>
       httpResponse(
         url === 'books'
           ? [
@@ -126,7 +126,7 @@ describe('Search', () => {
     }
     const anotherBook = { ...book, id: 2, title: 'Second Book' }
 
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((url, options) => {
       if (url === 'authors') {
         return httpResponse([{ id: 7, name: 'Author' }])
       }
@@ -159,7 +159,7 @@ describe('Search', () => {
     const pending = new Promise<void>((resolve) => {
       completeRequest = resolve
     })
-    vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: async () => {
@@ -202,7 +202,7 @@ describe('Search', () => {
   })
 
   it('shows a failed search instead of reporting no results', async () => {
-    vi.spyOn(baseRequest, 'get').mockRejectedValue(
+    vi.spyOn(publicApi, 'baseRequest').mockRejectedValue(
       new Error('Network unavailable'),
     )
     render(<Search />, { wrapper: Providers })
@@ -221,7 +221,7 @@ describe('Search', () => {
     'aborts pending HTTP requests when the search is %s',
     async (action) => {
       const httpSignals: AbortSignal[] = []
-      vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+      vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
         pendingHttpResponse(options?.signal, httpSignals),
       )
       const { unmount } = render(<Search />, { wrapper: Providers })
@@ -267,7 +267,7 @@ describe('Search', () => {
 
   it('also aborts pending books-by-author requests when cleared', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((url, options) => {
       if (url === 'authors') {
         return httpResponse([{ id: 7, name: 'Author' }])
       }
@@ -296,7 +296,7 @@ describe('Search', () => {
 
   it('does not abort a matching query already started by another consumer', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
       pendingHttpResponse(options?.signal, httpSignals),
     )
     const existingRequest = store.dispatch(

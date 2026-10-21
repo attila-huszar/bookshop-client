@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Providers } from '@/testUtils'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -22,12 +22,13 @@ describe('AccountMenu component', () => {
   const mockNavigate = vi.fn()
   const mockDispatch = vi.fn(() => ({
     unwrap: () => Promise.resolve(),
-  })) as unknown as ReturnType<typeof useAppDispatch>
-  const mockRemoveFromLocalStorage = vi.fn()
+  }))
 
   beforeEach(() => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
+    vi.mocked(useAppDispatch).mockReturnValue(
+      mockDispatch as unknown as ReturnType<typeof useAppDispatch>,
+    )
     vi.mocked(useAppSelector).mockReturnValue({
       accessToken: 'mock-token',
       userData: {
@@ -36,7 +37,6 @@ describe('AccountMenu component', () => {
         avatar: 'avatar_url',
       },
     })
-    mockRemoveFromLocalStorage.mockClear()
     vi.spyOn(toast, 'success').mockImplementation(() => '')
     vi.spyOn(toast, 'error').mockImplementation(() => '')
   })
@@ -103,5 +103,30 @@ describe('AccountMenu component', () => {
       'july@test.com successfully logged out',
       { id: 'logout-success' },
     )
+  })
+
+  it('keeps the menu open and translates logout failures without navigating away', async () => {
+    mockDispatch.mockReturnValueOnce({
+      unwrap: () =>
+        Promise.reject(
+          Object.assign(new Error('Untranslated server message'), {
+            code: 'REQUEST_TIMEOUT',
+          }),
+        ),
+    })
+    render(<AccountMenu />, { wrapper: Providers })
+
+    await userEvent.click(screen.getByTitle('July'))
+    await userEvent.click(screen.getByRole('button', { name: 'Logout' }))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'The request timed out. Please try again.',
+        { id: 'logout-error' },
+      )
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(screen.getByText('Orders')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Logout' })).toBeEnabled()
   })
 })

@@ -4,7 +4,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api/authRequest'
+import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import type { CmsOrder, CMSOutletContext, EmailOutboxEntry } from '@/types'
@@ -76,7 +76,7 @@ beforeEach(async () => {
       },
     ]),
   )
-  vi.spyOn(authRequest, 'get').mockImplementation((_url, options) => {
+  vi.spyOn(privateApi, 'authRequest').mockImplementation((_url, options) => {
     const paymentId = (options?.searchParams as { paymentId: string }).paymentId
     const entry =
       paymentId === 'pi_test'
@@ -144,7 +144,7 @@ describe('CMS order email history', () => {
   it('fetches email history only when expanded, without opening the order editor', async () => {
     const user = userEvent.setup()
     renderOrders()
-    expect(authRequest.get).not.toHaveBeenCalled()
+    expect(privateApi.authRequest).not.toHaveBeenCalled()
     const button = screen.getByRole('button', {
       name: 'Show emails for order #1',
     })
@@ -161,7 +161,7 @@ describe('CMS order email history', () => {
       within(history).getByText('Sent', { selector: 'span' }),
     ).toBeInTheDocument()
     expect(button).toHaveAttribute('aria-expanded', 'true')
-    expect(authRequest.get).toHaveBeenCalledWith(
+    expect(privateApi.authRequest).toHaveBeenCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { paymentId: 'pi_test', page: 1, limit: 25 },
@@ -199,7 +199,7 @@ describe('CMS order email history', () => {
       screen.queryByRole('region', { name: 'Emails for payment pi_test' }),
     ).not.toBeInTheDocument()
     expect(screen.queryByText('receipt@example.com')).not.toBeInTheDocument()
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { paymentId: 'pi_test_extra', page: 1, limit: 25 },
@@ -230,7 +230,7 @@ describe('CMS order email history', () => {
         within(history).getByText('Failed', { selector: 'span' }),
       ).toBeInTheDocument(),
     )
-    expect(authRequest.get).toHaveBeenCalledTimes(2)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
     await user.click(screen.getByRole('checkbox', { name: 'Select order #1' }))
     expect(context.setSelectedItems).toHaveBeenCalled()
     expect(context.setIsDialogOpen).not.toHaveBeenCalled()

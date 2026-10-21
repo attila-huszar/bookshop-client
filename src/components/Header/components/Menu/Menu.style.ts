@@ -54,6 +54,21 @@ export const MenuItem = styled.div`
   gap: 1rem;
   padding: 0.75rem;
 
+  &:is(button) {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
+
   > svg {
     height: 1.5rem;
     width: 1.5rem;

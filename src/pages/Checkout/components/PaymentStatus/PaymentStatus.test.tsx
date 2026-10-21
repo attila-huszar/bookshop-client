@@ -39,7 +39,9 @@ describe('PaymentStatus', () => {
     vi.clearAllMocks()
     vi.mocked(useAppDispatch).mockReturnValue(dispatch)
     vi.mocked(useAppSelector).mockReturnValue({
-      payment: { paymentId: 'pi_test', paymentToken: 'secret', amount: 1200 },
+      paymentId: 'pi_test',
+      paymentToken: 'secret',
+      amount: 1200,
     })
     vi.mocked(useNavigate).mockReturnValue(navigate)
   })

@@ -5,7 +5,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Form, Formik } from 'formik'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { CountrySelect } from './CountrySelect'
@@ -23,12 +23,12 @@ beforeEach(() => {
     ),
   )
   vi.stubGlobal('fetch', fetchMock)
-  const client = baseRequest.extend({
+  const client = publicApi.baseRequest.extend({
     prefix: 'https://bookshop.test/api',
     retry: 0,
   })
 
-  vi.spyOn(baseRequest, 'get').mockImplementation(client.get)
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation(client)
 })
 
 afterEach(() => {

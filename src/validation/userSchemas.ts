@@ -80,7 +80,7 @@ export const registrationSchema = Yup.object().shape({
 
 export const loginSchema = Yup.object().shape({
   email: emailSchema,
-  password: passwordSchema,
+  password: Yup.string().required(() => i18n.t('validation.required')),
 })
 
 export const searchSchema = Yup.object({
@@ -96,7 +96,7 @@ export const accountBasicSchema = Yup.object().shape({
 })
 
 export const accountPasswordSchema = Yup.object().shape({
-  currentPassword: passwordSchema,
+  currentPassword: Yup.string().required(() => i18n.t('validation.required')),
   newPassword: passwordSchema,
   newPasswordConfirmation: passwordConfirmSchema,
 })

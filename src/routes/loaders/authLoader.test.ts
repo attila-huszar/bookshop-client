@@ -51,12 +51,16 @@ const setup = async (options: SetupOptions = {}) => {
 
   const mockDispatch = vi.fn(async (action: { type: string }) => {
     if (action.type === 'fetchAuthTokens') {
-      if (options.tokenDispatchPromise) await options.tokenDispatchPromise
+      if (options.tokenDispatchPromise) {
+        await options.tokenDispatchPromise
+      }
       userState.accessToken = options.tokenAfterFetch ?? null
     }
 
     if (action.type === 'userProfile/query') {
-      if (options.profileDispatchPromise) await options.profileDispatchPromise
+      if (options.profileDispatchPromise) {
+        await options.profileDispatchPromise
+      }
       userState.userData = options.profileAfterFetch ?? null
     }
 
@@ -164,6 +168,44 @@ describe('authLoader', () => {
     expect(result).toBe(true)
     expect(mockFetchAuthTokens).toHaveBeenCalledTimes(1)
     expect(mockProfileQuery).toHaveBeenCalledTimes(1)
+  })
+
+  it('counts concurrent guest loaders as one failed bootstrap attempt', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const deferredToken = createDeferred()
+    const { authLoader, mockFetchAuthTokens } = await setup({
+      tokenDispatchPromise: deferredToken.promise,
+    })
+    const loaders = [authLoader(), authLoader(), authLoader()]
+    deferredToken.resolve()
+    await Promise.all(loaders)
+    expect(mockFetchAuthTokens).toHaveBeenCalledTimes(1)
+
+    vi.setSystemTime(Date.now() + 1_000)
+    await authLoader()
+    expect(mockFetchAuthTokens).toHaveBeenCalledTimes(2)
+  })
+
+  it('joins an in-flight protected bootstrap even during guest backoff', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const options: SetupOptions = {}
+    const { authLoader, mockFetchAuthTokens } = await setup(options)
+    await authLoader()
+
+    const deferredToken = createDeferred()
+    options.tokenDispatchPromise = deferredToken.promise
+    options.tokenAfterFetch = 'access-token'
+    options.profileAfterFetch = createUser()
+    const protectedLoader = authLoader({ loginRequired: true })
+    const guestFinished = vi.fn()
+    const guestLoader = authLoader().then(guestFinished)
+    await Promise.resolve()
+    expect(guestFinished).not.toHaveBeenCalled()
+
+    deferredToken.resolve()
+    await Promise.all([protectedLoader, guestLoader])
+    expect(guestFinished).toHaveBeenCalledWith(true)
+    expect(mockFetchAuthTokens).toHaveBeenCalledTimes(2)
   })
 
   it('rejects admin route when loaded profile is non-admin', async () => {

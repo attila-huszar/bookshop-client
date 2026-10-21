@@ -10,7 +10,7 @@ import {
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
 import { usePaymentTermsQuery } from '@/store/api/bookshopApi'
-import { paymentSelector, userSelector } from '@/store/selectors'
+import { userSelector } from '@/store/selectors'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { paymentCancel } from '@/store/thunks/payment'
 import { toast } from '@/components/AppToaster'
@@ -27,7 +27,7 @@ export function CheckoutForm() {
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { payment } = useAppSelector(paymentSelector)
+  const payment = useAppSelector((state) => state.payment.payment)
   const [linkEmail, setLinkEmail] = useState('')
   const [cancelError, setCancelError] = useState<string | ApiError | null>(null)
   const [isCanceling, setIsCanceling] = useState(false)

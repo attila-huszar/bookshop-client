@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { Form, Formik } from 'formik'
+import { Form, Formik, type FormikProps } from 'formik'
 import { getUserCountry } from '@/api/users'
 import { useRegisterMutation } from '@/store/api/bookshopApi'
 import { toast } from '@/components/AppToaster'
@@ -12,19 +12,18 @@ import { FormikField } from '@/components/FormikField'
 import { getErrorMessage } from '@/helpers/errors'
 import { scrollToTop } from '@/helpers/scrollToTop'
 import { registrationSchema } from '@/validation/userSchemas'
-import {
-  defaultCountry,
-  registrationInitialValues,
-} from '@/constants/defaultValues'
+import { registrationInitialValues } from '@/constants/defaultValues'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles/form.styles'
+
+type RegistrationValues = RegisterRequest & { passwordConfirmation: string }
 
 export function Registration() {
   const { t } = useTranslation()
 
   const [register] = useRegisterMutation()
-  const [country, setCountry] = useState(defaultCountry)
+  const formikRef = useRef<FormikProps<RegistrationValues>>(null)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
@@ -33,11 +32,19 @@ export function Registration() {
   }, [])
 
   useEffect(() => {
-    const fetchCountry = async () => {
-      const data = await getUserCountry()
-      setCountry(data.country || defaultCountry)
+    let active = true
+
+    void getUserCountry().then(({ country }) => {
+      const form = formikRef.current
+
+      if (active && form && !form.touched.country && !form.isSubmitting) {
+        void form.setFieldValue('country', country, false)
+      }
+    })
+
+    return () => {
+      active = false
     }
-    void fetchCountry()
   }, [])
 
   const handleSubmit = async (values: RegisterRequest) => {
@@ -52,9 +59,9 @@ export function Registration() {
 
   return (
     <AuthorizationMenu>
-      <Formik
-        initialValues={{ ...registrationInitialValues, country }}
-        enableReinitialize
+      <Formik<RegistrationValues>
+        innerRef={formikRef}
+        initialValues={registrationInitialValues}
         validationSchema={registrationSchema}
         validateOnBlur={false}
         onSubmit={handleSubmit}>
@@ -100,7 +107,7 @@ export function Registration() {
               autoComplete="new-password"
             />
             <p>{t('common.fields.country')}</p>
-            <CountrySelect initial={country} />
+            <CountrySelect />
             <p>{t('auth.uploadAvatar')}</p>
             <FormikField
               name="avatar"

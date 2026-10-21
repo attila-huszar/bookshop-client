@@ -1,11 +1,10 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsOrdersSelector } from '@/store/selectors'
+import { useCmsOrdersQuery } from '@/store/api/bookshopApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
-import { useAppSelector } from '@/hooks/redux'
 import { formatPaymentStatus } from '@/helpers/checkout'
 import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
 import { CMSOutletContext } from '@/types'
@@ -19,10 +18,10 @@ export const Orders = () => {
 
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
   const {
-    orders: allOrders,
-    ordersLoading,
-    ordersError,
-  } = useAppSelector(cmsOrdersSelector)
+    data: allOrders = [],
+    isLoading: ordersLoading,
+    error: ordersError,
+  } = useCmsOrdersQuery()
   const {
     showDeletedOrders,
     selectedItems,

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
 import { ROUTE } from '@/routes/route'
-import { paymentSelector } from '@/store/selectors'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -19,7 +18,7 @@ export function PaymentStatus() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { payment } = useAppSelector(paymentSelector)
+  const payment = useAppSelector((state) => state.payment.payment)
   const { status, retry } = usePaymentStatus(payment?.paymentToken)
   const hasHandledSuccessfulPayment = useRef(false)
 

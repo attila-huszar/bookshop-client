@@ -4,7 +4,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
@@ -81,7 +81,7 @@ const renderRoute = (path = '/') => {
 beforeEach(() => {
   localStorageAdapter.set(cartKey, cartItems)
   vi.mocked(authLoader).mockResolvedValue(true)
-  vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
     ky.get('https://bookshop.test/mock', {
       retry: 0,
       fetch: () => Promise.resolve(bookResponse()),
@@ -112,7 +112,7 @@ describe('appLoader saved basket restoration', () => {
       ).toBeInTheDocument()
       expect(await screen.findByText('2')).toBeInTheDocument()
       expect(authLoader).toHaveBeenCalledTimes(1)
-      expect(baseRequest.get).toHaveBeenCalledTimes(1)
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
       expect(store.getState().cart.cartItems[0]?.quantity).toBe(2)
     },
   )
@@ -138,7 +138,7 @@ describe('appLoader saved basket restoration', () => {
         await screen.findByRole('button', { name: 'Checkout' }),
       ).toBeInTheDocument()
       expect(await screen.findByText('2')).toBeInTheDocument()
-      expect(baseRequest.get).toHaveBeenCalledTimes(1)
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
       expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
       expect(store.getState().payment.payment?.paymentId).toBe(
         session === 'retrieved' ? 'pi_saved' : undefined,
@@ -158,7 +158,7 @@ describe('appLoader saved basket restoration', () => {
       renderRoute(path)
 
       expect(authLoader).toHaveBeenCalledTimes(1)
-      expect(baseRequest.get).not.toHaveBeenCalled()
+      expect(publicApi.baseRequest).not.toHaveBeenCalled()
 
       await act(async () => {
         store.dispatch(bookshopApi.util.resetApiState())
@@ -167,7 +167,7 @@ describe('appLoader saved basket restoration', () => {
       })
 
       expect(await screen.findByText('2')).toBeInTheDocument()
-      expect(baseRequest.get).toHaveBeenCalledTimes(1)
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     },
   )
 
@@ -176,12 +176,12 @@ describe('appLoader saved basket restoration', () => {
     const response = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.mocked(baseRequest.get).mockImplementation(() =>
+    vi.mocked(publicApi.baseRequest).mockImplementation(() =>
       ky.get('https://bookshop.test/mock', { retry: 0, fetch: () => response }),
     )
 
     renderRoute()
-    await waitFor(() => expect(baseRequest.get).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(publicApi.baseRequest).toHaveBeenCalledTimes(1))
 
     act(() => {
       store.dispatch(cartClear())
@@ -203,7 +203,7 @@ describe('appLoader saved basket restoration', () => {
     const response = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.mocked(baseRequest.get).mockImplementation(() =>
+    vi.mocked(publicApi.baseRequest).mockImplementation(() =>
       ky.get('https://bookshop.test/mock', { retry: 0, fetch: () => response }),
     )
 
@@ -230,7 +230,7 @@ describe('appLoader saved basket restoration', () => {
     renderRoute('/cart')
 
     expect(authLoader).toHaveBeenCalledTimes(1)
-    expect(baseRequest.get).not.toHaveBeenCalled()
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
     expect(router.state.location.pathname).toBe('/cart')
 
     await act(async () => {
@@ -243,12 +243,12 @@ describe('appLoader saved basket restoration', () => {
     ).toBeInTheDocument()
     expect(await screen.findByText('2')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/checkout')
-    expect(baseRequest.get).toHaveBeenCalledTimes(1)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
   })
 
   it('waits for bootstrap again before retrying failed restoration on a later Cart visit', async () => {
-    vi.mocked(baseRequest.get).mockImplementationOnce(() =>
+    vi.mocked(publicApi.baseRequest).mockImplementationOnce(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => Promise.resolve(new Response('{}', { status: 503 })),
@@ -261,7 +261,7 @@ describe('appLoader saved basket restoration', () => {
         'Failed to load your cart. Please try again.',
       ),
     )
-    expect(baseRequest.get).toHaveBeenCalledTimes(1)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     expect(localStorageAdapter.get(cartKey)).toEqual(cartItems)
 
     let completeAuth!: (allowed: boolean) => void
@@ -276,7 +276,7 @@ describe('appLoader saved basket restoration', () => {
     })
 
     expect(authLoader).toHaveBeenCalledTimes(2)
-    expect(baseRequest.get).toHaveBeenCalledTimes(1)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
 
     await act(async () => {
       completeAuth(true)
@@ -284,7 +284,7 @@ describe('appLoader saved basket restoration', () => {
     })
 
     expect(await screen.findByText('2')).toBeInTheDocument()
-    expect(baseRequest.get).toHaveBeenCalledTimes(2)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(2)
     expect(store.getState().cart.cartError).toBeNull()
   })
 
@@ -297,6 +297,6 @@ describe('appLoader saved basket restoration', () => {
     })
 
     expect(screen.getByText('2')).toBeInTheDocument()
-    expect(baseRequest.get).toHaveBeenCalledTimes(1)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
   })
 })

@@ -2,10 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import {
-  useCmsAuthorsQuery,
-  useCmsBooksQuery,
-  useCmsOrdersQuery,
-  useCmsUsersQuery,
   useHardDeleteAuthorsMutation,
   useHardDeleteBooksMutation,
   useRestoreOrdersMutation,
@@ -163,13 +159,6 @@ export const CMS = () => {
           ),
         })
       : t('cms.confirmDelete', { entity })
-
-  useCmsBooksQuery({ skip: activeTab !== 'books' })
-  useCmsAuthorsQuery({
-    skip: activeTab !== 'authors' && activeTab !== 'books',
-  })
-  useCmsOrdersQuery({ skip: activeTab !== 'orders' })
-  useCmsUsersQuery({ skip: activeTab !== 'users' })
 
   const handleDialogClose = () => {
     setIsDialogOpen(false)

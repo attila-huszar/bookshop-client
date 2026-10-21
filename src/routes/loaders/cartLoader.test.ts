@@ -1,6 +1,6 @@
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
@@ -56,7 +56,7 @@ describe('cartLoader checkout restoration', () => {
       const response = new Promise<Response>((resolve) => {
         completeRequest = resolve
       })
-      vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+      vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
         ky.get('https://bookshop.test/mock', {
           retry: 0,
           fetch: () => response,

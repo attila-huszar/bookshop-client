@@ -198,7 +198,6 @@
     "expiredToken": "Invalid or expired token",
     "passwordMismatch": "Passwords do not match",
     "verifying": "Verifying",
-    "verifyingEmail": "Verifying email...",
     "verified": "{{email}} successfully verified, you can now log in.",
     "verifyError": "Verification failed, please try again later.",
     "resetSent": "If an account exists for this email, a password reset link has been sent."

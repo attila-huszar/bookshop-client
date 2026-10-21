@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { cartSelector } from '@/store/selectors'
 import { fetchCartItems } from '@/store/thunks/cart'
 import type { Cart, MinimalCart } from '@/types'
 import { cartClear, cartReducer } from './cart'
@@ -34,7 +33,6 @@ describe('cart slice hydration handling', () => {
     state = cartReducer(state, fulfilledAction)
 
     expect(state.cartItems).toEqual(hydratedCartItems)
-    expect(cartSelector({ cart: state }).cartIsLoading).toBe(false)
     expect(state.currentRequestId).toBeNull()
   })
 
@@ -54,7 +52,6 @@ describe('cart slice hydration handling', () => {
     state = cartReducer(state, staleRejectedAction)
 
     expect(state.cartItems).toEqual([])
-    expect(cartSelector({ cart: state }).cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
     expect(state.currentRequestId).toBeNull()
   })
@@ -90,13 +87,11 @@ describe('cart slice hydration handling', () => {
     state = cartReducer(state, fulfilledActionA)
 
     expect(state.cartItems).toEqual([])
-    expect(cartSelector({ cart: state }).cartIsLoading).toBe(true)
     expect(state.currentRequestId).toBe('request-b')
 
     state = cartReducer(state, fulfilledActionB)
 
     expect(state.cartItems).toEqual(hydratedCartItems)
-    expect(cartSelector({ cart: state }).cartIsLoading).toBe(false)
     expect(state.currentRequestId).toBeNull()
   })
 
@@ -116,7 +111,6 @@ describe('cart slice hydration handling', () => {
     state = cartReducer(state, cartClear())
 
     expect(state.cartItems).toEqual([])
-    expect(cartSelector({ cart: state }).cartIsLoading).toBe(false)
     expect(state.cartError).toBeNull()
     expect(state.currentRequestId).toBeNull()
   })

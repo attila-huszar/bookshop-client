@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
@@ -10,40 +10,49 @@ import { getErrorMessage } from '@/helpers/errors'
 
 export function VerifyEmail() {
   const { t } = useTranslation()
-
   const navigate = useNavigate()
   const { search } = useLocation()
-  const queryParams = new URLSearchParams(search)
-  const token = queryParams.get('token')
-  const hasVerified = useRef(false)
+  const token = new URLSearchParams(search).get('token')
 
   useEffect(() => {
-    if (!token || hasVerified.current) return
+    if (!token) {
+      toast.error(i18n.t('errors.invalidToken'), { id: 'verify' })
+      void navigate(ROUTE.HOME, { replace: true })
 
-    hasVerified.current = true
+      return
+    }
 
-    const verifyEmailToken = async () => {
-      try {
-        toast.loading(i18n.t('auth.verifyingEmail'), { id: 'verify' })
+    let active = true
 
-        const response = await postVerifyEmail(token)
+    void postVerifyEmail(token).then(
+      (response) => {
+        if (!active) {
+          return
+        }
 
         toast.success(i18n.t('auth.verified', { email: response.email }), {
           id: 'verify',
         })
 
         void navigate(`/${ROUTE.LOGIN}`, { replace: true })
-      } catch (error) {
+      },
+      (error: unknown) => {
+        if (!active) {
+          return
+        }
+
         toast.error(getErrorMessage(error, i18n.t('auth.verifyError')), {
           id: 'verify',
         })
 
-        void navigate('/', { replace: true })
-      }
-    }
+        void navigate(ROUTE.HOME, { replace: true })
+      },
+    )
 
-    void verifyEmailToken()
+    return () => {
+      active = false
+    }
   }, [navigate, token])
 
-  return <Loading message={t('auth.verifying')} fullScreen />
+  return token ? <Loading message={t('auth.verifying')} fullScreen /> : null
 }

@@ -1,6 +1,6 @@
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
 import { store } from '@/store/store'
@@ -17,7 +17,7 @@ vi.mock('@/store/store', async (importOriginal) => {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date('2026-10-11T12:00:00Z'))
-  vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
     ky.get('https://bookshop.test/mock', {
       retry: 0,
       fetch: () => Promise.resolve(new Response('[]')),
@@ -42,6 +42,7 @@ describe('catalogue loader freshness', () => {
       age: cacheTimes.catalogue,
       initialRequests: 1,
       staleRequests: 1,
+      result: 1,
     },
     {
       name: 'shop',
@@ -59,25 +60,25 @@ describe('catalogue loader freshness', () => {
     },
   ])(
     'reuses fresh $name data and starts stale refreshes before rendering',
-    async ({ load, age, initialRequests, staleRequests }) => {
-      expect(load()).toBeUndefined()
+    async ({ load, age, initialRequests, staleRequests, result }) => {
+      expect(load()).toBe(result)
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
-      expect(baseRequest.get).toHaveBeenCalledTimes(initialRequests)
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(initialRequests)
 
       load()
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
-      expect(baseRequest.get).toHaveBeenCalledTimes(initialRequests)
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(initialRequests)
 
       vi.setSystemTime(new Date(Date.now() + (age + 1) * 1000))
-      expect(load()).toBeUndefined()
+      expect(load()).toBe(result)
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
-      expect(baseRequest.get).toHaveBeenCalledTimes(
+      expect(publicApi.baseRequest).toHaveBeenCalledTimes(
         initialRequests + staleRequests,
       )
     },

@@ -1,18 +1,16 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  bookshopApi,
   useAddBookMutation,
   useUpdateBookMutation,
 } from '@/store/api/bookshopApi'
-import { useAppSelector } from '@/hooks/redux'
+import { createAppStore } from '@/store/store'
 import type { BookWithAuthorId } from '@/types'
 import { BookEditForm } from './BookEditForm'
-
-vi.mock('@/hooks/redux', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/hooks/redux')>()),
-  useAppSelector: vi.fn(),
-}))
 
 vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
@@ -38,11 +36,20 @@ const book: BookWithAuthorId = {
   updatedAt: '2026-10-01T10:00:00Z',
 }
 
+let store: ReturnType<typeof createAppStore>
+
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+})
+
 describe('BookEditForm', () => {
   const addBook = vi.fn()
   const updateBook = vi.fn()
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    store = createAppStore()
     addBook.mockReturnValue({ unwrap: () => Promise.resolve(book) })
     updateBook.mockReturnValue({ unwrap: () => Promise.resolve(book) })
     vi.mocked(useAddBookMutation).mockReturnValue([addBook, { reset: vi.fn() }])
@@ -50,14 +57,21 @@ describe('BookEditForm', () => {
       updateBook,
       { reset: vi.fn() },
     ])
-    vi.mocked(useAppSelector).mockReturnValue({
-      authors: [
-        { id: 1, name: 'First author' },
-        { id: 2, name: 'Second author' },
-      ],
-      authorsLoading: false,
-      authorsError: null,
-    })
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData(
+        'cmsAuthors',
+        undefined,
+        ['First author', 'Second author'].map((name, index) => ({
+          id: index + 1,
+          name,
+          fullName: name,
+          birthYear: '1980',
+          deathYear: '',
+          homeland: '',
+          biography: '',
+        })),
+      ),
+    )
   })
 
   it.each([false, true])(
@@ -67,7 +81,14 @@ describe('BookEditForm', () => {
       const onClose = vi.fn()
 
       render(
-        <BookEditForm editedItem={editing ? book : null} onClose={onClose} />,
+        <Provider store={store}>
+          <MemoryRouter>
+            <BookEditForm
+              editedItem={editing ? book : null}
+              onClose={onClose}
+            />
+          </MemoryRouter>
+        </Provider>,
       )
 
       expect(screen.getByRole('combobox')).toHaveValue(editing ? '1' : '0')

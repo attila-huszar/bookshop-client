@@ -1,13 +1,17 @@
+import type { LoaderFunctionArgs } from 'react-router'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cacheTimes } from '@/store/api/cacheTimes'
 import { store } from '@/store/store'
 
-export const productLoader = ({ request }: { request: Request }) => {
+export const productLoader = ({
+  request,
+}: Pick<LoaderFunctionArgs, 'request'>) => {
   const url = new URL(request.url)
-  const id = Number(url.searchParams.get('id'))
+  const rawId = url.searchParams.get('id') ?? ''
+  const id = Number(rawId)
 
-  if (!id || isNaN(id)) {
-    return
+  if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id) || id <= 0) {
+    return null
   }
 
   store.dispatch(
@@ -15,4 +19,6 @@ export const productLoader = ({ request }: { request: Request }) => {
       ifOlderThan: cacheTimes.catalogue,
     }),
   )
+
+  return id
 }

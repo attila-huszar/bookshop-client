@@ -1,128 +1,148 @@
-import { Providers } from '@/testUtils'
-import { render, screen } from '@testing-library/react'
-import { vi } from 'vitest'
-import { ordersSelector, userSelector } from '@/store/selectors'
-import { useAppSelector } from '@/hooks/redux'
+import { Provider } from 'react-redux'
+import { MemoryRouter } from 'react-router'
+import { i18n } from '@/i18n'
+import { act, render, screen } from '@testing-library/react'
+import ky from 'ky'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as privateApi from '@/api/authRequest'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { authSessionChanged } from '@/store/slices/user'
+import { createAppStore } from '@/store/store'
+import { type Order, UserRole } from '@/types'
+import { HttpErrorCode } from '@/types/ApiError'
 import { Orders } from './Orders'
 
-vi.mock('@/hooks/redux', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/hooks/redux')>()),
-  useAppSelector: vi.fn(),
-}))
+const order: Order = {
+  id: 11,
+  paymentId: 'pi_111',
+  paymentStatus: 'succeeded',
+  total: 4200,
+  currency: 'usd',
+  firstName: 'July',
+  lastName: 'Smith',
+  email: 'july@test.com',
+  shipping: null,
+  paidAt: '2026-02-20T10:00:00.000Z',
+  createdAt: '2026-02-20T09:30:00.000Z',
+  updatedAt: '2026-02-20T10:00:00.000Z',
+  items: [
+    {
+      id: 1,
+      title: 'The Pragmatic Programmer',
+      author: 'Andrew Hunt',
+      imgUrl: 'https://example.com/pragmatic-programmer.jpg',
+      price: 2100,
+      discount: 0,
+      quantity: 2,
+    },
+  ],
+}
 
-vi.mock('@/store/selectors', () => ({
-  ordersSelector: vi.fn(),
-  userSelector: vi.fn(),
-}))
+let store: ReturnType<typeof createAppStore>
+let nextResponse: () => Promise<Response>
+
+beforeEach(async () => {
+  store = createAppStore()
+  store.dispatch(authSessionChanged('access-token'))
+  await store.dispatch(
+    bookshopApi.util.upsertQueryData('userProfile', undefined, {
+      uuid: 'reader',
+      firstName: 'July',
+      lastName: 'Smith',
+      email: 'july@test.com',
+      country: 'HU',
+      phone: null,
+      address: null,
+      avatar: null,
+      role: UserRole.User,
+    }),
+  )
+  nextResponse = () => Promise.resolve(Response.json([]))
+  vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
+    ky.get('https://bookshop.test/mock', {
+      retry: 0,
+      fetch: () => nextResponse(),
+    }),
+  )
+})
+
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  vi.restoreAllMocks()
+})
+
+const renderOrders = () =>
+  render(
+    <Provider store={store}>
+      <MemoryRouter>
+        <Orders />
+      </MemoryRouter>
+    </Provider>,
+  )
 
 describe('Orders page', () => {
-  beforeEach(() => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      if (selector === ordersSelector) {
-        return {
-          orders: [],
-          ordersIsLoading: false,
-          ordersError: null,
-        }
-      }
-
-      if (selector === userSelector) {
-        return {
-          userData: {
-            firstName: 'July',
-          },
-        }
-      }
-
-      return null
+  it('shows loading until the first response and then the empty state', async () => {
+    let completeRequest!: (response: Response) => void
+    const response = new Promise<Response>((resolve) => {
+      completeRequest = resolve
     })
-  })
+    nextResponse = () => response
 
-  it('renders loading state', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      if (selector === ordersSelector) {
-        return {
-          orders: [],
-          ordersIsLoading: true,
-          ordersError: null,
-        }
-      }
-      return { userData: null }
-    })
-
-    render(<Orders />, { wrapper: Providers })
+    renderOrders()
 
     expect(screen.getByText(/loading your orders/i)).toBeInTheDocument()
-  })
+    expect(
+      screen.queryByText(/you have no orders yet/i),
+    ).not.toBeInTheDocument()
 
-  it('renders empty state', () => {
-    render(<Orders />, { wrapper: Providers })
-
-    expect(screen.getByText(/you have no orders yet/i)).toBeInTheDocument()
-  })
-
-  it('renders error state', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      if (selector === ordersSelector) {
-        return {
-          orders: [],
-          ordersIsLoading: false,
-          ordersError: 'Network error',
-        }
-      }
-
-      return { userData: null }
+    act(() => {
+      completeRequest(Response.json([]))
     })
 
-    render(<Orders />, { wrapper: Providers })
-
-    expect(screen.getByText(/failed to load your orders/i)).toBeInTheDocument()
+    expect(
+      await screen.findByText(/you have no orders yet/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/loading your orders/i)).not.toBeInTheDocument()
+    expect(privateApi.authRequest).toHaveBeenCalledOnce()
   })
 
-  it('renders orders and item rows', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      if (selector === ordersSelector) {
-        return {
-          orders: [
-            {
-              id: 11,
-              paymentId: 'pi_111',
-              paymentStatus: 'succeeded',
-              total: 4200,
-              currency: 'usd',
-              firstName: 'July',
-              lastName: 'Smith',
-              email: 'july@test.com',
-              shipping: null,
-              paidAt: '2026-02-20T10:00:00.000Z',
-              createdAt: '2026-02-20T09:30:00.000Z',
-              updatedAt: '2026-02-20T10:00:00.000Z',
-              items: [
-                {
-                  id: 1,
-                  title: 'The Pragmatic Programmer',
-                  author: 'Andrew Hunt',
-                  imgUrl: 'https://example.com/pragmatic-programmer.jpg',
-                  price: 2100,
-                  discount: 0,
-                  quantity: 2,
-                },
-              ],
-            },
-          ],
-          ordersIsLoading: false,
-          ordersError: null,
-        }
-      }
+  it('renders a coded error and translates it without another request', async () => {
+    nextResponse = () =>
+      Promise.resolve(
+        Response.json(
+          { code: HttpErrorCode.Forbidden, message: 'Server diagnostic' },
+          { status: 403 },
+        ),
+      )
 
-      return {
-        userData: {
-          firstName: 'July',
-        },
-      }
+    renderOrders()
+
+    expect(
+      await screen.findByText(/failed to load your orders/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('You do not have permission to perform this action.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Server diagnostic')).not.toBeInTheDocument()
+
+    await act(async () => {
+      await i18n.changeLanguage('hu')
     })
 
-    render(<Orders />, { wrapper: Providers })
+    expect(
+      screen.getByText('Nincs jogosultsága ehhez a művelethez.'),
+    ).toBeInTheDocument()
+    expect(privateApi.authRequest).toHaveBeenCalledOnce()
+  })
+
+  it('renders cached orders without fetching them again', async () => {
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData('userOrders', undefined, [order]),
+    )
+
+    renderOrders()
 
     expect(
       screen.getByRole('heading', { name: /july's recent orders/i }),
@@ -134,5 +154,36 @@ describe('Orders page', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/status:/i)).toBeInTheDocument()
     expect(screen.getByText(/payment id:/i)).toBeInTheDocument()
+    expect(privateApi.authRequest).not.toHaveBeenCalled()
+  })
+
+  it('keeps cached orders visible during a refresh and settles a failed request', async () => {
+    await store.dispatch(
+      bookshopApi.util.upsertQueryData('userOrders', undefined, [order]),
+    )
+    let failRequest!: (error: Error) => void
+    const response = new Promise<Response>((_resolve, reject) => {
+      failRequest = reject
+    })
+    nextResponse = () => response
+
+    renderOrders()
+
+    act(() => {
+      store.dispatch(bookshopApi.util.invalidateTags(['Order']))
+    })
+
+    expect(screen.getByText(/order #11/i)).toBeInTheDocument()
+    expect(screen.queryByText(/loading your orders/i)).not.toBeInTheDocument()
+
+    act(() => {
+      failRequest(new Error('Network unavailable'))
+    })
+
+    expect(
+      await screen.findByText(/failed to load your orders/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/loading your orders/i)).not.toBeInTheDocument()
+    expect(privateApi.authRequest).toHaveBeenCalledOnce()
   })
 })

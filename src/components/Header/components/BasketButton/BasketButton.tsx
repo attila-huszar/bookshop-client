@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
-import { cartSelector, paymentSelector } from '@/store/selectors'
 import { Button, IconButton } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
@@ -14,8 +13,8 @@ import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 export function BasketButton() {
   const { t } = useTranslation()
 
-  const { cartItems } = useAppSelector(cartSelector)
-  const { payment } = useAppSelector(paymentSelector)
+  const cartItems = useAppSelector((state) => state.cart.cartItems)
+  const payment = useAppSelector((state) => state.payment.payment)
   const { isMobile } = useBreakpoints()
   const navigate = useNavigate()
 

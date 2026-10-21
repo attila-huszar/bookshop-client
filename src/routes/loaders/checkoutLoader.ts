@@ -1,4 +1,5 @@
 import { replace } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { store } from '@/store/store'
@@ -13,14 +14,18 @@ import {
 } from '@/constants/payments'
 import { authLoader } from './authLoader'
 
-export const checkoutLoader = async ({ request }: { request: Request }) => {
+export const checkoutLoader = async ({
+  request,
+}: Pick<LoaderFunctionArgs, 'request'>) => {
+  request.signal.throwIfAborted()
+
   const requestURL = new URL(request.url)
   let paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
   const stripeReturnPaymentId = requestURL.searchParams.get(
     checkoutQueryParams.paymentIntent,
   )
 
-  if (!paymentId && stripeReturnPaymentId) {
+  if (stripeReturnPaymentId && stripeReturnPaymentId !== paymentId) {
     paymentId = stripeReturnPaymentId
     sessionStorageAdapter.set(paymentIdKey, stripeReturnPaymentId)
   }
@@ -53,6 +58,7 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
   )
 
   await authLoader()
+  request.signal.throwIfAborted()
 
   const state = store.getState()
   const currentPayment = state.payment?.payment
@@ -75,6 +81,8 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
       )
       .unwrap()
 
+    request.signal.throwIfAborted()
+
     if (
       !isStripeReturn &&
       (isSuccessPaymentIntentStatus(retrievedPayment.status) ||
@@ -90,9 +98,12 @@ export const checkoutLoader = async ({ request }: { request: Request }) => {
 
     return null
   } catch (error) {
+    request.signal.throwIfAborted()
+
     if (getErrorCode(error) === paymentSessionUnavailableCode) {
       sessionStorageAdapter.remove(paymentIdKey)
       store.dispatch(paymentSessionReset())
+
       return replace(ROUTE.HOME)
     }
 

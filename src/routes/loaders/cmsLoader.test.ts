@@ -1,6 +1,6 @@
 import ky from 'ky'
 import { vi } from 'vitest'
-import { authRequest } from '@/api/authRequest'
+import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { store } from '@/store/store'
 import { authLoader } from './authLoader'
@@ -13,6 +13,8 @@ vi.mock('@/store/store', async (importOriginal) => {
 })
 
 vi.mock('./authLoader', () => ({ authLoader: vi.fn() }))
+
+const request = () => new Request('https://bookshop.test/cms')
 
 afterEach(() => {
   store.dispatch(bookshopApi.util.resetApiState())
@@ -33,17 +35,17 @@ describe('cmsLoader', () => {
       const response = new Promise<Response>((resolve) => {
         completeRequest = resolve
       })
-      vi.spyOn(authRequest, 'get').mockImplementation(() =>
+      vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
         ky.get('https://bookshop.test/mock', {
           retry: 0,
           fetch: () => response.then((value) => value.clone()),
         }),
       )
 
-      const loading = cmsLoader(tab)
+      const loading = cmsLoader(tab, request())
 
       expect(authLoader).toHaveBeenCalledWith({ adminRequired: true })
-      expect(authRequest.get).not.toHaveBeenCalled()
+      expect(privateApi.authRequest).not.toHaveBeenCalled()
       completeAuth(true)
       await expect(loading).resolves.toBeUndefined()
       expect(
@@ -54,13 +56,15 @@ describe('cmsLoader', () => {
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
-      expect(authRequest.get).toHaveBeenCalledTimes(tab === 'books' ? 2 : 1)
+      expect(privateApi.authRequest).toHaveBeenCalledTimes(
+        tab === 'books' ? 2 : 1,
+      )
 
-      await cmsLoader(tab)
+      await cmsLoader(tab, request())
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
-      expect(authRequest.get).toHaveBeenCalledTimes(
+      expect(privateApi.authRequest).toHaveBeenCalledTimes(
         tab === 'authors' || tab === 'users' ? 1 : 2,
       )
     },
@@ -68,10 +72,33 @@ describe('cmsLoader', () => {
 
   it('does not preload CMS data when admin access is denied', async () => {
     vi.mocked(authLoader).mockResolvedValue(false)
-    const get = vi.spyOn(authRequest, 'get')
+    const get = vi.spyOn(privateApi, 'authRequest')
 
-    await cmsLoader('orders')
+    await cmsLoader('orders', request())
 
+    expect(get).not.toHaveBeenCalled()
+  })
+
+  it('does not start CMS requests after navigation is cancelled during auth', async () => {
+    let finishAuth!: (allowed: boolean) => void
+    vi.mocked(authLoader).mockReturnValue(
+      new Promise((resolve) => {
+        finishAuth = resolve
+      }),
+    )
+    const controller = new AbortController()
+    const get = vi.spyOn(privateApi, 'authRequest')
+    const loading = cmsLoader(
+      'books',
+      new Request('https://bookshop.test/cms/books', {
+        signal: controller.signal,
+      }),
+    )
+
+    controller.abort()
+    finishAuth(true)
+
+    await expect(loading).rejects.toMatchObject({ name: 'AbortError' })
     expect(get).not.toHaveBeenCalled()
   })
 })

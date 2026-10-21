@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { booksSelector } from '@/store/selectors'
+import { homeBooksErrorSelector } from '@/store/selectors'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Recommended } from '@/components/Recommended'
 import { useAppSelector } from '@/hooks/redux'
@@ -9,7 +9,7 @@ import { News, Releases, TopSellers } from './components'
 export function Home() {
   const { t } = useTranslation()
 
-  const { booksError } = useAppSelector(booksSelector)
+  const booksError = useAppSelector(homeBooksErrorSelector)
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {

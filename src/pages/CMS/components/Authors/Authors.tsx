@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { cmsAuthorsSelector } from '@/store/selectors'
+import { useCmsAuthorsQuery } from '@/store/api/bookshopApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
-import { useAppSelector } from '@/hooks/redux'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
 import { StyledTable, TableActions } from '../../styles/CMS.style'
@@ -12,8 +11,11 @@ import { StyledTable, TableActions } from '../../styles/CMS.style'
 export const Authors = () => {
   const { t } = useTranslation()
 
-  const { authors, authorsLoading, authorsError } =
-    useAppSelector(cmsAuthorsSelector)
+  const {
+    data: authors = [],
+    isLoading: authorsLoading,
+    error: authorsError,
+  } = useCmsAuthorsQuery()
   const {
     selectedItems,
     setSelectedItems,

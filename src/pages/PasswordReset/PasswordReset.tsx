@@ -4,93 +4,110 @@ import { useLocation, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { Form, Formik } from 'formik'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api/users'
+import { ROUTE } from '@/routes/route'
 import { toast } from '@/components/AppToaster'
 import { Button } from '@/components/Button'
 import { FormikField } from '@/components/FormikField'
 import { Loading } from '@/components/Loading'
-import { getErrorMessage } from '@/helpers/errors'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { resetPasswordSchema } from '@/validation/userSchemas'
 import { passwordResetInitialValues } from '@/constants/defaultValues'
+import { AuthErrorCode } from '@/types/ApiError'
 import { SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
-type PasswordResetVerification =
-  | { status: 'verifying' }
-  | { status: 'ready'; token: string }
-  | { status: 'invalid' }
-
 export function PasswordReset() {
-  const { t } = useTranslation()
-
-  const navigate = useNavigate()
   const { search } = useLocation()
-  const queryParams = new URLSearchParams(search)
-  const tokenParam = queryParams.get('token')
-  const [verification, setVerification] = useState<PasswordResetVerification>(
-    () => (tokenParam ? { status: 'verifying' } : { status: 'invalid' }),
-  )
+  const token = new URLSearchParams(search).get('token')
+
+  // Each email link starts with fresh form and verification state.
+  return <PasswordResetForm key={token} token={token} />
+}
+
+function PasswordResetForm({ token }: { token: string | null }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [isVerified, setIsVerified] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const hasVerified = useRef(false)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
   useEffect(() => {
-    if (!tokenParam) {
+    if (!token) {
       toast.error(i18n.t('auth.invalidResetToken'))
-      void navigate('/', { replace: true })
+      void navigate(ROUTE.HOME, { replace: true })
+
       return
     }
 
-    if (hasVerified.current) return
+    // Submission callbacks also need to know when this effect has been cleaned up.
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
 
-    hasVerified.current = true
+    void postVerifyPasswordReset(token).then(
+      () => {
+        if (!lifecycle.active) {
+          return
+        }
 
-    const verifyToken = async () => {
-      try {
-        const response = await postVerifyPasswordReset(tokenParam)
-        setVerification({ status: 'ready', token: response.token })
+        setIsVerified(true)
 
         toast.success(i18n.t('auth.enterNewPassword'))
-      } catch (error) {
-        setVerification({ status: 'invalid' })
+      },
+      (error: unknown) => {
+        if (!lifecycle.active) {
+          return
+        }
+
         toast.error(getErrorMessage(error, i18n.t('auth.resetError')))
 
-        void navigate('/', { replace: true })
-      }
+        void navigate(ROUTE.HOME, { replace: true })
+      },
+    )
+
+    return () => {
+      lifecycle.active = false
     }
+  }, [navigate, token])
 
-    void verifyToken()
-  }, [tokenParam, navigate])
+  const handleSubmit = async (values: typeof passwordResetInitialValues) => {
+    const lifecycle = lifecycleRef.current
 
-  const handleSubmit = async (values: {
-    newPassword: string
-    newPasswordConfirmation: string
-  }) => {
-    if (verification.status !== 'ready') {
+    if (!token || !isVerified || !lifecycle?.active) {
       toast.error(t('auth.expiredToken'))
-      return
-    }
 
-    if (values.newPassword !== values.newPasswordConfirmation) {
-      toast.error(t('auth.passwordMismatch'))
       return
     }
 
     try {
-      await postPasswordResetSubmit(verification.token, values.newPassword)
-      toast.success(t('auth.passwordChanged'))
+      await postPasswordResetSubmit(token, values.newPassword)
 
-      void navigate('/login', { replace: true })
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.success(i18n.t('auth.passwordChanged'))
+
+      void navigate(`/${ROUTE.LOGIN}`, { replace: true })
     } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.passwordChangeError')))
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.error(getErrorMessage(error, i18n.t('auth.passwordChangeError')))
+
+      if (getApiError(error)?.code === AuthErrorCode.InvalidToken) {
+        void navigate(`/${ROUTE.LOGIN}`, { replace: true })
+      }
     }
   }
 
-  if (verification.status === 'verifying') {
-    return <Loading message={t('auth.verifying')} fullScreen />
+  if (!token) {
+    return null
   }
 
-  if (verification.status === 'invalid') {
-    return null
+  if (!isVerified) {
+    return <Loading message={t('auth.verifying')} fullScreen />
   }
 
   return (
@@ -104,23 +121,34 @@ export function PasswordReset() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>{t('auth.newPassword')}</p>
+            <p>
+              <label htmlFor="new-password">{t('auth.newPassword')}</label>
+            </p>
             <FormikField
+              id="new-password"
               name="newPassword"
               placeholder={t('auth.newPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              disabled={isSubmitting}
+              focus
             />
-            <p>{t('auth.confirmNewPassword')}</p>
+            <p>
+              <label htmlFor="confirm-new-password">
+                {t('auth.confirmNewPassword')}
+              </label>
+            </p>
             <FormikField
+              id="confirm-new-password"
               name="newPasswordConfirmation"
               placeholder={t('auth.confirmNewPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              disabled={isSubmitting}
             />
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>

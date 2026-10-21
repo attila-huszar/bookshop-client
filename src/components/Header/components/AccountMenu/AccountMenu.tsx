@@ -11,6 +11,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { getErrorMessage } from '@/helpers/errors'
 import { UserRole } from '@/types'
 import {
   CMSIcon,
@@ -30,6 +31,7 @@ export function AccountMenu() {
   const dispatch = useAppDispatch()
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { accessToken, userData } = useAppSelector(userSelector)
   const menuRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -51,21 +53,27 @@ export function AccountMenu() {
     void navigate(`/${ROUTE.LOGIN}`)
   }
 
-  const handleLogout = () => {
-    toggleMenu()
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return
+    }
 
-    dispatch(logout())
-      .unwrap()
-      .then(() => {
-        toast.success(t('auth.loggedOut', { email: userData?.email ?? '' }), {
-          id: 'logout-success',
-        })
+    setIsLoggingOut(true)
+
+    try {
+      await dispatch(logout()).unwrap()
+      setMenuOpen(false)
+      toast.success(t('auth.loggedOut', { email: userData?.email ?? '' }), {
+        id: 'logout-success',
       })
-      .catch((error: Error) => {
-        toast.error(error.message, {
-          id: 'logout-error',
-        })
+      void navigate('/', { replace: true })
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('auth.logoutError')), {
+        id: 'logout-error',
       })
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   if (!isAuthenticated || !userData) {
@@ -126,12 +134,14 @@ export function AccountMenu() {
         <LanguageSwitcher />
       </li>
       <li>
-        <Link to={'/'} onClick={handleLogout}>
-          <MenuItem>
-            <LogoutIcon height="1.5rem" />
-            <span>{t('auth.logout')}</span>
-          </MenuItem>
-        </Link>
+        <MenuItem
+          as="button"
+          type="button"
+          disabled={isLoggingOut}
+          onClick={() => void handleLogout()}>
+          <LogoutIcon height="1.5rem" />
+          <span>{t('auth.logout')}</span>
+        </MenuItem>
       </li>
     </MenuList>
   )

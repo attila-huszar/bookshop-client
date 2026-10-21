@@ -198,7 +198,6 @@
     "expiredToken": "Érvénytelen vagy lejárt hivatkozás.",
     "passwordMismatch": "A jelszavak nem egyeznek.",
     "verifying": "Ellenőrzés",
-    "verifyingEmail": "E-mail-cím ellenőrzése...",
     "verified": "Az e-mail-cím megerősítése sikerült: {{email}}. Most már bejelentkezhet.",
     "verifyError": "Az ellenőrzés nem sikerült. Kérjük, próbálja újra később.",
     "resetSent": "Ha az e-mail-címhez tartozik fiók, elküldtük a jelszó visszaállításához szükséges hivatkozást."
