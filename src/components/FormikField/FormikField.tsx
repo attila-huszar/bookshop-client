@@ -19,7 +19,6 @@ import {
 } from '@/styles/form.styles'
 
 export function FormikField({
-  focus,
   children,
   showPassword,
   setShowPassword,
@@ -29,8 +28,6 @@ export function FormikField({
   const formik = useContext(FormikContext) as
     FormikContextType<unknown> | undefined
   const previousLanguage = useRef(i18n.resolvedLanguage)
-
-  const formikRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (previousLanguage.current === i18n.resolvedLanguage) {
@@ -47,12 +44,6 @@ export function FormikField({
       }
     }
   }, [formik, i18n.resolvedLanguage, props.name])
-
-  useEffect(() => {
-    if (focus && formikRef.current) {
-      formikRef.current.focus()
-    }
-  }, [focus, formikRef])
 
   if (props.type === 'file' && props.name) {
     return <FileField {...props} name={props.name} />
@@ -121,7 +112,6 @@ export function FormikField({
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <InputWrapper>
           <Input
-            ref={formikRef}
             {...fieldProps?.field}
             {...props}
             $valid={shouldShowError && !error}

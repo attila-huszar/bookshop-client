@@ -72,7 +72,7 @@ export function Registration() {
               name="firstName"
               placeholder={t('common.fields.firstName')}
               autoComplete="given-name"
-              focus
+              autoFocus
             />
             <p>{t('common.fields.lastName')}</p>
             <FormikField

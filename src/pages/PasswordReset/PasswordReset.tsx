@@ -133,7 +133,7 @@ function PasswordResetForm({ token }: { token: string | null }) {
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               disabled={isSubmitting}
-              focus
+              autoFocus
             />
             <p>
               <label htmlFor="confirm-new-password">

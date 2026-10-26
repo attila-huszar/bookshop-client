@@ -59,7 +59,7 @@ export function Login() {
               type="email"
               inputMode="email"
               autoComplete="username"
-              focus
+              autoFocus
             />
             <p>{t('common.fields.password')}</p>
             <FormikField
