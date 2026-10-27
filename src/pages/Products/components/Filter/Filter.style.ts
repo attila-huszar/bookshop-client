@@ -127,7 +127,8 @@ export const ButtonWrapper = styled.div`
 `
 
 export const CustomButton = styled(StyledButton)`
-  height: 1.5rem;
+  min-height: 1.5rem;
+  padding-block: 0.125em;
   width: ${({ $inverted }) => ($inverted ? '3rem' : '6rem')};
   font-size: 0.75rem;
   border-radius: var(--border-radius);

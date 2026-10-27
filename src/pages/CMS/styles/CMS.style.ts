@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledCMS = styled.section`
@@ -14,7 +15,6 @@ export const StyledCMS = styled.section`
   ${media.down('sm')`
     min-width: 100%;
     max-width: 100%;
-    padding: 0 1rem;
   `}
 `
 
@@ -26,6 +26,10 @@ export const MainContainer = styled.div`
   border-radius: 20px;
   background: var(--color-surface-container-low);
   box-shadow: var(--shadow);
+
+  ${media.down('sm')`
+    padding: 0.75rem;
+  `}
 `
 
 export const MenuButtons = styled.div`
@@ -34,11 +38,18 @@ export const MenuButtons = styled.div`
   flex-wrap: wrap;
   align-items: center;
   margin-bottom: 1.5rem;
+
+  > ${StyledButton} {
+    width: auto;
+    padding-inline: 0.75rem;
+  }
 `
 
 export const StyledTabs = styled.div`
   display: flex;
-  max-width: var(--max-width);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
   border-bottom: 1px solid var(--color-outline-variant);
 
   a {

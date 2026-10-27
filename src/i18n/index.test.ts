@@ -273,7 +273,9 @@ describe('HTTP translation loading', () => {
         createElement(LanguageSwitcher),
       ),
     )
-    await userEvent.click(screen.getByRole('button', { name: 'English' }))
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Váltás: English' }),
+    )
 
     expect(translations.i18n.resolvedLanguage).toBe('en')
     expect(document.documentElement.lang).toBe('en')
@@ -330,7 +332,9 @@ describe('HTTP translation loading', () => {
           createElement(LanguageSwitcher),
         ),
       )
-      await userEvent.click(screen.getByRole('button', { name: 'Magyar' }))
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Switch to Magyar' }),
+      )
 
       expect(await screen.findByRole('alert')).toHaveTextContent(
         en.language.loadError,

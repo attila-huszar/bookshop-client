@@ -86,6 +86,7 @@
   },
   "language": {
     "label": "Nyelv",
+    "switchTo": "Váltás: {{language}}",
     "en": "English",
     "hu": "Magyar",
     "loading": "A nyelv betöltése...",
@@ -412,8 +413,8 @@
   },
   "terms": {
     "title": "Általános Szerződési Feltételek (ÁSZF)",
+    "title_accusative": "Általános Szerződési Feltételeket (ÁSZF)",
     "open": "ÁSZF megnyitása (új lapon)",
-    "version": "Verzió: {{version}}",
     "published": "Közzétéve: {{date}}",
     "loading": "Az ÁSZF betöltése...",
     "loadError": "Az ÁSZF nem tölthető be. Kérjük, próbálja újra.",
@@ -423,19 +424,25 @@
     "required": "Fizetés előtt kérjük, olvassa el és fogadja el az ÁSZF-et.",
     "orderButton": "Fizetési kötelezettséggel járó megrendelés — {{amount}} {{currency}}",
     "retryButton": "Fizetési kötelezettséggel járó megrendelés újrapróbálása — {{amount}} {{currency}}",
-    "download": "Letöltés szövegként",
-    "print": "Nyomtatás"
+    "download": "Letöltés"
   },
   "termsEditor": {
     "english": "Angol nyelvű feltételek",
     "hungarian": "Magyar nyelvű feltételek",
-    "help": "Adja meg a feltételeket mindkét nyelven. A közzétett verziók később is elérhetők maradnak az azokat elfogadó vásárlók számára.",
+    "help": "Adja meg a feltételeket mindkét nyelven. Válasszon egy közzétett változatot a szöveg áttekintéséhez vagy újbóli felhasználásához. A mentés és közzététel a szerkesztett szöveget teszi aktuálissá; a korábbi változatok továbbra is elérhetők maradnak a vásárlók számára.",
+    "history": "Közzétett változatok",
+    "current": "Jelenlegi",
+    "accepted": "Elfogadva",
+    "delete": "A kiválasztott változat törlése",
+    "deleted": "Az ÁSZF kiválasztott változata törölve.",
+    "deleteError": "A változat nem törölhető. Kérjük, próbálja újra.",
+    "inUse": "Ezt a változatot már elfogadták egy megrendeléshez, ezért nem törölhető.",
     "publish": "Mentés és közzététel",
     "saving": "Közzététel...",
     "saved": "Az ÁSZF közzétéve.",
     "saveError": "Az ÁSZF közzététele nem sikerült. Kérjük, próbálja újra.",
-    "loading": "A jelenlegi ÁSZF betöltése...",
-    "loadError": "A jelenlegi ÁSZF nem tölthető be. Kérjük, próbálja újra.",
+    "loading": "Az ÁSZF betöltése...",
+    "loadError": "Az ÁSZF nem tölthető be. Kérjük, próbálja újra.",
     "required": "Adja meg a feltételeket angol és magyar nyelven is."
   },
   "notFound": {

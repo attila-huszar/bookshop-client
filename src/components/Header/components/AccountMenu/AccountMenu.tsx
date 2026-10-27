@@ -20,9 +20,14 @@ import {
   ProfileIcon,
   UserOutlineIcon,
 } from '@/assets/svg'
-import { MenuItem, MenuList, StyledMenu } from '../Menu/Menu.style'
+import { MenuItem } from '../Menu/Menu.style'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
+import {
+  AccountMenuList,
+  GuestActions,
+  StyledAccountMenu,
+} from './AccountMenu.style'
 
 export function AccountMenu() {
   const { t } = useTranslation()
@@ -95,15 +100,15 @@ export function AccountMenu() {
     )
 
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+      <GuestActions>
         {loginButton}
-        <LanguageSwitcher />
-      </div>
+        <LanguageSwitcher variant="icon" />
+      </GuestActions>
     )
   }
 
   const menuList = (
-    <MenuList>
+    <AccountMenuList>
       <li>
         <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
           <MenuItem>
@@ -131,7 +136,7 @@ export function AccountMenu() {
         </li>
       )}
       <li>
-        <LanguageSwitcher />
+        <LanguageSwitcher variant="menu" />
       </li>
       <li>
         <MenuItem
@@ -143,11 +148,11 @@ export function AccountMenu() {
           <span>{t('auth.logout')}</span>
         </MenuItem>
       </li>
-    </MenuList>
+    </AccountMenuList>
   )
 
   return (
-    <StyledMenu ref={menuRef}>
+    <StyledAccountMenu ref={menuRef}>
       <Avatar
         imgUrl={userData.avatar ?? undefined}
         onClick={toggleMenu}
@@ -162,6 +167,6 @@ export function AccountMenu() {
           {menuList}
         </MenuDropdown>
       )}
-    </StyledMenu>
+    </StyledAccountMenu>
   )
 }

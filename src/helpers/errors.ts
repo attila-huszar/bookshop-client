@@ -34,6 +34,7 @@ const apiErrorKeys = {
   [PaymentErrorCode.PriceConflict]: 'checkout.priceChanged',
   [PaymentErrorCode.CheckoutEnded]: 'checkout.sessionEnded',
   [TermsErrorCode.Unavailable]: 'terms.unavailable',
+  [TermsErrorCode.InUse]: 'termsEditor.inUse',
   [TermsErrorCode.Changed]: 'errors.termsChanged',
   [TermsErrorCode.AlreadyAccepted]: 'errors.termsAlreadyAccepted',
   [TermsErrorCode.NotRecorded]: 'errors.termsNotRecorded',

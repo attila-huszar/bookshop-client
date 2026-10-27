@@ -1,7 +1,7 @@
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import { Providers } from '@/testUtils'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -43,6 +43,7 @@ describe('AccountMenu component', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('should render the user avatar when logged in and open the menu on click', async () => {
@@ -56,41 +57,80 @@ describe('AccountMenu component', () => {
     expect(screen.getByText('Logout')).toBeInTheDocument()
   })
 
-  it('switches between English and Hungarian in the dropdown and remembers the choice', async () => {
-    localStorage.removeItem('language')
-    render(<AccountMenu />, { wrapper: Providers })
-    await userEvent.click(screen.getByTitle('July'))
-    expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    await userEvent.click(screen.getByRole('button', { name: 'English' }))
-    expect(localStorage.getItem('language')).toBe('en')
-    await userEvent.click(screen.getByRole('button', { name: 'Magyar' }))
+  it.each([390, 1280])(
+    'switches language and flag from the account menu at %ipx and remembers the choice',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      localStorage.removeItem('language')
+      render(<AccountMenu />, { wrapper: Providers })
+      await userEvent.click(screen.getByTitle('July'))
+      const english = screen.getByRole('button', { name: 'Switch to Magyar' })
+      expect(english).toHaveTextContent('English')
+      expect(within(english).getByAltText('')).toHaveAttribute(
+        'src',
+        'https://flagcdn.com/gb.svg',
+      )
+      await userEvent.click(english)
 
-    expect(screen.getByRole('button', { name: 'Magyar' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    expect(localStorage.getItem('language')).toBe('hu')
-    expect(document.documentElement.lang).toBe('hu')
-    await userEvent.click(screen.getByRole('button', { name: 'English' }))
+      const hungarian = screen.getByRole('button', { name: 'Váltás: English' })
+      expect(hungarian).toHaveTextContent('Magyar')
+      expect(within(hungarian).getByAltText('')).toHaveAttribute(
+        'src',
+        'https://flagcdn.com/hu.svg',
+      )
+      expect(localStorage.getItem('language')).toBe('hu')
+      expect(document.documentElement.lang).toBe('hu')
+      await userEvent.click(hungarian)
 
-    expect(document.documentElement.lang).toBe('en')
-  })
+      expect(document.documentElement.lang).toBe('en')
+      expect(localStorage.getItem('language')).toBe('en')
+      expect(
+        screen.getByRole('button', { name: 'Switch to Magyar' }),
+      ).toHaveTextContent('English')
+      expect(screen.getByRole('button', { name: 'Logout' })).toBeInTheDocument()
+    },
+  )
 
-  it('should call navigate to login when not logged in', async () => {
-    vi.mocked(useAppSelector).mockReturnValue({
-      accessToken: null,
-      userData: null,
-    })
-    render(<AccountMenu />, { wrapper: Providers })
+  it.each([390, 1280])(
+    'uses a single flag icon and retains login navigation for guests at %ipx',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      localStorage.removeItem('language')
+      vi.mocked(useAppSelector).mockReturnValue({
+        accessToken: null,
+        userData: null,
+      })
+      render(<AccountMenu />, { wrapper: Providers })
 
-    const loginButton = screen.getByTitle('Login/Register')
-    await userEvent.click(loginButton)
+      const loginButton = screen.getByTitle('Login/Register')
+      const languageButton = screen.getByRole('button', {
+        name: 'Switch to Magyar',
+      })
+      expect(
+        screen.queryByRole('button', { name: 'English' }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'Magyar' }),
+      ).not.toBeInTheDocument()
+      expect(within(languageButton).getByAltText('')).toHaveAttribute(
+        'src',
+        'https://flagcdn.com/gb.svg',
+      )
+      await userEvent.click(languageButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login')
-  })
+      const hungarian = screen.getByRole('button', { name: 'Váltás: English' })
+      expect(within(hungarian).getByAltText('')).toHaveAttribute(
+        'src',
+        'https://flagcdn.com/hu.svg',
+      )
+      expect(localStorage.getItem('language')).toBe('hu')
+      await userEvent.click(hungarian)
+      expect(localStorage.getItem('language')).toBe('en')
+      await userEvent.click(loginButton)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/login')
+    },
+  )
 
   it('should handle logout when clicking logout', async () => {
     render(<AccountMenu />, { wrapper: Providers })

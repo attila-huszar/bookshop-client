@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { i18n } from '@/i18n'
+import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTermsDocumentQuery } from '@/store/api/bookshopApi'
 import { Terms } from './Terms'
@@ -37,21 +37,36 @@ describe('Published terms page', () => {
     render(<Terms />)
     expect(screen.getByText('Original English terms')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'Download as text' }),
-    ).toHaveAttribute(
+      screen.queryByText(`Version: ${document.version}`),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Print' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('group', { name: 'Language' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Download' })).toHaveAttribute(
       'href',
       expect.stringContaining(
         `/terms/${document.version}?download=true&language=en`,
       ),
     )
 
-    await userEvent.click(screen.getByRole('button', { name: 'Magyar' }))
+    await act(async () => {
+      await i18n.changeLanguage('hu')
+    })
 
     expect(screen.getByText('Eredeti magyar feltételek')).toBeInTheDocument()
-    expect(screen.queryByText('Original English terms')).not.toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'Letöltés szövegként' }),
-    ).toHaveAttribute(
+      screen.getByRole('heading', { name: i18n.t('terms.title') }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        `Közzétéve: ${new Date(document.publishedAt).toLocaleDateString('hu')}`,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Original English terms')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Letöltés' })).toHaveAttribute(
       'href',
       expect.stringContaining(
         `/terms/${document.version}?download=true&language=hu`,
@@ -72,7 +87,7 @@ describe('Published terms page', () => {
       'Terms and conditions have not been published yet',
     )
     expect(
-      screen.queryByRole('link', { name: 'Download as text' }),
+      screen.queryByRole('link', { name: 'Download' }),
     ).not.toBeInTheDocument()
   })
 })

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import {
   useHardDeleteAuthorsMutation,
   useHardDeleteBooksMutation,
@@ -9,12 +9,10 @@ import {
   useSoftDeleteOrdersMutation,
   useSoftDeleteUsersMutation,
 } from '@/store/api/bookshopApi'
-import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ExtraSpace } from '@/components/Header'
-import { useAppSelector } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import type {
   Author,
@@ -25,8 +23,6 @@ import type {
   SelectContext,
 } from '@/types'
 import {
-  LogoutIcon,
-  SlidersIcon,
   StoreIcon,
   StoreSlashIcon,
   UserIcon,
@@ -38,6 +34,7 @@ import {
   OrderEditForm,
   UserEditForm,
 } from './components'
+import { CMSMenu } from './components/CMSMenu/CMSMenu'
 import { TermsSettingsDialog } from './components/TermsSettingsDialog/TermsSettingsDialog'
 import {
   MainContainer,
@@ -66,9 +63,7 @@ const isValidTab = (tab: string): tab is TabValue =>
 export const CMS = () => {
   const { t } = useTranslation()
   const [termsSettingsOpen, setTermsSettingsOpen] = useState(false)
-  const navigate = useNavigate()
   const location = useLocation()
-  const { userData } = useAppSelector(userSelector)
   const [hardDeleteAuthors, authorDeletion] = useHardDeleteAuthorsMutation()
   const [hardDeleteBooks, bookDeletion] = useHardDeleteBooksMutation()
   const [softDeleteOrders, orderRemoval] = useSoftDeleteOrdersMutation()
@@ -304,24 +299,7 @@ export const CMS = () => {
               }}
             />
           )}
-          <Button
-            type="button"
-            $size="smMd"
-            $inverted
-            $icon={<SlidersIcon />}
-            style={{ marginLeft: 'auto' }}
-            onClick={() => setTermsSettingsOpen(true)}>
-            {t('terms.title')}
-          </Button>
-          <Button
-            onClick={() => void navigate('/')}
-            $icon={<LogoutIcon />}
-            $iconPos="right"
-            $size="smMd"
-            $inverted
-            type="button">
-            {userData?.firstName}
-          </Button>
+          <CMSMenu onOpenTerms={() => setTermsSettingsOpen(true)} />
         </MenuButtons>
         <StyledTabs>
           {TABS.map((tab) => (

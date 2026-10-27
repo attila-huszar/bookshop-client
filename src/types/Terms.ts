@@ -10,7 +10,15 @@ export type TermsDocument = {
 
 export type PublishTermsRequest = Pick<TermsDocument, 'content'>
 
-export type CheckoutTerms = Pick<TermsDocument, 'version' | 'statements'> & {
+export type TermsDocumentSummary = Pick<
+  TermsDocument,
+  'version' | 'publishedAt'
+> & { canDelete: boolean }
+
+export type CheckoutTerms = Pick<
+  TermsDocument,
+  'version' | 'statements' | 'publishedAt'
+> & {
   url: string
 }
 

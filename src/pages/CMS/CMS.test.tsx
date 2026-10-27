@@ -117,7 +117,13 @@ beforeEach(() => {
     }
 
     return response(
-      url === 'cms/users' ? accounts : url === 'cms/orders' ? orders : [],
+      url === 'cms/users'
+        ? accounts
+        : url === 'cms/orders'
+          ? orders
+          : url === 'cms/terms'
+            ? null
+            : [],
     )
   })
 })
@@ -127,6 +133,7 @@ afterEach(() => {
     store.dispatch(bookshopApi.util.resetApiState())
   })
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 function CatalogSelection({ tab }: { tab: 'books' | 'authors' }) {
@@ -147,6 +154,7 @@ function renderCMS(tab = 'orders') {
     <Provider store={store}>
       <MemoryRouter initialEntries={['/cms/' + tab]}>
         <Routes>
+          <Route path="/" element={<p>Storefront</p>} />
           <Route path="/cms" element={<CMS />}>
             <Route path="orders" element={<Orders />} />
             <Route path="users" element={<Users />} />
@@ -161,6 +169,93 @@ function renderCMS(tab = 'orders') {
     </Provider>,
   )
 }
+
+describe('CMS menu', () => {
+  it.each([390, 1024])(
+    'opens the terms editor from the menu at %ipx',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      renderCMS()
+      const user = userEvent.setup()
+      const trigger = screen.getByRole('button', { name: 'Menu' })
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        screen.queryByRole('button', { name: 'Terms and Conditions' }),
+      ).not.toBeInTheDocument()
+      await user.click(trigger)
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+      expect(
+        Boolean(screen.queryByRole('button', { name: 'Close menu' })),
+      ).toBe(width < 600)
+      await user.click(
+        screen.getByRole('button', { name: 'Terms and Conditions' }),
+      )
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        await screen.findByRole('dialog', { name: 'Terms and Conditions' }),
+      ).toBeInTheDocument()
+      await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    },
+  )
+
+  it.each([390, 1024])(
+    'dismisses the menu with Escape and outside clicks at %ipx',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      renderCMS()
+      const user = userEvent.setup()
+      const trigger = screen.getByRole('button', { name: 'Menu' })
+      await user.click(trigger)
+
+      expect(
+        screen.getByRole('button', { name: 'Terms and Conditions' }),
+      ).toHaveFocus()
+      await user.keyboard('{Escape}')
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(trigger).toHaveFocus()
+      await user.click(trigger)
+      await user.click(screen.getByRole('link', { name: 'Orders' }))
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        screen.queryByRole('button', { name: 'Terms and Conditions' }),
+      ).not.toBeInTheDocument()
+    },
+  )
+
+  it('returns to the storefront from the menu', async () => {
+    renderCMS()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(screen.getByRole('link', { name: 'Home' }))
+
+    expect(screen.getByText('Storefront')).toBeInTheDocument()
+  })
+
+  it('uses Hungarian labels in the mobile menu', async () => {
+    vi.stubGlobal('innerWidth', 390)
+    await i18n.changeLanguage('hu')
+    renderCMS()
+    const user = userEvent.setup()
+    const trigger = screen.getByRole('button', { name: 'Menü' })
+    await user.click(trigger)
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Általános Szerződési Feltételek (ÁSZF)',
+      }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Menü bezárása' }))
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveFocus()
+  })
+})
 
 describe('CMS deletion controls', () => {
   it('translates controls and confirmations after a language change without changing request values', async () => {

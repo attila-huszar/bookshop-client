@@ -40,6 +40,7 @@ export const enum PaymentErrorCode {
 
 /** Terms availability, version, and acceptance failures returned by the server. */
 export const enum TermsErrorCode {
+  InUse = 'TERMS_IN_USE',
   Unavailable = 'TERMS_UNAVAILABLE',
   Changed = 'TERMS_CHANGED',
   AlreadyAccepted = 'TERMS_ALREADY_ACCEPTED',

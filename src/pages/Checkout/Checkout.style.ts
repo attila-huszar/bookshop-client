@@ -114,12 +114,15 @@ export const StyledCheckout = styled.section`
   }
 
   .checkout-terms {
-    label {
+    .checkout-terms-acceptance {
       display: flex;
       align-items: flex-start;
       gap: 0.75rem;
-      cursor: pointer;
       line-height: 1.5;
+    }
+
+    label {
+      cursor: pointer;
     }
 
     input {
@@ -131,9 +134,16 @@ export const StyledCheckout = styled.section`
     }
 
     p {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-top: 0.5rem;
       line-height: 1.5;
       overflow-wrap: anywhere;
+
+      svg {
+        flex-shrink: 0;
+      }
     }
 
     a {

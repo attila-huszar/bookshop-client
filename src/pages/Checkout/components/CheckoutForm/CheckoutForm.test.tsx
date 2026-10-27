@@ -33,6 +33,7 @@ const review = {
   terms: {
     url: 'https://bookshop.test/terms-v1.pdf',
     version: 'v1',
+    publishedAt: '2026-10-14T10:00:00Z',
     statements: {
       en: 'I have read and accept the Terms and Conditions.',
       hu: 'Elolvastam és elfogadom az Általános Szerződési Feltételeket (ÁSZF).',
@@ -103,12 +104,14 @@ describe('Checkout terms checkbox', () => {
     expect(
       screen.getByRole('checkbox', { name: statements.en }),
     ).not.toBeChecked()
+    expect(screen.getByRole('link')).toHaveTextContent(statements.en)
 
     await act(() => i18n.changeLanguage('hu'))
 
     expect(
       screen.getByRole('checkbox', { name: statements.hu }),
     ).not.toBeChecked()
+    expect(screen.getByRole('link')).toHaveTextContent(statements.hu)
   })
 
   it('switches to Hungarian and requires acceptance of the displayed language', async () => {
@@ -126,8 +129,14 @@ describe('Checkout terms checkbox', () => {
       }),
     ).toBeDisabled()
     expect(
-      screen.getByRole('link', { name: /ÁSZF megnyitása/ }),
+      screen.getByRole('link', {
+        name: 'Általános Szerződési Feltételeket (ÁSZF)',
+      }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('checkbox')).toHaveAccessibleName(
+      review.terms.statements.hu,
+    )
+    expect(screen.queryByText(/Közzétéve:/)).not.toBeInTheDocument()
   })
 
   it('starts unchecked and requires acceptance before payment', async () => {
@@ -138,12 +147,26 @@ describe('Checkout terms checkbox', () => {
 
     expect(checkbox).not.toBeChecked()
     expect(checkbox).toBeRequired()
+    expect(checkbox).toHaveAccessibleName(review.terms.statements.en)
+    expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
+    const termsLink = screen.getByRole('link', { name: 'Terms and Conditions' })
+    expect(termsLink).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(termsLink).toHaveAttribute(
+      'title',
+      'Read Terms and Conditions (opens in a new tab)',
+    )
+    expect(screen.queryByText(/Published:/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Version:/)).not.toBeInTheDocument()
+
+    await userEvent.click(termsLink)
+
+    expect(checkbox).not.toBeChecked()
     expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
     expect(
-      screen.getByRole('link', { name: /Read Terms and Conditions/ }),
+      screen.getByRole('link', { name: 'Terms and Conditions' }),
     ).toHaveAttribute('href', review.terms.url)
     expect(
-      screen.getByRole('link', { name: /Read Terms and Conditions/ }),
+      screen.getByRole('link', { name: 'Terms and Conditions' }),
     ).toHaveAttribute('target', '_blank')
     expect(
       screen.getByRole('region', { name: 'Order summary' }),
@@ -152,11 +175,15 @@ describe('Checkout terms checkbox', () => {
       screen.getByRole('button', { name: paymentLabel }),
     ).toHaveTextContent('12.00 EUR')
 
-    await userEvent.click(checkbox)
+    await userEvent.click(screen.getByText('I have read and accept the'))
     expect(screen.getByRole('button', { name: paymentLabel })).toBeEnabled()
     expect(usePaymentSubmit).toHaveBeenLastCalledWith(
       expect.objectContaining({ termsAccepted: true, terms: review.terms }),
     )
+
+    await userEvent.click(termsLink)
+
+    expect(checkbox).toBeChecked()
   })
 
   it('disables both payment buttons again when acceptance is removed', async () => {
@@ -209,7 +236,7 @@ describe('Checkout terms checkbox', () => {
     expect(screen.getByRole('checkbox')).toBeChecked()
     expect(screen.getByRole('button', { name: paymentLabel })).toBeEnabled()
     expect(
-      screen.getByRole('link', { name: /Read Terms and Conditions/ }),
+      screen.getByRole('link', { name: 'Terms and Conditions' }),
     ).toHaveAttribute('href', url)
   })
 

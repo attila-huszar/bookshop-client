@@ -86,6 +86,7 @@
   },
   "language": {
     "label": "Language",
+    "switchTo": "Switch to {{language}}",
     "en": "English",
     "hu": "Magyar",
     "loading": "Loading language...",
@@ -413,7 +414,6 @@
   "terms": {
     "title": "Terms and Conditions",
     "open": "Read Terms and Conditions (opens in a new tab)",
-    "version": "Version: {{version}}",
     "published": "Published: {{date}}",
     "loading": "Loading terms and conditions...",
     "loadError": "Unable to load terms and conditions. Please try again.",
@@ -423,19 +423,25 @@
     "required": "Please read and accept the terms and conditions before paying.",
     "orderButton": "Order with obligation to pay — {{amount}} {{currency}}",
     "retryButton": "Retry order with obligation to pay — {{amount}} {{currency}}",
-    "download": "Download as text",
-    "print": "Print"
+    "download": "Download"
   },
   "termsEditor": {
     "english": "English terms",
     "hungarian": "Hungarian terms",
-    "help": "Enter the terms in both languages. Published versions remain available to customers who accepted them.",
+    "help": "Enter the terms in both languages. Select a published version to review or reuse its text. Save and publish makes the edited text current; previous publications remain available to customers.",
+    "history": "Published versions",
+    "current": "Current",
+    "accepted": "Accepted",
+    "delete": "Delete selected publication",
+    "deleted": "Terms publication deleted.",
+    "deleteError": "Unable to delete this publication. Please try again.",
+    "inUse": "This publication has been accepted for a checkout and cannot be deleted.",
     "publish": "Save and publish",
     "saving": "Publishing...",
     "saved": "Terms and conditions published.",
     "saveError": "Unable to publish the terms and conditions. Please try again.",
-    "loading": "Loading current terms...",
-    "loadError": "Unable to load current terms. Please try again.",
+    "loading": "Loading terms...",
+    "loadError": "Unable to load terms. Please try again.",
     "required": "Enter the terms in both English and Hungarian."
   },
   "notFound": {

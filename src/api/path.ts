@@ -35,6 +35,7 @@ export const PATH = {
   },
   cms: {
     terms: `${P.cms}/${P.terms}`,
+    termsHistory: `${P.cms}/${P.terms}/history`,
     orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
     restore: {

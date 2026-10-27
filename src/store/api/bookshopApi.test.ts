@@ -162,6 +162,186 @@ function StoreProvider({ children }: { children: ReactNode }) {
 }
 
 describe('server-data cache', () => {
+  it('refreshes current terms, history and checkout references and evicts a deleted archive', async () => {
+    const document = {
+      version: 'unused',
+      publishedAt: '2026-10-14T10:00:00.000Z',
+      content: { en: 'English', hu: 'Magyar' },
+      statements: { en: 'Accept', hu: 'Elfogadom' },
+    }
+    let deleted = false
+    fetchMock.mockImplementation((input) => {
+      const request = requestOf(input)
+      const path = new URL(request.url).pathname
+
+      if (request.method === 'DELETE') {
+        deleted = true
+
+        return Promise.resolve(new Response(null, { status: 204 }))
+      }
+
+      return Promise.resolve(
+        jsonResponse(
+          path.endsWith('/terms/history')
+            ? deleted
+              ? []
+              : [
+                  {
+                    version: document.version,
+                    publishedAt: document.publishedAt,
+                    canDelete: true,
+                  },
+                ]
+            : path.includes('/payments/')
+              ? {
+                  terms: deleted
+                    ? null
+                    : {
+                        version: document.version,
+                        statements: document.statements,
+                        publishedAt: document.publishedAt,
+                        url: '/terms/unused',
+                      },
+                  order: { items: [], total: 0, currency: 'USD' },
+                }
+              : deleted
+                ? null
+                : document,
+        ),
+      )
+    })
+    const current = store.dispatch(bookshopApi.endpoints.cmsTerms.initiate())
+    const history = store.dispatch(
+      bookshopApi.endpoints.cmsTermsHistory.initiate(),
+    )
+    const checkout = store.dispatch(
+      bookshopApi.endpoints.paymentTerms.initiate('pi_terms'),
+    )
+    await Promise.all([
+      current.unwrap(),
+      history.unwrap(),
+      checkout.unwrap(),
+      store
+        .dispatch(
+          bookshopApi.endpoints.termsDocument.initiate('unused', {
+            subscribe: false,
+          }),
+        )
+        .unwrap(),
+    ])
+    await store
+      .dispatch(bookshopApi.endpoints.deleteTermsVersion.initiate('unused'))
+      .unwrap()
+
+    await vi.waitFor(() => {
+      expect(
+        bookshopApi.endpoints.cmsTerms.select()(store.getState()).data,
+      ).toBeNull()
+      expect(
+        bookshopApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
+      ).toEqual([])
+      expect(
+        bookshopApi.endpoints.paymentTerms.select('pi_terms')(store.getState())
+          .data?.terms,
+      ).toBeNull()
+      expect(
+        bookshopApi.endpoints.termsDocument.select('unused')(store.getState())
+          .isUninitialized,
+      ).toBe(true)
+    })
+    const request = capturedRequests.find(
+      (request) => request.method === 'DELETE',
+    )
+    expect(request?.headers.get('authorization')).toBe('Bearer old-token')
+    expect(new URL(request!.url).pathname).toBe('/api/cms/terms/unused')
+    current.unsubscribe()
+    history.unsubscribe()
+    checkout.unsubscribe()
+  })
+
+  it('refreshes current terms and publication history after publishing while retaining immutable archives', async () => {
+    const original = {
+      version: 'original',
+      publishedAt: '2026-10-14T10:00:00.000Z',
+      content: { en: 'Original English', hu: 'Eredeti magyar' },
+      statements: { en: 'Accept', hu: 'Elfogadom' },
+    }
+    let current = original
+    let history = [
+      { version: original.version, publishedAt: original.publishedAt },
+    ]
+    fetchMock.mockImplementation((input) => {
+      const request = requestOf(input)
+      const path = new URL(request.url).pathname
+
+      return Promise.resolve(
+        jsonResponse(
+          path.endsWith('/terms/history')
+            ? history
+            : path.endsWith('/terms/original')
+              ? original
+              : current,
+        ),
+      )
+    })
+    const currentQuery = store.dispatch(
+      bookshopApi.endpoints.cmsTerms.initiate(),
+    )
+    const historyQuery = store.dispatch(
+      bookshopApi.endpoints.cmsTermsHistory.initiate(),
+    )
+    const archiveQuery = store.dispatch(
+      bookshopApi.endpoints.termsDocument.initiate('original'),
+    )
+    await Promise.all([
+      currentQuery.unwrap(),
+      historyQuery.unwrap(),
+      archiveQuery.unwrap(),
+    ])
+    const historyRequest = capturedRequests.find((request) =>
+      new URL(request.url).pathname.endsWith('/cms/terms/history'),
+    )
+    expect(historyRequest?.headers.get('authorization')).toBe(
+      'Bearer old-token',
+    )
+    current = {
+      ...original,
+      version: 'updated',
+      publishedAt: '2026-10-15T10:00:00.000Z',
+      content: { en: 'Updated English', hu: 'Új magyar' },
+    }
+    history = [
+      { version: current.version, publishedAt: current.publishedAt },
+      ...history,
+    ]
+    const mutation = store.dispatch(
+      bookshopApi.endpoints.publishTerms.initiate({ content: current.content }),
+    )
+    await mutation.unwrap()
+
+    await vi.waitFor(() => {
+      expect(
+        bookshopApi.endpoints.cmsTerms.select()(store.getState()).data,
+      ).toEqual(current)
+      expect(
+        bookshopApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
+      ).toEqual(history)
+    })
+    expect(
+      bookshopApi.endpoints.termsDocument.select('original')(store.getState())
+        .data,
+    ).toEqual(original)
+    expect(
+      capturedRequests.filter((request) =>
+        new URL(request.url).pathname.endsWith('/terms/original'),
+      ),
+    ).toHaveLength(1)
+    currentQuery.unsubscribe()
+    historyQuery.unsubscribe()
+    archiveQuery.unsubscribe()
+    mutation.reset()
+  })
+
   it('reuses the unfiltered cache after submitting full displayed ranges', async () => {
     await store.dispatch(
       bookshopApi.util.upsertQueryData('searchOptions', undefined, {

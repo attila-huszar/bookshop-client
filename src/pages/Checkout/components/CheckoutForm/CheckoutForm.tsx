@@ -20,6 +20,7 @@ import { formatAmount } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { defaultCurrency } from '@/constants/defaultValues'
 import type { ApiError, StripePaymentElementOptions } from '@/types'
+import { SpinnerIcon } from '@/assets/svg'
 
 export function CheckoutForm() {
   const { t, i18n } = useTranslation()
@@ -86,6 +87,9 @@ export function CheckoutForm() {
     amount: formatAmount(payment.amount / 100, i18n.resolvedLanguage),
   }
   const currency = review?.order.currency ?? defaultCurrency
+  const statement = terms?.statements[language] ?? ''
+  const termsLinkText = t('terms.title', { context: 'accusative' })
+  const termsLinkIndex = statement.indexOf(termsLinkText)
   const isPaymentDisabled =
     isLoading || isCanceling || !stripe || !elements || !termsAccepted
 
@@ -187,36 +191,52 @@ export function CheckoutForm() {
       )}
       <div className="checkout-terms" lang={language}>
         {terms ? (
-          <>
-            <label htmlFor="checkout-terms-accepted">
-              <input
-                id="checkout-terms-accepted"
-                name="termsAccepted"
-                type="checkbox"
-                required
-                checked={termsAccepted}
-                disabled={isLoading || isCanceling}
-                onChange={(event) => {
-                  setAcceptedTermsKey(event.target.checked ? termsKey : null)
-                  setMessage({ text: null, type: 'neutral' })
-                }}
-              />
-              <span>{terms.statements[language]}</span>
-            </label>
-            <p>
-              <a href={terms.url} target="_blank" rel="noopener noreferrer">
-                {t('terms.open')}
-              </a>{' '}
-              · {t('terms.version', { version: terms.version })}
-            </p>
-          </>
+          <div className="checkout-terms-acceptance">
+            <input
+              id="checkout-terms-accepted"
+              name="termsAccepted"
+              aria-label={statement}
+              type="checkbox"
+              required
+              checked={termsAccepted}
+              disabled={isLoading || isCanceling}
+              onChange={(event) => {
+                setAcceptedTermsKey(event.target.checked ? termsKey : null)
+                setMessage({ text: null, type: 'neutral' })
+              }}
+            />
+            <span>
+              {termsLinkIndex >= 0 && (
+                <label htmlFor="checkout-terms-accepted">
+                  {statement.slice(0, termsLinkIndex)}
+                </label>
+              )}
+              <a
+                href={terms.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t('terms.open')}>
+                {termsLinkIndex >= 0 ? termsLinkText : statement}
+              </a>
+              {termsLinkIndex >= 0 && (
+                <label htmlFor="checkout-terms-accepted">
+                  {statement.slice(termsLinkIndex + termsLinkText.length)}
+                </label>
+              )}
+            </span>
+          </div>
         ) : (
           <p role="status">
-            {isTermsLoading
-              ? t('terms.loading')
-              : hasTermsError
-                ? t('terms.loadError')
-                : t('terms.unavailable')}
+            {isTermsLoading && (
+              <SpinnerIcon width={20} height={20} aria-hidden="true" />
+            )}
+            <span>
+              {isTermsLoading
+                ? t('terms.loading')
+                : hasTermsError
+                  ? t('terms.loadError')
+                  : t('terms.unavailable')}
+            </span>
           </p>
         )}
         {hasTermsError && (

@@ -1,14 +1,23 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { languageStorageKey, shopLanguage, type ShopLanguage } from '@/i18n'
+import { IconButton } from '@/components/Button'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { getFlagUrl } from '@/helpers/getFlagUrl'
 import { languageOptions } from '@/constants/defaultValues'
-import { Switcher } from './LanguageSwitcher.style'
+import { MenuLanguageButton, Switcher } from './LanguageSwitcher.style'
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  variant = 'icon',
+}: {
+  variant?: 'menu' | 'icon'
+}) {
   const { t, i18n } = useTranslation()
   const selected = shopLanguage(i18n.resolvedLanguage)
+  const activeLanguage =
+    languageOptions.find((option) => option.language === selected) ??
+    languageOptions[0]
+  const nextLanguage = selected === 'en' ? 'hu' : 'en'
   const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
   const switching = useRef(false)
@@ -45,20 +54,50 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <Switcher role="group" aria-label={t('language.label')}>
-      {languageOptions.map(({ language, country }) => (
-        <button
-          key={language}
+    <Switcher $variant={variant} role="group" aria-label={t('language.label')}>
+      {variant === 'icon' && (
+        <IconButton
           type="button"
-          lang={language}
-          aria-label={t(`language.${language}`)}
-          aria-pressed={selected === language}
+          $outline
+          $color="var(--color-primary)"
+          aria-label={t('language.switchTo', {
+            language: t(`language.${nextLanguage}`),
+          })}
+          title={t('language.switchTo', {
+            language: t(`language.${nextLanguage}`),
+          })}
           disabled={isLoading}
-          onClick={() => void handleLanguageChange(language)}>
-          <img src={getFlagUrl(country)} alt="" width={20} height={14} />
-          {language.toUpperCase()}
-        </button>
-      ))}
+          onClick={() => void handleLanguageChange(nextLanguage)}
+          icon={
+            <img
+              src={getFlagUrl(activeLanguage.country)}
+              alt=""
+              width={24}
+              height={16}
+            />
+          }
+        />
+      )}
+      {variant === 'menu' && (
+        <MenuLanguageButton
+          type="button"
+          aria-label={t('language.switchTo', {
+            language: t(`language.${nextLanguage}`),
+          })}
+          title={t('language.switchTo', {
+            language: t(`language.${nextLanguage}`),
+          })}
+          disabled={isLoading}
+          onClick={() => void handleLanguageChange(nextLanguage)}>
+          <img
+            src={getFlagUrl(activeLanguage.country)}
+            alt=""
+            width={24}
+            height={16}
+          />
+          <span lang={selected}>{t(`language.${selected}`)}</span>
+        </MenuLanguageButton>
+      )}
       {isLoading && <p role="status">{t('language.loading')}</p>}
       {hasError && <p role="alert">{t('language.loadError')}</p>}
     </Switcher>

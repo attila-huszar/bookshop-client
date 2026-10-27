@@ -38,6 +38,7 @@ import type {
   RegisterResponse,
   TermsAcceptance,
   TermsDocument,
+  TermsDocumentSummary,
   User,
   UserProfileUpdate,
 } from '@/types'
@@ -97,12 +98,33 @@ export const bookshopApi = createApi({
       query: (version) => ({
         url: version ? `${PATH.terms}/${version}` : PATH.terms,
       }),
-      providesTags: (_result, _error, version) =>
-        version ? [] : ['TermsDocument'],
+      providesTags: (_result, _error, version) => [
+        { type: 'TermsDocument', id: version ?? 'Current' },
+      ],
     }),
     cmsTerms: build.query<TermsDocument | null, void>({
       query: () => ({ url: PATH.cms.terms, withAuth: true }),
-      providesTags: ['TermsDocument'],
+      providesTags: [{ type: 'TermsDocument', id: 'Current' }],
+    }),
+    cmsTermsHistory: build.query<TermsDocumentSummary[], void>({
+      query: () => ({ url: PATH.cms.termsHistory, withAuth: true }),
+      providesTags: [{ type: 'TermsDocument', id: 'History' }],
+    }),
+    deleteTermsVersion: build.mutation<null, string>({
+      query: (version) => ({
+        url: `${PATH.cms.terms}/${version}`,
+        method: 'delete',
+        withAuth: true,
+      }),
+      invalidatesTags: (_result, error, version) =>
+        error
+          ? [{ type: 'TermsDocument', id: 'History' }]
+          : [
+              { type: 'TermsDocument', id: 'Current' },
+              { type: 'TermsDocument', id: 'History' },
+              'CheckoutTerms',
+              { type: 'TermsDocument', id: version },
+            ],
     }),
     publishTerms: build.mutation<TermsDocument, PublishTermsRequest>({
       query: (request) => ({
@@ -112,7 +134,13 @@ export const bookshopApi = createApi({
         withAuth: true,
       }),
       invalidatesTags: (_result, error) =>
-        error ? [] : ['TermsDocument', 'CheckoutTerms'],
+        error
+          ? []
+          : [
+              { type: 'TermsDocument', id: 'Current' },
+              { type: 'TermsDocument', id: 'History' },
+              'CheckoutTerms',
+            ],
     }),
     paymentTerms: build.query<PaymentTermsReview, string>({
       query: (paymentId) => ({
@@ -390,6 +418,8 @@ export const bookshopApi = createApi({
 export const {
   useTermsDocumentQuery,
   useCmsTermsQuery,
+  useCmsTermsHistoryQuery,
+  useDeleteTermsVersionMutation,
   usePublishTermsMutation,
   usePaymentTermsQuery,
   useAcceptPaymentTermsMutation,

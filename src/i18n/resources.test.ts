@@ -22,12 +22,20 @@ function flatten(
 }
 
 describe('interface translations', () => {
-  it('keeps both languages in the same order with complete matching placeholders', () => {
+  it('keeps base keys in the same order with matching placeholders across contexts', () => {
     const english = flatten(en)
     const hungarian = flatten(hu)
-    expect(Object.keys(hungarian)).toEqual(Object.keys(english))
+    const baseKeys = (resource: Record<string, string>) =>
+      Object.keys(resource).filter((key) => !key.endsWith('_accusative'))
+    expect(baseKeys(hungarian)).toEqual(baseKeys(english))
 
-    for (const [key, text] of Object.entries(english)) {
+    for (const key of new Set([
+      ...Object.keys(english),
+      ...Object.keys(hungarian),
+    ])) {
+      const baseKey = key.replace(/_accusative$/, '')
+      const englishText = english[key] ?? english[baseKey]
+      const hungarianText = hungarian[key] ?? hungarian[baseKey]
       const placeholders = (value: string) => {
         const matches = Array.from(
           value.matchAll(/{{\s*([^},]+)(?:,[^}]*)?}}/g),
@@ -36,9 +44,10 @@ describe('interface translations', () => {
 
         return [...new Set(matches)].sort()
       }
-      expect(hungarian[key]?.trim()).not.toBe('')
-      expect({ [key]: placeholders(hungarian[key]!) }).toEqual({
-        [key]: placeholders(text),
+      expect(englishText?.trim()).toBeTruthy()
+      expect(hungarianText?.trim()).toBeTruthy()
+      expect({ [key]: placeholders(hungarianText!) }).toEqual({
+        [key]: placeholders(englishText!),
       })
     }
   })

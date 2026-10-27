@@ -3,9 +3,8 @@ import { useParams } from 'react-router'
 import { shopLanguage } from '@/i18n'
 import { useTermsDocumentQuery } from '@/store/api/bookshopApi'
 import { Button } from '@/components/Button'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { serverUrl } from '@/constants/envConfig'
-import { Article } from './Terms.style'
+import { Article, DownloadButton, PublishedDate } from './Terms.style'
 
 export function Terms() {
   const { version } = useParams()
@@ -32,23 +31,17 @@ export function Terms() {
         </>
       ) : document ? (
         <>
-          <p>{t('terms.version', { version: document.version })}</p>
-          <p>
+          <PublishedDate>
             {t('terms.published', {
               date: new Date(document.publishedAt).toLocaleDateString(language),
             })}
-          </p>
-          <div className="actions">
-            <LanguageSwitcher />
-            <a
-              href={`${serverUrl.replace(/\/$/, '')}/terms/${document.version}?download=true&language=${language}`}>
-              {t('terms.download')}
-            </a>
-            <Button type="button" onClick={() => window.print()}>
-              {t('terms.print')}
-            </Button>
-          </div>
+          </PublishedDate>
           <pre>{document.content[language]}</pre>
+          <DownloadButton
+            as="a"
+            href={`${serverUrl.replace(/\/$/, '')}/terms/${document.version}?download=true&language=${language}`}>
+            {t('terms.download')}
+          </DownloadButton>
         </>
       ) : (
         <p role="status">{t('terms.notPublished')}</p>
