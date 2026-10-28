@@ -59,7 +59,12 @@ describe('Registration', () => {
       ky.create({
         prefix: 'https://bookshop.test/api',
         retry: 0,
-        fetch: sendRegistration,
+        fetch: async (request, options) => {
+          // Finish the multipart upload before Ky cleans up request streams.
+          await request.arrayBuffer()
+
+          return sendRegistration(request, options)
+        },
       }),
     )
   })
