@@ -65,6 +65,6 @@ Open the shop at http://localhost:5173. Keep the client URLs and the backend's `
 
 Use `npm run dev:client` for Vite with an already running backend. To build and preview the frontend, run `npm run build`, then `npm run preview`.
 
-See [Architecture and checkout flow](https://github.com/attila-huszar/bookshop-server/blob/HEAD/docs/architecture.md) for implementation details.
+See [Frontend architecture](docs/architecture.md) for implementation details.
 
 [![Bookshop](https://s3.eu-central-1.amazonaws.com/attila.huszar/portfolio/bookshop.webp)](https://book-shop.pages.dev/)
