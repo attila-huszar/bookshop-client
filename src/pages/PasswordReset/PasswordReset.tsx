@@ -34,7 +34,7 @@ function PasswordResetForm({ token }: { token: string | null }) {
 
   useEffect(() => {
     if (!token) {
-      toast.error(i18n.t('auth.invalidResetToken'))
+      toast.error(i18n.t('auth.invalidResetToken'), { id: 'password-reset' })
       void navigate(ROUTE.HOME, { replace: true })
 
       return

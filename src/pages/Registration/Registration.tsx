@@ -20,40 +20,57 @@ import { ButtonWrapper } from '@/styles/form.styles'
 type RegistrationValues = RegisterRequest & { passwordConfirmation: string }
 
 export function Registration() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [register] = useRegisterMutation()
   const formikRef = useRef<FormikProps<RegistrationValues>>(null)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
     scrollToTop()
-  }, [])
-
-  useEffect(() => {
-    let active = true
 
     void getUserCountry().then(({ country }) => {
       const form = formikRef.current
 
-      if (active && form && !form.touched.country && !form.isSubmitting) {
+      if (
+        lifecycle.active &&
+        form &&
+        !form.touched.country &&
+        !form.isSubmitting
+      ) {
         void form.setFieldValue('country', country, false)
       }
     })
 
     return () => {
-      active = false
+      lifecycle.active = false
     }
   }, [])
 
-  const handleSubmit = async (values: RegisterRequest) => {
+  const handleSubmit = async (values: RegistrationValues) => {
+    const lifecycle = lifecycleRef.current
+
+    if (!lifecycle?.active) {
+      return
+    }
+
     try {
       const { email } = await register(values).unwrap()
-      toast.success(t('auth.registered', { email: email }))
+
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.success(i18n.t('auth.registered', { email }))
       void navigate('/', { replace: true })
     } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.registerError')))
+      if (lifecycle.active) {
+        toast.error(getErrorMessage(error, i18n.t('auth.registerError')))
+      }
     }
   }
 
@@ -67,59 +84,91 @@ export function Registration() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>{t('common.fields.firstName')}</p>
+            <p>
+              <label htmlFor="register-first-name">
+                {t('common.fields.firstName')}
+              </label>
+            </p>
             <FormikField
+              id="register-first-name"
               name="firstName"
               placeholder={t('common.fields.firstName')}
               autoComplete="given-name"
+              disabled={isSubmitting}
               autoFocus
             />
-            <p>{t('common.fields.lastName')}</p>
+            <p>
+              <label htmlFor="register-last-name">
+                {t('common.fields.lastName')}
+              </label>
+            </p>
             <FormikField
+              id="register-last-name"
               name="lastName"
               placeholder={t('common.fields.lastName')}
               autoComplete="family-name"
+              disabled={isSubmitting}
             />
-            <p>{t('common.fields.email')}</p>
+            <p>
+              <label htmlFor="register-email">{t('common.fields.email')}</label>
+            </p>
             <FormikField
+              id="register-email"
               name="email"
               placeholder={t('common.fields.email')}
               type="email"
               inputMode="email"
               autoComplete="email"
+              disabled={isSubmitting}
             />
-            <p>{t('common.fields.password')}</p>
+            <p>
+              <label htmlFor="register-password">
+                {t('common.fields.password')}
+              </label>
+            </p>
             <FormikField
+              id="register-password"
               name="password"
               placeholder={t('common.fields.password')}
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               autoComplete="new-password"
+              disabled={isSubmitting}
             />
-            <p>{t('auth.confirmPassword')}</p>
+            <p>
+              <label htmlFor="register-password-confirmation">
+                {t('auth.confirmPassword')}
+              </label>
+            </p>
             <FormikField
+              id="register-password-confirmation"
               name="passwordConfirmation"
               placeholder={t('auth.confirmPassword')}
               type={showPassword ? 'text' : 'password'}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               autoComplete="new-password"
+              disabled={isSubmitting}
             />
             <p>{t('common.fields.country')}</p>
-            <CountrySelect />
-            <p>{t('auth.uploadAvatar')}</p>
+            <CountrySelect readOnly={isSubmitting} />
+            <p>
+              <label htmlFor="register-avatar">{t('auth.uploadAvatar')}</label>
+            </p>
             <FormikField
+              id="register-avatar"
               name="avatar"
               type="file"
               aria-label={t('auth.uploadAvatar')}
+              disabled={isSubmitting}
             />
             <ButtonWrapper>
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
                 $color="var(--color-outline)"
-                type="reset"
+                type="button"
                 title={t('common.actions.back')}
                 disabled={isSubmitting}
                 onClick={() => void navigate('/')}

@@ -177,12 +177,18 @@ describe('PasswordReset', () => {
     expect(navigate).not.toHaveBeenCalled()
   })
 
-  it('rejects a missing token without requesting verification', () => {
+  it('uses a stable toast ID for a missing token during Strict Mode replay', () => {
     vi.mocked(useLocation).mockReturnValue({ ...location, search: '' })
-    render(<PasswordReset />)
+    render(
+      <StrictMode>
+        <PasswordReset />
+      </StrictMode>,
+    )
 
     expect(postVerifyPasswordReset).not.toHaveBeenCalled()
-    expect(toast.error).toHaveBeenCalledWith(i18n.t('auth.invalidResetToken'))
+    expect(toast.error).toHaveBeenCalledWith(i18n.t('auth.invalidResetToken'), {
+      id: 'password-reset',
+    })
     expect(navigate).toHaveBeenCalledWith('/', { replace: true })
   })
 
