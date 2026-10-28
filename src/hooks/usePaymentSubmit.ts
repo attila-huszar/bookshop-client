@@ -1,4 +1,4 @@
-import { SubmitEvent, useRef, useState } from 'react'
+import { type SubmitEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { shopLanguage } from '@/i18n'
@@ -18,15 +18,7 @@ type SubmitMessage = {
   text: string | null
   type: 'neutral' | 'error'
   error?: ApiError
-}
-
-type UsePaymentSubmitReturn = {
-  handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
-  retryPayment: () => Promise<void>
-  canRetry: boolean
-  message: SubmitMessage
-  setMessage: (message: SubmitMessage) => void
-  isLoading: boolean
+  retryable?: boolean
 }
 
 type PaymentSubmitInput = {
@@ -36,9 +28,7 @@ type PaymentSubmitInput = {
   termsAccepted: boolean
 }
 
-export function usePaymentSubmit(
-  input: PaymentSubmitInput,
-): UsePaymentSubmitReturn {
+export function usePaymentSubmit(input: PaymentSubmitInput) {
   const { t, i18n } = useTranslation()
   const language = shopLanguage(i18n.resolvedLanguage)
   const stripe = useStripe()
@@ -48,38 +38,44 @@ export function usePaymentSubmit(
     text: null,
     type: 'neutral',
   })
-  const [canRetry, setCanRetry] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const submitting = useRef(false)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
   const [acceptTerms] = useAcceptPaymentTermsMutation()
   const { email, paymentId, terms, termsAccepted } = input
 
-  const stopSubmitWithMessage = (text: string): void => {
-    setMessage({ text, type: 'error' })
-  }
+  useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
+
+    return () => {
+      lifecycle.active = false
+    }
+  }, [])
 
   const submitPayment = async (): Promise<void> => {
-    if (submitting.current) {
+    const lifecycle = lifecycleRef.current
+
+    if (submitting.current || !lifecycle?.active) {
       return
     }
 
     setMessage({ text: null, type: 'neutral' })
-    setCanRetry(false)
 
     if (!terms || !termsAccepted) {
-      stopSubmitWithMessage(t('terms.required'))
+      setMessage({ text: t('terms.required'), type: 'error' })
 
       return
     }
 
-    if (!stripe || !elements) {
-      stopSubmitWithMessage(t('checkout.notReady'))
+    if (!stripe || !elements || !paymentId) {
+      setMessage({ text: t('checkout.notReady'), type: 'error' })
 
       return
     }
 
     if (!email) {
-      stopSubmitWithMessage(t('checkout.missingEmail'))
+      setMessage({ text: t('checkout.missingEmail'), type: 'error' })
 
       return
     }
@@ -96,6 +92,10 @@ export function usePaymentSubmit(
         accepted: true,
       }).unwrap()
 
+      if (!lifecycle.active) {
+        return
+      }
+
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -108,52 +108,55 @@ export function usePaymentSubmit(
         redirect: 'if_required',
       })
 
+      if (!lifecycle.active) {
+        return
+      }
+
       if (error) {
         setMessage({
           text: getStripePaymentErrorMessage(error, t),
           type: 'error',
+          retryable: isRetryableStripeError(error.type),
         })
-        setCanRetry(isRetryableStripeError(error.type))
 
         return
       }
 
-      if (paymentIntent) {
-        const searchParams = new URLSearchParams()
-        searchParams.set(
-          checkoutQueryParams.redirectStatus,
-          paymentIntent.status,
-        )
+      const searchParams = new URLSearchParams({
+        [checkoutQueryParams.redirectStatus]: paymentIntent.status,
+      })
 
-        void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
-          replace: true,
-        })
-      }
+      void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
+        replace: true,
+      })
     } catch (error) {
+      if (!lifecycle.active) {
+        return
+      }
+
       const apiError = getApiError(error)
       setMessage({
         text: getErrorMessage(error, t('checkout.submitFailed')),
         type: 'error',
+        retryable: true,
         ...(apiError ? { error: apiError } : {}),
       })
-      setCanRetry(true)
     } finally {
       submitting.current = false
       setIsLoading(false)
     }
   }
 
-  const handleSubmit = async (
-    event: SubmitEvent<HTMLFormElement>,
-  ): Promise<void> => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await submitPayment()
+
+    return submitPayment()
   }
 
   return {
     handleSubmit,
     retryPayment: submitPayment,
-    canRetry,
+    canRetry: message.retryable ?? false,
     message: message.error
       ? {
           ...message,

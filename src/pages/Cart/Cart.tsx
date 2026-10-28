@@ -1,19 +1,15 @@
-import {
-  ChangeEvent,
-  Fragment,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from 'react'
+import { type ChangeEvent, Fragment, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { ROUTE } from '@/routes/route'
-import { cartClear } from '@/store/slices/cart'
-import { paymentCreateReset, paymentSessionReset } from '@/store/slices/payment'
-import { refreshCartItems, restoreCartItems } from '@/store/thunks/cart'
-import { paymentCreate } from '@/store/thunks/payment'
+import {
+  cartClear,
+  cartQuantityAdd,
+  cartQuantityRemove,
+  cartQuantitySet,
+  cartRemove,
+} from '@/store/slices/cart'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
@@ -22,7 +18,7 @@ import { Loading } from '@/components/Loading'
 import { Price } from '@/components/Price'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useCart } from '@/hooks/useCart'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { startCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
 import { enforceMinMax } from '@/helpers/enforceMinMax'
 import { getErrorMessage } from '@/helpers/errors'
@@ -31,7 +27,6 @@ import {
   defaultCurrencySymbol,
   maxItemQuantity,
 } from '@/constants/defaultValues'
-import { paymentIdKey } from '@/constants/keys'
 import type { Cart } from '@/types'
 import {
   BinIcon,
@@ -61,35 +56,32 @@ import {
 
 export function Cart() {
   const { t, i18n: translations } = useTranslation()
-
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const {
     cartItems,
-    removeFromCart,
-    addQuantity,
-    removeQuantity,
-    setQuantity,
+    isLoading: cartIsLoading,
+    isFetching,
+    error: cartError,
+    refetch,
   } = useCart()
-  const cartIsLoading = useAppSelector(
-    (state) => state.cart.currentRequestId !== null,
-  )
-  const cartError = useAppSelector((state) => state.cart.cartError)
   const payment = useAppSelector((state) => state.payment.payment)
-  const paymentIsLoading = useAppSelector(
-    (state) => state.payment.paymentIsLoading,
-  )
-  const paymentCreateError = useAppSelector(
-    (state) => state.payment.paymentCreateError,
-  )
-  const paymentCreateIssueCode = useAppSelector(
-    (state) => state.payment.paymentCreateIssueCode,
-  )
-  const dispatch = useAppDispatch()
-  const [isCheckoutTransitioning, setIsCheckoutTransitioning] = useState(false)
+  const phase = useAppSelector((state) => state.payment.phase)
+  const paymentIsLoading = phase === 'creating'
+  const isCheckoutBusy =
+    paymentIsLoading || phase === 'restoring' || phase === 'canceling'
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const hasHandledPriceConflictRef = useRef(false)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
-  const isCheckoutBusy = paymentIsLoading || isCheckoutTransitioning
+  useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
+    scrollToTop()
+
+    return () => {
+      lifecycle.active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (payment?.paymentToken) {
@@ -105,48 +97,6 @@ export function Cart() {
     }
   }, [isCheckoutBusy])
 
-  const onPriceConflict = useEffectEvent(() => {
-    const cartRequest = cartItems.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-    }))
-    void dispatch(refreshCartItems(cartRequest))
-  })
-
-  useEffect(() => {
-    const isPriceConflict = paymentCreateIssueCode === 'price_conflict'
-
-    if (!isPriceConflict) hasHandledPriceConflictRef.current = false
-    if (paymentCreateError == null) return
-
-    toast.error(
-      typeof paymentCreateError === 'string'
-        ? i18n.t(paymentCreateError, { defaultValue: paymentCreateError })
-        : getErrorMessage(paymentCreateError, i18n.t('checkout.createError')),
-      {
-        id: 'payment-error',
-      },
-    )
-
-    if (isPriceConflict) {
-      if (!hasHandledPriceConflictRef.current) {
-        hasHandledPriceConflictRef.current = true
-        onPriceConflict()
-      }
-    }
-
-    dispatch(paymentCreateReset())
-  }, [paymentCreateError, paymentCreateIssueCode, dispatch])
-
-  useEffect(() => {
-    scrollToTop()
-    void dispatch(restoreCartItems())
-
-    return () => {
-      dispatch(paymentCreateReset())
-    }
-  }, [dispatch])
-
   const price = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
@@ -158,59 +108,53 @@ export function Cart() {
 
   const discount = price - discountPrice
 
-  const handleRemoveQuantity = (item: Cart) => {
-    if (item.quantity > 0) {
-      removeQuantity(item)
-    }
-  }
-
-  const handleAddQuantity = (item: Cart) => {
-    if (item.quantity < maxItemQuantity) {
-      addQuantity(item)
-    }
-  }
-
   const handleSetQuantity = (
     cartItem: Cart,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const newQuantity = enforceMinMax(event.target)
-    setQuantity({ cartItem, newQuantity })
+    dispatch(cartQuantitySet({ cartItem: { id: cartItem.id }, newQuantity }))
   }
 
   const handleCheckout = () => {
-    if (isCheckoutBusy) return
+    const lifecycle = lifecycleRef.current
 
-    if (!cartItems.length) {
-      toast.error(t('cart.empty'), { id: 'cart-empty' })
+    if (isCheckoutBusy || isFetching || !lifecycle?.active) {
       return
     }
 
-    const existingPaymentId = sessionStorageAdapter.get<string>(paymentIdKey)
+    if (!cartItems.length) {
+      toast.error(t('cart.empty'), { id: 'cart-empty' })
 
-    if (existingPaymentId) {
-      void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
-    } else {
-      setIsCheckoutTransitioning(true)
-      const orderRequest = {
+      return
+    }
+
+    void dispatch(
+      startCheckout({
         items: cartItems.map((item) => ({
           id: item.id,
           quantity: item.quantity,
         })),
         expectedTotal: Math.round((discountPrice + Number.EPSILON) * 100) / 100,
-      }
-
-      void dispatch(paymentCreate(orderRequest))
-        .unwrap()
-        .catch(() => {
-          setIsCheckoutTransitioning(false)
-        })
-    }
+      }),
+    ).then(
+      (result) => {
+        if (lifecycle.active && result.type === 'existing') {
+          void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
+        }
+      },
+      (error: unknown) => {
+        if (lifecycle.active) {
+          toast.error(getErrorMessage(error, i18n.t('checkout.createError')), {
+            id: 'payment-error',
+          })
+        }
+      },
+    )
   }
 
   const handleCartClear = () => {
     dispatch(cartClear())
-    dispatch(paymentSessionReset())
   }
 
   const navigateToBooks = () => {
@@ -226,6 +170,9 @@ export function Cart() {
       <StyledCart>
         <h2>{t('cart.title')}</h2>
         <Alert message={t('cart.error')} error={cartError} backButton />
+        <Button onClick={() => void refetch()}>
+          {t('common.actions.refresh')}
+        </Button>
       </StyledCart>
     )
   }
@@ -259,7 +206,7 @@ export function Cart() {
               </Book>
               <Quantity>
                 <IconButton
-                  onClick={() => handleRemoveQuantity(item)}
+                  onClick={() => dispatch(cartQuantityRemove({ id: item.id }))}
                   icon={<MinusIcon />}
                   title={t('cart.decrease')}
                   $size="sm"
@@ -276,7 +223,7 @@ export function Cart() {
                   max={maxItemQuantity}
                 />
                 <IconButton
-                  onClick={() => handleAddQuantity(item)}
+                  onClick={() => dispatch(cartQuantityAdd({ id: item.id }))}
                   icon={<PlusIcon />}
                   title={t('cart.increase')}
                   $size="sm"
@@ -300,7 +247,7 @@ export function Cart() {
               </PriceTotal>
               <RemoveItem>
                 <IconButton
-                  onClick={() => removeFromCart(item)}
+                  onClick={() => dispatch(cartRemove({ id: item.id }))}
                   icon={<BinIcon />}
                   title={t('cart.remove')}
                   $size="sm"
@@ -335,20 +282,23 @@ export function Cart() {
           </div>
         </TotalPrice>
         <ButtonWrapper>
-          <Button onClick={navigateToBooks} disabled={isCheckoutBusy} $inverted>
+          <Button
+            onClick={navigateToBooks}
+            disabled={isCheckoutBusy || isFetching}
+            $inverted>
             {t('common.actions.backToShop')}
           </Button>
           <IconButton
             icon={<BinIcon />}
             onClick={handleCartClear}
-            disabled={isCheckoutBusy}
+            disabled={isCheckoutBusy || isFetching}
             title={t('cart.reset')}
             $color="var(--color-outline)"
             $outline
           />
           <Button
             onClick={handleCheckout}
-            disabled={isCheckoutBusy}
+            disabled={isCheckoutBusy || isFetching}
             $icon={isCheckoutBusy ? <SpinnerIcon /> : <CartIcon />}
             $shadow>
             {isCheckoutBusy ? t('cart.checkingOut') : t('checkout.title')}

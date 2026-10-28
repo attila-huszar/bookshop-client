@@ -1,36 +1,22 @@
-import { paymentSessionReset } from '@/store/slices/payment'
 import { store } from '@/store/store'
-import { paymentCreate } from '@/store/thunks/payment'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
-import { paymentIdKey } from '@/constants/keys'
+import { recoverCheckout, resetCheckout } from '@/services/checkout'
 import { cartLoader } from './cartLoader'
 
+beforeEach(() => {
+  store.dispatch(resetCheckout())
+})
 afterEach(() => {
-  store.dispatch(paymentSessionReset())
-  sessionStorageAdapter.remove(paymentIdKey)
+  store.dispatch(resetCheckout())
 })
 
 describe('cart checkout redirect', () => {
-  it('opens Cart when there is no active checkout', () => {
+  it('opens Cart without an active checkout', () => {
     expect(cartLoader()).toBeUndefined()
   })
 
-  it.each(['stored', 'retrieved'] as const)(
-    'redirects a %s checkout immediately',
-    (session) => {
-      if (session === 'stored') {
-        sessionStorageAdapter.set(paymentIdKey, 'pi_saved')
-      } else {
-        store.dispatch(
-          paymentCreate.fulfilled(
-            { paymentId: 'pi_saved', paymentToken: 'secret', amount: 2000 },
-            'request_saved',
-            { items: [{ id: 7, quantity: 2 }], expectedTotal: 20 },
-          ),
-        )
-      }
+  it('redirects a saved checkout for restoration', () => {
+    store.dispatch(recoverCheckout('pi_saved'))
 
-      expect(cartLoader()?.headers.get('Location')).toBe('/checkout')
-    },
-  )
+    expect(cartLoader()?.headers.get('Location')).toBe('/checkout')
+  })
 })

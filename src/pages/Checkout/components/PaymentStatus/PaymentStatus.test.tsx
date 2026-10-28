@@ -5,7 +5,6 @@ import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cartClear } from '@/store/slices/cart'
-import { paymentSessionReset } from '@/store/slices/payment'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
 import { formatPaymentStatus } from '@/helpers/checkout'
@@ -54,7 +53,6 @@ describe('PaymentStatus', () => {
     render(<PaymentStatus />)
 
     expect(dispatch).toHaveBeenCalledWith(cartClear())
-    expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
     expect(screen.getByText(/Payment successful/)).toBeVisible()
     expect(screen.getByText('✅')).toHaveAttribute('aria-hidden', 'true')
 
@@ -67,7 +65,7 @@ describe('PaymentStatus', () => {
     expect(
       screen.getByRole('button', { name: 'Vissza a boltba' }),
     ).toBeVisible()
-    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(dispatch).toHaveBeenCalledTimes(1)
   })
 
   it('offers a back to cart action after a declined payment', async () => {
@@ -81,7 +79,7 @@ describe('PaymentStatus', () => {
     expect(formatPaymentStatus('requires_payment_method')).toMatch(/^💳 /)
     await userEvent.click(screen.getByRole('button', { name: 'Back to Cart' }))
 
-    expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(expect.any(Function))
     expect(navigate).toHaveBeenCalledWith('/cart', { replace: true })
   })
 
@@ -97,8 +95,7 @@ describe('PaymentStatus', () => {
     )
 
     expect(dispatch).toHaveBeenCalledWith(cartClear())
-    expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
-    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(dispatch).toHaveBeenCalledTimes(1)
   })
 
   it('handles each new successful payment while retaining the result after session cleanup', () => {
@@ -107,11 +104,11 @@ describe('PaymentStatus', () => {
       retry: vi.fn(),
     })
     const { rerender } = render(<PaymentStatus />)
-    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(dispatch).toHaveBeenCalledTimes(1)
 
     vi.mocked(useAppSelector).mockReturnValue(undefined)
     rerender(<PaymentStatus />)
-    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(dispatch).toHaveBeenCalledTimes(1)
     expect(screen.getByText(/Payment successful/)).toBeVisible()
 
     vi.mocked(useAppSelector).mockReturnValue({
@@ -124,14 +121,14 @@ describe('PaymentStatus', () => {
       retry: vi.fn(),
     })
     rerender(<PaymentStatus />)
-    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(dispatch).toHaveBeenCalledTimes(1)
 
     vi.mocked(usePaymentStatus).mockReturnValue({
       status: { type: 'requires_capture' },
       retry: vi.fn(),
     })
     rerender(<PaymentStatus />)
-    expect(dispatch).toHaveBeenCalledTimes(4)
+    expect(dispatch).toHaveBeenCalledTimes(2)
     expect(screen.getByText(/Payment successful/)).toBeVisible()
     expect(screen.getByText('🔒')).toHaveAttribute('aria-hidden', 'true')
     expect(formatPaymentStatus('requires_capture')).toMatch(/^🔒 /)
@@ -145,7 +142,7 @@ describe('PaymentStatus', () => {
     render(<PaymentStatus />)
     await userEvent.click(screen.getByRole('button', { name: 'Back to Shop' }))
 
-    expect(dispatch).toHaveBeenCalledExactlyOnceWith(paymentSessionReset())
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(expect.any(Function))
     expect(navigate.mock.calls[0]?.[0]).toBe('/')
   })
 

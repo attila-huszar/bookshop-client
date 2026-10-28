@@ -1,123 +1,69 @@
-import { replace } from 'react-router'
-import type { LoaderFunctionArgs } from 'react-router'
+import { type LoaderFunctionArgs, replace } from 'react-router'
 import { ROUTE } from '@/routes/route'
-import { paymentSessionReset } from '@/store/slices/payment'
 import { store } from '@/store/store'
-import { paymentRetrieve } from '@/store/thunks/payment'
+import { recoverCheckout, restoreCheckout } from '@/services/checkout'
 import { bootstrapSession } from '@/services/session'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
 import {
   checkoutQueryParams,
   isSuccessPaymentIntentStatus,
-  paymentSessionUnavailableCode,
 } from '@/helpers/checkout'
-import { getErrorCode } from '@/helpers/errors'
-import { paymentIdKey } from '@/constants/keys'
 
 export const checkoutLoader = async ({
   request,
 }: Pick<LoaderFunctionArgs, 'request'>) => {
-  request.signal.throwIfAborted()
+  const { signal } = request
+  signal.throwIfAborted()
 
-  const requestURL = new URL(request.url)
-  let paymentId = sessionStorageAdapter.get<string>(paymentIdKey)
-  const stripeReturnPaymentId = requestURL.searchParams.get(
-    checkoutQueryParams.paymentIntent,
+  const url = new URL(request.url)
+  const params = url.searchParams
+  const paymentId = store.dispatch(
+    recoverCheckout(params.get(checkoutQueryParams.paymentIntent)),
   )
-
-  if (stripeReturnPaymentId && stripeReturnPaymentId !== paymentId) {
-    paymentId = stripeReturnPaymentId
-    sessionStorageAdapter.set(paymentIdKey, stripeReturnPaymentId)
-  }
 
   if (!paymentId) {
     return replace(ROUTE.HOME)
   }
 
-  const hasPaymentIntent = requestURL.searchParams.has(
-    checkoutQueryParams.paymentIntent,
-  )
-  const hasPaymentToken = requestURL.searchParams.has(
-    checkoutQueryParams.paymentToken,
-  )
+  // Strip Stripe return fields before authentication or payment requests.
+  if (
+    params.has(checkoutQueryParams.paymentIntent) ||
+    params.has(checkoutQueryParams.paymentToken)
+  ) {
+    params.delete(checkoutQueryParams.paymentIntent)
+    params.delete(checkoutQueryParams.paymentToken)
 
-  if (hasPaymentIntent || hasPaymentToken) {
-    requestURL.searchParams.delete(checkoutQueryParams.paymentIntent)
-    requestURL.searchParams.delete(checkoutQueryParams.paymentToken)
-
-    const sanitizedSearch = requestURL.searchParams.toString()
-    const sanitizedPath = sanitizedSearch
-      ? `/${ROUTE.CHECKOUT}?${sanitizedSearch}`
-      : `/${ROUTE.CHECKOUT}`
-
-    return replace(sanitizedPath)
+    return replace(`/${ROUTE.CHECKOUT}${url.search}`)
   }
 
-  const isStripeReturn = requestURL.searchParams.has(
-    checkoutQueryParams.redirectStatus,
-  )
-
+  const isStripeReturn = params.has(checkoutQueryParams.redirectStatus)
   await bootstrapSession()
-  request.signal.throwIfAborted()
-
-  if (sessionStorageAdapter.get(paymentIdKey) !== paymentId) {
-    return null
-  }
-
-  const state = store.getState()
-  const currentPayment = state.payment?.payment
-  const hasMatchingPayment =
-    currentPayment?.paymentId === paymentId &&
-    Boolean(currentPayment.paymentToken)
-  const shouldRetrievePayment = !hasMatchingPayment || !isStripeReturn
-
-  if (!shouldRetrievePayment) {
-    return null
-  }
+  signal.throwIfAborted()
 
   try {
-    const retrievedPayment = await store
-      .dispatch(
-        paymentRetrieve(
-          { paymentId, allowSucceeded: true },
-          { signal: request.signal },
-        ),
-      )
-      .unwrap()
+    const result = await store.dispatch(
+      restoreCheckout(paymentId, {
+        signal,
+        reuseExisting: isStripeReturn,
+      }),
+    )
+    signal.throwIfAborted()
 
-    request.signal.throwIfAborted()
-
-    if (sessionStorageAdapter.get(paymentIdKey) !== paymentId) {
-      return null
-    }
-
-    if (
-      !isStripeReturn &&
-      (isSuccessPaymentIntentStatus(retrievedPayment.status) ||
-        retrievedPayment.status === 'processing')
-    ) {
-      requestURL.searchParams.set(
-        checkoutQueryParams.redirectStatus,
-        retrievedPayment.status,
-      )
-
-      return replace(`/${ROUTE.CHECKOUT}?${requestURL.searchParams.toString()}`)
-    }
-
-    return null
-  } catch (error) {
-    request.signal.throwIfAborted()
-
-    if (
-      getErrorCode(error) === paymentSessionUnavailableCode &&
-      sessionStorageAdapter.get(paymentIdKey) === paymentId
-    ) {
-      sessionStorageAdapter.remove(paymentIdKey)
-      store.dispatch(paymentSessionReset())
-
+    if (result.type === 'cleared') {
       return replace(ROUTE.HOME)
     }
 
-    return null
+    if (
+      result.type === 'ready' &&
+      !isStripeReturn &&
+      (isSuccessPaymentIntentStatus(result.status) ||
+        result.status === 'processing')
+    ) {
+      params.set(checkoutQueryParams.redirectStatus, result.status)
+
+      return replace(`/${ROUTE.CHECKOUT}${url.search}`)
+    }
+  } catch {
+    signal.throwIfAborted()
+    // The coordinator retains transient failures for the checkout retry UI.
   }
 }

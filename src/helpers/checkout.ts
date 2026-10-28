@@ -1,20 +1,28 @@
 import { i18n } from '@/i18n'
 import type { TFunction } from 'i18next'
+import { storedCartSchema } from '@/validation/orderSchemas'
+import { cartKey, paymentIdempotencyKey } from '@/constants/keys'
 import type {
   Cart,
+  CartItem,
+  PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentStatusState,
   StripeError,
   StripeErrorType,
 } from '@/types'
+import { localStorageAdapter, sessionStorageAdapter } from './browserStorage'
+
+type StoredPaymentIdempotency = {
+  fingerprint: string
+  clientIdempotencyKey: string
+}
 
 export const checkoutQueryParams = {
   paymentIntent: 'payment_intent',
   paymentToken: 'payment_intent_client_secret',
   redirectStatus: 'redirect_status',
 } as const
-
-export const paymentSessionUnavailableCode = 'session_unavailable'
 
 const successStatuses = [
   'requires_capture',
@@ -44,6 +52,53 @@ const retryableStripeErrorTypes: readonly StripeErrorType[] = [
   'api_error',
   'rate_limit_error',
 ]
+
+/** Restore the saved basket, or start empty if any stored item is invalid. */
+export function readStoredCart(): CartItem[] {
+  try {
+    return storedCartSchema.validateSync(
+      localStorageAdapter.get<unknown>(cartKey),
+    )
+  } catch {
+    return []
+  }
+}
+
+/** Reuse the persisted key for identical retries; changed requests start a new attempt. */
+export function getClientIdempotencyKey(payment: PaymentIntentRequest): string {
+  const fingerprint = JSON.stringify(payment)
+  const stored = sessionStorageAdapter.get<StoredPaymentIdempotency>(
+    paymentIdempotencyKey,
+  )
+
+  if (stored?.fingerprint === fingerprint && stored.clientIdempotencyKey) {
+    return stored.clientIdempotencyKey
+  }
+
+  const clientIdempotencyKey = crypto.randomUUID()
+  sessionStorageAdapter.set(paymentIdempotencyKey, {
+    fingerprint,
+    clientIdempotencyKey,
+  })
+
+  return clientIdempotencyKey
+}
+
+/** Clear only the expected key, preserving a newer attempt's persisted key. */
+export function clearClientIdempotencyKey(clientIdempotencyKey: string): void {
+  const stored = sessionStorageAdapter.get<StoredPaymentIdempotency>(
+    paymentIdempotencyKey,
+  )
+
+  if (stored?.clientIdempotencyKey === clientIdempotencyKey) {
+    resetClientIdempotencyKey()
+  }
+}
+
+/** Forget the attempt when checkout is explicitly reset or canceled. */
+export function resetClientIdempotencyKey(): void {
+  sessionStorageAdapter.remove(paymentIdempotencyKey)
+}
 
 export const calculateTotalAmount = (cartItems: Cart[]): number =>
   cartItems.reduce(

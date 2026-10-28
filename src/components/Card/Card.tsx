@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { booksApi } from '@/store/api/booksApi'
+import { cartAdd } from '@/store/slices/cart'
 import { Button } from '@/components/Button'
 import { Price } from '@/components/Price'
-import { useCart } from '@/hooks/useCart'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { CacheTime } from '@/constants/cacheTimes'
 import { Book } from '@/types'
 import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
@@ -14,17 +15,19 @@ export function Card({ book }: { book: Book }) {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
-  const { cartItems, addToCart } = useCart()
-  const isBookInCart = cartItems.some((item) => item.id === book.id)
+  const isBookInCart = useAppSelector((state) =>
+    state.cart.cartItems.some((item) => item.id === book.id),
+  )
 
   const handleCartAction = () => {
     if (isBookInCart) {
       void navigate(`/${ROUTE.CART}`)
     } else {
-      addToCart(book)
+      dispatch(cartAdd({ id: book.id }))
     }
   }
 

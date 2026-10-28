@@ -1,6 +1,4 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { getApiError } from '@/helpers/errors'
-import type { ApiError } from '@/types/ApiError'
 import { booksApi } from './api/booksApi'
 import { usersApi } from './api/usersApi'
 import type { RootState } from './store'
@@ -18,27 +16,6 @@ export const booksQueryArgs = createSelector(
   }),
 )
 
-const message = (error: unknown): string | ApiError | null => {
-  const apiError = getApiError(error)
-
-  if (apiError) {
-    return apiError
-  }
-
-  return error &&
-    typeof error === 'object' &&
-    'message' in error &&
-    typeof error.message === 'string'
-    ? error.message
-    : null
-}
-
-const isQueryLoading = (query: {
-  isUninitialized: boolean
-  isLoading: boolean
-  data?: unknown
-}) => query.isUninitialized || (query.isLoading && query.data === undefined)
-
 /** Combine errors from the three featured-book queries shown on the homepage. */
 export const homeBooksErrorSelector = createSelector(
   [
@@ -51,11 +28,17 @@ export const homeBooksErrorSelector = createSelector(
 )
 
 export const userSelector = createSelector(
-  [(state: RootState) => state.user, usersApi.endpoints.userProfile.select()],
-  (session, profile) => ({
-    ...session,
-    userData: session.accessToken ? (profile.data ?? null) : null,
-    userIsLoading: Boolean(session.accessToken) && isQueryLoading(profile),
-    userError: session.accessToken ? message(profile.error) : null,
+  [
+    (state: RootState) => state.user.accessToken,
+    usersApi.endpoints.userProfile.select(),
+  ],
+  (accessToken, profile) => ({
+    accessToken,
+    userData: accessToken ? (profile.data ?? null) : null,
+    userIsLoading:
+      Boolean(accessToken) &&
+      (profile.isUninitialized ||
+        (profile.isLoading && profile.data === undefined)),
+    userError: accessToken ? (profile.error ?? null) : null,
   }),
 )

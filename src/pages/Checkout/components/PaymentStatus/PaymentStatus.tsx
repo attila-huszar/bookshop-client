@@ -4,9 +4,9 @@ import { type NavigateOptions, useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
 import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
-import { paymentSessionReset } from '@/store/slices/payment'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
+import { resetCheckout } from '@/services/checkout'
 import {
   isSuccessPaymentIntentStatus,
   paymentStatusEmoji,
@@ -41,11 +41,10 @@ export function PaymentStatus() {
     handledPaymentId.current = paymentId
 
     dispatch(cartClear())
-    dispatch(paymentSessionReset())
   }, [dispatch, isStripeSuccess, paymentId])
 
   const leaveCheckout = (path: string, options?: NavigateOptions) => {
-    dispatch(paymentSessionReset())
+    dispatch(resetCheckout())
     void navigate(path, options)
   }
 

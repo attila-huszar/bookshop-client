@@ -4,13 +4,14 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { ROUTE } from '@/routes/route'
 import { useBookQuery } from '@/store/api/booksApi'
+import { cartAdd } from '@/store/slices/cart'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { Loading } from '@/components/Loading'
 import { Price } from '@/components/Price'
 import { Recommended } from '@/components/Recommended'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
-import { useCart } from '@/hooks/useCart'
 import { scrollToTop } from '@/helpers/scrollToTop'
 import { CacheTime } from '@/constants/cacheTimes'
 import type { Book } from '@/types'
@@ -30,11 +31,11 @@ export function Product() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [searchParams] = useSearchParams()
   const rawId = searchParams.get('id') ?? ''
   const parsedId = /^\d+$/.test(rawId) ? Number(rawId) : NaN
   const id = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null
-  const { cartItems, addToCart } = useCart()
   const { isMobile } = useBreakpoints()
 
   const {
@@ -44,7 +45,9 @@ export function Product() {
   } = useBookQuery(id ?? skipToken, {
     refetchOnMountOrArgChange: CacheTime.FiveMinutes,
   })
-  const isBookInCart = cartItems.some((item) => item.id === book?.id)
+  const isBookInCart = useAppSelector((state) =>
+    state.cart.cartItems.some((item) => item.id === book?.id),
+  )
 
   useEffect(() => {
     scrollToTop()
@@ -54,7 +57,7 @@ export function Product() {
     if (isBookInCart) {
       void navigate(`/${ROUTE.CART}`)
     } else {
-      addToCart(book)
+      dispatch(cartAdd({ id: book.id }))
     }
   }
 

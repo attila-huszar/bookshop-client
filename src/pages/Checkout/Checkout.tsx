@@ -9,12 +9,11 @@ import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Loading } from '@/components/Loading'
-import { useAppSelector } from '@/hooks/redux'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { resetCheckout } from '@/services/checkout'
 import { log } from '@/services/logger'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
 import { checkoutQueryParams } from '@/helpers/checkout'
 import { stripeKey } from '@/constants/envConfig'
-import { paymentIdKey } from '@/constants/keys'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
 import { AddressForm, CheckoutForm } from './components'
@@ -28,14 +27,16 @@ const PaymentStatus = lazy(() =>
 const stripePromise = loadStripe(stripeKey)
 
 function StripeErrorFallback({ error }: FallbackProps) {
+  const dispatch = useAppDispatch()
+
   useEffect(() => {
     log.error('Stripe checkout failed', { error })
-    sessionStorageAdapter.remove(paymentIdKey)
+    dispatch(resetCheckout())
     toast(i18n.t('checkout.missingSession'), {
       icon: '🔄',
       id: 'no-checkout-session',
     })
-  }, [error])
+  }, [dispatch, error])
 
   return <Navigate to={'/'} replace />
 }
@@ -45,13 +46,9 @@ export function Checkout() {
 
   const location = useLocation()
   const { userIsLoading } = useAppSelector(userSelector)
-  const payment = useAppSelector((state) => state.payment.payment)
-  const paymentIsLoading = useAppSelector(
-    (state) => state.payment.paymentIsLoading,
-  )
-  const paymentRetrieveError = useAppSelector(
-    (state) => state.payment.paymentRetrieveError,
-  )
+  const { payment, phase, error } = useAppSelector((state) => state.payment)
+  const paymentIsLoading = phase === 'restoring'
+  const paymentRetrieveError = phase === 'failed' && !payment ? error : null
   const [checkoutPaymentToken] = useState(payment?.paymentToken)
   const ref = useRef<HTMLDialogElement>(null)
 

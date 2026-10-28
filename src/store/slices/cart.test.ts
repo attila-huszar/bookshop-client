@@ -1,117 +1,64 @@
-import { describe, expect, it } from 'vitest'
-import { fetchCartItems } from '@/store/thunks/cart'
-import type { Cart, MinimalCart } from '@/types'
-import { cartClear, cartReducer } from './cart'
+import { maxItemQuantity } from '@/constants/defaultValues'
+import {
+  cartAdd,
+  cartClear,
+  cartQuantityAdd,
+  cartQuantityRemove,
+  cartQuantitySet,
+  cartReducer,
+  cartRemove,
+  cartRestored,
+} from './cart'
 
-const minimalCartArg: MinimalCart[] = [{ id: 1, quantity: 1 }]
+describe('cart intent', () => {
+  it('stores only IDs and quantities even when adding a full book', () => {
+    const book = { id: 1, title: 'Book', price: 10 }
+    const state = cartReducer(undefined, cartAdd(book))
 
-const hydratedCartItems: Cart[] = [
-  {
-    id: 1,
-    title: 'Test Book',
-    price: 20,
-    discount: 0,
-    discountPrice: 20,
-    imgUrl: 'test.jpg',
-    quantity: 1,
-  },
-]
-
-describe('cart slice hydration handling', () => {
-  it('applies hydrate result on fulfilled', () => {
-    const pendingAction = fetchCartItems.pending('request-2', {
-      cartItems: minimalCartArg,
-    })
-    const fulfilledAction = fetchCartItems.fulfilled(
-      hydratedCartItems,
-      'request-2',
-      { cartItems: minimalCartArg },
-    )
-
-    let state = cartReducer(undefined, { type: 'unknown' })
-    state = cartReducer(state, pendingAction)
-    state = cartReducer(state, fulfilledAction)
-
-    expect(state.cartItems).toEqual(hydratedCartItems)
-    expect(state.currentRequestId).toBeNull()
+    expect(state).toEqual({ cartItems: [{ id: 1, quantity: 1 }] })
+    expect(cartReducer(state, cartAdd(book))).toBe(state)
   })
 
-  it('does not set cart error for stale hydration rejection', () => {
-    const pendingAction = fetchCartItems.pending('request-3', {
-      cartItems: minimalCartArg,
-    })
-    const staleRejectedAction = fetchCartItems.rejected(
-      null,
-      'request-3',
-      { cartItems: minimalCartArg },
-      'stale-hydration',
+  it('restores intent and removes or clears items', () => {
+    const state = cartReducer(
+      undefined,
+      cartRestored([
+        { id: 1, quantity: 2 },
+        { id: 2, quantity: 1 },
+      ]),
     )
 
-    let state = cartReducer(undefined, { type: 'unknown' })
-    state = cartReducer(state, pendingAction)
-    state = cartReducer(state, staleRejectedAction)
-
-    expect(state.cartItems).toEqual([])
-    expect(state.cartError).toBeNull()
-    expect(state.currentRequestId).toBeNull()
+    expect(cartReducer(state, cartRemove({ id: 1 })).cartItems).toEqual([
+      { id: 2, quantity: 1 },
+    ])
+    expect(cartReducer(state, cartClear()).cartItems).toEqual([])
   })
 
-  it('ignores stale fulfilled results when a newer request is in flight', () => {
-    const pendingActionA = fetchCartItems.pending('request-a', {
-      cartItems: minimalCartArg,
-    })
-    const pendingActionB = fetchCartItems.pending('request-b', {
-      cartItems: minimalCartArg,
-      force: true,
-    })
-
-    const fulfilledActionA = fetchCartItems.fulfilled(
-      [
-        {
-          ...hydratedCartItems[0]!,
-          title: 'Old Result',
-        },
-      ],
-      'request-a',
-      { cartItems: minimalCartArg },
+  it('increments and decrements within quantity limits', () => {
+    let state = cartReducer(undefined, cartAdd({ id: 1 }))
+    state = cartReducer(state, cartQuantityRemove({ id: 1 }))
+    expect(state.cartItems[0]?.quantity).toBe(1)
+    state = cartReducer(state, cartQuantityAdd({ id: 1 }))
+    expect(state.cartItems[0]?.quantity).toBe(2)
+    state = cartReducer(
+      state,
+      cartQuantitySet({ cartItem: { id: 1 }, newQuantity: maxItemQuantity }),
     )
-    const fulfilledActionB = fetchCartItems.fulfilled(
-      hydratedCartItems,
-      'request-b',
-      { cartItems: minimalCartArg, force: true },
-    )
-
-    let state = cartReducer(undefined, { type: 'unknown' })
-    state = cartReducer(state, pendingActionA)
-    state = cartReducer(state, pendingActionB)
-    state = cartReducer(state, fulfilledActionA)
-
-    expect(state.cartItems).toEqual([])
-    expect(state.currentRequestId).toBe('request-b')
-
-    state = cartReducer(state, fulfilledActionB)
-
-    expect(state.cartItems).toEqual(hydratedCartItems)
-    expect(state.currentRequestId).toBeNull()
+    state = cartReducer(state, cartQuantityAdd({ id: 1 }))
+    expect(state.cartItems[0]?.quantity).toBe(maxItemQuantity)
   })
 
-  it('clears cart immediately with cartClear', () => {
-    const pendingAction = fetchCartItems.pending('request-4', {
-      cartItems: minimalCartArg,
-    })
-    const fulfilledAction = fetchCartItems.fulfilled(
-      hydratedCartItems,
-      'request-4',
-      { cartItems: minimalCartArg },
-    )
+  it.each([0, -1, 1.5, NaN, Infinity, maxItemQuantity + 1])(
+    'ignores invalid quantity %s',
+    (newQuantity) => {
+      const state = cartReducer(undefined, cartAdd({ id: 1 }))
 
-    let state = cartReducer(undefined, { type: 'unknown' })
-    state = cartReducer(state, pendingAction)
-    state = cartReducer(state, fulfilledAction)
-    state = cartReducer(state, cartClear())
-
-    expect(state.cartItems).toEqual([])
-    expect(state.cartError).toBeNull()
-    expect(state.currentRequestId).toBeNull()
-  })
+      expect(
+        cartReducer(
+          state,
+          cartQuantitySet({ cartItem: { id: 1 }, newQuantity }),
+        ),
+      ).toBe(state)
+    },
+  )
 })

@@ -2,19 +2,16 @@ import { HTTPError } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { ordersApi } from '@/store/api/ordersApi'
+import { paymentsApi } from '@/store/api/paymentsApi'
 import { authSessionChanged } from '@/store/slices/user'
 import { store as appStore, createAppStore } from '@/store/store'
 import { expireAuthSession, fetchAuthTokens } from '@/store/thunks/user'
 import { log } from '@/services/logger'
+import type { PaymentIntentRequest } from '@/types'
 import * as privateApi from './authRequest'
 import * as publicApi from './baseRequest'
 import { uploadProductImage } from './cms'
 import { LogLevel, sendLog } from './logs'
-import {
-  deletePaymentIntent,
-  getPaymentIntent,
-  postPaymentIntent,
-} from './payments'
 import { transport } from './transport'
 import {
   postUserLogout,
@@ -400,7 +397,21 @@ describe('request failure logging', () => {
   })
 })
 
-describe('direct Ky workflows', () => {
+function postPaymentIntent(
+  payment: PaymentIntentRequest,
+  clientIdempotencyKey: string,
+) {
+  return store
+    .dispatch(
+      paymentsApi.endpoints.createPayment.initiate({
+        payment,
+        clientIdempotencyKey,
+      }),
+    )
+    .unwrap()
+}
+
+describe('Ky transport through payment endpoints', () => {
   it('clears the session and private cache when checkout rejects the refreshed token', async () => {
     store.dispatch(authSessionChanged('old-token'))
     await store.dispatch(
@@ -425,7 +436,7 @@ describe('direct Ky workflows', () => {
 
     await expect(
       postPaymentIntent(payment, 'same-attempt'),
-    ).rejects.toBeInstanceOf(HTTPError)
+    ).rejects.toMatchObject({ name: 'AbortError' })
 
     expect(store.getState().user.accessToken).toBeNull()
     expect(
@@ -478,7 +489,7 @@ describe('direct Ky workflows', () => {
       })
       accessToken = 'new-login-token'
       respond(jsonResponse({}, 401))
-      expect(await pending).toBeInstanceOf(HTTPError)
+      expect(await pending).toMatchObject({ status: 401 })
 
       expect(accessToken).toBe('new-login-token')
       expect(expire).not.toHaveBeenCalled()
@@ -532,9 +543,13 @@ describe('direct Ky workflows', () => {
         }),
     )
     const controller = new AbortController()
-    const pending = getPaymentIntent('pi_guest', controller.signal).catch(
-      (error: unknown) => error,
+    const request = store.dispatch(
+      paymentsApi.endpoints.payment.initiate('pi_guest', { subscribe: false }),
     )
+    controller.signal.addEventListener('abort', () => request.abort(), {
+      once: true,
+    })
+    const pending = request.unwrap().catch((error: unknown) => error)
     await vi.waitFor(() => expect(capturedRequests).toHaveLength(1))
 
     controller.abort()
@@ -562,8 +577,17 @@ describe('direct Ky workflows', () => {
 
     await postPaymentIntent(payment, 'same-attempt')
     await postPaymentIntent(payment, 'same-attempt')
-    await getPaymentIntent('pi_guest')
-    await deletePaymentIntent('pi_guest')
+    await store
+      .dispatch(
+        paymentsApi.endpoints.payment.initiate('pi_guest', {
+          subscribe: false,
+          forceRefetch: true,
+        }),
+      )
+      .unwrap()
+    await store
+      .dispatch(paymentsApi.endpoints.cancelPayment.initiate('pi_guest'))
+      .unwrap()
     const requests = capturedRequests
 
     expect(requests.map((request) => request.credentials)).toEqual([

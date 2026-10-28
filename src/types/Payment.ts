@@ -1,8 +1,8 @@
-import type { MinimalCart } from './Cart'
+import type { CartItem } from './Cart'
 import type { PaymentIntent, PaymentIntentStatus } from './Stripe'
 
 export type PaymentIntentRequest = {
-  items: MinimalCart[]
+  items: CartItem[]
   expectedTotal: number
 }
 
@@ -23,8 +23,6 @@ export type PaymentSession = {
   paymentToken: string
   amount: number
 }
-
-export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'
 
 export type PaymentStatusState =
   | { type: PaymentIntentStatus | 'checking' }

@@ -1,4 +1,4 @@
-import { SubmitEvent } from 'react'
+import { StrictMode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
@@ -72,6 +72,117 @@ beforeEach(() => {
 })
 
 describe('Payment terms submission', () => {
+  it('opens the payment status page after a non-redirect confirmation', async () => {
+    const navigate = vi.fn()
+    vi.mocked(useNavigate).mockReturnValue(navigate)
+    const { result } = renderHook(() => usePaymentSubmit(input), {
+      wrapper: StrictMode,
+    })
+
+    await act(() => result.current.handleSubmit(submitEvent()))
+
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(
+      '/checkout?redirect_status=succeeded',
+      { replace: true },
+    )
+    expect(result.current.isLoading).toBe(false)
+  })
+
+  it.each(['Stripe', 'Elements', 'payment session'] as const)(
+    'blocks submission when %s is unavailable',
+    async (missing) => {
+      if (missing === 'Stripe') {
+        vi.mocked(useStripe).mockReturnValue(null)
+      }
+
+      if (missing === 'Elements') {
+        vi.mocked(useElements).mockReturnValue(null)
+      }
+
+      const { result } = renderHook(() =>
+        usePaymentSubmit({
+          ...input,
+          paymentId: missing === 'payment session' ? '' : input.paymentId,
+        }),
+      )
+
+      await act(() => result.current.handleSubmit(submitEvent()))
+
+      expect(result.current.message.text).toBe(i18n.t('checkout.notReady'))
+      expect(result.current.isLoading).toBe(false)
+      expect(acceptTerms).not.toHaveBeenCalled()
+      expect(confirmPayment).not.toHaveBeenCalled()
+    },
+  )
+
+  it('requires a receipt email before recording acceptance or confirming payment', async () => {
+    const { result } = renderHook(() =>
+      usePaymentSubmit({ ...input, email: '' }),
+    )
+
+    await act(() => result.current.handleSubmit(submitEvent()))
+
+    expect(result.current.message.text).toBe(i18n.t('checkout.missingEmail'))
+    expect(acceptTerms).not.toHaveBeenCalled()
+    expect(confirmPayment).not.toHaveBeenCalled()
+  })
+
+  it('clears retry availability together with the error message', async () => {
+    confirmPayment.mockResolvedValueOnce({
+      error: { type: 'api_connection_error' },
+    })
+    const { result } = renderHook(() => usePaymentSubmit(input))
+    await act(() => result.current.handleSubmit(submitEvent()))
+    expect(result.current.canRetry).toBe(true)
+
+    act(() => {
+      result.current.setMessage({ text: null, type: 'neutral' })
+    })
+
+    expect(result.current.message.text).toBeNull()
+    expect(result.current.canRetry).toBe(false)
+    expect(confirmPayment).toHaveBeenCalledTimes(1)
+  })
+
+  it.each(['terms acceptance', 'Stripe confirmation'] as const)(
+    'does not continue a pending %s after checkout unmounts',
+    async (stage) => {
+      let finish!: () => void
+      const pending = new Promise<void>((resolve) => {
+        finish = resolve
+      })
+
+      if (stage === 'terms acceptance') {
+        unwrap.mockReturnValueOnce(pending)
+      } else {
+        confirmPayment.mockReturnValueOnce(
+          pending.then(() => ({ paymentIntent: { status: 'succeeded' } })),
+        )
+      }
+
+      const navigate = vi.fn()
+      vi.mocked(useNavigate).mockReturnValue(navigate)
+      const { result, unmount } = renderHook(() => usePaymentSubmit(input))
+      let submitting: Promise<void>
+
+      await act(async () => {
+        submitting = result.current.handleSubmit(submitEvent())
+        await Promise.resolve()
+      })
+      unmount()
+
+      await act(async () => {
+        finish()
+        await submitting
+      })
+
+      expect(confirmPayment).toHaveBeenCalledTimes(
+        stage === 'terms acceptance' ? 0 : 1,
+      )
+      expect(navigate).not.toHaveBeenCalled()
+    },
+  )
+
   it('translates a rejected terms acceptance again without confirming payment or resubmitting', async () => {
     unwrap.mockRejectedValueOnce({ code: 'TERMS_CHANGED' })
     const { result } = renderHook(() => usePaymentSubmit(input))

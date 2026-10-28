@@ -1,122 +1,66 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { fetchCartItems } from '@/store/thunks/cart'
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { itemQuantitySchema } from '@/validation/orderSchemas'
 import { maxItemQuantity } from '@/constants/defaultValues'
-import type { Book, Cart, CartState } from '@/types'
+import type { CartItem, CartState } from '@/types'
 
-const initialState: CartState = {
-  cartItems: [],
-  cartError: null,
-  currentRequestId: null,
-}
+type CartItemId = Pick<CartItem, 'id'>
+
+const initialState: CartState = { cartItems: [] }
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    cartAdd: (state, action: PayloadAction<Book>) => {
-      const { id, title, price, discount, discountPrice, imgUrl } =
-        action.payload
-      const cartItem: Cart = {
-        id,
-        title,
-        price,
-        discount,
-        discountPrice,
-        imgUrl,
-        quantity: 1,
-      }
-
-      const existingIdx = state.cartItems.findIndex(
-        (item) => item.id === action.payload.id,
-      )
-
-      if (existingIdx === -1) {
-        state.cartItems = [...state.cartItems, cartItem]
+    cartRestored: (state, action: PayloadAction<CartItem[]>) => {
+      state.cartItems = action.payload
+    },
+    cartAdd: (state, action: PayloadAction<CartItemId>) => {
+      if (!state.cartItems.some((item) => item.id === action.payload.id)) {
+        state.cartItems.push({ id: action.payload.id, quantity: 1 })
       }
     },
     cartClear: (state) => {
       state.cartItems = []
-      state.cartError = null
-      state.currentRequestId = null
     },
-    cartRemove: (state, action: PayloadAction<Cart>) => {
+    cartRemove: (state, action: PayloadAction<CartItemId>) => {
       state.cartItems = state.cartItems.filter(
         (item) => item.id !== action.payload.id,
       )
     },
-    cartQuantityAdd: (state, action: PayloadAction<Cart>) => {
-      const idx = state.cartItems.findIndex(
-        (item) => item.id === action.payload.id,
-      )
+    cartQuantityAdd: (state, action: PayloadAction<CartItemId>) => {
+      const item = state.cartItems.find((item) => item.id === action.payload.id)
 
-      if (idx !== -1) {
-        const item = state.cartItems[idx]
-        if (item && item.quantity < maxItemQuantity) {
-          item.quantity++
-        }
+      if (item && item.quantity < maxItemQuantity) {
+        item.quantity++
       }
     },
-    cartQuantityRemove: (state, action: PayloadAction<Cart>) => {
-      const idx = state.cartItems.findIndex(
-        (item) => item.id === action.payload.id,
-      )
+    cartQuantityRemove: (state, action: PayloadAction<CartItemId>) => {
+      const item = state.cartItems.find((item) => item.id === action.payload.id)
 
-      if (idx !== -1) {
-        const item = state.cartItems[idx]
-        if (item && item.quantity > 1) {
-          item.quantity--
-        }
+      if (item && item.quantity > 1) {
+        item.quantity--
       }
     },
     cartQuantitySet: (
       state,
-      action: PayloadAction<{ cartItem: Cart; newQuantity: number }>,
+      action: PayloadAction<{ cartItem: CartItemId; newQuantity: number }>,
     ) => {
-      const idx = state.cartItems.findIndex(
-        (item) => item.id === action.payload.cartItem.id,
-      )
+      const { cartItem, newQuantity } = action.payload
+      const item = state.cartItems.find((item) => item.id === cartItem.id)
 
       if (
-        idx !== -1 &&
-        action.payload.newQuantity >= 1 &&
-        action.payload.newQuantity <= maxItemQuantity
+        item &&
+        itemQuantitySchema.isValidSync(newQuantity, { strict: true })
       ) {
-        const item = state.cartItems[idx]
-        if (item) {
-          item.quantity = action.payload.newQuantity
-        }
+        item.quantity = newQuantity
       }
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchCartItems.pending, (state, action) => {
-        state.cartError = null
-        state.currentRequestId = action.meta.requestId
-      })
-      .addCase(fetchCartItems.fulfilled, (state, action) => {
-        if (action.meta.requestId !== state.currentRequestId) {
-          return
-        }
-
-        state.cartItems = action.payload
-        state.currentRequestId = null
-      })
-      .addCase(fetchCartItems.rejected, (state, action) => {
-        if (action.meta.requestId !== state.currentRequestId) {
-          return
-        }
-
-        if (action.payload !== 'stale-hydration') {
-          state.cartError = action.error.message ?? 'cart.error'
-        }
-        state.currentRequestId = null
-      })
   },
 })
 
 export const cartReducer = cartSlice.reducer
 export const {
+  cartRestored,
   cartAdd,
   cartRemove,
   cartQuantityAdd,

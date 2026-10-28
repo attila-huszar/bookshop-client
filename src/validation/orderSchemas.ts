@@ -9,10 +9,17 @@ import {
 } from './userSchemas'
 import './locale'
 
+export const itemQuantitySchema = Yup.number()
+  .integer(() => i18n.t('validation.integer'))
+  .positive(() => i18n.t('validation.positive'))
+  .max(maxItemQuantity)
+  .required(() => i18n.t('validation.required'))
+
 export const orderItemSchema = Yup.object().shape({
   id: Yup.number()
     .integer()
     .positive()
+    .max(Number.MAX_SAFE_INTEGER)
     .required(() => i18n.t('validation.required')),
   title: Yup.string().required(() => i18n.t('validation.required')),
   author: Yup.string().nullable(),
@@ -23,12 +30,13 @@ export const orderItemSchema = Yup.object().shape({
     .min(0, () => i18n.t('validation.minimum', { min: '0%' }))
     .max(100, () => i18n.t('validation.maximum', { max: '100%' }))
     .required(() => i18n.t('validation.required')),
-  quantity: Yup.number()
-    .integer(() => i18n.t('validation.integer'))
-    .positive(() => i18n.t('validation.positive'))
-    .max(maxItemQuantity)
-    .required(() => i18n.t('validation.required')),
+  quantity: itemQuantitySchema,
 })
+
+export const storedCartSchema = Yup.array()
+  .of(orderItemSchema.pick(['id', 'quantity']).exact().required())
+  .required()
+  .strict()
 
 export const orderSchema = Yup.object().shape({
   firstName: nameSchema.notRequired(),

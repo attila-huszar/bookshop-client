@@ -1,10 +1,9 @@
-import { i18n } from '@/i18n'
 import type { BaseQueryApi } from '@reduxjs/toolkit/query'
 import { createApi } from '@reduxjs/toolkit/query/react'
-import { HTTPError, type Options } from 'ky'
+import { isHTTPError, type Options } from 'ky'
 import { authRequest } from '@/api/authRequest'
 import { baseRequest } from '@/api/baseRequest'
-import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { getApiError } from '@/helpers/errors'
 import { HttpErrorCode } from '@/types/ApiError'
 
 type QueryArgs = Options & {
@@ -27,10 +26,7 @@ const baseQuery = async (args: QueryArgs, { signal }: BaseQueryApi) => {
     return {
       error: {
         ...(getApiError(error) ?? { code: HttpErrorCode.UnknownResponse }),
-        message: getErrorMessage(error, i18n.t('common.requestFailed')),
-        ...(error instanceof HTTPError
-          ? { status: error.response.status }
-          : {}),
+        ...(isHTTPError(error) ? { status: error.response.status } : {}),
       },
     }
   }
@@ -40,7 +36,6 @@ const baseQuery = async (args: QueryArgs, { signal }: BaseQueryApi) => {
 export const bookshopApi = createApi({
   reducerPath: 'bookshopApi',
   baseQuery,
-
   tagTypes: [
     'Book',
     'Author',
@@ -51,9 +46,7 @@ export const bookshopApi = createApi({
     'CheckoutTerms',
     'TermsDocument',
   ],
-
   refetchOnFocus: true,
   refetchOnReconnect: true,
-
   endpoints: () => ({}),
 })

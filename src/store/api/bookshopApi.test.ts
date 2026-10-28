@@ -536,7 +536,6 @@ describe('server-data cache', () => {
     )
     expect(booksApi.endpoints.book.select(7)(store.getState()).error).toEqual({
       code: 'UNKNOWN_API_ERROR',
-      message: 'Book unavailable',
     })
   })
 })
@@ -718,8 +717,11 @@ describe('user profile cache', () => {
     await expect(mutation.unwrap()).rejects.toEqual({
       status: 400,
       code: 'CURRENT_PASSWORD_INCORRECT',
-      message: 'Your current password is incorrect.',
     })
+    const result = await mutation
+    expect(getErrorMessage(result.error, 'Fallback')).toBe(
+      'Your current password is incorrect.',
+    )
     const request = capturedRequests[0]!
     expect(new URL(request.url).pathname).toBe('/api/' + PATH.users.profile)
     expect(request.method).toBe('PATCH')
@@ -727,7 +729,7 @@ describe('user profile cache', () => {
     mutation.reset()
   })
 
-  it('provides a fallback for failures without an error message', async () => {
+  it('leaves fallback wording to the UI for failures without an error message', async () => {
     vi.mocked(privateApi.authRequest).mockRejectedValue(undefined)
     const mutation = store.dispatch(
       usersApi.endpoints.updateUserProfile.initiate(fields),
@@ -735,8 +737,11 @@ describe('user profile cache', () => {
 
     await expect(mutation.unwrap()).rejects.toEqual({
       code: 'UNKNOWN_API_ERROR',
-      message: 'Request failed',
     })
+    const result = await mutation
+    expect(getErrorMessage(result.error, i18n.t('common.requestFailed'))).toBe(
+      'Request failed',
+    )
     mutation.reset()
   })
 })
@@ -811,7 +816,7 @@ describe('Ky adapter', () => {
       booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
-    expect(result.error).toMatchObject({ ...failure, status: 400 })
+    expect(result.error).toEqual({ ...failure, status: 400 })
     expect(getErrorMessage(result.error, 'Fallback')).toBe(
       'Email: Invalid Email',
     )
@@ -958,7 +963,6 @@ describe('Ky adapter', () => {
 
     expect(result.error).toEqual({
       code: 'UNKNOWN_API_ERROR',
-      message: 'Session expired',
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -1077,18 +1081,16 @@ describe('Ky adapter', () => {
       booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
-    expect(malformed.error).toMatchObject({
+    expect(malformed.error).toEqual({
       code: 'UNKNOWN_API_ERROR',
-      message: i18n.t('common.requestFailed'),
     })
     fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
     const offline = await store.dispatch(
       booksApi.endpoints.book.initiate(8, { subscribe: false }),
     )
 
-    expect(offline.error).toMatchObject({
+    expect(offline.error).toEqual({
       code: 'UNKNOWN_API_ERROR',
-      message: i18n.t('common.requestFailed'),
     })
   })
 })

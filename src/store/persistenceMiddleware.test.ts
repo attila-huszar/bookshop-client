@@ -1,120 +1,86 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as usersApi from '@/api/users'
+import { recoverCheckout, resetCheckout } from '@/services/checkout'
 import {
   localStorageAdapter,
   sessionStorageAdapter,
 } from '@/helpers/browserStorage'
+import { getClientIdempotencyKey } from '@/helpers/checkout'
 import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
-import { cartAdd, cartClear } from './slices/cart'
-import { paymentSessionReset } from './slices/payment'
+import {
+  cartAdd,
+  cartClear,
+  cartQuantityAdd,
+  cartRestored,
+} from './slices/cart'
+import { checkoutReady } from './slices/payment'
 import { createAppStore } from './store'
-import { paymentCreate } from './thunks/payment'
 import { logout } from './thunks/user'
-
-const book = {
-  id: 1,
-  title: 'Book',
-  author: 'Author',
-  genre: 'Fiction',
-  imgUrl: '',
-  description: '',
-  publishYear: 2024,
-  rating: 5,
-  price: 10,
-  discount: 0,
-  discountPrice: 10,
-  topSellers: false,
-  newRelease: false,
-}
 
 afterEach(() => {
   vi.restoreAllMocks()
-  sessionStorageAdapter.remove(paymentIdKey)
-  sessionStorageAdapter.remove(paymentIdempotencyKey)
-  localStorageAdapter.remove(cartKey)
+  sessionStorage.clear()
+  localStorage.clear()
 })
 
-describe('persistence middleware', () => {
-  it('persists only cart intent and safe checkout identifiers', () => {
-    const store = createAppStore()
-    store.dispatch(cartAdd(book))
-    expect(localStorageAdapter.get(cartKey)).toEqual([{ id: 1, quantity: 1 }])
+function readyCheckout(store: ReturnType<typeof createAppStore>) {
+  store.dispatch(recoverCheckout('pi_saved'))
+  store.dispatch(
+    checkoutReady({
+      paymentId: 'pi_saved',
+      paymentToken: 'secret',
+      amount: 1000,
+    }),
+  )
+}
 
-    store.dispatch(
-      paymentCreate.fulfilled(
-        { paymentId: 'pi_safe', paymentToken: 'private-secret', amount: 1000 },
-        'request_safe',
-        { items: [{ id: 1, quantity: 1 }], expectedTotal: 10 },
-      ),
-    )
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_safe')
-    expect(Object.values(sessionStorage).join('')).not.toContain(
-      'private-secret',
-    )
+describe('cart persistence', () => {
+  it('persists only intent and clears checkout when the basket changes', () => {
+    const store = createAppStore()
+    const book = { id: 1, title: 'Book', price: 10 }
+    store.dispatch(cartAdd(book))
+    readyCheckout(store)
+
+    expect(localStorageAdapter.get(cartKey)).toEqual([{ id: 1, quantity: 1 }])
+    expect(Object.values(sessionStorage).join('')).not.toContain('secret')
+
+    store.dispatch(cartQuantityAdd({ id: 1 }))
+
+    expect(localStorageAdapter.get(cartKey)).toEqual([{ id: 1, quantity: 2 }])
+    expect(store.getState().payment.phase).toBe('idle')
+    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
 
     store.dispatch(cartClear())
     expect(localStorageAdapter.get(cartKey)).toBeNull()
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
   })
 
-  it('preserves a checkout for a cart action that changes no items', () => {
+  it('keeps checkout for unchanged intent and startup restoration', () => {
     const store = createAppStore()
-    store.dispatch(cartAdd(book))
-    store.dispatch(
-      paymentCreate.fulfilled(
-        { paymentId: 'pi_same', paymentToken: 'secret', amount: 1000 },
-        'request_same',
-        { items: [{ id: 1, quantity: 1 }], expectedTotal: 10 },
-      ),
-    )
-    store.dispatch(cartAdd(book))
+    store.dispatch(cartAdd({ id: 1 }))
+    readyCheckout(store)
+    store.dispatch(cartAdd({ id: 1 }))
+    store.dispatch(cartRestored([{ id: 1, quantity: 1 }]))
 
-    expect(store.getState().payment.payment?.paymentId).toBe('pi_same')
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_same')
+    expect(store.getState().payment.payment?.paymentId).toBe('pi_saved')
+    expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
   })
 
-  it('discards the idempotency key when checkout resets for a fresh attempt', () => {
+  it('clears the retry key when an attempt is reset', () => {
     const store = createAppStore()
-    sessionStorageAdapter.set(paymentIdempotencyKey, {
-      fingerprint: 'old-request',
-      clientIdempotencyKey: 'old-attempt',
+    getClientIdempotencyKey({
+      items: [{ id: 1, quantity: 1 }],
+      expectedTotal: 10,
     })
-
-    store.dispatch(paymentSessionReset())
+    store.dispatch(resetCheckout())
 
     expect(sessionStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
   })
 
-  it('resets the active checkout when a cart item changes', async () => {
+  it('clears checkout after logout succeeds', async () => {
     const store = createAppStore()
-    store.dispatch(
-      paymentCreate.fulfilled(
-        { paymentId: 'pi_old', paymentToken: 'secret', amount: 1000 },
-        'request_1',
-        { items: [{ id: 1, quantity: 1 }], expectedTotal: 10 },
-      ),
-    )
-
-    store.dispatch(cartAdd(book))
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(store.getState().payment.payment).toBeNull()
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
-  })
-
-  it('clears the active checkout after logout succeeds', async () => {
-    const store = createAppStore()
-    store.dispatch(
-      paymentCreate.fulfilled(
-        { paymentId: 'pi_old', paymentToken: 'secret', amount: 1000 },
-        'request_2',
-        { items: [{ id: 1, quantity: 1 }], expectedTotal: 10 },
-      ),
-    )
-
+    readyCheckout(store)
     vi.spyOn(usersApi, 'postUserLogout').mockResolvedValue({ success: true })
+
     await store.dispatch(logout()).unwrap()
-    await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(store.getState().payment.payment).toBeNull()
     expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()

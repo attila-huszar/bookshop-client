@@ -4,9 +4,7 @@ import { ROUTE } from '@/routes/route'
 import { Button, IconButton } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
-import { paymentIdKey } from '@/constants/keys'
-import type { Cart } from '@/types'
+import { getCheckoutPaymentId } from '@/services/checkout'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 
@@ -18,13 +16,10 @@ export function BasketButton() {
   const { isMobile } = useBreakpoints()
   const navigate = useNavigate()
 
-  const storedPayment = sessionStorageAdapter.get(paymentIdKey)
+  const storedPayment = getCheckoutPaymentId()
   const isCheckingOut = !!(payment ?? storedPayment)
 
-  const calculateCartQuantity = (items: Cart[]): number =>
-    items.reduce((sum, item) => sum + item.quantity, 0)
-
-  const cartCount = calculateCartQuantity(cartItems)
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
   const handleCartClick = () => {
     void navigate(`/${ROUTE.CART}`)

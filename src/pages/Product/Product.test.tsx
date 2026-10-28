@@ -1,12 +1,16 @@
+import { Provider } from 'react-redux'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { useBookQuery } from '@/store/api/booksApi'
-import { useCart } from '@/hooks/useCart'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { createAppStore } from '@/store/store'
 import { Product } from './Product'
 
 let router: ReturnType<typeof createMemoryRouter> | undefined
+let store: ReturnType<typeof createAppStore>
 
 const renderProduct = (path: string) => {
   router = createMemoryRouter(
@@ -20,26 +24,24 @@ const renderProduct = (path: string) => {
     { initialEntries: [path] },
   )
 
-  return render(<RouterProvider router={router} />)
+  return render(
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>,
+  )
 }
 
 afterEach(() => {
   router?.dispose()
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  localStorage.clear()
+  sessionStorage.clear()
 })
-
-vi.mock('@/hooks/useCart', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/hooks/useCart')>()),
-  useCart: vi.fn(),
-}))
 
 vi.mock('@/components/Price', () => ({
   Price: () => <div>Price</div>,
-}))
-
-vi.mock('@/components/Button', () => ({
-  Button: ({ children }: { children: React.ReactNode }) => (
-    <button>{children}</button>
-  ),
 }))
 
 vi.mock('@/components/Recommended', () => ({
@@ -63,13 +65,10 @@ describe('Product Page', () => {
   }
 
   beforeEach(() => {
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: [],
-      addToCart: vi.fn(),
-    } as unknown as ReturnType<typeof useCart>)
+    store = createAppStore()
   })
 
-  it('should render book details', async () => {
+  it('renders book details and adds the book to the basket', async () => {
     vi.mocked(useBookQuery).mockReturnValue({
       currentData: mockBook,
       isFetching: true,
@@ -80,6 +79,15 @@ describe('Product Page', () => {
 
     expect(await screen.findByText('Test Book')).toBeInTheDocument()
     expect(screen.getByText('Test description')).toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /add to basket/i }),
+    )
+
+    expect(store.getState().cart.cartItems).toEqual([{ id: 1, quantity: 1 }])
+    expect(
+      screen.getByRole('button', { name: /view in basket/i }),
+    ).toBeVisible()
   })
 
   it('shows loading for a new book without displaying the previous query result', async () => {

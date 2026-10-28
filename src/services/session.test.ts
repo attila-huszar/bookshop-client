@@ -86,4 +86,39 @@ describe('session bootstrap', () => {
 
     expect(dispatch).toHaveBeenCalledTimes(2)
   })
+
+  it('stops refreshing after four unsuccessful guest attempts', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const { bootstrapSession, dispatch } = await setup()
+    const startedAt = Date.now()
+
+    for (const elapsed of [0, 1_000, 3_000, 7_000]) {
+      vi.setSystemTime(startedAt + elapsed)
+      await bootstrapSession()
+    }
+
+    vi.setSystemTime(startedAt + 60_000)
+    await bootstrapSession()
+
+    expect(dispatch).toHaveBeenCalledTimes(4)
+  })
+
+  it('resets guest backoff when a cookie refresh establishes the session', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const { bootstrapSession, user, dispatch } = await setup()
+    await bootstrapSession()
+
+    vi.setSystemTime(Date.now() + 1_000)
+    dispatch.mockImplementationOnce(() => {
+      user.accessToken = 'restored-access-token'
+
+      return Promise.resolve()
+    })
+    await bootstrapSession()
+
+    user.accessToken = null
+    await bootstrapSession()
+
+    expect(dispatch).toHaveBeenCalledTimes(3)
+  })
 })

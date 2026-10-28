@@ -1,9 +1,7 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import {
-  localStorageAdapter,
-  sessionStorageAdapter,
-} from '@/helpers/browserStorage'
-import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
+import { resetCheckout } from '@/services/checkout'
+import { localStorageAdapter } from '@/helpers/browserStorage'
+import { cartKey } from '@/constants/keys'
 import {
   cartAdd,
   cartClear,
@@ -12,12 +10,9 @@ import {
   cartQuantitySet,
   cartRemove,
 } from './slices/cart'
-import { paymentSessionReset } from './slices/payment'
 import type { AppDispatch, RootState } from './store'
-import { paymentCancel, paymentCreate } from './thunks/payment'
 
 export const persistenceMiddleware = createListenerMiddleware()
-
 const startListening = persistenceMiddleware.startListening.withTypes<
   RootState,
   AppDispatch
@@ -33,40 +28,18 @@ startListening({
     cartClear,
   ),
   effect: (_action, api) => {
-    const previousCart = api.getOriginalState().cart.cartItems
     const cartItems = api.getState().cart.cartItems
 
-    if (previousCart === cartItems) {
+    if (api.getOriginalState().cart.cartItems === cartItems) {
       return
     }
 
-    // A changed basket ends the persisted checkout attempt.
-    api.dispatch(paymentSessionReset())
+    api.dispatch(resetCheckout())
 
-    if (cartItems.length === 0) {
+    if (cartItems.length) {
+      localStorageAdapter.set(cartKey, cartItems)
+    } else {
       localStorageAdapter.remove(cartKey)
-
-      return
     }
-
-    localStorageAdapter.set(
-      cartKey,
-      cartItems.map((item) => ({ id: item.id, quantity: item.quantity })),
-    )
-  },
-})
-
-startListening({
-  actionCreator: paymentCreate.fulfilled,
-  effect: (action) => {
-    sessionStorageAdapter.set(paymentIdKey, action.payload.paymentId)
-  },
-})
-
-startListening({
-  matcher: isAnyOf(paymentSessionReset, paymentCancel.fulfilled),
-  effect: () => {
-    sessionStorageAdapter.remove(paymentIdKey)
-    sessionStorageAdapter.remove(paymentIdempotencyKey)
   },
 })

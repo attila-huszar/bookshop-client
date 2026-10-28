@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { postUserLogin, postUserLogout, retrieveAuthTokens } from '@/api/users'
+import { resetCheckout } from '@/services/checkout'
 import type { LoginRequest, LoginResponse } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
-import { paymentSessionReset } from '../slices/payment'
 import { authSessionChanged } from '../slices/user'
 import type { AppDispatch, RootState } from '../store'
 
@@ -75,7 +75,7 @@ export const logout = createAsyncThunk<{ success: boolean }, void>(
     const response = await postUserLogout()
     dispatch(authSessionChanged(null))
     dispatch(bookshopApi.util.resetApiState())
-    dispatch(paymentSessionReset())
+    dispatch(resetCheckout())
 
     return response
   },

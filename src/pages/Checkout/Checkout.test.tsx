@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
+import { checkoutReady } from '@/store/slices/payment'
 import { authSessionChanged } from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
-import { paymentCreate } from '@/store/thunks/payment'
 import { UserRole } from '@/types'
 import { Checkout } from './Checkout'
 
@@ -26,11 +26,11 @@ let store: ReturnType<typeof createAppStore>
 beforeEach(() => {
   store = createAppStore()
   store.dispatch(
-    paymentCreate.fulfilled(
-      { paymentId: 'pi_saved', paymentToken: 'secret', amount: 2000 },
-      'request_saved',
-      { items: [{ id: 7, quantity: 2 }], expectedTotal: 20 },
-    ),
+    checkoutReady({
+      paymentId: 'pi_saved',
+      paymentToken: 'secret',
+      amount: 2000,
+    }),
   )
 })
 

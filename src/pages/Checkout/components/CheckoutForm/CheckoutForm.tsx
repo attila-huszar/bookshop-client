@@ -11,11 +11,10 @@ import {
 import { ROUTE } from '@/routes/route'
 import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
-import { paymentSessionReset } from '@/store/slices/payment'
-import { paymentCancel } from '@/store/thunks/payment'
 import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
+import { cancelCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { defaultCurrency } from '@/constants/defaultValues'
@@ -106,9 +105,11 @@ export function CheckoutForm() {
     setIsCanceling(true)
 
     try {
-      await dispatch(paymentCancel({ paymentId })).unwrap()
-      dispatch(paymentSessionReset())
-      void navigate(`/${ROUTE.CART}`, { replace: true })
+      const result = await dispatch(cancelCheckout(paymentId))
+
+      if (result.type === 'cleared') {
+        void navigate(`/${ROUTE.CART}`, { replace: true })
+      }
     } catch (error) {
       const errorMessage = getErrorMessage(error, t('checkout.cancelError'))
 
@@ -258,7 +259,7 @@ export function CheckoutForm() {
           )}
         </span>
       </button>
-      {canRetry && message && (
+      {canRetry && (
         <button
           type="button"
           onClick={() => void retryPayment()}
