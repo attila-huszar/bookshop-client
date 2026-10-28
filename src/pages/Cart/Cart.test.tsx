@@ -62,6 +62,7 @@ const mockCartState: CartState = {
 const mockPaymentState: PaymentState = {
   payment: null,
   paymentIsLoading: false,
+  paymentRequestId: null,
   paymentCreateError: null,
   paymentCreateIssueCode: null,
   paymentRetrieveError: null,

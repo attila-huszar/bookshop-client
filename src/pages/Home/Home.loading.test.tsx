@@ -4,7 +4,9 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { newsApi } from '@/store/api/newsApi'
 import { booksQueryArgs } from '@/store/selectors'
 import { createAppStore } from '@/store/store'
 import { Recommended } from '@/components/Recommended'
@@ -124,7 +126,7 @@ describe('homepage book errors', () => {
         }),
       )
     await store.dispatch(
-      bookshopApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
+      booksApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
         subscribe: false,
       }),
     )
@@ -132,9 +134,9 @@ describe('homepage book errors', () => {
     renderHome()
 
     await waitFor(() => {
-      expect(
-        bookshopApi.endpoints.news.select()(store.getState()).isSuccess,
-      ).toBe(true)
+      expect(newsApi.endpoints.news.select()(store.getState()).isSuccess).toBe(
+        true,
+      )
     })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(publicApi.baseRequest).toHaveBeenCalledTimes(5)

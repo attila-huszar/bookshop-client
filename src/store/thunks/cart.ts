@@ -4,7 +4,7 @@ import type { AppDispatch, RootState } from '@/store/store'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey } from '@/constants/keys'
 import type { Cart, MinimalCart } from '@/types'
-import { bookshopApi } from '../api/bookshopApi'
+import { booksApi } from '../api/booksApi'
 
 const staleHydrationRejectValue = 'stale-hydration'
 
@@ -38,7 +38,7 @@ export const fetchCartItems = createAsyncThunk<
   async ({ cartItems, force = false }, { dispatch, rejectWithValue }) => {
     const promises = cartItems.map(async (item) => {
       const book = await dispatch(
-        bookshopApi.endpoints.book.initiate(item.id, {
+        booksApi.endpoints.book.initiate(item.id, {
           subscribe: false,
           forceRefetch: force,
         }),

@@ -6,6 +6,7 @@ import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { booksQueryArgs } from '@/store/selectors'
 import { applyBooksFilters } from '@/store/slices/books'
@@ -23,7 +24,7 @@ describe('catalogue query subscriptions', () => {
   beforeEach(async () => {
     store = createAppStore()
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+      booksApi.util.upsertQueryData('searchOptions', undefined, {
         genre: ['Fiction', 'Drama'],
         price: [0, 100],
         publishYear: [1900, 2024],
@@ -120,11 +121,11 @@ describe('catalogue query subscriptions', () => {
     expect(await screen.findByText('Cached book')).toBeInTheDocument()
 
     let refresh!: ReturnType<
-      ReturnType<typeof bookshopApi.endpoints.books.initiate>
+      ReturnType<typeof booksApi.endpoints.books.initiate>
     >
     act(() => {
       refresh = store.dispatch(
-        bookshopApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
+        booksApi.endpoints.books.initiate(booksQueryArgs(store.getState()), {
           subscribe: false,
           forceRefetch: true,
         }),
@@ -248,7 +249,7 @@ describe('catalogue query subscriptions', () => {
         }),
       )
     await store.dispatch(
-      bookshopApi.endpoints.booksByProperty.initiate('recommended', {
+      booksApi.endpoints.booksByProperty.initiate('recommended', {
         subscribe: false,
       }),
     )

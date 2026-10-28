@@ -10,17 +10,7 @@ import { Home } from '@/pages/Home/Home'
 import { Layout } from '@/pages/Layout/Layout'
 import { Alert } from '@/components/Alert'
 import { Loading } from '@/components/Loading'
-import {
-  appLoader,
-  authLoader,
-  cartLoader,
-  checkoutLoader,
-  cmsLoader,
-  landingPageLoader,
-  ordersLoader,
-  productLoader,
-  shopLoader,
-} from './loaders'
+import { appLoader, cartLoader, checkoutLoader } from './loaders'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { ROUTE } from './route'
@@ -106,17 +96,14 @@ const routes: RouteObject[] = [
       {
         index: true,
         element: <Home />,
-        loader: landingPageLoader,
       },
       {
         path: ROUTE.BOOKS,
         element: <Products />,
-        loader: shopLoader,
       },
       {
         path: ROUTE.BOOK,
         element: <Product />,
-        loader: productLoader,
       },
       {
         path: ROUTE.CART,
@@ -141,7 +128,6 @@ const routes: RouteObject[] = [
       },
       {
         element: <ProtectedRoute />,
-        loader: () => authLoader({ loginRequired: true }),
         children: [
           {
             path: ROUTE.ACCOUNT,
@@ -150,7 +136,6 @@ const routes: RouteObject[] = [
           {
             path: ROUTE.ORDERS,
             element: <Orders />,
-            loader: ordersLoader,
           },
         ],
       },
@@ -171,7 +156,6 @@ const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute adminRequired />,
-    loader: () => authLoader({ adminRequired: true }),
     children: [
       {
         path: `${ROUTE.CMS}/*`,
@@ -184,22 +168,18 @@ const routes: RouteObject[] = [
           {
             path: 'orders',
             element: <CMSOrders />,
-            loader: ({ request }) => cmsLoader('orders', request),
           },
           {
             path: 'books',
             element: <CMSBooks />,
-            loader: ({ request }) => cmsLoader('books', request),
           },
           {
             path: 'authors',
             element: <CMSAuthors />,
-            loader: ({ request }) => cmsLoader('authors', request),
           },
           {
             path: 'users',
             element: <CMSUsers />,
-            loader: ({ request }) => cmsLoader('users', request),
           },
           {
             path: '*',
@@ -214,6 +194,7 @@ const routes: RouteObject[] = [
 const router = createBrowserRouter([
   {
     loader: appLoader,
+    shouldRevalidate: () => false,
     errorElement: <Alert fullScreen />,
     hydrateFallbackElement: <></>,
     children: routes,

@@ -1,105 +1,125 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { vi } from 'vitest'
-import {
-  decrementBooksCurrentPage,
-  incrementBooksCurrentPage,
-  setBooksCurrentPage,
-} from '@/store/slices/books'
+import ky from 'ky'
+import * as publicApi from '@/api/baseRequest'
+import { useBooksQuery } from '@/store/api/booksApi'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { booksQueryArgs } from '@/store/selectors'
+import { applyBooksFilters, setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
-import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useAppSelector } from '@/hooks/redux'
+import { CacheTime } from '@/constants/cacheTimes'
 import { Pagination } from './Pagination'
 
-vi.mock('@/hooks/redux', () => ({
-  useAppDispatch: vi.fn(),
-  useAppSelector: vi.fn(),
-}))
+let store: ReturnType<typeof createAppStore>
+
+beforeEach(() => {
+  store = createAppStore()
+  store.dispatch(setBooksCurrentPage(2))
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+    ky.get('https://bookshop.test/mock', {
+      retry: 0,
+      fetch: () =>
+        Promise.resolve(
+          Response.json([], { headers: { 'x-total-count': '80' } }),
+        ),
+    }),
+  )
+})
+
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  vi.restoreAllMocks()
+})
+
+const renderPagination = (total = 80) =>
+  render(
+    <Provider store={store}>
+      <Pagination total={total} />
+    </Provider>,
+  )
 
 describe('Pagination', () => {
-  const mockDispatch = vi.fn()
+  it.each([
+    { button: 'First Page', page: 1 },
+    { button: 'Previous Page', page: 1 },
+    { button: 'Page 3', page: 3 },
+    { button: 'Next Page', page: 3 },
+    { button: 'Last Page', page: 10 },
+  ])('selects page $page using $button', async ({ button, page }) => {
+    renderPagination()
+    await userEvent.click(screen.getByRole('button', { name: button }))
 
-  beforeEach(() => {
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
-    const initialState = createAppStore().getState()
-    vi.mocked(useAppSelector).mockImplementation((selector) =>
-      selector({
-        ...initialState,
-        books: {
-          ...initialState.books,
-          booksCurrentPage: 2,
-          booksPerPage: 10,
-        },
+    expect(store.getState().books.booksCurrentPage).toBe(page)
+  })
+
+  it('prefetches only the intended page with current filters and reuses it on mount', async () => {
+    store.dispatch(
+      applyBooksFilters({
+        genre: ['Fiction'],
+        price: [],
+        publishYear: [],
+        discount: 'allBooks',
+        rating: 0.5,
       }),
     )
-  })
+    store.dispatch(setBooksCurrentPage(2))
+    const view = renderPagination()
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should render pagination controls', () => {
-    render(<Pagination total={100} />)
-
-    expect(screen.getByRole('button', { name: /Page 1$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Page 10/i })).toBeInTheDocument()
-    expect(screen.getAllByRole('button').length).toBeGreaterThan(2)
-  })
-
-  it('should dispatch actions for the first page button click', async () => {
-    render(<Pagination total={100} />)
-
-    const firstPageButton = screen.getAllByRole('button')[2]
-    if (!firstPageButton) throw new Error('First page button not found')
-    await userEvent.click(firstPageButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(1))
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+    const next = screen.getByRole('button', { name: 'Next Page' })
+    fireEvent.mouseEnter(next)
+    await waitFor(() => expect(publicApi.baseRequest).toHaveBeenCalledTimes(1))
+    await act(async () => {
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
     })
+    fireEvent.focus(next)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
+    expect(publicApi.baseRequest).toHaveBeenCalledWith(
+      'books',
+      expect.objectContaining({
+        searchParams: new URLSearchParams({
+          page: '3',
+          limit: '8',
+          genre: 'Fiction',
+        }),
+      }),
+    )
+    expect(store.getState().books.booksCurrentPage).toBe(2)
+    view.unmount()
+
+    function Page() {
+      const args = useAppSelector(booksQueryArgs)
+      const { data } = useBooksQuery(args, {
+        refetchOnMountOrArgChange: CacheTime.FiveMinutes,
+      })
+      return <p>{data?.total}</p>
+    }
+    store.dispatch(setBooksCurrentPage(3))
+    render(
+      <Provider store={store}>
+        <Page />
+      </Provider>,
+    )
+
+    expect(await screen.findByText('80')).toBeInTheDocument()
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
   })
 
-  it('should dispatch decrement action when clicking on the previous page button', async () => {
-    render(<Pagination total={100} />)
+  it('does not prefetch disabled controls or an out-of-range page', () => {
+    store.dispatch(setBooksCurrentPage(1))
+    renderPagination(8)
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).toBeDisabled()
+      fireEvent.mouseEnter(button)
+      fireEvent.focus(button)
+    }
 
-    const previousPageButton = screen.getByRole('button', { name: /previous/i })
-    await userEvent.click(previousPageButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(decrementBooksCurrentPage())
-    })
-  })
-
-  it('should dispatch set current page action when a page button is clicked', async () => {
-    render(<Pagination total={100} />)
-
-    const pageButton = screen.getByRole('button', { name: 'Page 3' })
-    await userEvent.click(pageButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(3))
-    })
-  })
-
-  it('should dispatch increment action when clicking on the next page button', async () => {
-    render(<Pagination total={100} />)
-
-    const nextPageButton = screen.getByRole('button', { name: /next/i })
-    await userEvent.click(nextPageButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(incrementBooksCurrentPage())
-    })
-  })
-
-  it('should dispatch actions for the last page button click', async () => {
-    render(<Pagination total={100} />)
-
-    const lastPageButton =
-      screen.getAllByRole('button')[screen.getAllByRole('button').length - 1]
-    if (!lastPageButton) throw new Error('Last page button not found')
-    await userEvent.click(lastPageButton)
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(setBooksCurrentPage(10))
-    })
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
   })
 })

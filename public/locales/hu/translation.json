@@ -291,16 +291,16 @@
       "succeeded": "Sikeres"
     },
     "status": {
-      "checking": "⏳ A fizetés állapotának ellenőrzése...",
-      "requires_payment_method": "❌ A fizetés nem sikerült. Kérjük, próbáljon más fizetési módot.",
-      "requires_confirmation": "🧾 A folytatáshoz kérjük, erősítse meg a fizetést.",
-      "requires_action": "🔐 Kérjük, végezze el a szükséges hitelesítést.",
-      "processing": "⏳ A fizetés feldolgozása folyamatban van.",
-      "canceled": "❌ A fizetés megszakítva.",
-      "retry": "🔄 A fizetés állapotának ismételt ellenőrzése ({{attempt}}/{{maxRetries}})...",
-      "timeout": "⏳ A fizetés megerősítése a vártnál tovább tart ({{timeoutSeconds}} mp). Kérjük, rövidesen frissítse az oldalt.",
-      "fetchFailed": "⚠️ A fizetés állapota nem kérdezhető le: {{details}}. Kérjük, frissítse az oldalt. Ha a probléma továbbra is fennáll, lépjen kapcsolatba az ügyfélszolgálattal, és adja meg a fizetés azonosítóját.",
-      "paymentReceived": "✅ Sikeres fizetés — a rendelés visszaigazolásáról e-mailben értesítjük."
+      "checking": "A fizetés állapotának ellenőrzése...",
+      "requires_payment_method": "A fizetés nem sikerült. Kérjük, próbáljon más fizetési módot.",
+      "requires_confirmation": "A folytatáshoz kérjük, erősítse meg a fizetést.",
+      "requires_action": "Kérjük, végezze el a szükséges hitelesítést.",
+      "processing": "A fizetés feldolgozása folyamatban van.",
+      "canceled": "A fizetés megszakítva.",
+      "retry": "A fizetés állapotának ismételt ellenőrzése ({{attempt}}/{{maxAttempts}})...",
+      "timeout": "A fizetés megerősítése a vártnál tovább tart ({{timeoutSeconds}} mp). Kérjük, rövidesen frissítse az oldalt.",
+      "fetchFailed": "A fizetés állapota nem kérdezhető le: {{details}}. Kérjük, frissítse az oldalt. Ha a probléma továbbra is fennáll, lépjen kapcsolatba az ügyfélszolgálattal, és adja meg a fizetés azonosítóját.",
+      "paymentReceived": "Sikeres fizetés — a rendelés visszaigazolásáról e-mailben értesítjük."
     },
     "errors": {
       "card_error": "Kártyáját elutasították. Kérjük, ellenőrizze a kártyaadatokat, vagy próbáljon más fizetési módot.",

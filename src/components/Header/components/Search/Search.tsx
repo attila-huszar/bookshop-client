@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
 import { ROUTE } from '@/routes/route'
-import { bookshopApi } from '@/store/api/bookshopApi'
+import { authorsApi } from '@/store/api/authorsApi'
+import { booksApi } from '@/store/api/booksApi'
 import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { searchSchema } from '@/validation/userSchemas'
+import { CacheTime } from '@/constants/cacheTimes'
 import type { Book } from '@/types'
 import {
   imagePlaceholder,
@@ -39,6 +41,9 @@ export function Search() {
   const pendingRequests = useRef<{ abort: () => void }[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
+  const prefetchBook = booksApi.usePrefetch('book', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
   const navigate = useNavigate()
   const debouncedSearchResults = useDebouncedCallback(getSearchResults)
 
@@ -64,12 +69,12 @@ export function Search() {
     if (searchString.length > 1) {
       const searchRequests = [
         dispatch(
-          bookshopApi.endpoints.bookSearch.initiate(searchString, {
+          booksApi.endpoints.bookSearch.initiate(searchString, {
             subscribe: false,
           }),
         ),
         dispatch(
-          bookshopApi.endpoints.authorSearch.initiate(searchString, {
+          authorsApi.endpoints.authorSearch.initiate(searchString, {
             subscribe: false,
           }),
         ),
@@ -97,7 +102,7 @@ export function Search() {
       if (authorsSearched.length) {
         const authorRequests = authorsSearched.map((author) =>
           dispatch(
-            bookshopApi.endpoints.booksByAuthor.initiate(author.id, {
+            booksApi.endpoints.booksByAuthor.initiate(author.id, {
               subscribe: false,
             }),
           ),
@@ -205,6 +210,8 @@ export function Search() {
                     <li key={book.id}>
                       <Link
                         to={`/${ROUTE.BOOK}?id=${book.id}`}
+                        onMouseEnter={() => prefetchBook(book.id)}
+                        onFocus={() => prefetchBook(book.id)}
                         onClick={() => {
                           resetForm()
                           handleReset()

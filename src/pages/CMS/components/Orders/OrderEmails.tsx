@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCmsEmailOutboxQuery } from '@/store/api/bookshopApi'
+import { useCmsEmailOutboxQuery } from '@/store/api/ordersApi'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { ClearButton } from '@/components/Header/components/Search/Search.style'

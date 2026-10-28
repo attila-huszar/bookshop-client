@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { useCmsAuthorsQuery } from '@/store/api/bookshopApi'
+import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
@@ -15,7 +15,7 @@ export const Authors = () => {
     data: authors = [],
     isLoading: authorsLoading,
     error: authorsError,
-  } = useCmsAuthorsQuery()
+  } = useCmsAuthorsQuery(undefined, { refetchOnMountOrArgChange: true })
   const {
     selectedItems,
     setSelectedItems,

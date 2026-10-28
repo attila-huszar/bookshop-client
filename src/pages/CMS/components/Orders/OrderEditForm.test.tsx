@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useUpdateOrderMutation } from '@/store/api/bookshopApi'
+import { useUpdateOrderMutation } from '@/store/api/ordersApi'
 import type { Order } from '@/types'
 import { OrderEditForm } from './OrderEditForm'
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/ordersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/ordersApi')>()),
   useUpdateOrderMutation: vi.fn(),
 }))
 

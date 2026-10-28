@@ -7,7 +7,7 @@ import {
   useDeleteTermsVersionMutation,
   usePublishTermsMutation,
   useTermsDocumentQuery,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/termsApi'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { getApiError, getErrorMessage } from '@/helpers/errors'

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { useCmsUsersQuery } from '@/store/api/bookshopApi'
+import { useCmsUsersQuery } from '@/store/api/usersApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
@@ -15,7 +15,7 @@ export const Users = () => {
     data: allUsers = [],
     isLoading: usersLoading,
     error: usersError,
-  } = useCmsUsersQuery()
+  } = useCmsUsersQuery(undefined, { refetchOnMountOrArgChange: true })
   const {
     showDeletedUsers,
     selectedItems,

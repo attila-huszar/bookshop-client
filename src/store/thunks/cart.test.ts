@@ -4,6 +4,7 @@ import * as publicApi from '@/api/baseRequest'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey } from '@/constants/keys'
 import type { Book } from '@/types'
+import { booksApi } from '../api/booksApi'
 import { bookshopApi } from '../api/bookshopApi'
 import { createAppStore } from '../store'
 import { fetchCartItems, refreshCartItems } from './cart'
@@ -46,7 +47,7 @@ afterEach(() => {
 
 describe('cart hydration query cache', () => {
   it('reuses the book endpoint cache without making a request', async () => {
-    await store.dispatch(bookshopApi.util.upsertQueryData('book', 7, book))
+    await store.dispatch(booksApi.util.upsertQueryData('book', 7, book))
     const get = vi.spyOn(publicApi, 'baseRequest')
 
     await store.dispatch(fetchCartItems({ cartItems })).unwrap()
@@ -67,7 +68,7 @@ describe('cart hydration query cache', () => {
 
   it('requests book details instead of accepting a stale catalogue list entry', async () => {
     await store.dispatch(
-      bookshopApi.util.upsertQueryData(
+      booksApi.util.upsertQueryData(
         'books',
         { currentPage: 1, itemsPerPage: 8 },
         { books: [book], total: 1 },
@@ -88,7 +89,7 @@ describe('cart hydration query cache', () => {
     expect(get).toHaveBeenCalledTimes(1)
     expect(store.getState().cart.cartItems[0]?.price).toBe(20)
     expect(
-      bookshopApi.endpoints.book.select(7)(store.getState()).data?.price,
+      booksApi.endpoints.book.select(7)(store.getState()).data?.price,
     ).toBe(20)
   })
 
@@ -104,7 +105,7 @@ describe('cart hydration query cache', () => {
       }),
     )
     const query = store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
     const hydration = store.dispatch(fetchCartItems({ cartItems }))
 
@@ -129,12 +130,12 @@ describe('checkout price recovery', () => {
       }),
     )
     await store
-      .dispatch(bookshopApi.endpoints.book.initiate(7, { subscribe: false }))
+      .dispatch(booksApi.endpoints.book.initiate(7, { subscribe: false }))
       .unwrap()
 
     await vi.advanceTimersByTimeAsync(2 * 60 * 1000)
     expect(
-      bookshopApi.endpoints.book.select(7)(store.getState()).data?.price,
+      booksApi.endpoints.book.select(7)(store.getState()).data?.price,
     ).toBe(10)
 
     vi.mocked(publicApi.baseRequest).mockImplementation(() =>

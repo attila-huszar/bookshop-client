@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen } from '@testing-library/react'
@@ -7,10 +8,8 @@ import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
-import type {
-  PaymentStatusMessageOverride,
-  PaymentStatusState,
-} from '@/hooks/usePaymentStatus'
+import { formatPaymentStatus } from '@/helpers/checkout'
+import type { PaymentStatusState } from '@/types/Payment'
 import { PaymentStatus } from './PaymentStatus'
 
 vi.mock('react-router', async (importOriginal) => ({
@@ -48,7 +47,7 @@ describe('PaymentStatus', () => {
 
   it('translates successful payment without clearing the session again on language change', async () => {
     vi.mocked(usePaymentStatus).mockReturnValue({
-      status: { intent: 'succeeded', messageOverride: null },
+      status: { type: 'succeeded' },
       retry: vi.fn(),
     })
 
@@ -57,12 +56,14 @@ describe('PaymentStatus', () => {
     expect(dispatch).toHaveBeenCalledWith(cartClear())
     expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
     expect(screen.getByText(/Payment successful/)).toBeVisible()
+    expect(screen.getByText('✅')).toHaveAttribute('aria-hidden', 'true')
 
     await act(async () => {
       await i18n.changeLanguage('hu')
     })
 
     expect(screen.getByText(/Sikeres fizetés/)).toBeVisible()
+    expect(screen.getByText('✅')).toHaveAttribute('aria-hidden', 'true')
     expect(
       screen.getByRole('button', { name: 'Vissza a boltba' }),
     ).toBeVisible()
@@ -71,22 +72,87 @@ describe('PaymentStatus', () => {
 
   it('offers a back to cart action after a declined payment', async () => {
     const status: PaymentStatusState = {
-      intent: 'requires_payment_method',
-      messageOverride: null,
+      type: 'requires_payment_method',
     }
     vi.mocked(usePaymentStatus).mockReturnValue({ status, retry: vi.fn() })
 
     render(<PaymentStatus />)
+    expect(screen.getByText('💳')).toHaveAttribute('aria-hidden', 'true')
+    expect(formatPaymentStatus('requires_payment_method')).toMatch(/^💳 /)
     await userEvent.click(screen.getByRole('button', { name: 'Back to Cart' }))
 
     expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
     expect(navigate).toHaveBeenCalledWith('/cart', { replace: true })
   })
 
+  it('clears a successful payment once during Strict Mode effect replay', () => {
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'succeeded' },
+      retry: vi.fn(),
+    })
+    render(
+      <StrictMode>
+        <PaymentStatus />
+      </StrictMode>,
+    )
+
+    expect(dispatch).toHaveBeenCalledWith(cartClear())
+    expect(dispatch).toHaveBeenCalledWith(paymentSessionReset())
+    expect(dispatch).toHaveBeenCalledTimes(2)
+  })
+
+  it('handles each new successful payment while retaining the result after session cleanup', () => {
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'succeeded' },
+      retry: vi.fn(),
+    })
+    const { rerender } = render(<PaymentStatus />)
+    expect(dispatch).toHaveBeenCalledTimes(2)
+
+    vi.mocked(useAppSelector).mockReturnValue(undefined)
+    rerender(<PaymentStatus />)
+    expect(dispatch).toHaveBeenCalledTimes(2)
+    expect(screen.getByText(/Payment successful/)).toBeVisible()
+
+    vi.mocked(useAppSelector).mockReturnValue({
+      paymentId: 'pi_next',
+      paymentToken: 'next-secret',
+      amount: 2400,
+    })
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'checking' },
+      retry: vi.fn(),
+    })
+    rerender(<PaymentStatus />)
+    expect(dispatch).toHaveBeenCalledTimes(2)
+
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'requires_capture' },
+      retry: vi.fn(),
+    })
+    rerender(<PaymentStatus />)
+    expect(dispatch).toHaveBeenCalledTimes(4)
+    expect(screen.getByText(/Payment successful/)).toBeVisible()
+    expect(screen.getByText('🔒')).toHaveAttribute('aria-hidden', 'true')
+    expect(formatPaymentStatus('requires_capture')).toMatch(/^🔒 /)
+  })
+
+  it('leaves a canceled checkout for the shop without clearing the cart', async () => {
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'canceled' },
+      retry: vi.fn(),
+    })
+    render(<PaymentStatus />)
+    await userEvent.click(screen.getByRole('button', { name: 'Back to Shop' }))
+
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(paymentSessionReset())
+    expect(navigate.mock.calls[0]?.[0]).toBe('/')
+  })
+
   it('translates the required action and return-to-checkout button in Hungarian', async () => {
     await i18n.changeLanguage('hu')
     vi.mocked(usePaymentStatus).mockReturnValue({
-      status: { intent: 'requires_action', messageOverride: null },
+      status: { type: 'requires_action' },
       retry: vi.fn(),
     })
     render(<PaymentStatus />)
@@ -94,48 +160,57 @@ describe('PaymentStatus', () => {
     expect(
       screen.getByText(/végezze el a szükséges hitelesítést/),
     ).toBeVisible()
+    expect(screen.getByText('🔐')).toHaveAttribute('aria-hidden', 'true')
+    expect(formatPaymentStatus('requires_action')).toMatch(/^🔐 /)
     await userEvent.click(
       screen.getByRole('button', { name: 'Vissza a fizetéshez' }),
     )
 
     expect(navigate).toHaveBeenCalledWith('/checkout', { replace: true })
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it.each<{
-    override: PaymentStatusMessageOverride
+    status: PaymentStatusState
     english: RegExp
     hungarian: RegExp
+    emoji: string
   }>([
     {
-      override: { type: 'retry', attempt: 2, maxRetries: 3 },
+      status: { type: 'retry', attempt: 2, maxAttempts: 3 },
       english: /retrying payment status \(2\/3\)/,
       hungarian: /állapotának ismételt ellenőrzése \(2\/3\)/,
+      emoji: '🔄',
     },
     {
-      override: { type: 'timeout', timeoutSeconds: 30 },
+      status: { type: 'timeout', timeoutSeconds: 30 },
       english: /longer than expected \(30s\)/,
       hungarian: /a vártnál tovább tart \(30 mp\)/,
+      emoji: '⏱️',
     },
     {
-      override: { type: 'failure', details: '' },
+      status: { type: 'failure', details: '' },
       english: /retrieve payment status: Unknown error/,
       hungarian: /állapota nem kérdezhető le: Ismeretlen hiba/,
+      emoji: '⚠️',
     },
   ])(
-    'updates $override.type messages when the language changes',
-    async ({ override, english, hungarian }) => {
+    'updates $status.type messages when the language changes',
+    async ({ status, english, hungarian, emoji }) => {
       vi.mocked(usePaymentStatus).mockReturnValue({
-        status: { intent: null, messageOverride: override },
+        status,
         retry: vi.fn(),
       })
       render(<PaymentStatus />)
       expect(screen.getByText(english)).toBeVisible()
+      expect(screen.getByText(emoji)).toHaveAttribute('aria-hidden', 'true')
 
       await act(async () => {
         await i18n.changeLanguage('hu')
       })
 
       expect(screen.getByText(hungarian)).toBeVisible()
+      expect(screen.getByText(emoji)).toHaveAttribute('aria-hidden', 'true')
     },
   )
 })

@@ -291,16 +291,16 @@
       "succeeded": "Succeeded"
     },
     "status": {
-      "checking": "⏳ Checking your payment status...",
-      "requires_payment_method": "❌ We could not complete your payment. Please try another method.",
-      "requires_confirmation": "🧾 Please confirm your payment to continue.",
-      "requires_action": "🔐 Please complete the required verification.",
-      "processing": "⏳ Your payment is processing.",
-      "canceled": "❌ Payment canceled.",
-      "retry": "🔄 We are retrying payment status ({{attempt}}/{{maxRetries}})...",
-      "timeout": "⏳ Payment confirmation is taking longer than expected ({{timeoutSeconds}}s). Please refresh shortly.",
-      "fetchFailed": "⚠️ We could not retrieve payment status: {{details}}. Please refresh this page. If the issue continues, contact support and include your payment ID.",
-      "paymentReceived": "✅ Payment successful — we’ll email you when your order is confirmed."
+      "checking": "Checking your payment status...",
+      "requires_payment_method": "We could not complete your payment. Please try another method.",
+      "requires_confirmation": "Please confirm your payment to continue.",
+      "requires_action": "Please complete the required verification.",
+      "processing": "Your payment is processing.",
+      "canceled": "Payment canceled.",
+      "retry": "We are retrying payment status ({{attempt}}/{{maxAttempts}})...",
+      "timeout": "Payment confirmation is taking longer than expected ({{timeoutSeconds}}s). Please refresh shortly.",
+      "fetchFailed": "We could not retrieve payment status: {{details}}. Please refresh this page. If the issue continues, contact support and include your payment ID.",
+      "paymentReceived": "Payment successful — we’ll email you when your order is confirmed."
     },
     "errors": {
       "card_error": "Your card was declined. Please check your card details or try a different payment method.",
@@ -491,7 +491,7 @@
     "image": "Invalid image file",
     "imageRequired": "Please select an image file",
     "imageFormat": "Unsupported image format",
-    "imageSize": "Image must be smaller than {{size}}KB",
+    "imageSize": "Image must be no larger than {{size}} KB",
     "type": "Invalid value",
     "greaterThan": "Must be greater than {{min}}",
     "lessThan": "Must be less than {{max}}",

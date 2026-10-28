@@ -3,17 +3,15 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  bookshopApi,
-  useAddBookMutation,
-  useUpdateBookMutation,
-} from '@/store/api/bookshopApi'
+import { authorsApi } from '@/store/api/authorsApi'
+import { useAddBookMutation, useUpdateBookMutation } from '@/store/api/booksApi'
+import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import type { BookWithAuthorId } from '@/types'
 import { BookEditForm } from './BookEditForm'
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/booksApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/booksApi')>()),
   useAddBookMutation: vi.fn(),
   useUpdateBookMutation: vi.fn(),
 }))
@@ -58,7 +56,7 @@ describe('BookEditForm', () => {
       { reset: vi.fn() },
     ])
     await store.dispatch(
-      bookshopApi.util.upsertQueryData(
+      authorsApi.util.upsertQueryData(
         'cmsAuthors',
         undefined,
         ['First author', 'Second author'].map((name, index) => ({

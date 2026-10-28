@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next'
 import 'rc-slider/assets/index.css'
 import { Field, Form, Formik } from 'formik'
 import Slider from 'rc-slider'
-import { useSearchOptionsQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { useSearchOptionsQuery } from '@/store/api/booksApi'
 import {
   applyBooksFilters,
   setBooksFilterDiscount,
@@ -17,6 +16,7 @@ import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { enforceMinMax } from '@/helpers/enforceMinMax'
+import { CacheTime } from '@/constants/cacheTimes'
 import { discountOptions, filterInitialValues } from '@/constants/defaultValues'
 import type { DiscountChangeEvent, Filters, InputEvent } from '@/types'
 import { StarIcon, StarOutlineIcon } from '@/assets/svg'
@@ -42,8 +42,8 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
 
   const booksFilters = useAppSelector((state) => state.books.booksFilters)
   const { isLoading: booksFiltersLoading, error: booksFiltersError } =
-    useSearchOptionsQuery({
-      refetchOnMountOrArgChange: cacheTimes.reference,
+    useSearchOptionsQuery(undefined, {
+      refetchOnMountOrArgChange: CacheTime.OneHour,
     })
   const dispatch = useAppDispatch()
 

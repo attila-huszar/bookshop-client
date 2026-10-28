@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { useCmsOrdersQuery } from '@/store/api/bookshopApi'
+import { useCmsOrdersQuery } from '@/store/api/ordersApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
@@ -21,7 +21,7 @@ export const Orders = () => {
     data: allOrders = [],
     isLoading: ordersLoading,
     error: ordersError,
-  } = useCmsOrdersQuery()
+  } = useCmsOrdersQuery(undefined, { refetchOnMountOrArgChange: true })
   const {
     showDeletedOrders,
     selectedItems,

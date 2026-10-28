@@ -23,12 +23,13 @@ import { applyBooksFilters } from '../slices/books'
 import { authSessionChanged } from '../slices/user'
 import { store as appStore, createAppStore, type RootState } from '../store'
 import { expireAuthSession, fetchAuthTokens } from '../thunks/user'
-import {
-  bookshopApi,
-  useSearchOptionsQuery,
-  useUserProfileQuery,
-} from './bookshopApi'
+import { authorsApi } from './authorsApi'
+import { booksApi, useSearchOptionsQuery } from './booksApi'
+import { bookshopApi } from './bookshopApi'
 import { booksSearchParams, buildBookCriteria } from './booksQuery'
+import { ordersApi } from './ordersApi'
+import { termsApi } from './termsApi'
+import { usersApi, useUserProfileQuery } from './usersApi'
 
 const book: Book = {
   id: 7,
@@ -210,12 +211,12 @@ describe('server-data cache', () => {
         ),
       )
     })
-    const current = store.dispatch(bookshopApi.endpoints.cmsTerms.initiate())
+    const current = store.dispatch(termsApi.endpoints.cmsTerms.initiate())
     const history = store.dispatch(
-      bookshopApi.endpoints.cmsTermsHistory.initiate(),
+      termsApi.endpoints.cmsTermsHistory.initiate(),
     )
     const checkout = store.dispatch(
-      bookshopApi.endpoints.paymentTerms.initiate('pi_terms'),
+      termsApi.endpoints.paymentTerms.initiate('pi_terms'),
     )
     await Promise.all([
       current.unwrap(),
@@ -223,29 +224,29 @@ describe('server-data cache', () => {
       checkout.unwrap(),
       store
         .dispatch(
-          bookshopApi.endpoints.termsDocument.initiate('unused', {
+          termsApi.endpoints.termsDocument.initiate('unused', {
             subscribe: false,
           }),
         )
         .unwrap(),
     ])
     await store
-      .dispatch(bookshopApi.endpoints.deleteTermsVersion.initiate('unused'))
+      .dispatch(termsApi.endpoints.deleteTermsVersion.initiate('unused'))
       .unwrap()
 
     await vi.waitFor(() => {
       expect(
-        bookshopApi.endpoints.cmsTerms.select()(store.getState()).data,
+        termsApi.endpoints.cmsTerms.select()(store.getState()).data,
       ).toBeNull()
       expect(
-        bookshopApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
+        termsApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
       ).toEqual([])
       expect(
-        bookshopApi.endpoints.paymentTerms.select('pi_terms')(store.getState())
+        termsApi.endpoints.paymentTerms.select('pi_terms')(store.getState())
           .data?.terms,
       ).toBeNull()
       expect(
-        bookshopApi.endpoints.termsDocument.select('unused')(store.getState())
+        termsApi.endpoints.termsDocument.select('unused')(store.getState())
           .isUninitialized,
       ).toBe(true)
     })
@@ -284,14 +285,12 @@ describe('server-data cache', () => {
         ),
       )
     })
-    const currentQuery = store.dispatch(
-      bookshopApi.endpoints.cmsTerms.initiate(),
-    )
+    const currentQuery = store.dispatch(termsApi.endpoints.cmsTerms.initiate())
     const historyQuery = store.dispatch(
-      bookshopApi.endpoints.cmsTermsHistory.initiate(),
+      termsApi.endpoints.cmsTermsHistory.initiate(),
     )
     const archiveQuery = store.dispatch(
-      bookshopApi.endpoints.termsDocument.initiate('original'),
+      termsApi.endpoints.termsDocument.initiate('original'),
     )
     await Promise.all([
       currentQuery.unwrap(),
@@ -315,20 +314,20 @@ describe('server-data cache', () => {
       ...history,
     ]
     const mutation = store.dispatch(
-      bookshopApi.endpoints.publishTerms.initiate({ content: current.content }),
+      termsApi.endpoints.publishTerms.initiate({ content: current.content }),
     )
     await mutation.unwrap()
 
     await vi.waitFor(() => {
       expect(
-        bookshopApi.endpoints.cmsTerms.select()(store.getState()).data,
+        termsApi.endpoints.cmsTerms.select()(store.getState()).data,
       ).toEqual(current)
       expect(
-        bookshopApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
+        termsApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
       ).toEqual(history)
     })
     expect(
-      bookshopApi.endpoints.termsDocument.select('original')(store.getState())
+      termsApi.endpoints.termsDocument.select('original')(store.getState())
         .data,
     ).toEqual(original)
     expect(
@@ -344,7 +343,7 @@ describe('server-data cache', () => {
 
   it('reuses the unfiltered cache after submitting full displayed ranges', async () => {
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+      booksApi.util.upsertQueryData('searchOptions', undefined, {
         ...searchOptions,
         price: [0.25, 99.75],
       }),
@@ -355,7 +354,7 @@ describe('server-data cache', () => {
     const originalArgs = booksQueryArgs(store.getState())
     await store
       .dispatch(
-        bookshopApi.endpoints.books.initiate(originalArgs, {
+        booksApi.endpoints.books.initiate(originalArgs, {
           subscribe: false,
         }),
       )
@@ -373,7 +372,7 @@ describe('server-data cache', () => {
     expect(submittedArgs.criteria).toBeUndefined()
     await store
       .dispatch(
-        bookshopApi.endpoints.books.initiate(submittedArgs, {
+        booksApi.endpoints.books.initiate(submittedArgs, {
           subscribe: false,
         }),
       )
@@ -384,23 +383,23 @@ describe('server-data cache', () => {
 
   it('deduplicates concurrent queries without a second entity slice', async () => {
     const a = store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
     const b = store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
     await Promise.all([a.unwrap(), b.unwrap()])
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(store.getState().books).not.toHaveProperty('books')
-    expect(bookshopApi.endpoints.book.select(7)(store.getState()).data).toEqual(
+    expect(booksApi.endpoints.book.select(7)(store.getState()).data).toEqual(
       book,
     )
   })
 
   it('refreshes public and CMS books after a CMS mutation', async () => {
-    const publicQuery = store.dispatch(bookshopApi.endpoints.book.initiate(7))
-    const cmsQuery = store.dispatch(bookshopApi.endpoints.cmsBooks.initiate())
+    const publicQuery = store.dispatch(booksApi.endpoints.book.initiate(7))
+    const cmsQuery = store.dispatch(booksApi.endpoints.cmsBooks.initiate())
 
     await Promise.all([publicQuery.unwrap(), cmsQuery.unwrap()])
     const changed = {
@@ -425,7 +424,7 @@ describe('server-data cache', () => {
       )
     })
     const mutation = store.dispatch(
-      bookshopApi.endpoints.updateBook.initiate({
+      booksApi.endpoints.updateBook.initiate({
         id: 7,
         title: changed.title,
       }),
@@ -434,11 +433,10 @@ describe('server-data cache', () => {
     mutation.reset()
     await vi.waitFor(() => {
       expect(
-        bookshopApi.endpoints.book.select(7)(store.getState()).data?.title,
+        booksApi.endpoints.book.select(7)(store.getState()).data?.title,
       ).toBe(changed.title)
       expect(
-        bookshopApi.endpoints.cmsBooks.select()(store.getState()).data?.[0]
-          ?.title,
+        booksApi.endpoints.cmsBooks.select()(store.getState()).data?.[0]?.title,
       ).toBe(changed.title)
     })
     expect(store.getState().bookshopApi.mutations).toEqual({})
@@ -446,10 +444,51 @@ describe('server-data cache', () => {
     cmsQuery.unsubscribe()
   })
 
+  it('invalidates cached books after an author mutation from another domain', async () => {
+    const author = {
+      id: 1,
+      name: 'Updated author',
+      fullName: 'Updated author',
+      birthYear: '1980',
+      deathYear: '',
+      homeland: 'Hungary',
+      biography: '',
+    }
+    let authorName = book.author
+    fetchMock.mockImplementation((input) => {
+      if (requestOf(input).method === 'PATCH') {
+        authorName = author.name
+
+        return Promise.resolve(jsonResponse(author))
+      }
+
+      return Promise.resolve(jsonResponse({ ...book, author: authorName }))
+    })
+    const query = store.dispatch(booksApi.endpoints.book.initiate(book.id))
+    await query.unwrap()
+
+    const mutation = store.dispatch(
+      authorsApi.endpoints.updateAuthor.initiate({
+        id: author.id,
+        name: author.name,
+      }),
+    )
+    await mutation.unwrap()
+    mutation.reset()
+
+    await vi.waitFor(() => {
+      expect(
+        booksApi.endpoints.book.select(book.id)(store.getState()).data?.author,
+      ).toBe(author.name)
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    query.unsubscribe()
+  })
+
   it('refreshes retained recommendations after a CMS book edit even with focus/reconnect refetch disabled', async () => {
     fetchMock.mockImplementation(() => Promise.resolve(jsonResponse([book])))
     const query = store.dispatch(
-      bookshopApi.endpoints.booksByProperty.initiate('recommended', {
+      booksApi.endpoints.booksByProperty.initiate('recommended', {
         subscriptionOptions: {
           refetchOnFocus: false,
           refetchOnReconnect: false,
@@ -471,7 +510,7 @@ describe('server-data cache', () => {
     )
     await store
       .dispatch(
-        bookshopApi.endpoints.updateBook.initiate({
+        booksApi.endpoints.updateBook.initiate({
           id: changed.id,
           title: changed.title,
         }),
@@ -479,7 +518,7 @@ describe('server-data cache', () => {
       .unwrap()
     await vi.waitFor(() => {
       expect(
-        bookshopApi.endpoints.booksByProperty.select('recommended')(
+        booksApi.endpoints.booksByProperty.select('recommended')(
           store.getState(),
         ).data?.[0]?.title,
       ).toBe(changed.title)
@@ -493,11 +532,12 @@ describe('server-data cache', () => {
       new Error('Book unavailable'),
     )
     await store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
-    expect(
-      bookshopApi.endpoints.book.select(7)(store.getState()).error,
-    ).toEqual({ code: 'UNKNOWN_API_ERROR', message: 'Book unavailable' })
+    expect(booksApi.endpoints.book.select(7)(store.getState()).error).toEqual({
+      code: 'UNKNOWN_API_ERROR',
+      message: 'Book unavailable',
+    })
   })
 })
 
@@ -631,7 +671,7 @@ describe('user profile cache', () => {
     )
     const queries = [1, 2].map(() =>
       store.dispatch(
-        bookshopApi.endpoints.userProfile.initiate(undefined, {
+        usersApi.endpoints.userProfile.initiate(undefined, {
           subscribe: false,
         }),
       ),
@@ -647,13 +687,13 @@ describe('user profile cache', () => {
     const request = fetchMock.mockImplementation(() =>
       Promise.resolve(jsonResponse(profile)),
     )
-    const query = store.dispatch(bookshopApi.endpoints.userProfile.initiate())
+    const query = store.dispatch(usersApi.endpoints.userProfile.initiate())
     await query.unwrap()
 
     const updated = { ...profile, firstName: 'Updated' }
     request.mockImplementation(() => Promise.resolve(jsonResponse(updated)))
     const mutation = store.dispatch(
-      bookshopApi.endpoints.updateUserProfile.initiate({
+      usersApi.endpoints.updateUserProfile.initiate({
         firstName: 'Updated',
       }),
     )
@@ -672,7 +712,7 @@ describe('user profile cache', () => {
       jsonResponse({ code: 'CURRENT_PASSWORD_INCORRECT' }, 400),
     )
     const mutation = store.dispatch(
-      bookshopApi.endpoints.updateUserProfile.initiate(fields),
+      usersApi.endpoints.updateUserProfile.initiate(fields),
     )
 
     await expect(mutation.unwrap()).rejects.toEqual({
@@ -690,7 +730,7 @@ describe('user profile cache', () => {
   it('provides a fallback for failures without an error message', async () => {
     vi.mocked(privateApi.authRequest).mockRejectedValue(undefined)
     const mutation = store.dispatch(
-      bookshopApi.endpoints.updateUserProfile.initiate(fields),
+      usersApi.endpoints.updateUserProfile.initiate(fields),
     )
 
     await expect(mutation.unwrap()).rejects.toEqual({
@@ -701,7 +741,7 @@ describe('user profile cache', () => {
   })
 })
 
-describe('options-only query hooks', () => {
+describe('generated query hooks', () => {
   beforeEach(() => {
     fetchMock.mockImplementation(() =>
       Promise.resolve(jsonResponse(searchOptions)),
@@ -710,11 +750,7 @@ describe('options-only query hooks', () => {
 
   it('reads the existing endpoint cache without arguments or another request', async () => {
     await store.dispatch(
-      bookshopApi.util.upsertQueryData(
-        'searchOptions',
-        undefined,
-        searchOptions,
-      ),
+      booksApi.util.upsertQueryData('searchOptions', undefined, searchOptions),
     )
 
     const { result } = renderHook(() => useSearchOptionsQuery(), {
@@ -732,7 +768,7 @@ describe('options-only query hooks', () => {
   it('supports skipping and infers the selected result when enabled', async () => {
     const { result, rerender } = renderHook(
       ({ skip }) =>
-        useSearchOptionsQuery({
+        useSearchOptionsQuery(undefined, {
           skip,
           selectFromResult: ({ data }) => ({ genres: data?.genre ?? [] }),
         }),
@@ -752,7 +788,7 @@ describe('options-only query hooks', () => {
     })
     expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     expect(
-      bookshopApi.endpoints.searchOptions.select()(store.getState()).data,
+      booksApi.endpoints.searchOptions.select()(store.getState()).data,
     ).toEqual(searchOptions)
   })
 })
@@ -772,7 +808,7 @@ describe('Ky adapter', () => {
     }
     fetchMock.mockResolvedValueOnce(jsonResponse(failure, 400))
     const result = await store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
     expect(result.error).toMatchObject({ ...failure, status: 400 })
@@ -782,7 +818,7 @@ describe('Ky adapter', () => {
 
     await act(() => i18n.changeLanguage('hu'))
 
-    const cached = bookshopApi.endpoints.book.select(7)(store.getState())
+    const cached = booksApi.endpoints.book.select(7)(store.getState())
     expect(getErrorMessage(cached.error, 'Fallback')).toBe(
       `${i18n.t('common.fields.email')}: ${i18n.t('validation.email')}`,
     )
@@ -795,7 +831,7 @@ describe('Ky adapter', () => {
     )
     const result = await store
       .dispatch(
-        bookshopApi.endpoints.books.initiate(
+        booksApi.endpoints.books.initiate(
           {
             currentPage: 2,
             itemsPerPage: 10,
@@ -837,7 +873,7 @@ describe('Ky adapter', () => {
   it('encodes search text as a query value rather than extra parameters', async () => {
     await store
       .dispatch(
-        bookshopApi.endpoints.bookSearch.initiate('A & B?genre=Fake', {
+        booksApi.endpoints.bookSearch.initiate('A & B?genre=Fake', {
           subscribe: false,
         }),
       )
@@ -852,11 +888,11 @@ describe('Ky adapter', () => {
   it('sends authenticated CMS mutation methods and JSON bodies', async () => {
     await store
       .dispatch(
-        bookshopApi.endpoints.updateBook.initiate({ id: 7, title: 'Updated' }),
+        booksApi.endpoints.updateBook.initiate({ id: 7, title: 'Updated' }),
       )
       .unwrap()
     await store
-      .dispatch(bookshopApi.endpoints.hardDeleteBooks.initiate([7]))
+      .dispatch(booksApi.endpoints.hardDeleteBooks.initiate([7]))
       .unwrap()
     const patch = capturedRequests[0]!
     const remove = capturedRequests[1]!
@@ -898,7 +934,7 @@ describe('Ky adapter', () => {
 
     await store
       .dispatch(
-        bookshopApi.endpoints.paymentTerms.initiate('pi_guest', {
+        termsApi.endpoints.paymentTerms.initiate('pi_guest', {
           subscribe: false,
         }),
       )
@@ -915,7 +951,7 @@ describe('Ky adapter', () => {
     refresh.mockRejectedValue(new Error('Session expired'))
     fetchMock.mockResolvedValueOnce(jsonResponse([], 401))
     const result = await store.dispatch(
-      bookshopApi.endpoints.userOrders.initiate(undefined, {
+      ordersApi.endpoints.userOrders.initiate(undefined, {
         subscribe: false,
       }),
     )
@@ -938,7 +974,7 @@ describe('Ky adapter', () => {
     async ({ refreshedAccessToken }) => {
       store.dispatch(authSessionChanged('old-token'))
       await store.dispatch(
-        bookshopApi.util.upsertQueryData('userOrders', undefined, []),
+        ordersApi.util.upsertQueryData('userOrders', undefined, []),
       )
       privateApi.configureAuthRequest({
         getAccessToken: () => store.getState().user.accessToken,
@@ -962,7 +998,7 @@ describe('Ky adapter', () => {
             (state: RootState) => state.user.accessToken,
           )
 
-          return useUserProfileQuery({ skip: !sessionToken })
+          return useUserProfileQuery(undefined, { skip: !sessionToken })
         },
         { wrapper: StoreProvider },
       )
@@ -970,7 +1006,7 @@ describe('Ky adapter', () => {
       await waitFor(() => {
         expect(store.getState().user.accessToken).toBeNull()
         expect(
-          bookshopApi.endpoints.userOrders.select()(store.getState())
+          ordersApi.endpoints.userOrders.select()(store.getState())
             .isUninitialized,
         ).toBe(true)
       })
@@ -1008,7 +1044,7 @@ describe('Ky adapter', () => {
       })
     })
     const query = store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
     await vi.waitFor(() => {
@@ -1025,7 +1061,7 @@ describe('Ky adapter', () => {
   it('handles successful no-content responses without trying to parse JSON', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
     const result = await store
-      .dispatch(bookshopApi.endpoints.hardDeleteBooks.initiate([7]))
+      .dispatch(booksApi.endpoints.hardDeleteBooks.initiate([7]))
       .unwrap()
 
     expect(result).toBeNull()
@@ -1038,7 +1074,7 @@ describe('Ky adapter', () => {
       }),
     )
     const malformed = await store.dispatch(
-      bookshopApi.endpoints.book.initiate(7, { subscribe: false }),
+      booksApi.endpoints.book.initiate(7, { subscribe: false }),
     )
 
     expect(malformed.error).toMatchObject({
@@ -1047,7 +1083,7 @@ describe('Ky adapter', () => {
     })
     fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
     const offline = await store.dispatch(
-      bookshopApi.endpoints.book.initiate(8, { subscribe: false }),
+      booksApi.endpoints.book.initiate(8, { subscribe: false }),
     )
 
     expect(offline.error).toMatchObject({

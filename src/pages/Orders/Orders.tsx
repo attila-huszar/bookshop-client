@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { i18n } from '@/i18n'
-import { useUserOrdersQuery } from '@/store/api/bookshopApi'
+import { useUserOrdersQuery } from '@/store/api/ordersApi'
 import { userSelector } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { Loading } from '@/components/Loading'
@@ -36,7 +36,7 @@ export function Orders() {
     data: orders = [],
     isLoading: ordersIsLoading,
     error: ordersError,
-  } = useUserOrdersQuery()
+  } = useUserOrdersQuery(undefined, { refetchOnMountOrArgChange: true })
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {

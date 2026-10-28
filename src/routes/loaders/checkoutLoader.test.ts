@@ -4,7 +4,7 @@ import { paymentIdKey } from '@/constants/keys'
 import { checkoutLoader } from './checkoutLoader'
 
 const {
-  mockAuthLoader,
+  mockBootstrapSession,
   mockPaymentRetrieve,
   mockSessionStorageGet,
   mockSessionStorageSet,
@@ -12,7 +12,7 @@ const {
   mockStoreGetState,
   mockStoreDispatch,
 } = vi.hoisted(() => ({
-  mockAuthLoader: vi.fn(),
+  mockBootstrapSession: vi.fn(),
   mockPaymentRetrieve: vi.fn(),
   mockSessionStorageGet: vi.fn(),
   mockSessionStorageSet: vi.fn(),
@@ -21,8 +21,8 @@ const {
   mockStoreDispatch: vi.fn(),
 }))
 
-vi.mock('./authLoader', () => ({
-  authLoader: mockAuthLoader,
+vi.mock('@/services/session', () => ({
+  bootstrapSession: mockBootstrapSession,
 }))
 
 vi.mock('@/helpers/browserStorage', async (importOriginal) => {
@@ -67,7 +67,7 @@ describe('checkoutLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockSessionStorageGet.mockReturnValue('pi_test_payment')
-    mockAuthLoader.mockResolvedValue(true)
+    mockBootstrapSession.mockResolvedValue(true)
     mockStoreGetState.mockReturnValue({ payment: { payment: null } })
     mockPaymentRetrieve.mockReturnValue({ type: 'payment/retrieve' })
     mockStoreDispatch.mockReturnValue({
@@ -88,7 +88,7 @@ describe('checkoutLoader', () => {
     })
 
     expect(getResponseLocation(result)).toBe(ROUTE.HOME)
-    expect(mockAuthLoader).not.toHaveBeenCalled()
+    expect(mockBootstrapSession).not.toHaveBeenCalled()
   })
 
   it('sanitizes Stripe return params from URL', async () => {
@@ -101,7 +101,7 @@ describe('checkoutLoader', () => {
     expect(getResponseLocation(result)).toBe(
       '/checkout?redirect_status=succeeded',
     )
-    expect(mockAuthLoader).not.toHaveBeenCalled()
+    expect(mockBootstrapSession).not.toHaveBeenCalled()
   })
 
   it('recovers missing session key from Stripe return payment_intent', async () => {
@@ -117,7 +117,7 @@ describe('checkoutLoader', () => {
     expect(getResponseLocation(result)).toBe(
       '/checkout?redirect_status=succeeded',
     )
-    expect(mockAuthLoader).not.toHaveBeenCalled()
+    expect(mockBootstrapSession).not.toHaveBeenCalled()
   })
 
   it('uses the Stripe return payment instead of an older stored checkout', async () => {
@@ -136,13 +136,13 @@ describe('checkoutLoader', () => {
     expect(getResponseLocation(result)).toBe(
       '/checkout?redirect_status=succeeded',
     )
-    expect(mockAuthLoader).not.toHaveBeenCalled()
+    expect(mockBootstrapSession).not.toHaveBeenCalled()
     expect(mockStoreDispatch).not.toHaveBeenCalled()
   })
 
   it('does not retrieve a payment after navigation is cancelled during auth', async () => {
     let finishAuth!: (allowed: boolean) => void
-    mockAuthLoader.mockReturnValue(
+    mockBootstrapSession.mockReturnValue(
       new Promise<boolean>((resolve) => {
         finishAuth = resolve
       }),
@@ -204,14 +204,16 @@ describe('checkoutLoader', () => {
       }),
     })
 
-    const result = await checkoutLoader({
-      request: new Request('http://localhost/checkout'),
-    })
+    const request = new Request('http://localhost/checkout')
+    const result = await checkoutLoader({ request })
 
-    expect(mockPaymentRetrieve).toHaveBeenCalledWith({
-      paymentId: 'pi_test_payment',
-      allowSucceeded: true,
-    })
+    expect(mockPaymentRetrieve).toHaveBeenCalledWith(
+      {
+        paymentId: 'pi_test_payment',
+        allowSucceeded: true,
+      },
+      { signal: request.signal },
+    )
     expect(getResponseLocation(result)).toBe(
       '/checkout?redirect_status=succeeded',
     )
@@ -219,11 +221,14 @@ describe('checkoutLoader', () => {
   })
 
   it('returns null when payment is not successful and no redirect is needed', async () => {
-    const result = await checkoutLoader({
-      request: new Request('http://localhost/checkout'),
-    })
+    const request = new Request('http://localhost/checkout')
+    const result = await checkoutLoader({ request })
 
     expect(result).toBeNull()
+    expect(mockPaymentRetrieve).toHaveBeenCalledWith(
+      { paymentId: 'pi_test_payment', allowSucceeded: true },
+      { signal: request.signal },
+    )
     expect(mockSessionStorageRemove).not.toHaveBeenCalled()
   })
 
@@ -292,16 +297,66 @@ describe('checkoutLoader', () => {
       },
     })
 
-    const result = await checkoutLoader({
-      request: new Request(
-        'http://localhost/checkout?redirect_status=succeeded',
-      ),
-    })
+    const request = new Request(
+      'http://localhost/checkout?redirect_status=succeeded',
+    )
+    const result = await checkoutLoader({ request })
 
     expect(result).toBeNull()
-    expect(mockPaymentRetrieve).toHaveBeenCalledWith({
-      paymentId: 'pi_test_payment',
-      allowSucceeded: true,
-    })
+    expect(mockPaymentRetrieve).toHaveBeenCalledWith(
+      {
+        paymentId: 'pi_test_payment',
+        allowSucceeded: true,
+      },
+      { signal: request.signal },
+    )
   })
+
+  it('does not retrieve a checkout replaced during authentication', async () => {
+    let finishAuth!: (allowed: boolean) => void
+    mockBootstrapSession.mockReturnValue(
+      new Promise((resolve) => {
+        finishAuth = resolve
+      }),
+    )
+    const loading = checkoutLoader({
+      request: new Request('http://localhost/checkout'),
+    })
+
+    mockSessionStorageGet.mockReturnValue('pi_new_checkout')
+    finishAuth(true)
+
+    expect(await loading).toBeNull()
+    expect(mockStoreDispatch).not.toHaveBeenCalled()
+  })
+
+  it.each(['success', 'access-error'] as const)(
+    'ignores a late %s after a newer checkout replaces the stored payment',
+    async (outcome) => {
+      let finish!: (result: unknown) => void
+      let fail!: (error: unknown) => void
+      mockStoreDispatch.mockReturnValue({
+        unwrap: () =>
+          new Promise((resolve, reject) => {
+            finish = resolve
+            fail = reject
+          }),
+      })
+      const loading = checkoutLoader({
+        request: new Request('http://localhost/checkout'),
+      })
+      await vi.waitFor(() => expect(mockStoreDispatch).toHaveBeenCalledTimes(1))
+      mockSessionStorageGet.mockReturnValue('pi_new_checkout')
+
+      if (outcome === 'success') {
+        finish({ status: 'succeeded' })
+      } else {
+        fail({ code: 'session_unavailable' })
+      }
+
+      expect(await loading).toBeNull()
+      expect(mockSessionStorageRemove).not.toHaveBeenCalled()
+      expect(mockStoreDispatch).toHaveBeenCalledTimes(1)
+    },
+  )
 })

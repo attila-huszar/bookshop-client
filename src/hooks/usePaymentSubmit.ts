@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router'
 import { shopLanguage } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
-import { useAcceptPaymentTermsMutation } from '@/store/api/bookshopApi'
+import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
 import {
+  checkoutQueryParams,
   getStripePaymentErrorMessage,
   isRetryableStripeError,
 } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { baseURL } from '@/constants/envConfig'
-import { checkoutQueryParams } from '@/constants/payments'
 import type { ApiError, CheckoutTerms } from '@/types'
 
 type SubmitMessage = {

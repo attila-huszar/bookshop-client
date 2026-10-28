@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFormikContext } from 'formik'
-import { useCountryCodesQuery } from '@/store/api/bookshopApi'
+import { useCountryCodesQuery } from '@/store/api/usersApi'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { getFlagUrl } from '@/helpers/getFlagUrl'
 import { ChevronDownIcon } from '@/assets/svg'
@@ -59,7 +59,7 @@ export function CountrySelect({
     data: countries = {},
     isLoading,
     isError,
-  } = useCountryCodesQuery({
+  } = useCountryCodesQuery(undefined, {
     refetchOnFocus: false,
     refetchOnReconnect: false,
   })

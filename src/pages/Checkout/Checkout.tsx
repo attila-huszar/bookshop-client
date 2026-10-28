@@ -5,15 +5,16 @@ import { Navigate, useLocation } from 'react-router'
 import { i18n, shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
+import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Loading } from '@/components/Loading'
 import { useAppSelector } from '@/hooks/redux'
 import { log } from '@/services/logger'
 import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { checkoutQueryParams } from '@/helpers/checkout'
 import { stripeKey } from '@/constants/envConfig'
 import { paymentIdKey } from '@/constants/keys'
-import { checkoutQueryParams } from '@/constants/payments'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
 import { AddressForm, CheckoutForm } from './components'
@@ -43,6 +44,7 @@ export function Checkout() {
   const { t, i18n } = useTranslation()
 
   const location = useLocation()
+  const { userIsLoading } = useAppSelector(userSelector)
   const payment = useAppSelector((state) => state.payment.payment)
   const paymentIsLoading = useAppSelector(
     (state) => state.payment.paymentIsLoading,
@@ -84,6 +86,10 @@ export function Checkout() {
         />
       </StyledCheckout>
     )
+  }
+
+  if (!isStripeReturn && userIsLoading) {
+    return <Loading message={t('checkout.loading')} fullScreen />
   }
 
   const options: StripeElementsOptions = {

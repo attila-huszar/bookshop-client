@@ -8,9 +8,9 @@ import {
 } from '@/api/payments'
 import { log } from '@/services/logger'
 import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { paymentSessionUnavailableCode } from '@/helpers/checkout'
 import { getApiError, getErrorMessage, toAppError } from '@/helpers/errors'
 import { paymentIdempotencyKey } from '@/constants/keys'
-import { paymentSessionUnavailableCode } from '@/constants/payments'
 import {
   ApiError,
   PaymentCreateIssueCode,
@@ -100,11 +100,16 @@ export const paymentRetrieve = createAsyncThunk<
   }
 >(
   'payment/paymentRetrieve',
-  async ({ paymentId, allowSucceeded = false }, { rejectWithValue }) => {
+  async (
+    { paymentId, allowSucceeded = false },
+    { rejectWithValue, signal },
+  ) => {
     let payment
     try {
-      payment = await getPaymentIntent(paymentId)
+      payment = await getPaymentIntent(paymentId, signal)
     } catch (error) {
+      signal.throwIfAborted()
+
       if (
         error instanceof HTTPError &&
         [401, 403, 404, 410].includes(error.response.status)

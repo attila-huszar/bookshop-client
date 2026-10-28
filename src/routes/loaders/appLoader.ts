@@ -1,21 +1,13 @@
 import { store } from '@/store/store'
 import { restoreCartItems } from '@/store/thunks/cart'
-import { authLoader } from './authLoader'
+import { bootstrapSession } from '@/services/session'
 
-let bootstrapPromise: Promise<null> | null = null
+export const appLoader = async () => {
+  await bootstrapSession()
 
-export const appLoader = () => {
-  bootstrapPromise ??= authLoader()
-    .then(() => {
-      // Bootstrap resets the query cache when switching between guest and authenticated
-      // states. Start basket requests afterward so their cache entries survive that reset.
-      void store.dispatch(restoreCartItems())
+  // Session transitions reset the query cache. Start basket hydration afterward;
+  // page hooks can then reuse its book requests without blocking the app shell.
+  void store.dispatch(restoreCartItems())
 
-      return null
-    })
-    .finally(() => {
-      bootstrapPromise = null
-    })
-
-  return bootstrapPromise
+  return null
 }

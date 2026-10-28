@@ -5,6 +5,8 @@ import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import { authorsApi } from '@/store/api/authorsApi'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { useAppDispatch } from '@/hooks/redux'
@@ -148,8 +150,7 @@ describe('Search', () => {
     expect(screen.getAllByText('First Book')).toHaveLength(1)
     await waitFor(() => {
       expect(
-        bookshopApi.endpoints.bookSearch.select('Author')(store.getState())
-          .data,
+        booksApi.endpoints.bookSearch.select('Author')(store.getState()).data,
       ).toEqual([book])
     })
   })
@@ -187,10 +188,10 @@ describe('Search', () => {
     await act(async () => {
       completeRequest()
       await store.dispatch(
-        bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
+        booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
       )
       await store.dispatch(
-        bookshopApi.endpoints.authorSearch.initiate('Test', {
+        authorsApi.endpoints.authorSearch.initiate('Test', {
           subscribe: false,
         }),
       )
@@ -242,11 +243,11 @@ describe('Search', () => {
       expect(previousSignals.every((signal) => signal.aborted)).toBe(true)
       await waitFor(() => {
         expect(
-          bookshopApi.endpoints.bookSearch.select('Test')(store.getState())
+          booksApi.endpoints.bookSearch.select('Test')(store.getState())
             .isError,
         ).toBe(true)
         expect(
-          bookshopApi.endpoints.authorSearch.select('Test')(store.getState())
+          authorsApi.endpoints.authorSearch.select('Test')(store.getState())
             .isError,
         ).toBe(true)
       })
@@ -300,7 +301,7 @@ describe('Search', () => {
       pendingHttpResponse(options?.signal, httpSignals),
     )
     const existingRequest = store.dispatch(
-      bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
+      booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
     )
     await waitFor(() => expect(httpSignals).toHaveLength(1))
     render(<Search />, { wrapper: Providers })

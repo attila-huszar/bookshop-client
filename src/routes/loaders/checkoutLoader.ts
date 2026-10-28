@@ -4,15 +4,15 @@ import { ROUTE } from '@/routes/route'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { store } from '@/store/store'
 import { paymentRetrieve } from '@/store/thunks/payment'
+import { bootstrapSession } from '@/services/session'
 import { sessionStorageAdapter } from '@/helpers/browserStorage'
-import { isSuccessPaymentIntentStatus } from '@/helpers/checkout'
-import { getErrorCode } from '@/helpers/errors'
-import { paymentIdKey } from '@/constants/keys'
 import {
   checkoutQueryParams,
+  isSuccessPaymentIntentStatus,
   paymentSessionUnavailableCode,
-} from '@/constants/payments'
-import { authLoader } from './authLoader'
+} from '@/helpers/checkout'
+import { getErrorCode } from '@/helpers/errors'
+import { paymentIdKey } from '@/constants/keys'
 
 export const checkoutLoader = async ({
   request,
@@ -57,8 +57,12 @@ export const checkoutLoader = async ({
     checkoutQueryParams.redirectStatus,
   )
 
-  await authLoader()
+  await bootstrapSession()
   request.signal.throwIfAborted()
+
+  if (sessionStorageAdapter.get(paymentIdKey) !== paymentId) {
+    return null
+  }
 
   const state = store.getState()
   const currentPayment = state.payment?.payment
@@ -74,14 +78,18 @@ export const checkoutLoader = async ({
   try {
     const retrievedPayment = await store
       .dispatch(
-        paymentRetrieve({
-          paymentId,
-          allowSucceeded: true,
-        }),
+        paymentRetrieve(
+          { paymentId, allowSucceeded: true },
+          { signal: request.signal },
+        ),
       )
       .unwrap()
 
     request.signal.throwIfAborted()
+
+    if (sessionStorageAdapter.get(paymentIdKey) !== paymentId) {
+      return null
+    }
 
     if (
       !isStripeReturn &&
@@ -100,7 +108,10 @@ export const checkoutLoader = async ({
   } catch (error) {
     request.signal.throwIfAborted()
 
-    if (getErrorCode(error) === paymentSessionUnavailableCode) {
+    if (
+      getErrorCode(error) === paymentSessionUnavailableCode &&
+      sessionStorageAdapter.get(paymentIdKey) === paymentId
+    ) {
       sessionStorageAdapter.remove(paymentIdKey)
       store.dispatch(paymentSessionReset())
 

@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { useBooksByPropertyQuery } from '@/store/api/booksApi'
 import { Card } from '@/components/Card'
 import { SwiperComponent } from '@/components/SwiperComponent'
+import { CacheTime } from '@/constants/cacheTimes'
 import { StyledTopSellers } from './TopSellers.style'
 
 export function TopSellers() {
   const { t } = useTranslation()
 
   const { data: booksTopSellers = [] } = useBooksByPropertyQuery('topSellers', {
-    refetchOnMountOrArgChange: cacheTimes.featured,
+    refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
 
   if (!booksTopSellers.length) {

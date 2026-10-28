@@ -7,6 +7,7 @@ import { Form, Formik } from 'formik'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
 import { CountrySelect } from './CountrySelect'
 
@@ -68,7 +69,7 @@ describe('country reference data', () => {
     expect(screen.getByText('Egyesült Államok')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(
-      bookshopApi.endpoints.countryCodes.select()(store.getState()).data?.hu,
+      usersApi.endpoints.countryCodes.select()(store.getState()).data?.hu,
     ).toBe('Hungary')
   })
 

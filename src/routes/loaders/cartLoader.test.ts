@@ -1,83 +1,36 @@
-import ky from 'ky'
-import { vi } from 'vitest'
-import * as publicApi from '@/api/baseRequest'
-import { bookshopApi } from '@/store/api/bookshopApi'
-import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { store } from '@/store/store'
 import { paymentCreate } from '@/store/thunks/payment'
-import {
-  localStorageAdapter,
-  sessionStorageAdapter,
-} from '@/helpers/browserStorage'
-import { cartKey, paymentIdKey } from '@/constants/keys'
-import { authLoader } from './authLoader'
+import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { paymentIdKey } from '@/constants/keys'
 import { cartLoader } from './cartLoader'
 
-vi.mock('@/store/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store/store')>()
-
-  return { ...actual, store: actual.createAppStore() }
-})
-vi.mock('./authLoader', () => ({ authLoader: vi.fn() }))
-
-beforeEach(() => {
-  vi.mocked(authLoader).mockResolvedValue(true)
-})
-
 afterEach(() => {
-  store.dispatch(cartClear())
   store.dispatch(paymentSessionReset())
-  store.dispatch(bookshopApi.util.resetApiState())
-  localStorageAdapter.remove(cartKey)
   sessionStorageAdapter.remove(paymentIdKey)
-  vi.restoreAllMocks()
 })
 
-describe('cartLoader checkout restoration', () => {
-  it.each(['stored', 'retrieved'] as const)(
-    'starts restoring after bootstrap and redirects a %s checkout without waiting for books',
-    async (session) => {
-      const cartItems = [{ id: 7, quantity: 2 }]
-      localStorageAdapter.set(cartKey, cartItems)
-      sessionStorageAdapter.set(paymentIdKey, 'pi_saved')
+describe('cart checkout redirect', () => {
+  it('opens Cart when there is no active checkout', () => {
+    expect(cartLoader()).toBeUndefined()
+  })
 
-      if (session === 'retrieved') {
+  it.each(['stored', 'retrieved'] as const)(
+    'redirects a %s checkout immediately',
+    (session) => {
+      if (session === 'stored') {
+        sessionStorageAdapter.set(paymentIdKey, 'pi_saved')
+      } else {
         store.dispatch(
           paymentCreate.fulfilled(
             { paymentId: 'pi_saved', paymentToken: 'secret', amount: 2000 },
             'request_saved',
-            { items: cartItems, expectedTotal: 20 },
+            { items: [{ id: 7, quantity: 2 }], expectedTotal: 20 },
           ),
         )
       }
 
-      let completeRequest!: (response: Response) => void
-      const response = new Promise<Response>((resolve) => {
-        completeRequest = resolve
-      })
-      vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
-        ky.get('https://bookshop.test/mock', {
-          retry: 0,
-          fetch: () => response,
-        }),
-      )
-
-      const redirect = await cartLoader()
-
-      expect(authLoader).toHaveBeenCalledTimes(1)
-      expect(redirect?.headers.get('Location')).toBe('/checkout')
-      expect(store.getState().cart.currentRequestId).not.toBeNull()
-      completeRequest(new Response(JSON.stringify({ id: 7, price: 10 })))
-      await Promise.all(
-        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
-      )
-      await vi.waitFor(() =>
-        expect(store.getState().cart.currentRequestId).toBeNull(),
-      )
-
-      expect(store.getState().cart.cartItems[0]?.quantity).toBe(2)
-      expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
+      expect(cartLoader()?.headers.get('Location')).toBe('/checkout')
     },
   )
 })

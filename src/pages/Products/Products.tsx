@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useBooksQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { useBooksQuery } from '@/store/api/booksApi'
 import { booksQueryArgs } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { Card } from '@/components/Card'
 import { Loading } from '@/components/Loading'
 import { useAppSelector } from '@/hooks/redux'
+import { CacheTime } from '@/constants/cacheTimes'
 import { SlidersIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter, Pagination } from './components'
 import {
@@ -24,7 +24,7 @@ export function Products() {
     isFetching,
     error: booksError,
   } = useBooksQuery(queryArgs, {
-    refetchOnMountOrArgChange: cacheTimes.catalogue,
+    refetchOnMountOrArgChange: CacheTime.FiveMinutes,
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 

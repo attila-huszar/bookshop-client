@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import { useNewsQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { useNewsQuery } from '@/store/api/newsApi'
 import { SwiperComponent } from '@/components/SwiperComponent'
+import { CacheTime } from '@/constants/cacheTimes'
 import { StyledNews } from './News.style'
 import { NewsCard } from './NewsCard'
 
 export function News() {
   const { t } = useTranslation()
 
-  const { data: newsItems = [] } = useNewsQuery({
-    refetchOnMountOrArgChange: cacheTimes.featured,
+  const { data: newsItems = [] } = useNewsQuery(undefined, {
+    refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
 
   if (!newsItems.length) {

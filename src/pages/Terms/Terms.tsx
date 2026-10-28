@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import { shopLanguage } from '@/i18n'
-import { useTermsDocumentQuery } from '@/store/api/bookshopApi'
+import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { Button } from '@/components/Button'
 import { serverUrl } from '@/constants/envConfig'
 import { Article, DownloadButton, PublishedDate } from './Terms.style'

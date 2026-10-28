@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import * as usersApi from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
 import { createAppStore } from '@/store/store'
 import { logout } from '@/store/thunks/user'
 import type { EmailOutboxEntry } from '@/types'
@@ -285,18 +286,18 @@ describe('Order emails', () => {
 
   it('clears cached outbox data on a session transition', async () => {
     const query = store.dispatch(
-      bookshopApi.endpoints.cmsEmailOutbox.initiate(criteria),
+      ordersApi.endpoints.cmsEmailOutbox.initiate(criteria),
     )
 
     await query.unwrap()
     expect(
-      bookshopApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
-        .data?.entries,
+      ordersApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState()).data
+        ?.entries,
     ).toEqual([entry])
     vi.spyOn(usersApi, 'postUserLogout').mockResolvedValue({ success: true })
     await store.dispatch(logout()).unwrap()
     expect(
-      bookshopApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
+      ordersApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
         .isUninitialized,
     ).toBe(true)
     query.unsubscribe()

@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { booksApi } from '@/store/api/booksApi'
+import { booksQueryArgs } from '@/store/selectors'
 import {
   decrementBooksCurrentPage,
   incrementBooksCurrentPage,
@@ -7,6 +9,7 @@ import {
 import { IconButton } from '@/components/Button'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { scrollToTop } from '@/helpers/scrollToTop'
+import { CacheTime } from '@/constants/cacheTimes'
 import { CaretLeftEndIcon, CaretLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
@@ -14,13 +17,21 @@ export function Pagination({ total }: { total: number }) {
   const { t } = useTranslation()
 
   const dispatch = useAppDispatch()
-  const booksCurrentPage = useAppSelector(
-    (state) => state.books.booksCurrentPage,
-  )
-  const booksPerPage = useAppSelector((state) => state.books.booksPerPage)
+  const queryArgs = useAppSelector(booksQueryArgs)
+  const { currentPage: booksCurrentPage, itemsPerPage: booksPerPage } =
+    queryArgs
+  const prefetchBooks = booksApi.usePrefetch('books', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
 
   const totalPages = Math.ceil(total / booksPerPage)
   const currentPage = booksCurrentPage
+
+  const prefetchPage = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      prefetchBooks({ ...queryArgs, currentPage: page })
+    }
+  }
 
   const getPageNumbers = () => {
     const delta = 2
@@ -68,6 +79,8 @@ export function Pagination({ total }: { total: number }) {
         }}
         icon={<CaretLeftEndIcon />}
         title={t('pagination.first')}
+        onMouseEnter={() => prefetchPage(1)}
+        onFocus={() => prefetchPage(1)}
         $size="sm"
         disabled={booksCurrentPage === 1}
       />
@@ -80,6 +93,8 @@ export function Pagination({ total }: { total: number }) {
         }}
         icon={<CaretLeftIcon />}
         title={t('pagination.previous')}
+        onMouseEnter={() => prefetchPage(currentPage - 1)}
+        onFocus={() => prefetchPage(currentPage - 1)}
         $size="sm"
         disabled={booksCurrentPage === 1}
       />
@@ -92,6 +107,8 @@ export function Pagination({ total }: { total: number }) {
         return (
           <PageSelectButton
             key={`pageSelectBtn-${page}`}
+            onMouseEnter={() => prefetchPage(page)}
+            onFocus={() => prefetchPage(page)}
             onClick={() => {
               dispatch(setBooksCurrentPage(page))
               scrollToTop()
@@ -111,6 +128,8 @@ export function Pagination({ total }: { total: number }) {
         }}
         icon={<CaretLeftIcon />}
         title={t('pagination.next')}
+        onMouseEnter={() => prefetchPage(currentPage + 1)}
+        onFocus={() => prefetchPage(currentPage + 1)}
         $size="sm"
         $flipH
         disabled={booksCurrentPage === Math.ceil(total / booksPerPage)}
@@ -124,6 +143,8 @@ export function Pagination({ total }: { total: number }) {
         }}
         icon={<CaretLeftEndIcon />}
         title={t('pagination.last')}
+        onMouseEnter={() => prefetchPage(totalPages)}
+        onFocus={() => prefetchPage(totalPages)}
         $size="sm"
         $flipH
         disabled={booksCurrentPage === Math.ceil(total / booksPerPage)}

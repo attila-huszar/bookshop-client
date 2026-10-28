@@ -1,7 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { getApiError } from '@/helpers/errors'
 import type { ApiError } from '@/types/ApiError'
-import { bookshopApi } from './api/bookshopApi'
+import { booksApi } from './api/booksApi'
+import { usersApi } from './api/usersApi'
 import type { RootState } from './store'
 
 export const booksQueryArgs = createSelector(
@@ -41,19 +42,16 @@ const isQueryLoading = (query: {
 /** Combine errors from the three featured-book queries shown on the homepage. */
 export const homeBooksErrorSelector = createSelector(
   [
-    bookshopApi.endpoints.booksByProperty.select('newRelease'),
-    bookshopApi.endpoints.booksByProperty.select('topSellers'),
-    bookshopApi.endpoints.booksByProperty.select('recommended'),
+    booksApi.endpoints.booksByProperty.select('newRelease'),
+    booksApi.endpoints.booksByProperty.select('topSellers'),
+    booksApi.endpoints.booksByProperty.select('recommended'),
   ],
   (releases, sellers, recommended) =>
     releases.error ?? sellers.error ?? recommended.error,
 )
 
 export const userSelector = createSelector(
-  [
-    (state: RootState) => state.user,
-    bookshopApi.endpoints.userProfile.select(),
-  ],
+  [(state: RootState) => state.user, usersApi.endpoints.userProfile.select()],
   (session, profile) => ({
     ...session,
     userData: session.accessToken ? (profile.data ?? null) : null,

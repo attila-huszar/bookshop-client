@@ -7,11 +7,11 @@ import {
   useDeleteTermsVersionMutation,
   usePublishTermsMutation,
   useTermsDocumentQuery,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/termsApi'
 import { TermsSettingsDialog } from './TermsSettingsDialog'
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/termsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
   useCmsTermsQuery: vi.fn(),
   useDeleteTermsVersionMutation: vi.fn(),
   useCmsTermsHistoryQuery: vi.fn(),

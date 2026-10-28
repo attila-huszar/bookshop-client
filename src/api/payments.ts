@@ -6,9 +6,9 @@ import type {
 import { authRequest } from './authRequest'
 import { PATH } from './path'
 
-export const getPaymentIntent = (paymentId: string) =>
+export const getPaymentIntent = (paymentId: string, signal?: AbortSignal) =>
   authRequest
-    .get(`${PATH.payments}/${paymentId}`, { credentials: 'include' })
+    .get(`${PATH.payments}/${paymentId}`, { credentials: 'include', signal })
     .json<PaymentIntentResponse>()
 
 export const postPaymentIntent = (

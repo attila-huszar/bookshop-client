@@ -4,7 +4,7 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { usePaymentTermsQuery } from '@/store/api/bookshopApi'
+import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
@@ -24,8 +24,8 @@ vi.mock('@/hooks/redux', () => ({
 vi.mock('@/hooks/usePaymentSubmit', () => ({
   usePaymentSubmit: vi.fn(),
 }))
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/termsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
   usePaymentTermsQuery: vi.fn(),
 }))
 

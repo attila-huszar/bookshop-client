@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { skipToken } from '@reduxjs/toolkit/query'
-import type { productLoader } from '@/routes/loaders/productLoader'
 import { ROUTE } from '@/routes/route'
-import { useBookQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { useBookQuery } from '@/store/api/booksApi'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { Loading } from '@/components/Loading'
@@ -14,6 +12,7 @@ import { Recommended } from '@/components/Recommended'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useCart } from '@/hooks/useCart'
 import { scrollToTop } from '@/helpers/scrollToTop'
+import { CacheTime } from '@/constants/cacheTimes'
 import type { Book } from '@/types'
 import { CartAddIcon, ChevronLeftIcon, imagePlaceholder } from '@/assets/svg'
 import {
@@ -31,7 +30,10 @@ export function Product() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
-  const id = useLoaderData<typeof productLoader>()
+  const [searchParams] = useSearchParams()
+  const rawId = searchParams.get('id') ?? ''
+  const parsedId = /^\d+$/.test(rawId) ? Number(rawId) : NaN
+  const id = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null
   const { cartItems, addToCart } = useCart()
   const { isMobile } = useBreakpoints()
 
@@ -40,7 +42,7 @@ export function Product() {
     isFetching,
     isError,
   } = useBookQuery(id ?? skipToken, {
-    refetchOnMountOrArgChange: cacheTimes.catalogue,
+    refetchOnMountOrArgChange: CacheTime.FiveMinutes,
   })
   const isBookInCart = cartItems.some((item) => item.id === book?.id)
 

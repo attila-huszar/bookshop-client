@@ -2,8 +2,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import { productLoader } from '@/routes/loaders/productLoader'
-import { bookshopApi, useBookQuery } from '@/store/api/bookshopApi'
+import { useBookQuery } from '@/store/api/booksApi'
 import { useCart } from '@/hooks/useCart'
 import { Product } from './Product'
 
@@ -14,7 +13,6 @@ const renderProduct = (path: string) => {
     [
       {
         path: '/book',
-        loader: productLoader,
         element: <Product />,
         hydrateFallbackElement: <></>,
       },
@@ -48,8 +46,8 @@ vi.mock('@/components/Recommended', () => ({
   Recommended: () => <div>Recommended</div>,
 }))
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/booksApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/booksApi')>()),
   useBookQuery: vi.fn(),
 }))
 
@@ -65,9 +63,6 @@ describe('Product Page', () => {
   }
 
   beforeEach(() => {
-    vi.spyOn(bookshopApi.util, 'prefetch').mockImplementation(
-      () => () => undefined,
-    )
     vi.mocked(useCart).mockReturnValue({
       cartItems: [],
       addToCart: vi.fn(),
@@ -113,10 +108,22 @@ describe('Product Page', () => {
     expect(await screen.findByText('Book not found')).toBeInTheDocument()
   })
 
-  it.each(['/book', '/book?id=Infinity', '/book?id=-1', '/book?id=1.5'])(
+  it.each(
+    [
+      '',
+      '?id=invalid',
+      '?id=0',
+      '?id=-1',
+      '?id=1.5',
+      '?id=Infinity',
+      '?id=9007199254740992',
+      '?id=0x10',
+      '?id=1e2',
+      '?id=%20',
+    ].map((search) => `/book${search}`),
+  )(
     'shows not found and skips the query for an invalid URL (%s)',
     async (path) => {
-      const prefetch = vi.spyOn(bookshopApi.util, 'prefetch')
       vi.mocked(useBookQuery).mockReturnValue({
         currentData: undefined,
         isFetching: false,
@@ -130,7 +137,6 @@ describe('Product Page', () => {
         skipToken,
         expect.any(Object),
       )
-      expect(prefetch).not.toHaveBeenCalled()
     },
   )
 })

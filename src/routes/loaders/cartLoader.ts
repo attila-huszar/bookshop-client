@@ -3,11 +3,8 @@ import { ROUTE } from '@/routes/route'
 import { store } from '@/store/store'
 import { sessionStorageAdapter } from '@/helpers/browserStorage'
 import { paymentIdKey } from '@/constants/keys'
-import { appLoader } from './appLoader'
 
-export const cartLoader = async () => {
-  await appLoader()
-
+export const cartLoader = () => {
   const state = store.getState()
   const activeSession = state.payment?.payment?.paymentToken
 

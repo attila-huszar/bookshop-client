@@ -2,14 +2,29 @@ import { i18n } from '@/i18n'
 import ky, { HTTPError } from 'ky'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as paymentsApi from '@/api/payments'
+import { paymentSessionReset } from '@/store/slices/payment'
+import { createAppStore } from '@/store/store'
 import { log } from '@/services/logger'
 import { sessionStorageAdapter } from '@/helpers/browserStorage'
-import { paymentIdempotencyKey } from '@/constants/keys'
+import { paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
+import type { PaymentIntentResponse } from '@/types'
 import { paymentCreate, paymentRetrieve } from './payment'
 
 afterEach(() => {
   vi.restoreAllMocks()
   sessionStorage.removeItem(paymentIdempotencyKey)
+  sessionStorage.removeItem(paymentIdKey)
+})
+
+const paymentResponse = (paymentId: string): PaymentIntentResponse => ({
+  id: paymentId,
+  status: 'requires_payment_method',
+  client_secret: `${paymentId}_secret`,
+  amount: 1200,
+  currency: 'usd',
+  receipt_email: null,
+  shipping: null,
+  created: 1,
 })
 
 const createHttpErrorWithStatus = async (
@@ -129,6 +144,107 @@ describe('payment thunk - paymentCreate', () => {
 })
 
 describe('payment thunk - paymentRetrieve', () => {
+  it('propagates cancellation without showing an error or accepting a late response', async () => {
+    let finish!: (response: PaymentIntentResponse) => void
+    const get = vi.spyOn(paymentsApi, 'getPaymentIntent').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    const store = createAppStore()
+    const controller = new AbortController()
+    const pending = store.dispatch(
+      paymentRetrieve({ paymentId: 'pi_old' }, { signal: controller.signal }),
+    )
+
+    controller.abort()
+    const action = await pending
+
+    expect(action.meta).toMatchObject({ aborted: true })
+    expect(get.mock.calls[0]?.[1]?.aborted).toBe(true)
+    expect(store.getState().payment).toMatchObject({
+      payment: null,
+      paymentIsLoading: false,
+      paymentRequestId: null,
+      paymentRetrieveError: null,
+    })
+    finish(paymentResponse('pi_old'))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(store.getState().payment.payment).toBeNull()
+  })
+
+  it('retains the newest checkout when an older retrieval finishes later', async () => {
+    let finish!: (response: PaymentIntentResponse) => void
+    vi.spyOn(paymentsApi, 'getPaymentIntent')
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+      )
+      .mockResolvedValueOnce(paymentResponse('pi_new'))
+    const store = createAppStore()
+    const old = store.dispatch(paymentRetrieve({ paymentId: 'pi_old' }))
+    await store.dispatch(paymentRetrieve({ paymentId: 'pi_new' })).unwrap()
+
+    finish(paymentResponse('pi_old'))
+    await old
+
+    expect(store.getState().payment).toMatchObject({
+      payment: { paymentId: 'pi_new', paymentToken: 'pi_new_secret' },
+      paymentIsLoading: false,
+      paymentRetrieveError: null,
+    })
+  })
+
+  it('does not restore a reset checkout from an in-flight retrieval', async () => {
+    let finish!: (response: PaymentIntentResponse) => void
+    vi.spyOn(paymentsApi, 'getPaymentIntent').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    const store = createAppStore()
+    const pending = store.dispatch(paymentRetrieve({ paymentId: 'pi_old' }))
+    store.dispatch(paymentSessionReset())
+
+    finish(paymentResponse('pi_old'))
+    await pending
+
+    expect(store.getState().payment).toMatchObject({
+      payment: null,
+      paymentIsLoading: false,
+      paymentRetrieveError: null,
+    })
+    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
+  })
+
+  it('does not overwrite a new checkout creation with an older retrieval', async () => {
+    let finish!: (response: PaymentIntentResponse) => void
+    vi.spyOn(paymentsApi, 'getPaymentIntent').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    const store = createAppStore()
+    const pending = store.dispatch(paymentRetrieve({ paymentId: 'pi_old' }))
+    const request = { items: [{ id: 1, quantity: 1 }], expectedTotal: 12 }
+    store.dispatch(paymentCreate.pending('new-attempt', request))
+
+    finish(paymentResponse('pi_old'))
+    await pending
+
+    expect(store.getState().payment.payment).toBeNull()
+    expect(store.getState().payment.paymentIsLoading).toBe(true)
+    const session = {
+      paymentId: 'pi_new',
+      paymentToken: 'new_token',
+      amount: 1200,
+    }
+    store.dispatch(paymentCreate.fulfilled(session, 'new-attempt', request))
+    expect(store.getState().payment.payment).toEqual(session)
+    expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_new')
+  })
+
   it.each([401, 403, 404, 410])(
     'marks HTTP %s as an unavailable session',
     async (status) => {

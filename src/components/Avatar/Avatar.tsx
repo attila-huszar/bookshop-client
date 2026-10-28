@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
+import { useUpdateUserProfileMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { getErrorMessage } from '@/helpers/errors'
 import { BinIcon, CameraIcon, SpinnerIcon, UserIcon } from '@/assets/svg'

@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
-import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
+import { booksApi, useBooksByPropertyQuery } from '@/store/api/booksApi'
+import { booksQueryArgs } from '@/store/selectors'
 import { Button } from '@/components/Button'
+import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { CacheTime } from '@/constants/cacheTimes'
 import {
   ImageItem,
   ImageWrapper,
@@ -17,9 +19,24 @@ import {
 
 export function Releases() {
   const { t } = useTranslation()
+  const queryArgs = useAppSelector(booksQueryArgs)
+  const prefetchBook = booksApi.usePrefetch('book', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
+  const prefetchBooks = booksApi.usePrefetch('books', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
+  const prefetchOptions = booksApi.usePrefetch('searchOptions', {
+    ifOlderThan: CacheTime.OneHour,
+  })
+
+  const prefetchShop = () => {
+    prefetchBooks(queryArgs)
+    prefetchOptions(undefined)
+  }
 
   const { data: booksReleases = [] } = useBooksByPropertyQuery('newRelease', {
-    refetchOnMountOrArgChange: cacheTimes.featured,
+    refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()
@@ -33,6 +50,8 @@ export function Releases() {
         <p>{t('home.releasesDescription')}</p>
         <Button
           onClick={() => void navigate(`/${ROUTE.BOOKS}`)}
+          onMouseEnter={prefetchShop}
+          onFocus={prefetchShop}
           $shadow
           $size="wide"
           $textSize="lg">
@@ -44,7 +63,10 @@ export function Releases() {
           <MobileImageWrapper>
             {featuredBooks.map((book) => (
               <MobileImageCard key={book.id}>
-                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                <Link
+                  to={`/${ROUTE.BOOK}?id=${book.id}`}
+                  onMouseEnter={() => prefetchBook(book.id)}
+                  onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                   <p>{book.title}</p>
                 </Link>
@@ -55,7 +77,10 @@ export function Releases() {
           <ImageWrapper>
             {featuredBooks.map((book, idx) => (
               <ImageItem key={book.id} $idx={idx}>
-                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                <Link
+                  to={`/${ROUTE.BOOK}?id=${book.id}`}
+                  onMouseEnter={() => prefetchBook(book.id)}
+                  onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                 </Link>
                 <MirrorImg>

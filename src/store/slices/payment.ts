@@ -10,6 +10,7 @@ import { PaymentState } from '@/types'
 const initialState: PaymentState = {
   payment: null,
   paymentIsLoading: false,
+  paymentRequestId: null,
   paymentCreateError: null,
   paymentCreateIssueCode: null,
   paymentRetrieveError: null,
@@ -28,6 +29,7 @@ const paymentSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(paymentCreate.pending, (state) => {
+        state.paymentRequestId = null
         state.paymentIsLoading = true
         state.paymentCreateError = null
         state.paymentCreateIssueCode = null
@@ -51,11 +53,17 @@ const paymentSlice = createSlice({
           'checkout.createError'
         state.paymentCreateIssueCode = action.payload?.code ?? 'unknown'
       })
-      .addCase(paymentRetrieve.pending, (state) => {
+      .addCase(paymentRetrieve.pending, (state, action) => {
+        state.paymentRequestId = action.meta.requestId
         state.paymentIsLoading = true
         state.paymentRetrieveError = null
       })
       .addCase(paymentRetrieve.fulfilled, (state, action) => {
+        if (state.paymentRequestId !== action.meta.requestId) {
+          return
+        }
+
+        state.paymentRequestId = null
         state.payment = {
           paymentId: action.payload.paymentId,
           paymentToken: action.payload.paymentToken,
@@ -65,8 +73,18 @@ const paymentSlice = createSlice({
         state.paymentRetrieveError = null
       })
       .addCase(paymentRetrieve.rejected, (state, action) => {
-        state.payment = null
+        if (state.paymentRequestId !== action.meta.requestId) {
+          return
+        }
+
+        state.paymentRequestId = null
         state.paymentIsLoading = false
+
+        if (action.meta.aborted) {
+          return
+        }
+
+        state.payment = null
         state.paymentRetrieveError =
           action.payload?.message ??
           getApiError(action.error) ??
@@ -74,6 +92,7 @@ const paymentSlice = createSlice({
           'checkout.error'
       })
       .addCase(paymentCancel.pending, (state) => {
+        state.paymentRequestId = null
         state.paymentIsLoading = true
       })
       .addCase(paymentCancel.fulfilled, () => initialState)

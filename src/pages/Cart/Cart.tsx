@@ -12,7 +12,7 @@ import { i18n } from '@/i18n'
 import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
 import { paymentCreateReset, paymentSessionReset } from '@/store/slices/payment'
-import { refreshCartItems } from '@/store/thunks/cart'
+import { refreshCartItems, restoreCartItems } from '@/store/thunks/cart'
 import { paymentCreate } from '@/store/thunks/payment'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
@@ -140,6 +140,8 @@ export function Cart() {
 
   useEffect(() => {
     scrollToTop()
+    void dispatch(restoreCartItems())
+
     return () => {
       dispatch(paymentCreateReset())
     }

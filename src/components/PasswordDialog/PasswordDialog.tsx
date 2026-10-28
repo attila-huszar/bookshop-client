@@ -1,7 +1,7 @@
 import { useImperativeHandle, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik } from 'formik'
-import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
+import { useUpdateUserProfileMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { FormikField } from '@/components/FormikField'

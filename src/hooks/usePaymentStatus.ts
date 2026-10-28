@@ -1,30 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
 import { getErrorMessage } from '@/helpers/errors'
-import type { PaymentIntentStatus } from '@/types/Stripe'
-
-export type PaymentStatusMessageOverride =
-  | { type: 'retry'; attempt: number; maxRetries: number }
-  | { type: 'failure'; details: string }
-  | { type: 'timeout'; timeoutSeconds: number }
-
-export type PaymentStatusState = {
-  intent: PaymentIntentStatus | null
-  messageOverride: PaymentStatusMessageOverride | null
-}
+import type { PaymentStatusState } from '@/types/Payment'
 
 const MAX_ATTEMPTS = 3
 const RETRY_DELAY = 5000
 const ABSOLUTE_TIMEOUT = 30000
-const INITIAL_STATUS: PaymentStatusState = {
-  intent: null,
-  messageOverride: null,
-}
+const INITIAL_STATUS: PaymentStatusState = { type: 'checking' }
 
 export function usePaymentStatus(paymentToken: string | null | undefined) {
   const stripe = useStripe()
   const [retryCount, setRetryCount] = useState(0)
-  const [status, setStatus] = useState(INITIAL_STATUS)
+  const [status, setStatus] = useState<PaymentStatusState>(INITIAL_STATUS)
   const [activePaymentToken, setActivePaymentToken] = useState(paymentToken)
 
   // Keep the final result when checkout clears its session after success.
@@ -41,19 +28,10 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
     let retryTimeoutId: ReturnType<typeof setTimeout> | undefined
     let active = true
 
-    const markSettled = () => {
+    const stopPolling = () => {
       active = false
       clearTimeout(retryTimeoutId)
       clearTimeout(absoluteTimeoutId)
-    }
-
-    const scheduleRetry = (attempt: number) => {
-      retryTimeoutId = setTimeout(
-        () => {
-          void retrievePaymentStatus(attempt + 1)
-        },
-        RETRY_DELAY * 2 ** (attempt - 1),
-      )
     }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
@@ -73,45 +51,42 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
           throw new Error(error.message)
         }
 
-        setStatus({
-          intent: paymentIntent.status,
-          messageOverride: null,
-        })
+        setStatus({ type: paymentIntent.status })
 
         if (paymentIntent.status !== 'processing') {
-          markSettled()
+          stopPolling()
 
           return
-        }
-
-        if (attempt < MAX_ATTEMPTS) {
-          scheduleRetry(attempt)
         }
       } catch (error) {
         if (!active) {
           return
         }
 
-        if (attempt < MAX_ATTEMPTS) {
+        if (attempt >= MAX_ATTEMPTS) {
           setStatus({
-            intent: null,
-            messageOverride: {
-              type: 'retry',
-              attempt,
-              maxRetries: MAX_ATTEMPTS,
-            },
+            type: 'failure',
+            details: getErrorMessage(error, ''),
           })
-          scheduleRetry(attempt)
-        } else {
-          setStatus({
-            intent: null,
-            messageOverride: {
-              type: 'failure',
-              details: getErrorMessage(error, ''),
-            },
-          })
-          markSettled()
+          stopPolling()
+
+          return
         }
+
+        setStatus({
+          type: 'retry',
+          attempt: attempt + 1,
+          maxAttempts: MAX_ATTEMPTS,
+        })
+      }
+
+      if (attempt < MAX_ATTEMPTS) {
+        retryTimeoutId = setTimeout(
+          () => {
+            void retrievePaymentStatus(attempt + 1)
+          },
+          RETRY_DELAY * 2 ** (attempt - 1),
+        )
       }
     }
 
@@ -119,19 +94,17 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
       if (!active) {
         return
       }
+
       setStatus({
-        intent: null,
-        messageOverride: {
-          type: 'timeout',
-          timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
-        },
+        type: 'timeout',
+        timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
       })
-      markSettled()
+      stopPolling()
     }, ABSOLUTE_TIMEOUT)
 
     void retrievePaymentStatus()
 
-    return markSettled
+    return stopPolling
   }, [retryCount, paymentToken, stripe])
 
   const retry = () => {

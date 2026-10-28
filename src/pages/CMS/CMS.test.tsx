@@ -7,6 +7,8 @@ import ky, { type KyInstance } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
+import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
 import { toast } from '@/components/AppToaster'
 import {
@@ -355,8 +357,8 @@ describe('CMS deletion controls', () => {
       )
       const endpoint =
         entity === 'orders'
-          ? bookshopApi.endpoints.cmsOrders
-          : bookshopApi.endpoints.cmsUsers
+          ? ordersApi.endpoints.cmsOrders
+          : usersApi.endpoints.cmsUsers
       expect(
         endpoint.select()(store.getState()).data?.[0]?.deletedAt,
       ).toBeTruthy()

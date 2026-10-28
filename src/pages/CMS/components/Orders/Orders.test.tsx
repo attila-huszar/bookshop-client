@@ -6,6 +6,7 @@ import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
 import { createAppStore } from '@/store/store'
 import type { CmsOrder, CMSOutletContext, EmailOutboxEntry } from '@/types'
 import { Orders } from './Orders'
@@ -58,7 +59,7 @@ beforeEach(async () => {
   store = createAppStore()
   emailStatus = 'sent'
   await store.dispatch(
-    bookshopApi.util.upsertQueryData('cmsOrders', undefined, [
+    ordersApi.util.upsertQueryData('cmsOrders', undefined, [
       order,
       { ...order, id: 2, paymentId: 'pi_test_extra', firstName: 'Reader Two' },
       {
@@ -76,7 +77,17 @@ beforeEach(async () => {
       },
     ]),
   )
-  vi.spyOn(privateApi, 'authRequest').mockImplementation((_url, options) => {
+  const cachedOrders = ordersApi.endpoints.cmsOrders.select()(
+    store.getState(),
+  ).data
+  vi.spyOn(privateApi, 'authRequest').mockImplementation((url, options) => {
+    if (url === 'cms/orders') {
+      return ky.get('https://bookshop.test/mock', {
+        retry: 0,
+        fetch: () => Promise.resolve(Response.json(cachedOrders)),
+      })
+    }
+
     const paymentId = (options?.searchParams as { paymentId: string }).paymentId
     const entry =
       paymentId === 'pi_test'
@@ -144,7 +155,10 @@ describe('CMS order email history', () => {
   it('fetches email history only when expanded, without opening the order editor', async () => {
     const user = userEvent.setup()
     renderOrders()
-    expect(privateApi.authRequest).not.toHaveBeenCalled()
+    expect(privateApi.authRequest).not.toHaveBeenCalledWith(
+      'cms/email-outbox',
+      expect.anything(),
+    )
     const button = screen.getByRole('button', {
       name: 'Show emails for order #1',
     })
@@ -230,7 +244,7 @@ describe('CMS order email history', () => {
         within(history).getByText('Failed', { selector: 'span' }),
       ).toBeInTheDocument(),
     )
-    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(3)
     await user.click(screen.getByRole('checkbox', { name: 'Select order #1' }))
     expect(context.setSelectedItems).toHaveBeenCalled()
     expect(context.setIsDialogOpen).not.toHaveBeenCalled()

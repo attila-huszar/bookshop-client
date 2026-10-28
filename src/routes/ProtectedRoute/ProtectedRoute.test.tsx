@@ -1,19 +1,19 @@
 import { Provider } from 'react-redux'
-import { MemoryRouter, Route, Routes, useLoaderData } from 'react-router'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import ky from 'ky'
 import { vi } from 'vitest'
+import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { usersApi } from '@/store/api/usersApi'
 import { authSessionChanged } from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
 import { UserRole } from '@/types'
 import { ProtectedRoute } from './ProtectedRoute'
 
-vi.mock('react-router', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('react-router')>()),
-  useLoaderData: vi.fn(),
-}))
-
 describe('ProtectedRoute', () => {
+  let view: ReturnType<typeof render> | undefined
   let store: ReturnType<typeof createAppStore>
   const profile = {
     uuid: 'user-uuid',
@@ -31,12 +31,12 @@ describe('ProtectedRoute', () => {
     store = createAppStore()
     store.dispatch(authSessionChanged('access-token'))
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('userProfile', undefined, profile),
+      usersApi.util.upsertQueryData('userProfile', undefined, profile),
     )
-    vi.mocked(useLoaderData).mockReturnValue(true)
   })
 
   afterEach(() => {
+    view?.unmount()
     act(() => {
       store.dispatch(bookshopApi.util.resetApiState())
     })
@@ -44,7 +44,7 @@ describe('ProtectedRoute', () => {
   })
 
   const renderRoute = (adminRequired = false) =>
-    render(
+    (view = render(
       <Provider store={store}>
         <MemoryRouter initialEntries={['/protected']}>
           <Routes>
@@ -57,15 +57,77 @@ describe('ProtectedRoute', () => {
           </Routes>
         </MemoryRouter>
       </Provider>,
-    )
+    ))
 
   it('renders authorized content', () => {
     renderRoute()
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
   })
 
-  it('honors a rejected loader authorization', () => {
-    vi.mocked(useLoaderData).mockReturnValue(false)
+  it('waits for a profile before mounting a private page', async () => {
+    store.dispatch(bookshopApi.util.resetApiState())
+    let finish!: (response: Response) => void
+    const response = new Promise<Response>((resolve) => {
+      finish = resolve
+    })
+    vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
+      ky.get('https://bookshop.test/mock', {
+        retry: 0,
+        fetch: () => response,
+      }),
+    )
+
+    renderRoute(true)
+    expect(screen.getByRole('status')).toBeInTheDocument()
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+    expect(screen.queryByText('Login Page')).not.toBeInTheDocument()
+
+    finish(Response.json(profile))
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument()
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps private content unmounted on a profile failure and allows retry', async () => {
+    store.dispatch(bookshopApi.util.resetApiState())
+    let failed = true
+    vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
+      ky.get('https://bookshop.test/mock', {
+        retry: 0,
+        fetch: () =>
+          Promise.resolve(
+            failed
+              ? Response.json({}, { status: 503 })
+              : Response.json(profile),
+          ),
+      }),
+    )
+
+    renderRoute()
+    const refresh = await screen.findByRole('button', { name: 'Refresh' })
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+    expect(screen.queryByText('Login Page')).not.toBeInTheDocument()
+
+    failed = false
+    await userEvent.click(refresh)
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument()
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
+  })
+
+  it('denies admin access to a regular user', async () => {
+    await store.dispatch(
+      usersApi.util.upsertQueryData('userProfile', undefined, {
+        ...profile,
+        role: UserRole.User,
+      }),
+    )
+    renderRoute(true)
+
+    expect(screen.getByText('Login Page')).toBeInTheDocument()
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+  })
+
+  it('redirects guests without rendering private content', () => {
+    store.dispatch(authSessionChanged(null))
     renderRoute()
     expect(screen.getByText('Login Page')).toBeInTheDocument()
   })
@@ -84,7 +146,7 @@ describe('ProtectedRoute', () => {
     renderRoute(true)
     await act(async () => {
       await store.dispatch(
-        bookshopApi.util.upsertQueryData('userProfile', undefined, {
+        usersApi.util.upsertQueryData('userProfile', undefined, {
           ...profile,
           role: UserRole.User,
         }),

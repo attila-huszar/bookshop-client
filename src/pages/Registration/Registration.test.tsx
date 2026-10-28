@@ -3,20 +3,21 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import * as usersApi from '@/api/users'
+import * as usersTransport from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
 import { Registration } from './Registration'
 
 describe('Registration country detection', () => {
   let store: ReturnType<typeof createAppStore>
   let detectCountry: (value: { country: string }) => void
-  let countryResponse: ReturnType<typeof usersApi.getUserCountry>
+  let countryResponse: ReturnType<typeof usersTransport.getUserCountry>
 
   beforeEach(async () => {
     store = createAppStore()
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('countryCodes', undefined, {
+      usersApi.util.upsertQueryData('countryCodes', undefined, {
         hu: 'Hungary',
         us: 'United States',
         gb: 'United Kingdom',
@@ -25,7 +26,7 @@ describe('Registration country detection', () => {
     countryResponse = new Promise((resolve) => {
       detectCountry = resolve
     })
-    vi.spyOn(usersApi, 'getUserCountry').mockReturnValue(countryResponse)
+    vi.spyOn(usersTransport, 'getUserCountry').mockReturnValue(countryResponse)
   })
 
   afterEach(() => {

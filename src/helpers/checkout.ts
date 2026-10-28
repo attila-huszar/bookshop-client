@@ -3,30 +3,47 @@ import type { TFunction } from 'i18next'
 import type {
   Cart,
   PaymentIntentStatus,
+  PaymentStatusState,
   StripeError,
   StripeErrorType,
 } from '@/types'
+
+export const checkoutQueryParams = {
+  paymentIntent: 'payment_intent',
+  paymentToken: 'payment_intent_client_secret',
+  redirectStatus: 'redirect_status',
+} as const
+
+export const paymentSessionUnavailableCode = 'session_unavailable'
+
+const successStatuses = [
+  'requires_capture',
+  'succeeded',
+] as const satisfies readonly PaymentIntentStatus[]
+
+export const paymentStatusEmoji = {
+  // PaymentIntent statuses returned by Stripe.
+  requires_payment_method: '💳',
+  requires_confirmation: '🧾',
+  requires_action: '🔐',
+  processing: '⏳',
+  requires_capture: '🔒',
+  succeeded: '✅',
+  canceled: '❌',
+
+  // Local polling states and the unknown-status display fallback.
+  checking: '⏳',
+  retry: '🔄',
+  timeout: '⏱️',
+  failure: '⚠️',
+  unknown: '❓',
+} as const satisfies Record<PaymentStatusState['type'] | 'unknown', string>
 
 const retryableStripeErrorTypes: readonly StripeErrorType[] = [
   'api_connection_error',
   'api_error',
   'rate_limit_error',
 ]
-
-const successStatuses = [
-  'succeeded',
-  'requires_capture',
-] as const satisfies readonly PaymentIntentStatus[]
-
-const statusEmojiMap: Record<PaymentIntentStatus, string> = {
-  succeeded: '✅',
-  processing: '⏳',
-  requires_payment_method: '💳',
-  requires_confirmation: '⚠️',
-  requires_action: '❗',
-  canceled: '❌',
-  requires_capture: '🔒',
-}
 
 export const calculateTotalAmount = (cartItems: Cart[]): number =>
   cartItems.reduce(
@@ -47,14 +64,14 @@ export const formatAmount = (
   })
 
 export const isSuccessPaymentIntentStatus = (
-  status: PaymentIntentStatus | null,
+  status: unknown,
 ): status is (typeof successStatuses)[number] =>
   successStatuses.some((successStatus) => successStatus === status)
 
 export const formatPaymentStatus = (
   status: PaymentIntentStatus | undefined,
 ): string => {
-  const emoji = status ? statusEmojiMap[status] : '❓'
+  const emoji = paymentStatusEmoji[status ?? 'unknown']
   const formattedStatus = status
     ? i18n.t(`payment.labels.${status}`)
     : i18n.t('common.unknown')

@@ -5,6 +5,7 @@ import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { booksQueryArgs } from '@/store/selectors'
 import {
@@ -22,7 +23,7 @@ describe('Filter', () => {
   beforeEach(async () => {
     store = createAppStore()
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+      booksApi.util.upsertQueryData('searchOptions', undefined, {
         genre: ['Fiction', 'Non-Fiction'],
         price: [0, 100],
         publishYear: [1900, 2020],

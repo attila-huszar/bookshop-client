@@ -4,7 +4,7 @@ import { i18n } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAcceptPaymentTermsMutation } from '@/store/api/bookshopApi'
+import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
 import type { CheckoutTerms } from '@/types'
 import { usePaymentSubmit } from './usePaymentSubmit'
 
@@ -17,8 +17,8 @@ vi.mock('@stripe/react-stripe-js', () => ({
   useElements: vi.fn(),
   useStripe: vi.fn(),
 }))
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/termsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
   useAcceptPaymentTermsMutation: vi.fn(),
 }))
 

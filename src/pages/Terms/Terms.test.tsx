@@ -2,7 +2,7 @@ import { useParams } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useTermsDocumentQuery } from '@/store/api/bookshopApi'
+import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { Terms } from './Terms'
 
 vi.mock('react-router', async (importOriginal) => ({
@@ -10,8 +10,8 @@ vi.mock('react-router', async (importOriginal) => ({
   useParams: vi.fn(),
 }))
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/termsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
   useTermsDocumentQuery: vi.fn(),
 }))
 

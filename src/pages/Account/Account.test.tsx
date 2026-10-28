@@ -5,7 +5,7 @@ import { vi } from 'vitest'
 import {
   useUpdateAvatarMutation,
   useUpdateUserProfileMutation,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/usersApi'
 import { useAppSelector } from '@/hooks/redux'
 import { Account } from './Account'
 
@@ -18,8 +18,8 @@ vi.mock('@/store/selectors', () => ({
   userSelector: vi.fn(),
 }))
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/usersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/usersApi')>()),
   useUpdateAvatarMutation: vi.fn(),
   useUpdateUserProfileMutation: vi.fn(),
 }))

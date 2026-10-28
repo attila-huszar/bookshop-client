@@ -1,10 +1,7 @@
 import { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
-import {
-  useAddUserMutation,
-  useUpdateUserMutation,
-} from '@/store/api/bookshopApi'
+import { useAddUserMutation, useUpdateUserMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { Button } from '@/components/Button'
 import { CountrySelect } from '@/components/CountrySelect'

@@ -44,11 +44,35 @@ describe('interface translations', () => {
 
         return [...new Set(matches)].sort()
       }
+      const markup = (value: string) =>
+        Array.from(
+          value.matchAll(/<\/?[a-z][^>]*>/gi),
+          (match) => match[0],
+        ).sort()
+
       expect(englishText?.trim()).toBeTruthy()
       expect(hungarianText?.trim()).toBeTruthy()
       expect({ [key]: placeholders(hungarianText!) }).toEqual({
         [key]: placeholders(englishText!),
       })
+      expect({ [key]: markup(hungarianText!) }).toEqual({
+        [key]: markup(englishText!),
+      })
     }
   })
+
+  it.each([
+    ['en', en],
+    ['hu', hu],
+  ] as const)(
+    'keeps decorative emojis out of the %s resources',
+    (_language, resource) => {
+      const messagesWithEmoji = Object.entries(flatten(resource)).filter(
+        ([, text]) =>
+          /\p{Extended_Pictographic}|\p{Emoji_Presentation}/u.test(text),
+      )
+
+      expect(messagesWithEmoji).toEqual([])
+    },
+  )
 })

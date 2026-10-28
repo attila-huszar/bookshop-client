@@ -1,6 +1,7 @@
 import { HTTPError } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
 import { authSessionChanged } from '@/store/slices/user'
 import { store as appStore, createAppStore } from '@/store/store'
 import { expireAuthSession, fetchAuthTokens } from '@/store/thunks/user'
@@ -403,7 +404,7 @@ describe('direct Ky workflows', () => {
   it('clears the session and private cache when checkout rejects the refreshed token', async () => {
     store.dispatch(authSessionChanged('old-token'))
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, []),
+      ordersApi.util.upsertQueryData('userOrders', undefined, []),
     )
     privateApi.configureAuthRequest({
       getAccessToken: () => store.getState().user.accessToken,
@@ -428,8 +429,7 @@ describe('direct Ky workflows', () => {
 
     expect(store.getState().user.accessToken).toBeNull()
     expect(
-      bookshopApi.endpoints.userOrders.select()(store.getState())
-        .isUninitialized,
+      ordersApi.endpoints.userOrders.select()(store.getState()).isUninitialized,
     ).toBe(true)
     expect(capturedRequests).toHaveLength(3)
     expect(capturedRequests[1]!.url).toBe(
@@ -517,6 +517,34 @@ describe('direct Ky workflows', () => {
     expect(capturedRequests[1]!.headers.get('authorization')).toBe(
       'Bearer new-token',
     )
+  })
+
+  it('aborts payment retrieval with its caller without refreshing or expiring the session', async () => {
+    fetchMock.mockImplementation(
+      (input) =>
+        new Promise((_resolve, reject) => {
+          const signal = requestOf(input).signal
+          signal.addEventListener(
+            'abort',
+            () => reject(new DOMException('Aborted', 'AbortError')),
+            { once: true },
+          )
+        }),
+    )
+    const controller = new AbortController()
+    const pending = getPaymentIntent('pi_guest', controller.signal).catch(
+      (error: unknown) => error,
+    )
+    await vi.waitFor(() => expect(capturedRequests).toHaveLength(1))
+
+    controller.abort()
+
+    expect(await pending).toMatchObject({ name: 'AbortError' })
+    expect(capturedRequests[0]!.signal.aborted).toBe(true)
+    expect(capturedRequests[0]!.credentials).toBe('include')
+    expect(refresh).not.toHaveBeenCalled()
+    expect(expire).not.toHaveBeenCalled()
+    expect(accessToken).toBe('old-token')
   })
 
   it('preserves guest credentials and the same idempotency key on identical checkout retries', async () => {

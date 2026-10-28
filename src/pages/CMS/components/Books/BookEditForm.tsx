@@ -2,11 +2,8 @@ import { ChangeEvent, FC, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { uploadProductImage } from '@/api/cms'
-import {
-  useAddBookMutation,
-  useCmsAuthorsQuery,
-  useUpdateBookMutation,
-} from '@/store/api/bookshopApi'
+import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
+import { useAddBookMutation, useUpdateBookMutation } from '@/store/api/booksApi'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'

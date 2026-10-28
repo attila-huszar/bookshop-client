@@ -15,12 +15,14 @@ const retrieved = (status: PaymentIntentStatus): RetrievalResult => ({
   paymentIntent: { status } as PaymentIntent,
 })
 
+const stripe = {
+  retrievePaymentIntent,
+} as unknown as NonNullable<ReturnType<typeof useStripe>>
+
 beforeEach(() => {
   vi.useFakeTimers()
   retrievePaymentIntent.mockReset()
-  vi.mocked(useStripe).mockReturnValue({
-    retrievePaymentIntent,
-  } as unknown as ReturnType<typeof useStripe>)
+  vi.mocked(useStripe).mockReturnValue(stripe)
 })
 
 afterEach(() => {
@@ -29,6 +31,35 @@ afterEach(() => {
 })
 
 describe('Payment status polling', () => {
+  it.each([undefined, null, ''])(
+    'does not start requests or timers without a payment token (%s)',
+    (token) => {
+      const { result } = renderHook(() => usePaymentStatus(token))
+
+      expect(result.current.status).toEqual({ type: 'checking' })
+      expect(retrievePaymentIntent).not.toHaveBeenCalled()
+      expect(vi.getTimerCount()).toBe(0)
+    },
+  )
+
+  it('waits for Stripe to become available before starting its polling window', async () => {
+    vi.mocked(useStripe).mockReturnValue(null)
+    retrievePaymentIntent.mockResolvedValue(retrieved('succeeded'))
+    const { result, rerender } = renderHook(() => usePaymentStatus('secret'))
+
+    await act(() => vi.advanceTimersByTimeAsync(60000))
+    expect(retrievePaymentIntent).not.toHaveBeenCalled()
+    expect(vi.getTimerCount()).toBe(0)
+
+    vi.mocked(useStripe).mockReturnValue(stripe)
+    rerender()
+    await act(() => vi.advanceTimersByTimeAsync(0))
+
+    expect(result.current.status).toEqual({ type: 'succeeded' })
+    expect(retrievePaymentIntent).toHaveBeenCalledTimes(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it('stops polling and clears its timers once processing finishes', async () => {
     retrievePaymentIntent
       .mockResolvedValueOnce(retrieved('processing'))
@@ -36,10 +67,10 @@ describe('Payment status polling', () => {
     const { result } = renderHook(() => usePaymentStatus('secret'))
 
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(result.current.status.intent).toBe('processing')
+    expect(result.current.status.type).toBe('processing')
 
     await act(() => vi.advanceTimersByTimeAsync(5000))
-    expect(result.current.status.intent).toBe('succeeded')
+    expect(result.current.status.type).toBe('succeeded')
     expect(vi.getTimerCount()).toBe(0)
 
     await act(() => vi.advanceTimersByTimeAsync(30000))
@@ -56,18 +87,51 @@ describe('Payment status polling', () => {
     )
 
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(result.current.status.intent).toBe('succeeded')
+    expect(result.current.status.type).toBe('succeeded')
 
     rerender(undefined)
-    expect(result.current.status.intent).toBe('succeeded')
+    expect(result.current.status.type).toBe('succeeded')
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(1)
 
     rerender('second-secret')
     expect(result.current.status).toEqual({
-      intent: null,
-      messageOverride: null,
+      type: 'checking',
     })
     expect(retrievePaymentIntent).toHaveBeenLastCalledWith('second-secret')
+  })
+
+  it('keeps the processing result until the deadline after three unsuccessful checks', async () => {
+    retrievePaymentIntent.mockResolvedValue(retrieved('processing'))
+    const { result } = renderHook(() => usePaymentStatus('secret'))
+
+    await act(() => vi.advanceTimersByTimeAsync(15000))
+    expect(retrievePaymentIntent).toHaveBeenCalledTimes(3)
+    expect(result.current.status).toEqual({ type: 'processing' })
+    expect(vi.getTimerCount()).toBe(1)
+
+    await act(() => vi.advanceTimersByTimeAsync(15000))
+    expect(result.current.status).toEqual({
+      type: 'timeout',
+      timeoutSeconds: 30,
+    })
+    expect(retrievePaymentIntent).toHaveBeenCalledTimes(3)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('handles Stripe error results with the same bounded retries as rejected requests', async () => {
+    retrievePaymentIntent.mockResolvedValue({
+      error: { type: 'api_error', message: 'Payment service unavailable' },
+    })
+    const { result } = renderHook(() => usePaymentStatus('secret'))
+
+    await act(() => vi.advanceTimersByTimeAsync(15000))
+
+    expect(result.current.status).toEqual({
+      type: 'failure',
+      details: 'Payment service unavailable',
+    })
+    expect(retrievePaymentIntent).toHaveBeenCalledTimes(3)
+    expect(vi.getTimerCount()).toBe(0)
   })
 
   it('ignores an old payment response after switching to another payment', async () => {
@@ -87,13 +151,13 @@ describe('Payment status polling', () => {
 
     rerender('second-secret')
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(result.current.status.intent).toBe('processing')
+    expect(result.current.status.type).toBe('processing')
 
     await act(async () => {
       finishOldPayment?.(retrieved('succeeded'))
       await vi.advanceTimersByTimeAsync(0)
     })
-    expect(result.current.status.intent).toBe('processing')
+    expect(result.current.status.type).toBe('processing')
   })
 
   it('ignores a response after timeout and starts a fresh polling window on retry', async () => {
@@ -109,22 +173,21 @@ describe('Payment status polling', () => {
     const { result } = renderHook(() => usePaymentStatus('secret'))
 
     await act(() => vi.advanceTimersByTimeAsync(30000))
-    expect(result.current.status.messageOverride?.type).toBe('timeout')
+    expect(result.current.status.type).toBe('timeout')
     expect(vi.getTimerCount()).toBe(0)
 
     await act(async () => {
       finishTimedOutPayment?.(retrieved('requires_payment_method'))
       await vi.advanceTimersByTimeAsync(0)
     })
-    expect(result.current.status.messageOverride?.type).toBe('timeout')
+    expect(result.current.status.type).toBe('timeout')
 
     act(() => result.current.retry())
     expect(result.current.status).toEqual({
-      intent: null,
-      messageOverride: null,
+      type: 'checking',
     })
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(result.current.status.intent).toBe('succeeded')
+    expect(result.current.status.type).toBe('succeeded')
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(2)
   })
 
@@ -149,6 +212,12 @@ describe('Payment status polling', () => {
     })
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(1)
 
+    expect(result.current.status).toEqual({
+      type: 'retry',
+      attempt: 2,
+      maxAttempts: 3,
+    })
+
     await act(async () => {
       await i18n.changeLanguage('hu')
     })
@@ -159,15 +228,21 @@ describe('Payment status polling', () => {
       await vi.advanceTimersByTimeAsync(5000)
     })
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(2)
+    expect(result.current.status).toEqual({
+      type: 'retry',
+      attempt: 3,
+      maxAttempts: 3,
+    })
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10000)
     })
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(3)
-    expect(result.current.status.messageOverride).toEqual({
+    expect(result.current.status).toEqual({
       type: 'failure',
       details: '',
     })
+    expect(vi.getTimerCount()).toBe(0)
   })
 
   it('keeps the original absolute timeout after a language change', async () => {
@@ -185,7 +260,7 @@ describe('Payment status polling', () => {
     })
 
     expect(retrievePaymentIntent).toHaveBeenCalledTimes(1)
-    expect(result.current.status.messageOverride).toEqual({
+    expect(result.current.status).toEqual({
       type: 'timeout',
       timeoutSeconds: 30,
     })

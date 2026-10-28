@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { type NavigateOptions, useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
 import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
-import { isSuccessPaymentIntentStatus } from '@/helpers/checkout'
+import {
+  isSuccessPaymentIntentStatus,
+  paymentStatusEmoji,
+} from '@/helpers/checkout'
 import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
@@ -20,80 +23,57 @@ export function PaymentStatus() {
   const dispatch = useAppDispatch()
   const payment = useAppSelector((state) => state.payment.payment)
   const { status, retry } = usePaymentStatus(payment?.paymentToken)
-  const hasHandledSuccessfulPayment = useRef(false)
+  const { type } = status
+  const handledPaymentId = useRef<string | null>(null)
+  const paymentId = payment?.paymentId
 
-  const isStripeSuccess = isSuccessPaymentIntentStatus(status.intent)
+  const isStripeSuccess = isSuccessPaymentIntentStatus(type)
 
   useEffect(() => {
-    if (!isStripeSuccess || hasHandledSuccessfulPayment.current) {
+    if (
+      !isStripeSuccess ||
+      !paymentId ||
+      handledPaymentId.current === paymentId
+    ) {
       return
     }
 
-    hasHandledSuccessfulPayment.current = true
+    handledPaymentId.current = paymentId
 
     dispatch(cartClear())
     dispatch(paymentSessionReset())
-  }, [dispatch, isStripeSuccess])
+  }, [dispatch, isStripeSuccess, paymentId])
 
-  const handleBackToShop = () => {
+  const leaveCheckout = (path: string, options?: NavigateOptions) => {
     dispatch(paymentSessionReset())
-    void navigate('/')
-  }
-
-  const handleBackToCart = () => {
-    dispatch(paymentSessionReset())
-    void navigate(`/${ROUTE.CART}`, { replace: true })
+    void navigate(path, options)
   }
 
   const canReturnToCart =
-    status.intent === 'requires_payment_method' || status.intent === 'canceled'
-  const canRetryStatus =
-    status.messageOverride?.type === 'failure' ||
-    status.messageOverride?.type === 'timeout'
+    type === 'requires_payment_method' || type === 'canceled'
+  const canRetryStatus = type === 'failure' || type === 'timeout'
   const canReturnToCheckout =
-    status.intent === 'requires_action' ||
-    status.intent === 'requires_confirmation'
+    type === 'requires_action' || type === 'requires_confirmation'
 
-  const handleReturnToCheckout = () => {
-    void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
-  }
+  const messageKey = isStripeSuccess
+    ? 'paymentReceived'
+    : type === 'failure'
+      ? 'fetchFailed'
+      : type
 
-  let primaryLine = t('payment.status.checking')
+  const primaryLine = t(
+    `payment.status.${messageKey}`,
+    status.type === 'failure'
+      ? { details: status.details || t('common.unknownError') }
+      : status,
+  )
 
-  if (isSuccessPaymentIntentStatus(status.intent)) {
-    primaryLine = t('payment.status.paymentReceived')
-  } else if (status.messageOverride) {
-    switch (status.messageOverride.type) {
-      case 'retry':
-        primaryLine = t('payment.status.retry', {
-          attempt: status.messageOverride.attempt,
-          maxRetries: status.messageOverride.maxRetries,
-        })
-        break
-
-      case 'failure':
-        primaryLine = t('payment.status.fetchFailed', {
-          details: status.messageOverride.details || t('common.unknownError'),
-        })
-        break
-
-      case 'timeout':
-        primaryLine = t('payment.status.timeout', {
-          timeoutSeconds: status.messageOverride.timeoutSeconds,
-        })
-        break
-    }
-  } else if (status.intent !== null) {
-    primaryLine = t(`payment.status.${status.intent}`)
-  }
-
-  const isWarning = canReturnToCart || canReturnToCheckout
+  const isPending = !isStripeSuccess && !canReturnToCart && !canReturnToCheckout
   const animation = isStripeSuccess
     ? checkmarkAnim
-    : isWarning
-      ? exclamationAnim
-      : clockAnim
-  const isLooping = !isStripeSuccess && !isWarning
+    : isPending
+      ? clockAnim
+      : exclamationAnim
 
   return (
     <StyledPaymentStatus>
@@ -102,26 +82,32 @@ export function PaymentStatus() {
         <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie src={animation} autoplay loop={isLooping} />
+        <Lottie src={animation} autoplay loop={isPending} />
       </LottieWrapper>
-      <p>{primaryLine}</p>
+      <p>
+        <span aria-hidden="true">{paymentStatusEmoji[type]}</span> {primaryLine}
+      </p>
       {canRetryStatus && (
         <button onClick={retry} type="button">
           {t('payment.actions.checkAgain')}
         </button>
       )}
       {canReturnToCheckout && (
-        <button onClick={handleReturnToCheckout} type="button">
+        <button
+          onClick={() => void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })}
+          type="button">
           {t('payment.actions.returnToCheckout')}
         </button>
       )}
       {canReturnToCart && (
-        <button onClick={handleBackToCart} type="button">
+        <button
+          onClick={() => leaveCheckout(`/${ROUTE.CART}`, { replace: true })}
+          type="button">
           {t('common.actions.backToCart')}
         </button>
       )}
       {(canReturnToCart || isStripeSuccess) && (
-        <button onClick={handleBackToShop} type="button">
+        <button onClick={() => leaveCheckout('/')} type="button">
           {t('common.actions.backToShop')}
         </button>
       )}

@@ -6,6 +6,8 @@ import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
+import { usersApi } from '@/store/api/usersApi'
 import { authSessionChanged } from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
 import { type Order, UserRole } from '@/types'
@@ -45,7 +47,7 @@ beforeEach(async () => {
   store = createAppStore()
   store.dispatch(authSessionChanged('access-token'))
   await store.dispatch(
-    bookshopApi.util.upsertQueryData('userProfile', undefined, {
+    usersApi.util.upsertQueryData('userProfile', undefined, {
       uuid: 'reader',
       firstName: 'July',
       lastName: 'Smith',
@@ -137,12 +139,13 @@ describe('Orders page', () => {
     expect(privateApi.authRequest).toHaveBeenCalledOnce()
   })
 
-  it('renders cached orders without fetching them again', async () => {
+  it('shows cached orders immediately and refreshes on each entry', async () => {
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, [order]),
+      ordersApi.util.upsertQueryData('userOrders', undefined, [order]),
     )
 
-    renderOrders()
+    nextResponse = () => Promise.resolve(Response.json([order]))
+    const view = renderOrders()
 
     expect(
       screen.getByRole('heading', { name: /july's recent orders/i }),
@@ -154,12 +157,25 @@ describe('Orders page', () => {
     ).toBeInTheDocument()
     expect(screen.getByText(/status:/i)).toBeInTheDocument()
     expect(screen.getByText(/payment id:/i)).toBeInTheDocument()
-    expect(privateApi.authRequest).not.toHaveBeenCalled()
+    await act(async () => {
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
+    view.unmount()
+    renderOrders()
+    await act(async () => {
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
   })
 
   it('keeps cached orders visible during a refresh and settles a failed request', async () => {
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, [order]),
+      ordersApi.util.upsertQueryData('userOrders', undefined, [order]),
     )
     let failRequest!: (error: Error) => void
     const response = new Promise<Response>((_resolve, reject) => {
@@ -168,10 +184,6 @@ describe('Orders page', () => {
     nextResponse = () => response
 
     renderOrders()
-
-    act(() => {
-      store.dispatch(bookshopApi.util.invalidateTags(['Order']))
-    })
 
     expect(screen.getByText(/order #11/i)).toBeInTheDocument()
     expect(screen.queryByText(/loading your orders/i)).not.toBeInTheDocument()

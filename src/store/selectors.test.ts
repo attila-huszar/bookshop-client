@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bookshopApi } from './api/bookshopApi'
+import { ordersApi } from './api/ordersApi'
 import { booksQueryArgs, userSelector } from './selectors'
 import { setBooksFilterGenre } from './slices/books'
 import { authSessionChanged } from './slices/user'
@@ -19,7 +20,7 @@ describe('catalogue query arguments', () => {
   it('keeps its result stable when queries or draft filters change', async () => {
     const result = booksQueryArgs(store.getState())
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('userOrders', undefined, []),
+      ordersApi.util.upsertQueryData('userOrders', undefined, []),
     )
 
     expect(booksQueryArgs(store.getState())).toBe(result)

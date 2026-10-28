@@ -2,6 +2,7 @@ import { Provider } from 'react-redux'
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import type { Book } from '@/types'
@@ -74,7 +75,7 @@ const finishRequest = () =>
   act(async () => {
     await store
       .dispatch(
-        bookshopApi.endpoints.booksByProperty.initiate('recommended', {
+        booksApi.endpoints.booksByProperty.initiate('recommended', {
           subscribe: false,
         }),
       )
@@ -114,9 +115,8 @@ describe('recommended books cache', () => {
       await vi.advanceTimersByTimeAsync(6 * 60 * 1000)
     })
     expect(
-      bookshopApi.endpoints.booksByProperty.select('recommended')(
-        store.getState(),
-      ).data,
+      booksApi.endpoints.booksByProperty.select('recommended')(store.getState())
+        .data,
     ).toEqual(recommendations)
     recommendations = [{ ...book, id: 3, title: 'Fresh recommendation' }]
     const utils = renderRecommendations()

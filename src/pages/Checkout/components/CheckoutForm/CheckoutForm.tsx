@@ -9,7 +9,7 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
-import { usePaymentTermsQuery } from '@/store/api/bookshopApi'
+import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { paymentSessionReset } from '@/store/slices/payment'
 import { paymentCancel } from '@/store/thunks/payment'

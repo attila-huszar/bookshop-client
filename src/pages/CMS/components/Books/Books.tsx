@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
-import { useCmsAuthorsQuery, useCmsBooksQuery } from '@/store/api/bookshopApi'
+import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
+import { useCmsBooksQuery } from '@/store/api/booksApi'
 import { Alert } from '@/components/Alert'
 import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
@@ -15,8 +16,10 @@ export const Books = () => {
     data: books = [],
     isLoading: booksLoading,
     error: booksError,
-  } = useCmsBooksQuery()
-  const { data: authors = [] } = useCmsAuthorsQuery()
+  } = useCmsBooksQuery(undefined, { refetchOnMountOrArgChange: true })
+  const { data: authors = [] } = useCmsAuthorsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
   const {
     selectedItems,
     setSelectedItems,

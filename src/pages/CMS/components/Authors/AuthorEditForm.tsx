@@ -4,7 +4,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import {
   useAddAuthorMutation,
   useUpdateAuthorMutation,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/authorsApi'
 import { toast } from '@/components/AppToaster'
 import { Button } from '@/components/Button'
 import { FormikField } from '@/components/FormikField'

@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { useHardDeleteAuthorsMutation } from '@/store/api/authorsApi'
+import { useHardDeleteBooksMutation } from '@/store/api/booksApi'
 import {
-  useHardDeleteAuthorsMutation,
-  useHardDeleteBooksMutation,
   useRestoreOrdersMutation,
-  useRestoreUsersMutation,
   useSoftDeleteOrdersMutation,
+} from '@/store/api/ordersApi'
+import {
+  useRestoreUsersMutation,
   useSoftDeleteUsersMutation,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'

@@ -26,6 +26,7 @@ export type CartState = {
 export type PaymentState = {
   payment: PaymentSession | null
   paymentIsLoading: boolean
+  paymentRequestId: string | null
   paymentCreateError: string | ApiError | null
   paymentCreateIssueCode: PaymentCreateIssueCode | null
   paymentRetrieveError: string | ApiError | null

@@ -1,5 +1,5 @@
 import type { MinimalCart } from './Cart'
-import type { PaymentIntent } from './Stripe'
+import type { PaymentIntent, PaymentIntentStatus } from './Stripe'
 
 export type PaymentIntentRequest = {
   items: MinimalCart[]
@@ -25,3 +25,9 @@ export type PaymentSession = {
 }
 
 export type PaymentCreateIssueCode = 'price_conflict' | 'unknown'
+
+export type PaymentStatusState =
+  | { type: PaymentIntentStatus | 'checking' }
+  | { type: 'retry'; attempt: number; maxAttempts: number }
+  | { type: 'failure'; details: string }
+  | { type: 'timeout'; timeoutSeconds: number }

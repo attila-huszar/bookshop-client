@@ -4,7 +4,7 @@ import { Form, Formik } from 'formik'
 import {
   useUpdateAvatarMutation,
   useUpdateUserProfileMutation,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/usersApi'
 import { userSelector } from '@/store/selectors'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
