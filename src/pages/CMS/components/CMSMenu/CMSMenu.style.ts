@@ -14,7 +14,7 @@ export const StyledCMSMenu = styled(StyledMenu)`
     top: calc(100% + 0.5rem);
     left: auto;
     right: 0;
-    width: min(22rem, calc(100vw - 4rem));
+    width: min(18rem, calc(100vw - 4rem));
   }
 `
 

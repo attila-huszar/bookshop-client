@@ -2,6 +2,7 @@ import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
@@ -39,6 +40,14 @@ const order: Order = {
     },
   ],
 }
+
+const multipleOrders: Order[] = Array.from({ length: 21 }, (_, index) => ({
+  ...order,
+  id: index + 1,
+  paymentId: `pi_order_${index + 1}`,
+  createdAt: new Date(Date.UTC(2026, 9, index + 1)).toISOString(),
+  items: [],
+}))
 
 let store: ReturnType<typeof createAppStore>
 let nextResponse: () => Promise<Response>
@@ -85,6 +94,83 @@ const renderOrders = () =>
   )
 
 describe('Orders page', () => {
+  it('pages newest-first orders in groups of ten without changing shop state or refetching', async () => {
+    const user = userEvent.setup()
+    nextResponse = () => Promise.resolve(Response.json(multipleOrders))
+    renderOrders()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Order #21' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('article')).toHaveLength(10)
+    expect(
+      screen.getByRole('heading', { name: 'Order #12' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Order #11' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Next Page' }))
+
+    expect(screen.getAllByRole('article')).toHaveLength(10)
+    expect(
+      screen.getByRole('heading', { name: 'Order #11' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Order #2' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Last Page' }))
+
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(
+      screen.getByRole('heading', { name: 'Order #1' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next Page' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'First Page' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Order #21' }),
+    ).toBeInTheDocument()
+    expect(store.getState().books.booksCurrentPage).toBe(1)
+    expect(privateApi.authRequest).toHaveBeenCalledOnce()
+    expect(
+      ordersApi.endpoints.userOrders
+        .select()(store.getState())
+        .data?.map((item) => item.id),
+    ).toEqual(multipleOrders.map((item) => item.id))
+  })
+
+  it('returns to an available page when the order collection shrinks', async () => {
+    const user = userEvent.setup()
+    nextResponse = () => Promise.resolve(Response.json(multipleOrders))
+    renderOrders()
+    await screen.findByRole('heading', { name: 'Order #21' })
+    await user.click(screen.getByRole('button', { name: 'Last Page' }))
+
+    await act(async () => {
+      await store.dispatch(
+        ordersApi.util.upsertQueryData('userOrders', undefined, [order]),
+      )
+    })
+
+    expect(
+      await screen.findByRole('heading', { name: 'Order #11' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(store.getState().orders.currentPage).toBe(1)
+    expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.getByRole('button', { name: 'Next Page' })).toBeDisabled()
+  })
+
   it('shows loading until the first response and then the empty state', async () => {
     let completeRequest!: (response: Response) => void
     const response = new Promise<Response>((resolve) => {

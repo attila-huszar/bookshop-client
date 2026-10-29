@@ -292,32 +292,32 @@ describe('authentication transport', () => {
     expect(expire).toHaveBeenCalledExactlyOnceWith('new-token')
     expect(accessToken).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(vi.spyOn(log, 'warn')).toHaveBeenCalledTimes(1)
+    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 })
 
 describe('request failure logging', () => {
-  it('logs HTTP response details once without including query parameters', async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ code: 'BAD_REQUEST' }, 400))
+  it.each([400, 401, 403, 404, 409, 413, 429])(
+    'rejects HTTP %s failures without logging or uploading warnings',
+    async (status) => {
+      fetchMock.mockResolvedValueOnce(
+        jsonResponse({ code: 'BAD_REQUEST' }, status),
+      )
 
-    await expect(
-      publicApi.baseRequest.get('books', {
-        searchParams: { title: 'Search text' },
-      }),
-    ).rejects.toBeInstanceOf(HTTPError)
+      await expect(
+        publicApi.baseRequest.get('books', {
+          searchParams: { title: 'Search text' },
+        }),
+      ).rejects.toBeInstanceOf(HTTPError)
 
-    expect(vi.spyOn(log, 'warn')).toHaveBeenCalledExactlyOnceWith(
-      'HTTP request failed',
-      {
-        method: 'GET',
-        path: '/api/books',
-        status: 400,
-        error: { code: 'BAD_REQUEST' },
-      },
-    )
-    expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
-  })
+      expect(fetchMock).toHaveBeenCalledOnce()
+      expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
+      expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
+      expect(vi.spyOn(log, 'debug')).not.toHaveBeenCalled()
+      expect(vi.spyOn(log, 'info')).not.toHaveBeenCalled()
+    },
+  )
 
   it('logs only the final failure after retries finish', async () => {
     fetchMock.mockImplementation(() =>
@@ -326,6 +326,7 @@ describe('request failure logging', () => {
 
     await expect(
       publicApi.baseRequest.get('books', {
+        searchParams: { token: 'private-token' },
         retry: { limit: 2, delay: () => 0 },
       }),
     ).rejects.toBeInstanceOf(HTTPError)

@@ -2,9 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { i18n } from '@/i18n'
 import { useUserOrdersQuery } from '@/store/api/ordersApi'
 import { userSelector } from '@/store/selectors'
+import { setOrdersCurrentPage } from '@/store/slices/orders'
 import { Alert } from '@/components/Alert'
 import { Loading } from '@/components/Loading'
-import { useAppSelector } from '@/hooks/redux'
+import { Pagination } from '@/components/Pagination'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { formatPaymentStatus } from '@/helpers/checkout'
 import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
 import { defaultCurrency } from '@/constants/defaultValues'
@@ -31,6 +33,10 @@ const formatTotal = (amount: number, currency: string) => {
 
 export function Orders() {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
+  const { currentPage: selectedPage, itemsPerPage } = useAppSelector(
+    (state) => state.orders,
+  )
 
   const {
     data: orders = [],
@@ -55,6 +61,10 @@ export function Orders() {
   const sortedOrders = [...orders].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   )
+  const totalPages = Math.max(1, Math.ceil(sortedOrders.length / itemsPerPage))
+  const currentPage = Math.min(selectedPage, totalPages)
+  const pageStart = (currentPage - 1) * itemsPerPage
+  const visibleOrders = sortedOrders.slice(pageStart, pageStart + itemsPerPage)
 
   return (
     <StyledOrders>
@@ -67,7 +77,7 @@ export function Orders() {
         <Alert type="info" message={t('orders.empty')} />
       ) : (
         <OrdersList>
-          {sortedOrders.map((order) => (
+          {visibleOrders.map((order) => (
             <OrderCard key={order.id}>
               <OrderHeader>
                 <h4>{t('checkout.order', { number: order.id })}</h4>
@@ -128,6 +138,14 @@ export function Orders() {
             </OrderCard>
           ))}
         </OrdersList>
+      )}
+      {sortedOrders.length > 0 && (
+        <Pagination
+          total={sortedOrders.length}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          onPageChange={(page) => dispatch(setOrdersCurrentPage(page))}
+        />
       )}
     </StyledOrders>
   )

@@ -82,7 +82,8 @@
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "by": "by",
     "requestFailed": "Request failed",
-    "selectAll": "Select all"
+    "selectAll": "Select all",
+    "optional": "optional"
   },
   "language": {
     "label": "Language",
@@ -217,9 +218,7 @@
     "avatarUpdated": "Avatar updated successfully",
     "avatarError": "Failed to update avatar, please try again later",
     "removeAvatar": "Remove Avatar",
-    "removeAvatarError": "Failed to remove avatar",
-    "addressLine1": "Address line 1",
-    "addressLine2": "Address line 2 (optional)"
+    "removeAvatarError": "Failed to remove avatar"
   },
   "cart": {
     "title": "Cart",

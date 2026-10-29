@@ -64,7 +64,8 @@ export const AvatarPanel = styled.div`
 
 export const General = styled.div`
   margin-left: 2rem;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 
   ${media.down('sm')`
     margin-left: 0;
@@ -76,6 +77,7 @@ export const GeneralLine = styled.div`
   gap: 3rem;
 
   > div {
+    min-width: 0;
     width: 100%;
     margin-bottom: 1rem;
   }
@@ -88,6 +90,7 @@ export const GeneralLine = styled.div`
 
 export const Address = styled.div`
   > form {
+    min-width: 0;
     width: 100%;
   }
 
@@ -136,6 +139,10 @@ export const AddressLine = styled.div`
   gap: 3rem;
   margin-bottom: 1rem;
 
+  > div {
+    min-width: 0;
+  }
+
   &:first-child {
     > div {
       width: 50%;
@@ -145,6 +152,10 @@ export const AddressLine = styled.div`
   &:nth-child(2) {
     > div:nth-child(-n + 2) {
       width: 100%;
+    }
+
+    > div:last-child {
+      flex-shrink: 0;
     }
   }
 
@@ -192,15 +203,9 @@ export const AddressLine = styled.div`
 `
 
 export const ButtonWrapper = styled.div`
-  position: absolute;
-  bottom: 1rem;
-  right: 1.5rem;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 1rem;
-
-  ${media.down('sm')`
-    position: static;
-    justify-content: flex-end;
-    margin-top: 0.5rem;
-  `}
+  margin-top: 1rem;
 `

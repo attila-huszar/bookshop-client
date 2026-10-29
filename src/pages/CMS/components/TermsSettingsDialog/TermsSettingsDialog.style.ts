@@ -30,17 +30,22 @@ export const Dialog = styled.dialog`
   margin: auto;
   width: min(48rem, 92vw);
   max-height: 90dvh;
-  padding: 1.5rem;
+  padding: 0;
+  overflow: hidden;
   border: none;
   border-radius: var(--border-radius);
   background: var(--color-surface-container-high);
   color: var(--color-on-surface);
   box-shadow: var(--shadow);
 
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
   &::backdrop {
     background: rgb(0 0 0 / 45%);
   }
-  h2,
   p {
     margin-bottom: 1rem;
   }

@@ -11,6 +11,7 @@ export const baseRequest = transport.extend({
         if (
           error.name === 'AbortError' ||
           (request.signal.aborted && !isTimeoutError(error)) ||
+          (isHTTPError(error) && error.response.status < 500) ||
           loggedErrors.has(error)
         ) {
           return error
@@ -26,11 +27,7 @@ export const baseRequest = transport.extend({
             : { name: error.name }),
         }
 
-        if (isHTTPError(error) && error.response.status < 500) {
-          log.warn('HTTP request failed', meta)
-        } else {
-          log.error('Request failed', meta)
-        }
+        log.error('Request failed', meta)
 
         return error
       },

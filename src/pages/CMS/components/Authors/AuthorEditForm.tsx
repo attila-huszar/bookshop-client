@@ -13,13 +13,7 @@ import { formatDate } from '@/helpers/formatDate'
 import { authorSchema } from '@/validation/productSchemas'
 import type { Author, AuthorCreate } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
-import {
-  FormButtons,
-  FullRow,
-  MetadataBlock,
-  Row,
-  SectionHeader,
-} from '../../styles'
+import { FormButtons, FullRow, MetadataBlock, Row } from '../../styles'
 
 const initialAuthorValues: AuthorCreate = {
   name: '',
@@ -87,9 +81,6 @@ export const AuthorEditForm: FC<Props> = ({
           <fieldset disabled={readOnly}>
             {editedItem && (
               <>
-                <SectionHeader>
-                  {t('cms.information', { entity: t('common.fields.author') })}
-                </SectionHeader>
                 <MetadataBlock>
                   <div>
                     <p>

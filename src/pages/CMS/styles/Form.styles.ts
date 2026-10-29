@@ -9,11 +9,17 @@ export const StyledEditDialog = styled.dialog`
   width: 80%;
   min-width: 40rem;
   max-width: 100rem;
-  padding: 1.125rem 1.5rem;
+  padding: 0;
+  overflow: hidden;
   border: none;
   border-radius: 10px;
   background: var(--color-surface-container-high);
   box-shadow: var(--shadow);
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
 
   fieldset {
     min-width: 0;

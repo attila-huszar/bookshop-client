@@ -87,9 +87,6 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
           <Form>
             {!editedItem.paymentId && <p>{t('cms.draftReadOnly')}</p>}
             <fieldset disabled={isReadOnly}>
-              <SectionHeader>
-                {t('cms.information', { entity: t('common.fields.order') })}
-              </SectionHeader>
               <MetadataBlock>
                 <div>
                   <p>

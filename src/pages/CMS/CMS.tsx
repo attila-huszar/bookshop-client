@@ -11,10 +11,12 @@ import {
   useRestoreUsersMutation,
   useSoftDeleteUsersMutation,
 } from '@/store/api/usersApi'
+import { setCmsCurrentPage } from '@/store/slices/cms'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ExtraSpace } from '@/components/Header'
+import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import type {
   Author,
@@ -29,7 +31,13 @@ import {
   StoreSlashIcon,
   UserIcon,
   UserSlashIcon,
+  XMarkIcon,
 } from '@/assets/svg'
+import {
+  DialogBody,
+  DialogCloseButton,
+  DialogHeader,
+} from '@/styles/dialog.styles'
 import {
   AuthorEditForm,
   BookEditForm,
@@ -53,6 +61,13 @@ const TABS = [
   { label: 'cms.users', value: 'users' },
 ] as const
 
+const ENTITY_LABELS = {
+  books: 'catalogue.book',
+  authors: 'common.fields.author',
+  orders: 'common.fields.order',
+  users: 'cms.user',
+} as const
+
 export type TabValue = (typeof TABS)[number]['value']
 
 const getEditedItem = <T extends CmsEditedItem>(
@@ -64,6 +79,7 @@ const isValidTab = (tab: string): tab is TabValue =>
 
 export const CMS = () => {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
   const [termsSettingsOpen, setTermsSettingsOpen] = useState(false)
   const location = useLocation()
   const [hardDeleteAuthors, authorDeletion] = useHardDeleteAuthorsMutation()
@@ -298,6 +314,7 @@ export const CMS = () => {
                   ...previous,
                   [activeTab]: [],
                 }))
+                dispatch(setCmsCurrentPage({ tab: activeTab, page: 1 }))
               }}
             />
           )}
@@ -326,8 +343,25 @@ export const CMS = () => {
         <TermsSettingsDialog onClose={() => setTermsSettingsOpen(false)} />
       )}
       {isDialogOpen && (
-        <StyledEditDialog ref={dialogRef} onCancel={handleDialogClose}>
-          {renderEditForm()}
+        <StyledEditDialog
+          ref={dialogRef}
+          aria-labelledby="cms-record-title"
+          onCancel={handleDialogClose}>
+          <DialogHeader>
+            <h2 id="cms-record-title">
+              {t('cms.information', {
+                entity: t(ENTITY_LABELS[activeTab]),
+              })}
+            </h2>
+            <DialogCloseButton
+              type="button"
+              aria-label={t('common.actions.close')}
+              title={t('common.actions.close')}
+              icon={<XMarkIcon aria-hidden="true" />}
+              onClick={handleDialogClose}
+            />
+          </DialogHeader>
+          <DialogBody>{renderEditForm()}</DialogBody>
         </StyledEditDialog>
       )}
       <ConfirmDialog

@@ -2,6 +2,7 @@ import { styled } from 'styled-components'
 
 export const StyledPagination = styled.nav`
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;

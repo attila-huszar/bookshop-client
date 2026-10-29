@@ -5,6 +5,7 @@ import { IconButton } from '@/components/Button'
 import { MenuItem } from '@/components/Header/components/Menu/Menu.style'
 import { MenuDrawer } from '@/components/Header/components/MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '@/components/Header/components/MenuDropdown/MenuDropdown'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { LogoutIcon, MenuIcon, SlidersIcon } from '@/assets/svg'
@@ -45,6 +46,9 @@ export function CMSMenu({ onOpenTerms }: Props) {
           <SlidersIcon aria-hidden="true" />
           <span>{t('terms.title')}</span>
         </MenuItem>
+      </li>
+      <li>
+        <LanguageSwitcher variant="menu" />
       </li>
       <li>
         <Link to="/" onClick={() => setOpen(false)}>

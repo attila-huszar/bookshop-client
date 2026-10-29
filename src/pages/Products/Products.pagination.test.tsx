@@ -1,21 +1,57 @@
 import { Provider } from 'react-redux'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import * as publicApi from '@/api/baseRequest'
-import { useBooksQuery } from '@/store/api/booksApi'
+import { booksApi, useBooksQuery } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { booksQueryArgs } from '@/store/selectors'
 import { applyBooksFilters, setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
 import { useAppSelector } from '@/hooks/redux'
 import { CacheTime } from '@/constants/cacheTimes'
-import { Pagination } from './Pagination'
+import type { Book } from '@/types'
+import { Products } from './Products'
+
+vi.mock('@/components/Card', () => ({
+  Card: ({ book }: { book: Book }) => <p>{book.title}</p>,
+}))
+
+const book: Book = {
+  id: 1,
+  title: 'Cached book',
+  author: null,
+  genre: 'Fiction',
+  imgUrl: '',
+  description: '',
+  publishYear: 2026,
+  rating: 4,
+  price: 10,
+  discount: 0,
+  discountPrice: 10,
+  topSellers: false,
+  newRelease: false,
+}
 
 let store: ReturnType<typeof createAppStore>
 
-beforeEach(() => {
+beforeEach(async () => {
   store = createAppStore()
+  await store.dispatch(
+    booksApi.util.upsertQueryData('searchOptions', undefined, {
+      genre: ['Fiction'],
+      price: [0, 100],
+      publishYear: [1900, 2026],
+    }),
+  )
   store.dispatch(setBooksCurrentPage(2))
   vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
     ky.get('https://bookshop.test/mock', {
@@ -35,14 +71,24 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const renderPagination = (total = 80) =>
-  render(
-    <Provider store={store}>
-      <Pagination total={total} />
-    </Provider>,
+const renderPagination = async (total = 80) => {
+  await store.dispatch(
+    booksApi.util.upsertQueryData('books', booksQueryArgs(store.getState()), {
+      books: [book],
+      total,
+    }),
   )
 
-describe('Pagination', () => {
+  return render(
+    <Provider store={store}>
+      <MemoryRouter>
+        <Products />
+      </MemoryRouter>
+    </Provider>,
+  )
+}
+
+describe('shop pagination', () => {
   it.each([
     { button: 'First Page', page: 1 },
     { button: 'Previous Page', page: 1 },
@@ -50,7 +96,7 @@ describe('Pagination', () => {
     { button: 'Next Page', page: 3 },
     { button: 'Last Page', page: 10 },
   ])('selects page $page using $button', async ({ button, page }) => {
-    renderPagination()
+    await renderPagination()
     await userEvent.click(screen.getByRole('button', { name: button }))
 
     expect(store.getState().books.booksCurrentPage).toBe(page)
@@ -67,7 +113,7 @@ describe('Pagination', () => {
       }),
     )
     store.dispatch(setBooksCurrentPage(2))
-    const view = renderPagination()
+    const view = await renderPagination()
 
     expect(publicApi.baseRequest).not.toHaveBeenCalled()
     const next = screen.getByRole('button', { name: 'Next Page' })
@@ -111,10 +157,11 @@ describe('Pagination', () => {
     expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
   })
 
-  it('does not prefetch disabled controls or an out-of-range page', () => {
+  it('does not prefetch disabled controls or an out-of-range page', async () => {
     store.dispatch(setBooksCurrentPage(1))
-    renderPagination(8)
-    for (const button of screen.getAllByRole('button')) {
+    await renderPagination(8)
+    const pagination = screen.getByRole('navigation')
+    for (const button of within(pagination).getAllByRole('button')) {
       expect(button).toBeDisabled()
       fireEvent.mouseEnter(button)
       fireEvent.focus(button)

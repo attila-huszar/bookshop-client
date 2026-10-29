@@ -272,20 +272,22 @@ export function Account() {
                   <Form>
                     <AddressLine>
                       <div>
-                        <p>{t('account.addressLine1')}</p>
+                        <p>{t('common.fields.line1')}</p>
                         <FormikField
                           name="line1"
-                          placeholder={t('account.addressLine1')}
+                          placeholder={t('common.fields.line1')}
                           type="text"
                           autoComplete="address-line1"
                           readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>{t('account.addressLine2')}</p>
+                        <p>
+                          {t('common.fields.line2')} ({t('common.optional')})
+                        </p>
                         <FormikField
                           name="line2"
-                          placeholder={t('account.addressLine2')}
+                          placeholder={t('common.fields.line2')}
                           type="text"
                           autoComplete="address-line2"
                           readOnly={!editingAddress}
@@ -304,7 +306,9 @@ export function Account() {
                         />
                       </div>
                       <div>
-                        <p>{t('common.fields.state')}</p>
+                        <p>
+                          {t('common.fields.state')} ({t('common.optional')})
+                        </p>
                         <FormikField
                           name="state"
                           placeholder={t('common.fields.state')}

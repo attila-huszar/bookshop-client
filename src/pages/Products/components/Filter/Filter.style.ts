@@ -122,14 +122,16 @@ export const Rating = styled.div`
 
 export const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: space-around;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
 `
 
 export const CustomButton = styled(StyledButton)`
+  flex: 1;
+  min-width: 0;
   min-height: 1.5rem;
   padding-block: 0.125em;
-  width: ${({ $inverted }) => ($inverted ? '3rem' : '6rem')};
+  width: auto;
   font-size: 0.75rem;
   border-radius: var(--border-radius);
   border-width: 1px;

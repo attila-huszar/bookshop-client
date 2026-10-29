@@ -22,7 +22,7 @@
       "backToShop": "Vissza a boltba"
     },
     "fields": {
-      "id": "Azonosító",
+      "id": "ID",
       "uuid": "UUID",
       "name": "Név",
       "firstName": "Keresztnév",
@@ -82,7 +82,8 @@
     "unexpectedError": "Váratlan hiba történt. Kérjük, próbálja újra.",
     "by": "Szerző:",
     "requestFailed": "A kérés nem sikerült.",
-    "selectAll": "Összes kijelölése"
+    "selectAll": "Összes kijelölése",
+    "optional": "nem kötelező"
   },
   "language": {
     "label": "Nyelv",
@@ -217,9 +218,7 @@
     "avatarUpdated": "A profilkép frissítése sikerült.",
     "avatarError": "A profilkép frissítése nem sikerült. Kérjük, próbálja újra később.",
     "removeAvatar": "Profilkép eltávolítása",
-    "removeAvatarError": "A profilkép eltávolítása nem sikerült.",
-    "addressLine1": "1. címsor",
-    "addressLine2": "2. címsor (nem kötelező)"
+    "removeAvatarError": "A profilkép eltávolítása nem sikerült."
   },
   "cart": {
     "title": "Kosár",

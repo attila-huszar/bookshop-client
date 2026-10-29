@@ -12,3 +12,4 @@
 - Keep control flow readable: use braces for guards/loops and blank lines before returns/switches and between logical sections. Avoid rest destructuring in function parameters; prefer named parameters or typed input objects.
 - Run `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run test:ci`, and `npm run build` (Bun can run these package scripts too).
 - Keep README.md focused on project basics and setup. Put this app's feature, architecture, and operational details in `docs/architecture.md`; link to `../bookshop-server/docs/architecture.md` for backend responsibilities. Keep agent instructions here.
+- Keep architecture documentation focused on durable decisions, ownership boundaries, auth/payment guarantees, and operational constraints. Omit routine styling, wording, formatting, helper-by-helper implementation details, and per-change logs.

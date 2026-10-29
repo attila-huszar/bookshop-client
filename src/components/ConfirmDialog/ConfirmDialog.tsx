@@ -1,7 +1,8 @@
 import { FC, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import { SpinnerIcon } from '@/assets/svg'
+import { SpinnerIcon, XMarkIcon } from '@/assets/svg'
+import { DialogCloseButton } from '@/styles/dialog.styles'
 import { Button } from '../Button/Button'
 import type { ButtonColor } from '../Button/Button.types'
 import { StyledConfirmDialog } from './ConfirmDialog.style'
@@ -43,7 +44,9 @@ export const ConfirmDialog: FC<Props> = ({
     }
   })
 
-  if (!isDialogOpen) return null
+  if (!isDialogOpen) {
+    return null
+  }
 
   return (
     <StyledConfirmDialog
@@ -58,6 +61,14 @@ export const ConfirmDialog: FC<Props> = ({
 
         setIsDialogOpen(false)
       }}>
+      <DialogCloseButton
+        type="button"
+        aria-label={t('common.actions.close')}
+        title={t('common.actions.close')}
+        icon={<XMarkIcon aria-hidden="true" />}
+        disabled={isLoading}
+        onClick={() => setIsDialogOpen(false)}
+      />
       <p>{message}</p>
       <div>
         <Button

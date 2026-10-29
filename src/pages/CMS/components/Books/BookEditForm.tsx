@@ -24,7 +24,6 @@ import {
   FullRow,
   MetadataBlock,
   Row,
-  SectionHeader,
 } from '../../styles'
 
 type BookFormValues = Omit<BookCreate, 'discountPrice'>
@@ -184,9 +183,6 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
           <fieldset disabled={readOnly}>
             {editedItem && (
               <>
-                <SectionHeader>
-                  {t('cms.information', { entity: t('catalogue.book') })}
-                </SectionHeader>
                 <MetadataBlock>
                   <div>
                     <p>{t('cms.recordId', { entity: t('catalogue.book') })}</p>

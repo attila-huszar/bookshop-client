@@ -100,9 +100,6 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
           <fieldset disabled={readOnly}>
             {editedItem && (
               <>
-                <SectionHeader>
-                  {t('cms.information', { entity: t('cms.user') })}
-                </SectionHeader>
                 <MetadataBlock>
                   <div>
                     <p>{t('cms.recordId', { entity: t('cms.user') })}</p>

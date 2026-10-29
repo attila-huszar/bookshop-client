@@ -1,5 +1,4 @@
 import { styled } from 'styled-components'
-import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledCMS = styled.section`
@@ -38,11 +37,6 @@ export const MenuButtons = styled.div`
   flex-wrap: wrap;
   align-items: center;
   margin-bottom: 1.5rem;
-
-  > ${StyledButton} {
-    width: auto;
-    padding-inline: 0.75rem;
-  }
 `
 
 export const StyledTabs = styled.div`
