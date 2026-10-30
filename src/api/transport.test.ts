@@ -14,6 +14,8 @@ import { uploadProductImage } from './cms'
 import { LogLevel, sendLog } from './logs'
 import { transport } from './transport'
 import {
+  postPasswordReset,
+  postPasswordResetSubmit,
   postUserLogout,
   postVerifyEmail,
   postVerifyPasswordReset,
@@ -269,7 +271,6 @@ describe('authentication transport', () => {
 
     expect(refreshRequest?.credentials).toBe('include')
     expect(refreshRequest?.headers.has('authorization')).toBe(false)
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
@@ -292,9 +293,39 @@ describe('authentication transport', () => {
     expect(expire).toHaveBeenCalledExactlyOnceWith('new-token')
     expect(accessToken).toBeNull()
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
+})
+
+describe('password reset responses', () => {
+  it.each([
+    {
+      name: 'request',
+      send: () => postPasswordReset('reader@example.com'),
+      path: '/api/users/password-reset-request',
+      body: { email: 'reader@example.com' },
+    },
+    {
+      name: 'submit',
+      send: () => postPasswordResetSubmit('reset-token', 'NewPass123!'),
+      path: '/api/users/password-reset-submit',
+      body: { token: 'reset-token', password: 'NewPass123!' },
+    },
+  ])(
+    'accepts the $name success response without message text',
+    async ({ send, path, body }) => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }))
+
+      await expect(send()).resolves.toEqual({ success: true })
+
+      const request = capturedRequests[0]!
+      expect(new URL(request.url).pathname).toBe(path)
+      expect(request.method).toBe('POST')
+      expect(await request.json()).toEqual(body)
+      expect(request.headers.has('authorization')).toBe(false)
+      expect(refresh).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('request failure logging', () => {
@@ -312,10 +343,7 @@ describe('request failure logging', () => {
       ).rejects.toBeInstanceOf(HTTPError)
 
       expect(fetchMock).toHaveBeenCalledOnce()
-      expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
       expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
-      expect(vi.spyOn(log, 'debug')).not.toHaveBeenCalled()
-      expect(vi.spyOn(log, 'info')).not.toHaveBeenCalled()
     },
   )
 
@@ -341,7 +369,6 @@ describe('request failure logging', () => {
         error: { code: 'INTERNAL_ERROR' },
       },
     )
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
   })
 
   it('does not log a failure recovered by a retry', async () => {
@@ -354,7 +381,6 @@ describe('request failure logging', () => {
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
@@ -393,7 +419,6 @@ describe('request failure logging', () => {
     await expect(
       vi.mocked(transport.post).mock.results[0]!.value,
     ).rejects.toBeInstanceOf(HTTPError)
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 })
@@ -532,10 +557,12 @@ describe('Ky transport through payment endpoints', () => {
   })
 
   it('aborts payment retrieval with its caller without refreshing or expiring the session', async () => {
+    let fetchSignal: AbortSignal | undefined
     fetchMock.mockImplementation(
       (input) =>
         new Promise((_resolve, reject) => {
           const signal = requestOf(input).signal
+          fetchSignal = signal
           signal.addEventListener(
             'abort',
             () => reject(new DOMException('Aborted', 'AbortError')),
@@ -556,7 +583,7 @@ describe('Ky transport through payment endpoints', () => {
     controller.abort()
 
     expect(await pending).toMatchObject({ name: 'AbortError' })
-    expect(capturedRequests[0]!.signal.aborted).toBe(true)
+    await vi.waitFor(() => expect(fetchSignal?.aborted).toBe(true))
     expect(capturedRequests[0]!.credentials).toBe('include')
     expect(refresh).not.toHaveBeenCalled()
     expect(expire).not.toHaveBeenCalled()

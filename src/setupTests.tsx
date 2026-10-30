@@ -60,10 +60,10 @@ vi.mock('react-hot-toast', () => ({
 
 vi.mock('@/services/logger', () => ({
   log: {
+    debug: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-    debug: vi.fn(),
   },
 }))
 

@@ -42,7 +42,7 @@ export const postVerifyEmail = sharePendingTokenRequest((token) =>
 export const postPasswordReset = (email: string) =>
   baseRequest
     .post(PATH.users.passwordResetRequest, { json: { email } })
-    .json<{ message: string }>()
+    .json<{ success: boolean }>()
 
 export const postVerifyPasswordReset = sharePendingTokenRequest((token) =>
   baseRequest
@@ -53,7 +53,7 @@ export const postVerifyPasswordReset = sharePendingTokenRequest((token) =>
 export const postPasswordResetSubmit = (token: string, password: string) =>
   baseRequest
     .post(PATH.users.passwordResetSubmit, { json: { token, password } })
-    .json<{ message: string }>()
+    .json<{ success: boolean }>()
 
 export const getUserCountry = async () => {
   try {

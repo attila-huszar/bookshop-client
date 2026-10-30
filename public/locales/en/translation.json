@@ -81,7 +81,6 @@
     "error": "Something went wrong. Please try again later.",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "by": "by",
-    "requestFailed": "Request failed",
     "selectAll": "Select all",
     "optional": "optional"
   },

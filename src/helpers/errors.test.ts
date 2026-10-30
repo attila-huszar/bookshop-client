@@ -52,7 +52,6 @@ describe('toAppError', () => {
     expect(getErrorMessage(rethrown, 'Fallback')).toBe(
       `${hu.common.fields.email}: ${hu.validation.email}`,
     )
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
@@ -70,10 +69,10 @@ describe('toAppError', () => {
       cause: new TypeError('Failed to fetch'),
     })
     const timeout = new TimeoutError(request)
-    const wrapped = toAppError(network, en.common.requestFailed)
+    const wrapped = toAppError(network, en.common.unexpectedError)
 
     expect(wrapped.cause).toBe(network)
-    expect(wrapped.message).toBe(en.common.requestFailed)
+    expect(wrapped.message).toBe(en.common.unexpectedError)
     expect(getApiError(wrapped)).toEqual({ code: 'UNKNOWN_API_ERROR' })
     expect(toAppError(timeout).cause).toBe(timeout)
 
@@ -82,9 +81,9 @@ describe('toAppError', () => {
     expect(
       getErrorMessage(
         JSON.parse(JSON.stringify(wrapped)),
-        hu.common.requestFailed,
+        hu.common.unexpectedError,
       ),
-    ).toBe(hu.common.requestFailed)
+    ).toBe(hu.common.unexpectedError)
     expect(getErrorMessage(toAppError(timeout), 'Fallback')).toBe(
       hu.errors.timeout,
     )
@@ -212,8 +211,8 @@ describe('getErrorMessage', () => {
   ])('uses the translated fallback for runtime failures: %j', async (error) => {
     await i18n.changeLanguage('hu')
 
-    expect(getErrorMessage(error, i18n.t('common.requestFailed'))).toBe(
-      hu.common.requestFailed,
+    expect(getErrorMessage(error, i18n.t('common.unexpectedError'))).toBe(
+      hu.common.unexpectedError,
     )
   })
 

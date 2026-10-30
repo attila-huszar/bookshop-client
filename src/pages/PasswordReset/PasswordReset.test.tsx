@@ -52,7 +52,7 @@ describe('PasswordReset', () => {
       .mockResolvedValue({ token: 'reset-token' })
     vi.mocked(postPasswordResetSubmit)
       .mockReset()
-      .mockResolvedValue({ message: 'Password reset successful' })
+      .mockResolvedValue({ success: true })
   })
 
   const renderReadyForm = async () => {
@@ -205,7 +205,7 @@ describe('PasswordReset', () => {
   })
 
   it('submits the verified token and locks the fields until the request completes', async () => {
-    const response = deferred<{ message: string }>()
+    const response = deferred<{ success: boolean }>()
     vi.mocked(postPasswordResetSubmit).mockReturnValue(response.promise)
     await renderReadyForm()
     await fillPasswords()
@@ -219,7 +219,7 @@ describe('PasswordReset', () => {
     expect(screen.getByLabelText('Confirm New Password')).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled()
     await act(async () => {
-      response.resolve({ message: 'Password reset successful' })
+      response.resolve({ success: true })
       await response.promise
     })
 
@@ -279,7 +279,7 @@ describe('PasswordReset', () => {
   it.each(['success', 'failure'] as const)(
     'ignores submission %s after leaving the page',
     async (outcome) => {
-      const response = deferred<{ message: string }>()
+      const response = deferred<{ success: boolean }>()
       vi.mocked(postPasswordResetSubmit).mockReturnValue(response.promise)
       const view = await renderReadyForm()
       await fillPasswords()
@@ -289,7 +289,7 @@ describe('PasswordReset', () => {
 
       await act(async () => {
         if (outcome === 'success') {
-          response.resolve({ message: 'Password reset successful' })
+          response.resolve({ success: true })
         } else {
           response.reject(new Error('Request failed'))
         }
@@ -304,7 +304,7 @@ describe('PasswordReset', () => {
   )
 
   it('ignores submission completion after switching to another token', async () => {
-    const submission = deferred<{ message: string }>()
+    const submission = deferred<{ success: boolean }>()
     const verification = deferred<{ token: string }>()
     vi.mocked(postPasswordResetSubmit).mockReturnValue(submission.promise)
     const view = await renderReadyForm()
@@ -319,7 +319,7 @@ describe('PasswordReset', () => {
     view.rerender(<PasswordReset />)
 
     await act(async () => {
-      submission.resolve({ message: 'Password reset successful' })
+      submission.resolve({ success: true })
       await submission.promise
     })
 
@@ -333,7 +333,7 @@ describe('PasswordReset', () => {
   })
 
   it('uses the current language when a pending submission completes', async () => {
-    const response = deferred<{ message: string }>()
+    const response = deferred<{ success: boolean }>()
     vi.mocked(postPasswordResetSubmit).mockReturnValue(response.promise)
     await renderReadyForm()
     await fillPasswords()
@@ -342,7 +342,7 @@ describe('PasswordReset', () => {
 
     await act(() => i18n.changeLanguage('hu'))
     await act(async () => {
-      response.resolve({ message: 'Password reset successful' })
+      response.resolve({ success: true })
       await response.promise
     })
 

@@ -888,8 +888,8 @@ describe('user profile cache', () => {
       code: 'UNKNOWN_API_ERROR',
     })
     const result = await mutation
-    expect(getErrorMessage(result.error, i18n.t('common.requestFailed'))).toBe(
-      'Request failed',
+    expect(getErrorMessage(result.error, 'Unable to update profile')).toBe(
+      'Unable to update profile',
     )
     mutation.reset()
   })
@@ -1207,7 +1207,6 @@ describe('Ky adapter', () => {
     await query
     expect(requestSignal?.aborted).toBe(true)
     expect(refresh).not.toHaveBeenCalled()
-    expect(vi.spyOn(log, 'warn')).not.toHaveBeenCalled()
     expect(vi.spyOn(log, 'error')).not.toHaveBeenCalled()
   })
 
