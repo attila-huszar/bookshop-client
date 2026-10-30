@@ -36,12 +36,6 @@ const booksSlice = createSlice({
       )
       state.booksCurrentPage = 1
     },
-    incrementBooksCurrentPage: (state) => {
-      state.booksCurrentPage += 1
-    },
-    decrementBooksCurrentPage: (state) => {
-      state.booksCurrentPage -= 1
-    },
     setBooksCurrentPage: (state, action: PayloadAction<number>) => {
       state.booksCurrentPage = action.payload
     },
@@ -109,8 +103,6 @@ const booksSlice = createSlice({
 export const booksReducer = booksSlice.reducer
 export const {
   applyBooksFilters,
-  incrementBooksCurrentPage,
-  decrementBooksCurrentPage,
   setBooksCurrentPage,
   setBooksFilterGenre,
   setBooksFilterPrice,

@@ -9,10 +9,10 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
+import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { cancelCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
@@ -33,11 +33,16 @@ export function CheckoutForm() {
   const [isCanceling, setIsCanceling] = useState(false)
   const [acceptedTermsKey, setAcceptedTermsKey] = useState<string | null>(null)
   const {
-    review,
-    isLoading: isTermsLoading,
+    currentData: review,
+    isFetching: isTermsLoading,
     isError: hasTermsError,
     refetch: refetchTerms,
-  } = useCheckoutTerms(payment?.paymentId)
+  } = usePaymentTermsQuery(payment?.paymentId ?? '', {
+    skip: !payment?.paymentId,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: false,
+    refetchOnReconnect: false,
+  })
   const terms = hasTermsError || isTermsLoading ? null : (review?.terms ?? null)
   const termsKey = terms
     ? JSON.stringify([payment?.paymentId, terms.version, language])

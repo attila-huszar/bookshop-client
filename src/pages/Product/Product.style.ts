@@ -6,6 +6,10 @@ export const StyledProduct = styled.main`
 
   padding: 0 6.25rem;
 
+  ${media.down('lg')`
+    padding: 0 3rem;
+  `}
+
   ${media.down('sm')`
     --page-loading-height: calc(100dvh - 6.5rem);
 
@@ -30,13 +34,18 @@ export const Breadcrumb = styled.button`
 `
 
 export const DetailsSection = styled.section`
-  position: relative;
   display: grid;
-  grid-template-columns: 26rem 1fr max-content;
-  grid-template-rows: max-content max-content 1fr;
+  grid-template-columns: 26rem minmax(0, 1fr) max-content;
+  grid-template-rows: max-content max-content 1fr auto;
   column-gap: 3rem;
   min-height: 35rem;
   margin: 3rem 0 6rem;
+
+  ${media.down('lg')`
+    grid-template-columns: 20rem minmax(0, 1fr) max-content;
+    column-gap: 2rem;
+    min-height: 28rem;
+  `}
 
   ${media.down('sm')`
     display: flex;
@@ -49,16 +58,24 @@ export const DetailsSection = styled.section`
 
 export const ImageWrapper = styled.div`
   grid-column: 1 / 2;
-  grid-row: 1 / 4;
+  grid-row: 1 / 5;
+  align-self: start;
   padding: 3rem;
   background-color: var(--color-surface-container-low);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--border-radius);
 
   img {
+    display: block;
+    width: 100%;
+    height: auto;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-book);
   }
+
+  ${media.down('lg')`
+    padding: 2rem;
+  `}
 
   ${media.down('sm')`
     width: min(100%, 24rem);
@@ -74,6 +91,10 @@ export const BookTitle = styled.p`
   font-weight: 700;
   text-wrap: pretty;
   margin-bottom: 1rem;
+
+  ${media.down('lg')`
+    font-size: 1.75rem;
+  `}
 
   ${media.down('sm')`
     font-size: 1.5rem;
@@ -94,6 +115,10 @@ export const BookAuthor = styled.p`
     display: inline-block;
   }
 
+  ${media.down('lg')`
+    font-size: 1.25rem;
+  `}
+
   ${media.down('sm')`
     font-size: 1.125rem;
   `}
@@ -102,7 +127,7 @@ export const BookAuthor = styled.p`
 export const Description = styled.div`
   grid-column: 2 / 4;
   grid-row: 3 / 4;
-  padding: 5rem 0 4rem;
+  padding: 5rem 0 2rem;
 
   h2 {
     font-size: 1.5rem;
@@ -115,8 +140,20 @@ export const Description = styled.div`
     color: var(--color-on-surface-variant);
   }
 
+  ${media.down('lg')`
+    padding-top: 3rem;
+
+    h2 {
+      font-size: 1.375rem;
+    }
+
+    p {
+      font-size: 1.125rem;
+    }
+  `}
+
   ${media.down('sm')`
-    padding: 0;
+    padding: 0 0 0.5rem;
 
     h2 {
       font-size: 1.25rem;
@@ -130,12 +167,12 @@ export const Description = styled.div`
 `
 
 export const ButtonWrapper = styled.div`
-  position: absolute;
-  bottom: 0;
-  right: 0;
+  grid-column: 2 / 4;
+  grid-row: 4 / 5;
+  align-self: end;
+  justify-self: end;
 
   ${media.down('sm')`
-    position: static;
     width: 100%;
 
     button {

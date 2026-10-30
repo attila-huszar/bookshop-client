@@ -259,20 +259,6 @@ function validationMessage(issue: ApiValidationIssue): string {
 }
 
 /**
- * Read a raw string/number code without validating, translating, or normalizing it.
- * Use for generic workflow checks; use getApiError for a typed API ErrorCode.
- */
-export function getErrorCode(error: unknown): string | number | undefined {
-  if (!isRecord(error)) {
-    return undefined
-  }
-
-  return typeof error.code === 'string' || typeof error.code === 'number'
-    ? error.code
-    : undefined
-}
-
-/**
  * Resolve display text using the current i18n language and normalized API details.
  * API/server messages are ignored. Unknown codes and runtime transport/JSON errors
  * use the caller's fallback; nonempty messages on other errors/objects are preserved.

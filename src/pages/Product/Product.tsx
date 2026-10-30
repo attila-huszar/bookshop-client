@@ -84,10 +84,9 @@ export function Product() {
               <img
                 src={book.imgUrl}
                 alt={book.title}
-                onError={(e) =>
-                  ((e.target as HTMLImageElement).src = imagePlaceholder)
-                }
-                width="100%"
+                onError={(event) => {
+                  event.currentTarget.src = imagePlaceholder
+                }}
               />
             </ImageWrapper>
             <BookTitle>{book.title}</BookTitle>

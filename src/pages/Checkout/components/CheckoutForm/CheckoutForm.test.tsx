@@ -4,9 +4,9 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { CheckoutForm } from './CheckoutForm'
 
@@ -24,7 +24,7 @@ vi.mock('@/hooks/redux', () => ({
 vi.mock('@/hooks/usePaymentSubmit', () => ({
   usePaymentSubmit: vi.fn(),
 }))
-vi.mock('@/hooks/useCheckoutTerms', () => ({ useCheckoutTerms: vi.fn() }))
+vi.mock('@/store/api/termsApi', () => ({ usePaymentTermsQuery: vi.fn() }))
 
 const review = {
   terms: {
@@ -65,9 +65,9 @@ function mockReview(
   data: typeof review | { terms: null; order: typeof review.order } | undefined,
   state: { isFetching?: boolean; isError?: boolean } = {},
 ) {
-  vi.mocked(useCheckoutTerms).mockReturnValue({
-    review: data,
-    isLoading: state.isFetching ?? false,
+  vi.mocked(usePaymentTermsQuery).mockReturnValue({
+    currentData: data,
+    isFetching: state.isFetching ?? false,
     isError: state.isError ?? false,
     refetch: vi.fn(),
   })
@@ -325,7 +325,7 @@ describe('Checkout terms checkbox', () => {
     }
   })
 
-  it('blocks payment if the background refresh fails despite cached acceptance', async () => {
+  it('blocks payment if refreshing terms fails despite cached acceptance', async () => {
     const { rerender } = render(<CheckoutForm />, { wrapper: MemoryRouter })
     await userEvent.click(screen.getByRole('checkbox'))
 

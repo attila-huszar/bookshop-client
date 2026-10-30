@@ -1,7 +1,15 @@
 import { createElement, type ReactNode } from 'react'
 import { Provider, useSelector } from 'react-redux'
+import { MemoryRouter } from 'react-router'
 import { i18n } from '@/i18n'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import {
   afterEach,
   beforeEach,
@@ -14,13 +22,14 @@ import {
 import * as privateApi from '@/api/authRequest'
 import * as publicApi from '@/api/baseRequest'
 import { PATH } from '@/api/path'
-import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
+import { CheckoutForm } from '@/pages/Checkout/components/CheckoutForm/CheckoutForm'
 import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
 import { UserRole } from '@/types'
 import { booksQueryArgs, userSelector } from '../selectors'
 import { applyBooksFilters } from '../slices/books'
+import { checkoutReady } from '../slices/payment'
 import { authSessionChanged } from '../slices/user'
 import { store as appStore, createAppStore, type RootState } from '../store'
 import { expireAuthSession, fetchAuthTokens } from '../thunks/user'
@@ -31,6 +40,15 @@ import { booksSearchParams, buildBookCriteria } from './booksQuery'
 import { ordersApi } from './ordersApi'
 import { termsApi } from './termsApi'
 import { usersApi, useUserProfileQuery } from './usersApi'
+
+const { confirmPayment } = vi.hoisted(() => ({ confirmPayment: vi.fn() }))
+
+vi.mock('@stripe/react-stripe-js', () => ({
+  useStripe: () => ({ confirmPayment }),
+  useElements: () => ({}),
+  PaymentElement: () => null,
+  LinkAuthenticationElement: () => null,
+}))
 
 const book: Book = {
   id: 7,
@@ -90,6 +108,9 @@ let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>
 let capturedRequests: Request[]
 
 beforeEach(() => {
+  confirmPayment.mockReset().mockResolvedValue({
+    paymentIntent: { status: 'succeeded' },
+  })
   store = createAppStore()
   store.dispatch(authSessionChanged('old-token'))
   accessToken = 'old-token'
@@ -164,17 +185,24 @@ function StoreProvider({ children }: { children: ReactNode }) {
 }
 
 describe('server-data cache', () => {
-  it('checks versions quietly and loads checkout terms only when focus detects a change', async () => {
+  it('refreshes changed checkout terms after submission, without focus or reconnect requests', async () => {
     let version = 'original'
     let finishReview: (() => void) | undefined
     let holdReview = false
-    fetchMock.mockImplementation((input) => {
-      if (
-        new URL(requestOf(input).url).pathname.endsWith(
-          '/terms/current-version',
-        )
-      ) {
-        return Promise.resolve(jsonResponse({ version }))
+    fetchMock.mockImplementation(async (input) => {
+      const request = requestOf(input)
+
+      if (request.method === 'POST') {
+        const acceptance = (await request.json()) as { version: string }
+
+        return acceptance.version !== version
+          ? jsonResponse({ code: 'TERMS_CHANGED' }, 412)
+          : jsonResponse({
+              version,
+              language: 'en',
+              statement: 'Accept terms',
+              acceptedAt: '2026-10-30T00:00:00Z',
+            })
       }
 
       const response = jsonResponse({
@@ -193,65 +221,95 @@ describe('server-data cache', () => {
         })
       }
 
-      return Promise.resolve(response)
+      return response
     })
-    const { result } = renderHook(() => useCheckoutTerms('pi_focus'), {
-      wrapper: StoreProvider,
-    })
-
-    await waitFor(() =>
-      expect(result.current.review?.terms?.version).toBe('original'),
+    await store.dispatch(
+      usersApi.util.upsertQueryData('userProfile', undefined, profile),
     )
-    const reviewRequests = () =>
-      capturedRequests.filter(
-        (request) =>
-          new URL(request.url).pathname === '/api/payments/pi_focus/terms',
-      )
-    expect(reviewRequests()).toHaveLength(1)
-    act(() => {
-      store.dispatch(bookshopApi.internalActions.onFocusLost())
-    })
-    act(() => {
-      store.dispatch(bookshopApi.internalActions.onFocus())
-    })
-
-    await waitFor(() =>
-      expect(
-        capturedRequests.filter((request) =>
-          new URL(request.url).pathname.endsWith('/terms/current-version'),
-        ),
-      ).toHaveLength(2),
+    const profileQuery = store.dispatch(
+      usersApi.endpoints.userProfile.initiate(undefined, {
+        subscriptionOptions: {
+          refetchOnFocus: false,
+          refetchOnReconnect: false,
+        },
+      }),
     )
-    await waitFor(() =>
-      expect(
-        termsApi.endpoints.currentTermsVersion.select()(store.getState())
-          .status,
-      ).toBe('fulfilled'),
+    store.dispatch(
+      checkoutReady({
+        paymentId: 'pi_submit',
+        paymentToken: 'test',
+        amount: 1200,
+      }),
     )
-    expect(result.current.isLoading).toBe(false)
-    expect(reviewRequests()).toHaveLength(1)
+    render(
+      createElement(MemoryRouter, { children: createElement(CheckoutForm) }),
+      {
+        wrapper: StoreProvider,
+      },
+    )
 
+    await userEvent.click(await screen.findByRole('checkbox'))
     version = 'updated'
     holdReview = true
-    act(() => {
-      store.dispatch(bookshopApi.internalActions.onFocusLost())
-      store.dispatch(bookshopApi.internalActions.onFocus())
-    })
-    await waitFor(() => expect(finishReview).toBeDefined())
-    expect(result.current.isLoading).toBe(true)
-    expect(reviewRequests()).toHaveLength(2)
 
     await act(async () => {
-      finishReview?.()
-      await Promise.resolve()
+      store.dispatch(bookshopApi.internalActions.onFocusLost())
+      store.dispatch(bookshopApi.internalActions.onOffline())
+      store.dispatch(bookshopApi.internalActions.onFocus())
+      store.dispatch(bookshopApi.internalActions.onOnline())
+      await new Promise((resolve) => setTimeout(resolve, 0))
     })
-    await waitFor(() =>
-      expect(result.current.review?.terms?.version).toBe('updated'),
+
+    expect(capturedRequests).toHaveLength(1)
+    expect(screen.getByRole('checkbox')).toBeChecked()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
+      'https://bookshop.test/terms/original',
     )
-    expect(result.current.isLoading).toBe(false)
-    expect(result.current.review?.terms?.url).toBe(
+
+    await userEvent.click(screen.getByRole('button', { name: /^Place order/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The terms and conditions have changed',
+    )
+    await waitFor(() => expect(finishReview).toBeDefined())
+    expect(confirmPayment).not.toHaveBeenCalled()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading terms and conditions',
+    )
+    expect(screen.getByRole('button', { name: /^Place order/ })).toBeDisabled()
+    expect(capturedRequests.map((request) => request.method)).toEqual([
+      'GET',
+      'POST',
+      'GET',
+    ])
+
+    act(() => {
+      finishReview?.()
+    })
+    expect(await screen.findByRole('checkbox')).not.toBeChecked()
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
       'https://bookshop.test/terms/updated',
     )
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The terms and conditions have changed',
+    )
+    expect(screen.getByRole('button', { name: /^Place order/ })).toBeDisabled()
+    expect(
+      screen.queryByRole('button', { name: /^Retry payment/ }),
+    ).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('checkbox'))
+    await userEvent.click(screen.getByRole('button', { name: /^Place order/ }))
+    await waitFor(() => expect(confirmPayment).toHaveBeenCalledTimes(1))
+    expect(await capturedRequests.at(-1)?.json()).toEqual({
+      version: 'updated',
+      language: 'en',
+      accepted: true,
+    })
+    profileQuery.unsubscribe()
   })
 
   it('refreshes current terms, history and checkout references and evicts a deleted archive', async () => {

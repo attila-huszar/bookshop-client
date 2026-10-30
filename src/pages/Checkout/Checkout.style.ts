@@ -31,18 +31,6 @@ export const StyledCheckout = styled.section`
     gap: 1rem;
   }
 
-  #email {
-    border-radius: var(--border-radius);
-    margin-bottom: 16px;
-    padding: 12px;
-    border: 1px solid var(--color-outline-variant);
-    max-height: 44px;
-    font-size: 16px;
-    width: 100%;
-    background: var(--color-surface-container-lowest);
-    box-sizing: border-box;
-  }
-
   #payment-message,
   #cancel-message {
     margin-top: 1rem;

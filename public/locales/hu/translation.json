@@ -256,7 +256,6 @@
     "createError": "A rendelés létrehozása nem sikerült.",
     "sessionUnavailable": "Ez a fizetési munkamenet már nem érhető el. Kérjük, indítson új fizetést.",
     "sessionEnded": "Ez a fizetési munkamenet befejeződött. Kérjük, indítson új fizetést.",
-    "invalidResponse": "Érvénytelen válasz érkezett a fizetési szolgáltatástól. Kérjük, indítson új fizetést.",
     "summary": "Rendelés összesítése",
     "total": "Összesen: {{amount}} {{currency}}",
     "order": "Rendelés #{{number}}",

@@ -11,12 +11,7 @@ import {
 } from '@/types/ApiError'
 import en from '../../public/locales/en/translation.json'
 import hu from '../../public/locales/hu/translation.json'
-import {
-  getApiError,
-  getErrorCode,
-  getErrorMessage,
-  toAppError,
-} from './errors'
+import { getApiError, getErrorMessage, toAppError } from './errors'
 
 async function requestFailure(body: unknown) {
   try {
@@ -208,35 +203,6 @@ describe('getApiError', () => {
       expect(getErrorMessage(wrapped, 'Fallback')).toBe('Fallback')
     },
   )
-})
-
-describe('getErrorCode', () => {
-  it.each(['session_unavailable', 11000, 0, ''])(
-    'preserves code %j',
-    (code) => {
-      expect(getErrorCode({ code })).toBe(code)
-      expect(
-        getErrorCode(Object.assign(new Error('Request failed'), { code })),
-      ).toBe(code)
-    },
-  )
-
-  it.each([
-    null,
-    undefined,
-    'session_unavailable',
-    42,
-    {},
-    [],
-    Object.assign([], { code: 'session_unavailable' }),
-    new Error(),
-    { code: null },
-    { code: undefined },
-    { code: true },
-    { code: {} },
-  ])('returns undefined for missing or unsupported codes: %j', (error) => {
-    expect(getErrorCode(error)).toBeUndefined()
-  })
 })
 
 describe('getErrorMessage', () => {

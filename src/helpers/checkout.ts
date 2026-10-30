@@ -3,7 +3,6 @@ import type { TFunction } from 'i18next'
 import { storedCartSchema } from '@/validation/orderSchemas'
 import { cartKey, paymentIdempotencyKey } from '@/constants/keys'
 import type {
-  Cart,
   CartItem,
   PaymentIntentRequest,
   PaymentIntentStatus,
@@ -99,13 +98,6 @@ export function clearClientIdempotencyKey(clientIdempotencyKey: string): void {
 export function resetClientIdempotencyKey(): void {
   sessionStorageAdapter.remove(paymentIdempotencyKey)
 }
-
-export const calculateTotalAmount = (cartItems: Cart[]): number =>
-  cartItems.reduce(
-    (total, item) =>
-      total + (item.price - (item.price * item.discount) / 100) * item.quantity,
-    0,
-  )
 
 export const formatAmount = (
   amount: number,

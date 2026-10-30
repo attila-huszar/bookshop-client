@@ -49,7 +49,6 @@ describe('Account page', () => {
           country: 'GB',
         },
       },
-      userIsUpdating: false,
     })
     vi.mocked(useUpdateUserProfileMutation).mockReturnValue([
       mockDispatch,

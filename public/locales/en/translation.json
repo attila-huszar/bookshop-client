@@ -256,7 +256,6 @@
     "createError": "Order creation failed",
     "sessionUnavailable": "This payment session is no longer accessible. Please start a new checkout.",
     "sessionEnded": "This payment session has ended. Please start a new checkout.",
-    "invalidResponse": "Invalid response from payment service. Please start a new checkout.",
     "summary": "Order summary",
     "total": "Total: {{amount}} {{currency}}",
     "order": "Order #{{number}}",

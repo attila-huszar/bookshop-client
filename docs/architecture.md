@@ -50,7 +50,7 @@ Terms are immutable, versioned legal documents managed separately from interface
 
 The server's `canDelete` flag governs deletion of terms already referenced by orders. Deletion refreshes affected history/archive/checkout queries. Removing the last publication makes terms unavailable and blocks checkout.
 
-Checkout obtains the persisted order summary and current terms from `GET /api/payments/:paymentId/terms`. The customer must explicitly accept that version in the selected language before payment confirmation. The client posts `{ accepted: true, version, language }` and waits for server acceptance before calling Stripe. Refreshing checkout or changing language requires acceptance again. Missing terms or failed acceptance prevents submission.
+Checkout obtains the persisted order summary and current terms from `GET /api/payments/:paymentId/terms`. The customer must explicitly accept that version in the selected language before payment confirmation. The client posts `{ accepted: true, version, language }` and waits for server acceptance before calling Stripe. Checkout terms do not refetch on focus or reconnect. If submission detects a changed version, the existing alert explains the rejection and the checkout review refreshes, requiring acceptance of the updated terms. Refreshing checkout or changing language requires acceptance again. Missing terms or failed acceptance prevents submission.
 
 Public `/terms` and `/terms/:version` routes expose current and archived documents without authentication, including downloads of the selected version and language. The [backend terms documentation](../../bookshop-server/docs/architecture.md#terms-publication-and-acceptance) describes acceptance persistence and remaining merchant obligations.
 

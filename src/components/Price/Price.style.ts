@@ -16,18 +16,25 @@ export const StyledPriceProduct = styled.div`
   grid-row: 1 / 3;
   align-self: center;
 
+  span {
+    font-weight: 500;
+  }
+
   p {
     display: flex;
     gap: 2rem;
   }
 
-  ${media.down('sm')`
-    align-self: flex-start;
+  ${media.down('lg')`
     font-size: 1.125rem;
 
     p {
       gap: 1rem;
     }
+  `}
+
+  ${media.down('sm')`
+    align-self: flex-start;
   `}
 `
 
