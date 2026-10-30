@@ -202,7 +202,7 @@ describe('HTTP translation loading', () => {
         amount: '12.00',
         currency: 'EUR',
       }),
-    ).toContain('Fizetési kötelezettséggel járó megrendelés')
+    ).toContain('Megrendelés és fizetés')
   })
 
   it('uses saved English even when the browser prefers Hungarian', async () => {

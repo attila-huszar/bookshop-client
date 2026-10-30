@@ -12,7 +12,7 @@ import {
   type OrderEmailType,
   orderEmailTypes,
 } from '@/types'
-import { SpinnerIcon, XMarkIcon } from '@/assets/svg'
+import { SpinnerIcon, XIcon } from '@/assets/svg'
 import {
   OutboxContainer,
   OutboxControls,
@@ -122,7 +122,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
                   handleSearchChange('')
                   searchRef.current?.focus()
                 }}>
-                <XMarkIcon
+                <XIcon
                   color="var(--color-on-surface-variant)"
                   aria-hidden="true"
                 />

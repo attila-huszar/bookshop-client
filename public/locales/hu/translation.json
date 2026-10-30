@@ -35,7 +35,7 @@
       "line1": "1. címsor",
       "line2": "2. címsor",
       "city": "Város",
-      "state": "Megye / állam",
+      "state": "Megye",
       "postalCode": "Irányítószám",
       "country": "Ország",
       "avatar": "Profilkép",
@@ -134,7 +134,7 @@
     "addToBasket": "Kosárba",
     "viewBasket": "Megtekintés a kosárban",
     "search": "Keresés",
-    "searchPlaceholder": "Mit keres?",
+    "searchPlaceholder": "Könyv keresése…",
     "searchError": "A keresési találatok betöltése nem sikerült. Kérjük, próbálja újra.",
     "noResults": "Nincs találat..."
   },
@@ -421,8 +421,8 @@
     "notPublished": "Az ÁSZF még nincs közzétéve.",
     "reload": "ÁSZF újratöltése",
     "required": "Fizetés előtt kérjük, olvassa el és fogadja el az ÁSZF-et.",
-    "orderButton": "Fizetési kötelezettséggel járó megrendelés — {{amount}} {{currency}}",
-    "retryButton": "Fizetési kötelezettséggel járó megrendelés újrapróbálása — {{amount}} {{currency}}",
+    "orderButton": "Megrendelés és fizetés — {{amount}} {{currency}}",
+    "retryButton": "Fizetés újrapróbálása — {{amount}} {{currency}}",
     "download": "Letöltés"
   },
   "termsEditor": {
@@ -491,7 +491,7 @@
     "image": "Érvénytelen képfájl",
     "imageRequired": "Válasszon képfájlt",
     "imageFormat": "Nem támogatott képformátum",
-    "imageSize": "A kép mérete legfeljebb {{size}} KB lehet.",
+    "imageSize": "A kép mérete legfeljebb {{size}} MB lehet.",
     "type": "Érvénytelen érték",
     "greaterThan": "Az érték legyen nagyobb, mint {{min}}",
     "lessThan": "Az érték legyen kisebb, mint {{max}}",

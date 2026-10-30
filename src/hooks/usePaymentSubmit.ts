@@ -12,7 +12,16 @@ import {
 } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { baseURL } from '@/constants/envConfig'
-import type { ApiError, CheckoutTerms } from '@/types'
+import type { ApiError, CheckoutTerms, ErrorCode } from '@/types'
+import { HttpErrorCode, TermsErrorCode } from '@/types/ApiError'
+
+const retryableApiCodes: readonly ErrorCode[] = [
+  HttpErrorCode.Internal,
+  HttpErrorCode.Timeout,
+  HttpErrorCode.RateLimited,
+  HttpErrorCode.UnknownResponse,
+  TermsErrorCode.Unavailable,
+]
 
 type SubmitMessage = {
   text: string | null
@@ -138,7 +147,7 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
       setMessage({
         text: getErrorMessage(error, t('checkout.submitFailed')),
         type: 'error',
-        retryable: true,
+        retryable: !apiError || retryableApiCodes.includes(apiError.code),
         ...(apiError ? { error: apiError } : {}),
       })
     } finally {
@@ -155,7 +164,6 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
 
   return {
     handleSubmit,
-    retryPayment: submitPayment,
     canRetry: message.retryable ?? false,
     message: message.error
       ? {

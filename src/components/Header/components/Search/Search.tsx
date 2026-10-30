@@ -16,7 +16,7 @@ import {
   LinkIcon,
   SearchIcon,
   SpinnerIcon,
-  XMarkIcon,
+  XIcon,
 } from '@/assets/svg'
 import {
   ClearButton,
@@ -265,7 +265,7 @@ export function Search() {
                   document.getElementById('search-books')?.focus()
                 }}
                 title={t('common.actions.clear')}>
-                <XMarkIcon color="var(--color-on-surface-variant)" />
+                <XIcon color="var(--color-on-surface-variant)" />
               </ClearButton>
             )}
           </Form>

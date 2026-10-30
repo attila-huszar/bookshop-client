@@ -7,6 +7,7 @@ import {
   type FormikContextType,
   useFormikContext,
 } from 'formik'
+import { IMAGE_ACCEPT } from '@/validation/fileSchemas'
 import type { FormikInput } from '@/types'
 import { EyeHideIcon, EyeIcon } from '@/assets/svg'
 import {
@@ -157,7 +158,7 @@ function FileField(props: FormikInput & { name: string }) {
         aria-label={props.name}
         onChange={handleImgChange}
         type="file"
-        accept="image/*"
+        accept={IMAGE_ACCEPT}
         {...props}
         $valid={shouldShowError && !fileMeta.error}
         $error={shouldShowError && fileMeta.error}

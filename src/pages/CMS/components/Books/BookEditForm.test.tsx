@@ -3,12 +3,16 @@ import { MemoryRouter } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { uploadProductImage } from '@/api/cms'
 import { authorsApi } from '@/store/api/authorsApi'
 import { useAddBookMutation, useUpdateBookMutation } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
+import { MAX_IMAGE_SIZE_BYTES } from '@/validation/fileSchemas'
 import type { BookWithAuthorId } from '@/types'
 import { BookEditForm } from './BookEditForm'
+
+vi.mock('@/api/cms', () => ({ uploadProductImage: vi.fn() }))
 
 vi.mock('@/store/api/booksApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/store/api/booksApi')>()),
@@ -47,6 +51,7 @@ describe('BookEditForm', () => {
   const updateBook = vi.fn()
 
   beforeEach(async () => {
+    vi.mocked(uploadProductImage).mockReset()
     store = createAppStore()
     addBook.mockReturnValue({ unwrap: () => Promise.resolve(book) })
     updateBook.mockReturnValue({ unwrap: () => Promise.resolve(book) })
@@ -68,6 +73,87 @@ describe('BookEditForm', () => {
           homeland: '',
           biography: '',
         })),
+      ),
+    )
+  })
+
+  function renderExistingBook() {
+    return render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <BookEditForm editedItem={book} onClose={vi.fn()} />
+        </MemoryRouter>
+      </Provider>,
+    )
+  }
+
+  it('preserves the existing image URL after a failed upload', async () => {
+    vi.mocked(uploadProductImage).mockRejectedValueOnce(
+      new Error('Upload failed'),
+    )
+    renderExistingBook()
+
+    await userEvent.upload(
+      screen.getByLabelText('Upload Image'),
+      new File(['image'], 'cover.png', { type: 'image/png' }),
+    )
+
+    await waitFor(() => expect(uploadProductImage).toHaveBeenCalledOnce())
+    await waitFor(() =>
+      expect(screen.getByLabelText('Upload Image')).toBeEnabled(),
+    )
+    expect(screen.getByPlaceholderText('Image URL')).toHaveValue(book.imgUrl)
+  })
+
+  it('preserves the existing image URL when file validation rejects a selection', async () => {
+    renderExistingBook()
+
+    await userEvent.upload(
+      screen.getByLabelText('Upload Image'),
+      new File([new Uint8Array(MAX_IMAGE_SIZE_BYTES + 1)], 'large.png', {
+        type: 'image/png',
+      }),
+    )
+
+    expect(uploadProductImage).not.toHaveBeenCalled()
+    expect(screen.getByPlaceholderText('Image URL')).toHaveValue(book.imgUrl)
+  })
+
+  it('blocks saving and further uploads until the uploaded URL is applied', async () => {
+    let completeUpload!: (value: { url: string }) => void
+    const pendingUpload = new Promise<{ url: string }>((resolve) => {
+      completeUpload = resolve
+    })
+    vi.mocked(uploadProductImage).mockReturnValueOnce(pendingUpload)
+    renderExistingBook()
+    const title = screen.getByPlaceholderText('Title')
+    await userEvent.type(title, ' revised')
+    const fileInput = screen.getByLabelText('Upload Image')
+
+    await userEvent.upload(
+      fileInput,
+      new File(['image'], 'cover.png', { type: 'image/png' }),
+    )
+
+    expect(fileInput).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    expect(updateBook).not.toHaveBeenCalled()
+
+    await act(async () => {
+      completeUpload({ url: 'https://example.com/new-cover.webp' })
+      await pendingUpload
+    })
+
+    await waitFor(() => expect(fileInput).toBeEnabled())
+    expect(screen.getByPlaceholderText('Image URL')).toHaveValue(
+      'https://example.com/new-cover.webp',
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() =>
+      expect(updateBook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          imgUrl: 'https://example.com/new-cover.webp',
+        }),
       ),
     )
   })

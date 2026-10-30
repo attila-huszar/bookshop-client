@@ -12,9 +12,14 @@ import { bookshopApi } from './bookshopApi'
 
 export const termsApi = bookshopApi.injectEndpoints({
   endpoints: (build) => ({
+    currentTermsVersion: build.query<{ version: string | null }, void>({
+      query: () => ({ url: PATH.terms.currentVersion }),
+      providesTags: [{ type: 'TermsDocument', id: 'Current' }],
+    }),
+
     termsDocument: build.query<TermsDocument | null, string | undefined>({
       query: (version) => ({
-        url: version ? `${PATH.terms}/${version}` : PATH.terms,
+        url: version ? `${PATH.terms.root}/${version}` : PATH.terms.root,
       }),
       providesTags: (_result, _error, version) => [
         { type: 'TermsDocument', id: version ?? 'Current' },
@@ -97,6 +102,7 @@ export const termsApi = bookshopApi.injectEndpoints({
 })
 
 export const {
+  useCurrentTermsVersionQuery,
   useTermsDocumentQuery,
   useCmsTermsQuery,
   useCmsTermsHistoryQuery,

@@ -14,6 +14,7 @@ import {
 import * as privateApi from '@/api/authRequest'
 import * as publicApi from '@/api/baseRequest'
 import { PATH } from '@/api/path'
+import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
 import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
@@ -163,6 +164,96 @@ function StoreProvider({ children }: { children: ReactNode }) {
 }
 
 describe('server-data cache', () => {
+  it('checks versions quietly and loads checkout terms only when focus detects a change', async () => {
+    let version = 'original'
+    let finishReview: (() => void) | undefined
+    let holdReview = false
+    fetchMock.mockImplementation((input) => {
+      if (
+        new URL(requestOf(input).url).pathname.endsWith(
+          '/terms/current-version',
+        )
+      ) {
+        return Promise.resolve(jsonResponse({ version }))
+      }
+
+      const response = jsonResponse({
+        terms: {
+          version,
+          url: `https://bookshop.test/terms/${version}`,
+          publishedAt: '2026-10-30T00:00:00Z',
+          statements: { en: 'Accept terms', hu: 'Elfogadom' },
+        },
+        order: { total: 12, currency: 'USD', items: [] },
+      })
+
+      if (holdReview) {
+        return new Promise((resolve) => {
+          finishReview = () => resolve(response)
+        })
+      }
+
+      return Promise.resolve(response)
+    })
+    const { result } = renderHook(() => useCheckoutTerms('pi_focus'), {
+      wrapper: StoreProvider,
+    })
+
+    await waitFor(() =>
+      expect(result.current.review?.terms?.version).toBe('original'),
+    )
+    const reviewRequests = () =>
+      capturedRequests.filter(
+        (request) =>
+          new URL(request.url).pathname === '/api/payments/pi_focus/terms',
+      )
+    expect(reviewRequests()).toHaveLength(1)
+    act(() => {
+      store.dispatch(bookshopApi.internalActions.onFocusLost())
+    })
+    act(() => {
+      store.dispatch(bookshopApi.internalActions.onFocus())
+    })
+
+    await waitFor(() =>
+      expect(
+        capturedRequests.filter((request) =>
+          new URL(request.url).pathname.endsWith('/terms/current-version'),
+        ),
+      ).toHaveLength(2),
+    )
+    await waitFor(() =>
+      expect(
+        termsApi.endpoints.currentTermsVersion.select()(store.getState())
+          .status,
+      ).toBe('fulfilled'),
+    )
+    expect(result.current.isLoading).toBe(false)
+    expect(reviewRequests()).toHaveLength(1)
+
+    version = 'updated'
+    holdReview = true
+    act(() => {
+      store.dispatch(bookshopApi.internalActions.onFocusLost())
+      store.dispatch(bookshopApi.internalActions.onFocus())
+    })
+    await waitFor(() => expect(finishReview).toBeDefined())
+    expect(result.current.isLoading).toBe(true)
+    expect(reviewRequests()).toHaveLength(2)
+
+    await act(async () => {
+      finishReview?.()
+      await Promise.resolve()
+    })
+    await waitFor(() =>
+      expect(result.current.review?.terms?.version).toBe('updated'),
+    )
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.review?.terms?.url).toBe(
+      'https://bookshop.test/terms/updated',
+    )
+  })
+
   it('refreshes current terms, history and checkout references and evicts a deleted archive', async () => {
     const document = {
       version: 'unused',

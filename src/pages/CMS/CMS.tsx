@@ -31,7 +31,7 @@ import {
   StoreSlashIcon,
   UserIcon,
   UserSlashIcon,
-  XMarkIcon,
+  XIcon,
 } from '@/assets/svg'
 import {
   DialogBody,
@@ -357,7 +357,7 @@ export const CMS = () => {
               type="button"
               aria-label={t('common.actions.close')}
               title={t('common.actions.close')}
-              icon={<XMarkIcon aria-hidden="true" />}
+              icon={<XIcon aria-hidden="true" />}
               onClick={handleDialogClose}
             />
           </DialogHeader>

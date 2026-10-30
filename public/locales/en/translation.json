@@ -420,8 +420,8 @@
     "notPublished": "Terms and conditions have not been published yet.",
     "reload": "Reload terms and conditions",
     "required": "Please read and accept the terms and conditions before paying.",
-    "orderButton": "Order with obligation to pay — {{amount}} {{currency}}",
-    "retryButton": "Retry order with obligation to pay — {{amount}} {{currency}}",
+    "orderButton": "Place order and pay — {{amount}} {{currency}}",
+    "retryButton": "Retry payment — {{amount}} {{currency}}",
     "download": "Download"
   },
   "termsEditor": {
@@ -490,7 +490,7 @@
     "image": "Invalid image file",
     "imageRequired": "Please select an image file",
     "imageFormat": "Unsupported image format",
-    "imageSize": "Image must be no larger than {{size}} KB",
+    "imageSize": "Image must be no larger than {{size}} MB",
     "type": "Invalid value",
     "greaterThan": "Must be greater than {{min}}",
     "lessThan": "Must be less than {{max}}",

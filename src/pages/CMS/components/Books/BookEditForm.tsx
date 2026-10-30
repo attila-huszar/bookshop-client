@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { uploadProductImage } from '@/api/cms'
@@ -9,10 +9,9 @@ import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
 import { FormikField } from '@/components/FormikField'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
-import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
 import { formatDate } from '@/helpers/formatDate'
-import { validateImageFile } from '@/validation/fileSchemas'
+import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
 import { bookSchema } from '@/validation/productSchemas'
 import type { BookCreate, BookWithAuthorId } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
@@ -48,7 +47,11 @@ type Props = {
   readOnly?: boolean
 }
 
-export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
+export const BookEditForm: FC<Props> = ({
+  editedItem,
+  onClose,
+  readOnly = false,
+}) => {
   const { t } = useTranslation()
 
   const [addBook] = useAddBookMutation()
@@ -61,6 +64,18 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const productImageInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const uploadInFlight = useRef(false)
+  const mounted = useRef(false)
+  const uploadToastId = useId()
+
+  useEffect(() => {
+    mounted.current = true
+
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const initialValues: BookFormValues = editedItem
     ? {
@@ -96,20 +111,26 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     productImageInputRef.current?.click()
   }
 
-  const handleProductImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    setFieldValue: FormikHelpers<BookFormValues>['setFieldValue'],
+  ) => {
     const fileInput = e.target
     const files = fileInput.files
 
-    if (!files || files.length === 0) {
+    const file = files?.[0]
+    fileInput.value = ''
+
+    if (!file || uploadInFlight.current || readOnly) {
       return
     }
 
-    const file = files[0]!
     const { valid, error } = validateImageFile(file)
 
-    if (!valid && error) {
-      toast.error(error, { id: 'product-image-upload-error' })
-      fileInput.value = ''
+    if (!valid) {
+      toast.error(error ?? t('cms.imageError'), {
+        id: `${uploadToastId}-error`,
+      })
 
       return
     }
@@ -118,26 +139,33 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
 
     formData.append('image', file)
 
-    toast.loading(t('cms.uploadingImage'), { id: 'product-image-upload' })
+    uploadInFlight.current = true
+    setIsUploading(true)
+    toast.loading(t('cms.uploadingImage'), { id: uploadToastId })
 
     try {
       const result = await uploadProductImage(formData)
 
+      if (!mounted.current) {
+        toast.dismiss(uploadToastId)
+
+        return
+      }
+
+      await setFieldValue('imgUrl', result.url)
       toast.success(t('cms.imageUploaded'), {
-        id: 'product-image-upload',
+        id: uploadToastId,
       })
-
-      return result.url
     } catch (error) {
-      log.error('Image upload failed:', { error })
-
-      toast.error(t('cms.imageError'), {
-        id: 'product-image-upload',
+      toast.error(getErrorMessage(error, t('cms.imageError')), {
+        id: uploadToastId,
       })
-
-      throw error
     } finally {
-      fileInput.value = ''
+      uploadInFlight.current = false
+
+      if (mounted.current) {
+        setIsUploading(false)
+      }
     }
   }
 
@@ -145,6 +173,10 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     values: BookFormValues,
     actions: FormikHelpers<BookFormValues>,
   ) => {
+    if (uploadInFlight.current) {
+      return
+    }
+
     try {
       const bookValues: BookCreate = {
         ...values,
@@ -179,8 +211,9 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       validationSchema={bookSchema}
       onSubmit={handleSubmit}>
       {({ values, dirty, isSubmitting, setFieldValue }) => (
-        <Form>
-          <fieldset disabled={readOnly}>
+        <Form
+          aria-label={t('cms.information', { entity: t('catalogue.book') })}>
+          <fieldset disabled={readOnly || isUploading || isSubmitting}>
             {editedItem && (
               <>
                 <MetadataBlock>
@@ -336,19 +369,18 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   type="button"
                   onClick={handleProductImageClick}
                   title={t('cms.uploadImage')}
-                  icon={<UploadIcon />}
+                  icon={isUploading ? <SpinnerIcon /> : <UploadIcon />}
+                  aria-busy={isUploading}
                   $size="lg"
                 />
                 <input
                   type="file"
                   name="productImageInput"
                   aria-label={t('cms.uploadImage')}
-                  onChange={(e) => {
-                    handleProductImageChange(e)
-                      .then((url) => setFieldValue('imgUrl', url))
-                      .catch(() => setFieldValue('imgUrl', ''))
-                  }}
-                  accept="image/*"
+                  onChange={(e) =>
+                    void handleProductImageChange(e, setFieldValue)
+                  }
+                  accept={IMAGE_ACCEPT}
                   ref={productImageInputRef}
                   style={{ display: 'none' }}
                 />
@@ -369,7 +401,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               onClick={onClose}
               $size="sm"
               $color="neutral"
-              disabled={isSubmitting}>
+              disabled={isSubmitting || isUploading}>
               {readOnly
                 ? t('common.actions.close')
                 : t('common.actions.cancel')}
@@ -378,7 +410,9 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               <Button
                 type="submit"
                 $size="sm"
-                disabled={!dirty || isSubmitting || authorsLoading}>
+                disabled={
+                  !dirty || isSubmitting || isUploading || authorsLoading
+                }>
                 {isSubmitting && <SpinnerIcon height={22} />}
                 {t('common.actions.save')}
               </Button>

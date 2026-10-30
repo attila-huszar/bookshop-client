@@ -15,7 +15,7 @@ import { formatDate } from '@/helpers/formatDate'
 import { languageOptions } from '@/constants/defaultValues'
 import type { ApiError } from '@/types/ApiError'
 import type { TermsDocument, TermsDocumentSummary } from '@/types/Terms'
-import { BinIcon, XMarkIcon } from '@/assets/svg'
+import { BinIcon, XIcon } from '@/assets/svg'
 import {
   DialogBody,
   DialogCloseButton,
@@ -39,7 +39,7 @@ function TermsHeader({
         type="button"
         aria-label={t('common.actions.close')}
         title={t('common.actions.close')}
-        icon={<XMarkIcon aria-hidden="true" />}
+        icon={<XIcon aria-hidden="true" />}
         disabled={busy}
         onClick={onClose}
       />

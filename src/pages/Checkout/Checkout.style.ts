@@ -29,34 +29,6 @@ export const StyledCheckout = styled.section`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-
-    > :first-child {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 5rem;
-      width: 100%;
-      border-radius: 10px 10px 0 0;
-      background: var(--color-surface-container-high);
-
-      > p {
-        color: var(--color-on-surface-variant);
-        font-size: 1.125rem;
-      }
-
-      > span {
-        font-size: 1.25rem;
-        font-weight: 700;
-      }
-    }
-
-    > :nth-child(2) {
-      padding-top: 5rem;
-    }
   }
 
   #email {
@@ -88,19 +60,30 @@ export const StyledCheckout = styled.section`
   }
 
   #payment-element {
-    margin: 1rem 0;
+    margin: 1rem 0 0;
   }
 
   .checkout-review {
-    h3,
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface-container-high);
+    font-size: 0.875rem;
+
+    h3 {
+      margin-bottom: 0.375rem;
+      color: var(--color-on-surface-variant);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
     p {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0;
     }
 
     ul {
       display: grid;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      gap: 0.375rem;
+      margin-bottom: 0.75rem;
       padding: 0;
       list-style: none;
     }
@@ -137,7 +120,7 @@ export const StyledCheckout = styled.section`
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 0.5rem;
+      margin: 0;
       line-height: 1.5;
       overflow-wrap: anywhere;
 

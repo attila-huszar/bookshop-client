@@ -16,7 +16,7 @@ import { Loading } from '@/components/Loading'
 import { PasswordDialog } from '@/components/PasswordDialog'
 import { useAppSelector } from '@/hooks/redux'
 import { getErrorMessage } from '@/helpers/errors'
-import { validateImageFile } from '@/validation/fileSchemas'
+import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
 import { accountBasicSchema, addressSchema } from '@/validation/userSchemas'
 import type { StripeAddress, UserProfileUpdate } from '@/types'
 import { EditIcon, SpinnerIcon } from '@/assets/svg'
@@ -146,7 +146,7 @@ export function Account() {
                   aria-label={t('account.changeAvatar')}
                   onChange={handleAvatarChange}
                   disabled={userIsUpdating}
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   ref={inputFile}
                   style={{
                     position: 'absolute',

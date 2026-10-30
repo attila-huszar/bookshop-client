@@ -18,7 +18,10 @@ export const PATH = {
   orders: P.orders,
   searchOptions: P.searchOptions,
   payments: P.payments,
-  terms: P.terms,
+  terms: {
+    root: P.terms,
+    currentVersion: `${P.terms}/current-version`,
+  },
   users: {
     register: `${P.users}/register`,
     login: `${P.users}/login`,

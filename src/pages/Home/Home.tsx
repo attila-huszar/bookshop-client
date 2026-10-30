@@ -29,6 +29,7 @@ export function Home() {
         message={t('home.error')}
         error={booksError}
         reloadButton
+        dismissible
       />
     </main>
   )

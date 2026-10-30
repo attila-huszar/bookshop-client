@@ -180,6 +180,10 @@ export const BookSettingsRow = styled(DefaultRow)`
 
     button {
       transform: translateY(1.75rem);
+
+      &:hover:not(:disabled):not(:active) {
+        background-color: var(--color-surface-container-highest);
+      }
     }
   }
 

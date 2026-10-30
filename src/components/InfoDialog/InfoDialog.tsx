@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
 import { Loading } from '@/components/Loading'
+import { XIcon } from '@/assets/svg'
+import { DialogCloseButton } from '@/styles/dialog.styles'
 import { StyledInfoDialog } from './InfoDialog.style'
 
 type InfoDialogProps = {
@@ -11,6 +13,7 @@ type InfoDialogProps = {
   error?: unknown
   reloadButton?: boolean
   backButton?: boolean
+  dismissible?: boolean
 }
 
 export function InfoDialog({
@@ -19,11 +22,21 @@ export function InfoDialog({
   error,
   reloadButton,
   backButton,
+  dismissible = false,
 }: InfoDialogProps) {
   const { t } = useTranslation()
 
   return (
     <StyledInfoDialog ref={dialogRef}>
+      {dismissible && Boolean(error) && (
+        <DialogCloseButton
+          type="button"
+          aria-label={t('common.actions.close')}
+          title={t('common.actions.close')}
+          icon={<XIcon aria-hidden="true" />}
+          onClick={() => dialogRef.current?.close()}
+        />
+      )}
       {error ? (
         <Alert message={message} error={error} />
       ) : (

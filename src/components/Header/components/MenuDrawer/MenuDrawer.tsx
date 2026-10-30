@@ -2,7 +2,7 @@ import { FC, ReactNode, RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/Button'
-import { XMarkIcon } from '@/assets/svg'
+import { XIcon } from '@/assets/svg'
 import {
   Backdrop,
   DrawerCloseButton,
@@ -31,7 +31,7 @@ export const MenuDrawer: FC<Props> = ({
         <DrawerCloseButton>
           <IconButton
             onClick={onClose}
-            icon={<XMarkIcon />}
+            icon={<XIcon />}
             title={t('navigation.closeMenu')}
             $size="md"
           />

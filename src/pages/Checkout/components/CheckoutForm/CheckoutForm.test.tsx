@@ -4,9 +4,9 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { CheckoutForm } from './CheckoutForm'
 
@@ -24,10 +24,7 @@ vi.mock('@/hooks/redux', () => ({
 vi.mock('@/hooks/usePaymentSubmit', () => ({
   usePaymentSubmit: vi.fn(),
 }))
-vi.mock('@/store/api/termsApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
-  usePaymentTermsQuery: vi.fn(),
-}))
+vi.mock('@/hooks/useCheckoutTerms', () => ({ useCheckoutTerms: vi.fn() }))
 
 const review = {
   terms: {
@@ -55,10 +52,9 @@ const review = {
     ],
   },
 }
-const paymentLabel = /order with obligation to pay/i
+const paymentLabel = /place order and pay|retry payment/i
 const submitState = {
   handleSubmit: vi.fn(),
-  retryPayment: vi.fn(),
   canRetry: false,
   message: { text: null, type: 'neutral' as const },
   setMessage: vi.fn(),
@@ -66,12 +62,13 @@ const submitState = {
 }
 
 function mockReview(
-  data: typeof review | { terms: null; order: typeof review.order },
+  data: typeof review | { terms: null; order: typeof review.order } | undefined,
+  state: { isFetching?: boolean; isError?: boolean } = {},
 ) {
-  vi.mocked(usePaymentTermsQuery).mockReturnValue({
-    data,
-    isFetching: false,
-    isError: false,
+  vi.mocked(useCheckoutTerms).mockReturnValue({
+    review: data,
+    isLoading: state.isFetching ?? false,
+    isError: state.isError ?? false,
     refetch: vi.fn(),
   })
 }
@@ -125,7 +122,7 @@ describe('Checkout terms checkbox', () => {
     ).not.toBeChecked()
     expect(
       screen.getByRole('button', {
-        name: /Fizetési kötelezettséggel járó megrendelés/,
+        name: /Megrendelés és fizetés/,
       }),
     ).toBeDisabled()
     expect(
@@ -186,7 +183,7 @@ describe('Checkout terms checkbox', () => {
     expect(checkbox).toBeChecked()
   })
 
-  it('disables both payment buttons again when acceptance is removed', async () => {
+  it('uses one payment button for retries and disables it when acceptance is removed', async () => {
     vi.mocked(usePaymentSubmit).mockReturnValue({
       ...submitState,
       canRetry: true,
@@ -194,6 +191,15 @@ describe('Checkout terms checkbox', () => {
     })
     render(<CheckoutForm />, { wrapper: MemoryRouter })
     const checkbox = screen.getByRole('checkbox')
+    expect(screen.getAllByRole('button', { name: paymentLabel })).toHaveLength(
+      1,
+    )
+    expect(
+      screen.getByRole('button', { name: /^Retry payment/ }),
+    ).toBeDisabled()
+    expect(
+      screen.queryByRole('button', { name: /^Place order/ }),
+    ).not.toBeInTheDocument()
 
     await userEvent.click(checkbox)
     for (const button of screen.getAllByRole('button', {
@@ -212,6 +218,15 @@ describe('Checkout terms checkbox', () => {
   it('requires fresh acceptance when the displayed document changes', async () => {
     const { rerender } = render(<CheckoutForm />, { wrapper: MemoryRouter })
     await userEvent.click(screen.getByRole('checkbox'))
+    mockReview(review, { isFetching: true })
+    rerender(<CheckoutForm />)
+
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading terms and conditions',
+    )
+
     mockReview({
       ...review,
       terms: {
@@ -224,6 +239,9 @@ describe('Checkout terms checkbox', () => {
 
     expect(screen.getByRole('checkbox')).not.toBeChecked()
     expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
+    expect(
+      screen.getByRole('link', { name: 'Terms and Conditions' }),
+    ).toHaveAttribute('href', 'https://bookshop.test/terms-v2.pdf')
   })
 
   it('preserves acceptance when only the document URL changes', async () => {
@@ -250,18 +268,77 @@ describe('Checkout terms checkbox', () => {
     expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
   })
 
-  it('keeps payment disabled while refreshed terms are loading', () => {
-    vi.mocked(usePaymentTermsQuery).mockReturnValue({
-      data: review,
-      isFetching: true,
-      isError: false,
-      refetch: vi.fn(),
-    })
+  it('shows the loading state while terms are first being retrieved', () => {
+    mockReview(undefined, { isFetching: true })
     render(<CheckoutForm />, { wrapper: MemoryRouter })
 
     expect(screen.getByRole('status')).toHaveTextContent(
       'Loading terms and conditions',
     )
     expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
+  })
+
+  it('shows terms loading during a refresh and preserves acceptance for the same version', async () => {
+    vi.mocked(usePaymentSubmit).mockReturnValue({
+      ...submitState,
+      canRetry: true,
+    })
+    const { rerender } = render(<CheckoutForm />, { wrapper: MemoryRouter })
+    await userEvent.click(screen.getByRole('checkbox'))
+
+    mockReview(review, { isFetching: true })
+    rerender(<CheckoutForm />)
+
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading terms and conditions',
+    )
+    expect(
+      screen.getByRole('button', { name: /^Retry payment/ }),
+    ).toHaveAttribute('aria-busy', 'false')
+    expect(
+      screen.getByRole('button', { name: /^Retry payment/ }),
+    ).toHaveTextContent('Retry payment')
+    for (const button of screen.getAllByRole('button', {
+      name: paymentLabel,
+    })) {
+      expect(button).toBeDisabled()
+    }
+    expect(usePaymentSubmit).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        terms: null,
+        termsAccepted: false,
+      }),
+    )
+
+    mockReview(review)
+    rerender(<CheckoutForm />)
+
+    expect(screen.getByRole('checkbox')).toBeChecked()
+    expect(
+      screen.getByRole('button', { name: /^Retry payment/ }),
+    ).toHaveAttribute('aria-busy', 'false')
+    for (const button of screen.getAllByRole('button', {
+      name: paymentLabel,
+    })) {
+      expect(button).toBeEnabled()
+    }
+  })
+
+  it('blocks payment if the background refresh fails despite cached acceptance', async () => {
+    const { rerender } = render(<CheckoutForm />, { wrapper: MemoryRouter })
+    await userEvent.click(screen.getByRole('checkbox'))
+
+    mockReview(review, { isError: true })
+    rerender(<CheckoutForm />)
+
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
+    expect(usePaymentSubmit).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        terms: null,
+        termsAccepted: false,
+      }),
+    )
   })
 })

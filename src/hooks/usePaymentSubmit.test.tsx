@@ -189,6 +189,7 @@ describe('Payment terms submission', () => {
     await act(() => result.current.handleSubmit(submitEvent()))
 
     expect(result.current.message.text).toBe(i18n.t('errors.termsChanged'))
+    expect(result.current.canRetry).toBe(false)
 
     await act(() => i18n.changeLanguage('hu'))
 
@@ -196,6 +197,29 @@ describe('Payment terms submission', () => {
     expect(acceptTerms).toHaveBeenCalledTimes(1)
     expect(confirmPayment).not.toHaveBeenCalled()
   })
+
+  it.each([
+    { code: 'TERMS_CHANGED', status: 412, retry: false },
+    { code: 'TERMS_ALREADY_ACCEPTED', status: 412, retry: false },
+    { code: 'TERMS_NOT_RECORDED', status: 409, retry: false },
+    { code: 'CHECKOUT_ENDED', status: 410, retry: false },
+    { code: 'UNAUTHORIZED', status: 401, retry: false },
+    { code: 'INTERNAL_ERROR', status: 500, retry: true },
+    { code: 'REQUEST_TIMEOUT', status: 408, retry: true },
+    { code: 'RATE_LIMITED', status: 429, retry: true },
+    { code: 'TERMS_UNAVAILABLE', status: 503, retry: true },
+  ])(
+    'offers a retry for $code only when the failure is temporary',
+    async ({ code, status, retry }) => {
+      unwrap.mockRejectedValueOnce({ code, status })
+      const { result } = renderHook(() => usePaymentSubmit(input))
+
+      await act(() => result.current.handleSubmit(submitEvent()))
+
+      expect(result.current.canRetry).toBe(retry)
+      expect(confirmPayment).not.toHaveBeenCalled()
+    },
+  )
 
   it('shows a translated payment-service fallback in Hungarian', async () => {
     await i18n.changeLanguage('hu')
@@ -241,26 +265,17 @@ describe('Payment terms submission', () => {
     )
   })
 
-  it.each(['submit', 'retry'])(
-    'blocks %s without explicit acceptance',
-    async (action) => {
-      const { result } = renderHook(() =>
-        usePaymentSubmit({ ...input, termsAccepted: false }),
-      )
+  it('blocks submission without explicit acceptance', async () => {
+    const { result } = renderHook(() =>
+      usePaymentSubmit({ ...input, termsAccepted: false }),
+    )
 
-      await act(async () => {
-        if (action === 'submit') {
-          await result.current.handleSubmit(submitEvent())
-        } else {
-          await result.current.retryPayment()
-        }
-      })
+    await act(() => result.current.handleSubmit(submitEvent()))
 
-      expect(result.current.message.text).toMatch(/accept the terms/)
-      expect(acceptTerms).not.toHaveBeenCalled()
-      expect(confirmPayment).not.toHaveBeenCalled()
-    },
-  )
+    expect(result.current.message.text).toMatch(/accept the terms/)
+    expect(acceptTerms).not.toHaveBeenCalled()
+    expect(confirmPayment).not.toHaveBeenCalled()
+  })
 
   it('blocks payment when no terms document is available', async () => {
     const { result } = renderHook(() =>
@@ -332,7 +347,7 @@ describe('Payment terms submission', () => {
     await act(() => result.current.handleSubmit(submitEvent()))
     expect(result.current.canRetry).toBe(true)
     rerender(false)
-    await act(() => result.current.retryPayment())
+    await act(() => result.current.handleSubmit(submitEvent()))
 
     expect(confirmPayment).toHaveBeenCalledTimes(1)
     expect(acceptTerms).toHaveBeenCalledTimes(1)
@@ -353,7 +368,6 @@ describe('Payment terms submission', () => {
       submitting = result.current.handleSubmit(submitEvent())
     })
     await act(() => result.current.handleSubmit(submitEvent()))
-    await act(() => result.current.retryPayment())
     await act(async () => {
       finishAcceptance?.()
       await submitting

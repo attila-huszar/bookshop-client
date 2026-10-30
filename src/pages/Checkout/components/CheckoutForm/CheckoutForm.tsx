@@ -9,10 +9,10 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
-import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useCheckoutTerms } from '@/hooks/useCheckoutTerms'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { cancelCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
@@ -33,14 +33,11 @@ export function CheckoutForm() {
   const [isCanceling, setIsCanceling] = useState(false)
   const [acceptedTermsKey, setAcceptedTermsKey] = useState<string | null>(null)
   const {
-    data: review,
-    isFetching: isTermsLoading,
+    review,
+    isLoading: isTermsLoading,
     isError: hasTermsError,
     refetch: refetchTerms,
-  } = usePaymentTermsQuery(payment?.paymentId ?? '', {
-    skip: !payment?.paymentId,
-    refetchOnMountOrArgChange: true,
-  })
+  } = useCheckoutTerms(payment?.paymentId)
   const terms = hasTermsError || isTermsLoading ? null : (review?.terms ?? null)
   const termsKey = terms
     ? JSON.stringify([payment?.paymentId, terms.version, language])
@@ -50,19 +47,13 @@ export function CheckoutForm() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const {
-    handleSubmit,
-    retryPayment,
-    canRetry,
-    message,
-    setMessage,
-    isLoading,
-  } = usePaymentSubmit({
-    email: receiptEmail,
-    paymentId: payment?.paymentId ?? '',
-    terms,
-    termsAccepted,
-  })
+  const { handleSubmit, canRetry, message, setMessage, isLoading } =
+    usePaymentSubmit({
+      email: receiptEmail,
+      paymentId: payment?.paymentId ?? '',
+      terms,
+      termsAccepted,
+    })
 
   if (!payment) {
     return (
@@ -81,14 +72,18 @@ export function CheckoutForm() {
 
   const paymentId = payment.paymentId
 
-  const orderForm = {
-    num: paymentId.slice(-6).toUpperCase(),
-    amount: formatAmount(payment.amount / 100, i18n.resolvedLanguage),
-  }
+  const amount = formatAmount(payment.amount / 100, i18n.resolvedLanguage)
   const currency = review?.order.currency ?? defaultCurrency
   const statement = terms?.statements[language] ?? ''
   const termsLinkText = t('terms.title', { context: 'accusative' })
   const termsLinkIndex = statement.indexOf(termsLinkText)
+  const orderButtonLabel = t(
+    canRetry ? 'terms.retryButton' : 'terms.orderButton',
+    {
+      amount,
+      currency,
+    },
+  )
   const isPaymentDisabled =
     isLoading || isCanceling || !stripe || !elements || !termsAccepted
 
@@ -140,12 +135,6 @@ export function CheckoutForm() {
         setCancelError(null)
         void handleSubmit(e)
       }}>
-      <div>
-        <p>{t('checkout.order', { number: orderForm.num })}</p>
-        <span>
-          {orderForm.amount} {currency}
-        </span>
-      </div>
       {!userData?.email && (
         <LinkAuthenticationElement
           options={{ defaultValues: { email: linkEmail } }}
@@ -187,7 +176,7 @@ export function CheckoutForm() {
               </li>
             ))}
           </ul>
-          <p>{t('checkout.total', { amount: orderForm.amount, currency })}</p>
+          <p>{t('checkout.total', { amount, currency })}</p>
         </section>
       )}
       <div className="checkout-terms" lang={language}>
@@ -249,28 +238,18 @@ export function CheckoutForm() {
       <button
         type="submit"
         disabled={isPaymentDisabled}
+        aria-busy={isLoading}
+        aria-label={orderButtonLabel}
         lang={language}
         id="submit">
         <span>
           {isLoading ? (
-            <div className="spinner" id="spinner"></div>
+            <div className="spinner" id="spinner" aria-hidden="true"></div>
           ) : (
-            t('terms.orderButton', { amount: orderForm.amount, currency })
+            orderButtonLabel
           )}
         </span>
       </button>
-      {canRetry && (
-        <button
-          type="button"
-          onClick={() => void retryPayment()}
-          disabled={isPaymentDisabled}
-          lang={language}
-          style={{ backgroundColor: 'var(--color-primary)' }}>
-          <span>
-            {t('terms.retryButton', { amount: orderForm.amount, currency })}
-          </span>
-        </button>
-      )}
       <button
         type="button"
         onClick={() => void handleCancel()}
