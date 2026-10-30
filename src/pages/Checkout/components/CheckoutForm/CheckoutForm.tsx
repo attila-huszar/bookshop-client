@@ -17,6 +17,7 @@ import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { cancelCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { calculatePriceCents } from '@/helpers/pricing'
 import { defaultCurrency } from '@/constants/defaultValues'
 import type { ApiError, StripePaymentElementOptions } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
@@ -173,7 +174,11 @@ export function CheckoutForm() {
                 </span>
                 <span>
                   {formatAmount(
-                    item.price * (1 - item.discount / 100) * item.quantity,
+                    calculatePriceCents(
+                      item.price,
+                      item.discount,
+                      item.quantity,
+                    ) / 100,
                     i18n.resolvedLanguage,
                   )}{' '}
                   {currency}

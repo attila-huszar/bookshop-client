@@ -105,6 +105,23 @@ describe('BookEditForm', () => {
     expect(screen.getByPlaceholderText('Image URL')).toHaveValue(book.imgUrl)
   })
 
+  it('submits a cleared optional discount as numeric zero', async () => {
+    renderExistingBook()
+    const user = userEvent.setup()
+    await user.clear(screen.getByPlaceholderText('Discount'))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(updateBook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          price: 10,
+          discount: 0,
+          discountPrice: 10,
+        }),
+      ),
+    )
+  })
+
   it('preserves the existing image URL when file validation rejects a selection', async () => {
     renderExistingBook()
 

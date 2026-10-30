@@ -24,6 +24,8 @@ Protected routes subscribe to the current profile and role. They wait for author
 
 Cart reads subscribe to canonical book queries. Price-conflict recovery waits for older in-flight reads and then forces fresh requests, bypassing stale book cache entries without discarding basket quantities. The cart loader resumes an active checkout; the checkout loader restores its payment session. Product IDs are validated before querying.
 
+USD pricing rounds the base unit price to cents, applies the percentage discount and rounds the discounted unit to cents, then multiplies by quantity. CMS previews, price displays, cart totals and checkout summaries follow the same policy. Totals sum integer cents, and checkout compares them exactly with the server's recalculated amount. Existing checkout snapshots retain their recorded totals.
+
 ## Authentication
 
 Concurrent 401 responses share one token refresh. A request retries authentication at most once, and responses from an older session cannot refresh or expire a newer login. Logout waits for server cookie clearing before completing the local transition; a failed logout remains retryable.

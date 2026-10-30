@@ -22,6 +22,7 @@ import { startCheckout } from '@/services/checkout'
 import { formatAmount } from '@/helpers/checkout'
 import { enforceMinMax } from '@/helpers/enforceMinMax'
 import { getErrorMessage } from '@/helpers/errors'
+import { calculatePriceCents } from '@/helpers/pricing'
 import { scrollToTop } from '@/helpers/scrollToTop'
 import {
   defaultCurrencySymbol,
@@ -97,16 +98,20 @@ export function Cart() {
     }
   }, [isCheckoutBusy])
 
-  const price = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+  const subtotalCents = cartItems.reduce(
+    (acc, item) => acc + calculatePriceCents(item.price, 0, item.quantity),
     0,
   )
 
-  const discountPrice = cartItems.reduce((acc, item) => {
-    return acc + item.discountPrice * item.quantity
-  }, 0)
+  const totalCents = cartItems.reduce(
+    (acc, item) =>
+      acc + calculatePriceCents(item.price, item.discount, item.quantity),
+    0,
+  )
 
-  const discount = price - discountPrice
+  const price = subtotalCents / 100
+  const discountPrice = totalCents / 100
+  const discount = (subtotalCents - totalCents) / 100
 
   const handleSetQuantity = (
     cartItem: Cart,
@@ -135,7 +140,7 @@ export function Cart() {
           id: item.id,
           quantity: item.quantity,
         })),
-        expectedTotal: Math.round((discountPrice + Number.EPSILON) * 100) / 100,
+        expectedTotal: totalCents / 100,
       }),
     ).then(
       (result) => {
@@ -241,8 +246,9 @@ export function Cart() {
               <PriceTotal>
                 <Price
                   component="cart"
-                  price={item.quantity * item.price}
+                  price={item.price}
                   discount={item.discount}
+                  quantity={item.quantity}
                 />
               </PriceTotal>
               <RemoveItem>

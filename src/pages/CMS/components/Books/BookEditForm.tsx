@@ -11,6 +11,7 @@ import { FormikField } from '@/components/FormikField'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { getErrorMessage } from '@/helpers/errors'
 import { formatDate } from '@/helpers/formatDate'
+import { calculatePriceCents } from '@/helpers/pricing'
 import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
 import { bookSchema } from '@/validation/productSchemas'
 import type { BookCreate, BookWithAuthorId } from '@/types'
@@ -25,7 +26,12 @@ import {
   Row,
 } from '../../styles'
 
-type BookFormValues = Omit<BookCreate, 'discountPrice'>
+type NumericBookField = 'publishYear' | 'rating' | 'price' | 'discount'
+type BookFormValues = Omit<
+  BookCreate,
+  'discountPrice' | 'authorId' | NumericBookField
+> &
+  Record<NumericBookField, number | ''> & { authorId: number | string }
 
 const initialBookValues: BookFormValues = {
   title: '',
@@ -178,12 +184,16 @@ export const BookEditForm: FC<Props> = ({
     }
 
     try {
+      const price = Number(values.price)
+      const discount = Number(values.discount)
       const bookValues: BookCreate = {
         ...values,
         authorId: Number(values.authorId),
-        discountPrice: Number(
-          (values.price * (1 - values.discount / 100)).toFixed(2),
-        ),
+        publishYear: Number(values.publishYear),
+        rating: Number(values.rating),
+        price,
+        discount,
+        discountPrice: calculatePriceCents(price, discount) / 100,
       }
 
       if (editedItem) {
@@ -325,8 +335,10 @@ export const BookEditForm: FC<Props> = ({
                 <p>{t('common.fields.discountPrice')}</p>
                 <FormikField
                   value={(
-                    (Number(values.price) || 0) *
-                    (1 - (Number(values.discount) || 0) / 100)
+                    calculatePriceCents(
+                      Number(values.price) || 0,
+                      Number(values.discount) || 0,
+                    ) / 100
                   ).toFixed(2)}
                   readOnly
                   aria-label={t('common.fields.discountPrice')}

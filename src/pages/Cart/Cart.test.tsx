@@ -149,6 +149,38 @@ describe('Cart', () => {
     expect(screen.getByRole('button', { name: 'Checkout' })).toBeDisabled()
   })
 
+  it('uses the same rounded unit price for the line, summary and checkout request', async () => {
+    const cartItems = [
+      {
+        ...items[0]!,
+        price: 9.99,
+        discount: 20,
+        discountPrice: 7.992,
+        quantity: 100,
+      },
+    ]
+    store.dispatch(cartRestored([{ id: 1, quantity: 100 }]))
+    vi.mocked(useCart).mockReturnValue({
+      cartItems,
+      isLoading: false,
+      isFetching: false,
+      error: undefined,
+      refetch,
+    })
+    renderCart()
+
+    expect(screen.getByText('7.99')).toBeInTheDocument()
+    expect(screen.getByText('799')).toBeInTheDocument()
+    expect(screen.getByText('$ 799.00')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+
+    expect(startCheckout).toHaveBeenCalledExactlyOnceWith({
+      items: [{ id: 1, quantity: 100 }],
+      expectedTotal: 799,
+    })
+  })
+
   it('navigates to an existing checkout without creating another payment', async () => {
     vi.mocked(startCheckout).mockImplementation(
       () => () => Promise.resolve({ type: 'existing', paymentId: 'pi_saved' }),
