@@ -1,106 +1,89 @@
-import { baseRequest, PATH } from '.'
-import { defaultCountry } from '@/constants'
-import { handleError } from '@/errors'
+import { i18n } from '@/i18n'
+import { toAppError } from '@/helpers/errors'
+import { defaultCountry } from '@/constants/defaultValues'
 import type { LoginRequest, LoginResponse } from '@/types'
+import { baseRequest } from './baseRequest'
+import { PATH } from './path'
 
-export const retrieveAuthTokens = async (): Promise<{
-  accessToken: string | null
-}> => {
-  const response = await baseRequest.post<{
-    accessToken: string | null
-  }>(PATH.users.refresh, { credentials: 'include' })
-  return await response.json()
-}
+export const retrieveAuthTokens = () =>
+  baseRequest
+    .post(PATH.users.refresh, { credentials: 'include' })
+    .json<{ accessToken: string | null }>()
 
-export const postUserLogin = async ({
-  email,
-  password,
-}: LoginRequest): Promise<LoginResponse> => {
+export const postUserLogin = async ({ email, password }: LoginRequest) => {
   try {
-    const response = await baseRequest.post<LoginResponse>(PATH.users.login, {
-      json: { email, password },
-      credentials: 'include',
-    })
-    return await response.json()
+    return await baseRequest
+      .post(PATH.users.login, {
+        json: { email, password },
+        credentials: 'include',
+      })
+      .json<LoginResponse>()
   } catch (error) {
-    const formattedError = handleError({
-      error,
-      message: 'Login failed, please try again later',
-    })
-    throw new Error(formattedError.message, { cause: error })
+    throw toAppError(error, i18n.t('auth.loginError'))
   }
 }
 
 export const postUserLogout = async () => {
   try {
-    const response = await baseRequest.post<{ success: boolean }>(
-      PATH.users.logout,
-      {
-        credentials: 'include',
-      },
-    )
-    return await response.json()
+    return await baseRequest
+      .post(PATH.users.logout, { credentials: 'include' })
+      .json<{ success: boolean }>()
   } catch (error) {
-    const formattedError = handleError({
-      error,
-      message: 'Logout failed, please try again later',
-    })
-    throw new Error(formattedError.message, { cause: error })
+    throw toAppError(error, i18n.t('auth.logoutError'))
   }
 }
 
-export const postVerifyEmail = async (
-  token: string,
-): Promise<{ email: string }> => {
-  const response = await baseRequest.post<{ email: string }>(
-    PATH.users.verification,
-    { json: { token } },
-  )
-  return await response.json()
-}
+export const postVerifyEmail = sharePendingTokenRequest((token) =>
+  baseRequest
+    .post(PATH.users.verification, { json: { token } })
+    .json<{ email: string }>(),
+)
 
-export const postPasswordReset = async (
-  email: string,
-): Promise<{ message: string }> => {
-  const response = await baseRequest.post<{ message: string }>(
-    PATH.users.passwordResetRequest,
-    { json: { email } },
-  )
-  return await response.json()
-}
+export const postPasswordReset = (email: string) =>
+  baseRequest
+    .post(PATH.users.passwordResetRequest, { json: { email } })
+    .json<{ success: boolean }>()
 
-export const postVerifyPasswordReset = async (
-  token: string,
-): Promise<{ token: string }> => {
-  const response = await baseRequest.post<{ token: string }>(
-    PATH.users.passwordResetToken,
-    { json: { token } },
-  )
-  return await response.json()
-}
+export const postVerifyPasswordReset = sharePendingTokenRequest((token) =>
+  baseRequest
+    .post(PATH.users.passwordResetToken, { json: { token } })
+    .json<{ token: string }>(),
+)
 
-export const postPasswordResetSubmit = async (
-  token: string,
-  password: string,
-): Promise<{ message: string }> => {
-  const response = await baseRequest.post<{ message: string }>(
-    PATH.users.passwordResetSubmit,
-    { json: { token, password } },
-  )
-  return await response.json()
-}
+export const postPasswordResetSubmit = (token: string, password: string) =>
+  baseRequest
+    .post(PATH.users.passwordResetSubmit, { json: { token, password } })
+    .json<{ success: boolean }>()
 
-export const getUserCountry = async (): Promise<{
-  country: string
-}> => {
+export const getUserCountry = async () => {
   try {
-    const response = await baseRequest.get<{ country: string | undefined }>(
-      PATH.users.country,
-    )
-    const data = await response.json()
+    const { country } = await baseRequest
+      .get(PATH.users.country)
+      .json<{ country?: string }>()
 
-    return { country: data.country ?? defaultCountry }
+    return { country: country ?? defaultCountry }
   } catch {
     return { country: defaultCountry }
+  }
+}
+
+/** Share pending requests per token without caching success or failure. */
+function sharePendingTokenRequest<T>(send: (token: string) => Promise<T>) {
+  const pending = new Map<string, Promise<T>>()
+
+  return (token: string) => {
+    const existing = pending.get(token)
+
+    if (existing) {
+      return existing
+    }
+
+    const request = send(token).finally(() => {
+      pending.delete(token)
+    })
+
+    pending.set(token, request)
+
+    return request
   }
 }

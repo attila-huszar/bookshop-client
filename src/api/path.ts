@@ -5,6 +5,7 @@ const P = {
   searchOptions: 'search_opts',
   users: 'users',
   payments: 'payments',
+  terms: 'terms',
   cms: 'cms',
   orders: 'orders',
   logs: 'logs',
@@ -17,6 +18,7 @@ export const PATH = {
   orders: P.orders,
   searchOptions: P.searchOptions,
   payments: P.payments,
+  terms: P.terms,
   users: {
     register: `${P.users}/register`,
     login: `${P.users}/login`,
@@ -32,6 +34,8 @@ export const PATH = {
     countryCodes: `${P.users}/country-codes`,
   },
   cms: {
+    terms: `${P.cms}/${P.terms}`,
+    termsHistory: `${P.cms}/${P.terms}/history`,
     orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
     restore: {

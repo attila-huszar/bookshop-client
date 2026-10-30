@@ -96,6 +96,7 @@ export const ErrorMessage = styled.div`
   color: var(--color-error-hover);
   font-size: 0.875rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
   user-select: none;
 `
 
@@ -132,6 +133,6 @@ export type FormTypes = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 > & {
-  $valid: boolean
-  $error: boolean | string | undefined
+  $valid?: boolean
+  $error?: boolean | string
 }

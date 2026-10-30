@@ -1,11 +1,19 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
-import { ROUTE } from '@/routes'
-import { useBookQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
-import { Alert, Button, Loading, Price, Recommended } from '@/components'
-import { useBreakpoints, useCart } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { skipToken } from '@reduxjs/toolkit/query'
+import { ROUTE } from '@/routes/route'
+import { useBookQuery } from '@/store/api/booksApi'
+import { cartAdd } from '@/store/slices/cart'
+import { Alert } from '@/components/Alert'
+import { Button } from '@/components/Button'
+import { Loading } from '@/components/Loading'
+import { Price } from '@/components/Price'
+import { Recommended } from '@/components/Recommended'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { scrollToTop } from '@/helpers/scrollToTop'
+import { CacheTime } from '@/constants/cacheTimes'
 import type { Book } from '@/types'
 import { CartAddIcon, ChevronLeftIcon, imagePlaceholder } from '@/assets/svg'
 import {
@@ -20,21 +28,26 @@ import {
 } from './Product.style'
 
 export function Product() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [searchParams] = useSearchParams()
-  const id = searchParams.get('id')
-  const { cartItems, addToCart } = useCart()
+  const rawId = searchParams.get('id') ?? ''
+  const parsedId = /^\d+$/.test(rawId) ? Number(rawId) : NaN
+  const id = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null
   const { isMobile } = useBreakpoints()
 
   const {
     currentData: book,
     isFetching,
     isError,
-  } = useBookQuery(Number(id), {
-    skip: !id,
-    refetchOnMountOrArgChange: cacheTimes.catalogue,
+  } = useBookQuery(id ?? skipToken, {
+    refetchOnMountOrArgChange: CacheTime.FiveMinutes,
   })
-  const isBookInCart = cartItems.some((item) => item.id === book?.id)
+  const isBookInCart = useAppSelector((state) =>
+    state.cart.cartItems.some((item) => item.id === book?.id),
+  )
 
   useEffect(() => {
     scrollToTop()
@@ -44,7 +57,7 @@ export function Product() {
     if (isBookInCart) {
       void navigate(`/${ROUTE.CART}`)
     } else {
-      addToCart(book)
+      dispatch(cartAdd({ id: book.id }))
     }
   }
 
@@ -59,33 +72,32 @@ export function Product() {
   return (
     <>
       <StyledProduct>
-        <Breadcrumb onClick={handleGoBack} title="Go back">
+        <Breadcrumb onClick={handleGoBack} title={t('common.actions.goBack')}>
           <ChevronLeftIcon height={18} />
-          Book Details
+          {t('catalogue.details')}
         </Breadcrumb>
         {!book && id && isFetching ? (
-          <Loading message="Loading book details" fullScreen />
+          <Loading message={t('catalogue.detailsLoading')} fullScreen />
         ) : book ? (
           <DetailsSection>
             <ImageWrapper>
               <img
                 src={book.imgUrl}
                 alt={book.title}
-                onError={(e) =>
-                  ((e.target as HTMLImageElement).src = imagePlaceholder)
-                }
-                width="100%"
+                onError={(event) => {
+                  event.currentTarget.src = imagePlaceholder
+                }}
               />
             </ImageWrapper>
             <BookTitle>{book.title}</BookTitle>
-            <BookAuthor>{book.author ?? 'Unknown Author'}</BookAuthor>
+            <BookAuthor>{book.author ?? t('common.unknownAuthor')}</BookAuthor>
             <Price
               component="product"
               price={book.price}
               discount={book.discount}
             />
             <Description>
-              <h2>Summary</h2>
+              <h2>{t('catalogue.summary')}</h2>
               <p>{book.description}</p>
             </Description>
             <ButtonWrapper>
@@ -94,12 +106,16 @@ export function Product() {
                 $icon={!isBookInCart && <CartAddIcon />}
                 $size={isMobile ? 'md' : 'lg'}
                 $textSize={isMobile ? 'md' : 'lg'}>
-                {isBookInCart ? 'View in Basket' : 'Add to Basket'}
+                {isBookInCart
+                  ? t('catalogue.viewBasket')
+                  : t('catalogue.addToBasket')}
               </Button>
             </ButtonWrapper>
           </DetailsSection>
         ) : (
-          (isError || !id) && <Alert message="Book not found" backButton />
+          (isError || !id) && (
+            <Alert message={t('catalogue.notFound')} backButton />
+          )
         )}
       </StyledProduct>
       <Recommended />

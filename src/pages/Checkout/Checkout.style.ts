@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledCheckout = styled.section`
   --page-loading-height: calc(100dvh - 4rem);
@@ -29,46 +29,6 @@ export const StyledCheckout = styled.section`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-
-    > :first-child {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 5rem;
-      width: 100%;
-      border-radius: 10px 10px 0 0;
-      background: var(--color-surface-container-high);
-
-      > p {
-        color: var(--color-on-surface-variant);
-        font-size: 1.125rem;
-      }
-
-      > span {
-        font-size: 1.25rem;
-        font-weight: 700;
-      }
-    }
-
-    > :nth-child(2) {
-      padding-top: 5rem;
-    }
-  }
-
-  #email {
-    border-radius: var(--border-radius);
-    margin-bottom: 16px;
-    padding: 12px;
-    border: 1px solid var(--color-outline-variant);
-    max-height: 44px;
-    font-size: 16px;
-    width: 100%;
-    background: var(--color-surface-container-lowest);
-    box-sizing: border-box;
   }
 
   #payment-message,
@@ -88,7 +48,78 @@ export const StyledCheckout = styled.section`
   }
 
   #payment-element {
-    margin: 1rem 0;
+    margin: 1rem 0 0;
+  }
+
+  .checkout-review {
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    background-color: var(--color-surface-container-high);
+    font-size: 0.875rem;
+
+    h3 {
+      margin-bottom: 0.375rem;
+      color: var(--color-on-surface-variant);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+
+    ul {
+      display: grid;
+      gap: 0.375rem;
+      margin-bottom: 0.75rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  .checkout-terms {
+    .checkout-terms-acceptance {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      line-height: 1.5;
+    }
+
+    label {
+      cursor: pointer;
+    }
+
+    input {
+      flex-shrink: 0;
+      width: 1.125rem;
+      height: 1.125rem;
+      margin-top: 0.2rem;
+      accent-color: var(--color-primary);
+    }
+
+    p {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+
+    a {
+      text-decoration: underline;
+    }
   }
 
   button {

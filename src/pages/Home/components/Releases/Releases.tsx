@@ -1,10 +1,12 @@
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import { booksSelector } from '@/store'
-import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
-import { Button } from '@/components'
-import { useAppSelector, useBreakpoints } from '@/hooks'
+import { ROUTE } from '@/routes/route'
+import { booksApi, useBooksByPropertyQuery } from '@/store/api/booksApi'
+import { booksQueryArgs } from '@/store/selectors'
+import { Button } from '@/components/Button'
+import { useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { CacheTime } from '@/constants/cacheTimes'
 import {
   ImageItem,
   ImageWrapper,
@@ -16,11 +18,27 @@ import {
 } from './Releases.style'
 
 export function Releases() {
-  useBooksByPropertyQuery('newRelease', {
-    refetchOnMountOrArgChange: cacheTimes.featured,
+  const { t } = useTranslation()
+  const queryArgs = useAppSelector(booksQueryArgs)
+  const prefetchBook = booksApi.usePrefetch('book', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
+  const prefetchBooks = booksApi.usePrefetch('books', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
+  const prefetchOptions = booksApi.usePrefetch('searchOptions', {
+    ifOlderThan: CacheTime.OneHour,
+  })
+
+  const prefetchShop = () => {
+    prefetchBooks(queryArgs)
+    prefetchOptions(undefined)
+  }
+
+  const { data: booksReleases = [] } = useBooksByPropertyQuery('newRelease', {
+    refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
   const navigate = useNavigate()
-  const { booksReleases } = useAppSelector(booksSelector)
   const { isMobile } = useBreakpoints()
 
   const featuredBooks = booksReleases.slice(0, 3)
@@ -28,19 +46,16 @@ export function Releases() {
   return (
     <StyledReleases>
       <Welcome>
-        <h2>New Releases This Week</h2>
-        <p>
-          It's time to update your reading list with some of the latest and
-          greatest releases in the literary world. From heart-pumping thrillers
-          to captivating memoirs, this week's new releases offer something for
-          everyone.
-        </p>
+        <h2>{t('home.releases')}</h2>
+        <p>{t('home.releasesDescription')}</p>
         <Button
           onClick={() => void navigate(`/${ROUTE.BOOKS}`)}
+          onMouseEnter={prefetchShop}
+          onFocus={prefetchShop}
           $shadow
           $size="wide"
           $textSize="lg">
-          Find Your Next Read
+          {t('home.findBook')}
         </Button>
       </Welcome>
       {featuredBooks.length > 0 &&
@@ -48,7 +63,10 @@ export function Releases() {
           <MobileImageWrapper>
             {featuredBooks.map((book) => (
               <MobileImageCard key={book.id}>
-                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                <Link
+                  to={`/${ROUTE.BOOK}?id=${book.id}`}
+                  onMouseEnter={() => prefetchBook(book.id)}
+                  onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                   <p>{book.title}</p>
                 </Link>
@@ -59,7 +77,10 @@ export function Releases() {
           <ImageWrapper>
             {featuredBooks.map((book, idx) => (
               <ImageItem key={book.id} $idx={idx}>
-                <Link to={`/${ROUTE.BOOK}?id=${book.id}`}>
+                <Link
+                  to={`/${ROUTE.BOOK}?id=${book.id}`}
+                  onMouseEnter={() => prefetchBook(book.id)}
+                  onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                 </Link>
                 <MirrorImg>

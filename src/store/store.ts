@@ -5,6 +5,8 @@ import { bookshopApi } from './api/bookshopApi'
 import { persistenceMiddleware } from './persistenceMiddleware'
 import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
+import { cmsReducer } from './slices/cms'
+import { ordersReducer } from './slices/orders'
 import { paymentReducer } from './slices/payment'
 import { userReducer } from './slices/user'
 import { expireAuthSession, fetchAuthTokens } from './thunks/user'
@@ -14,6 +16,8 @@ const reducer = {
   books: booksReducer,
   user: userReducer,
   cart: cartReducer,
+  cms: cmsReducer,
+  orders: ordersReducer,
   payment: paymentReducer,
 }
 

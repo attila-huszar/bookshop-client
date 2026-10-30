@@ -1,9 +1,9 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { authRequest } from '@/api'
+import * as privateApi from '@/api/authRequest'
 import { Avatar } from './Avatar'
 
 describe('Avatar', () => {
@@ -19,7 +19,7 @@ describe('Avatar', () => {
     const pending = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.spyOn(authRequest, 'patch').mockImplementation(() =>
+    vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => pending,
@@ -35,7 +35,7 @@ describe('Avatar', () => {
     expect(remove).toBeDisabled()
     expect(remove).toHaveAttribute('aria-busy', 'true')
     await userEvent.click(remove)
-    expect(authRequest.patch).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     act(() => {
       completeRequest(

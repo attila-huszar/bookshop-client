@@ -1,7 +1,8 @@
 import { AddressElement } from '@stripe/react-stripe-js'
-import { userSelector } from '@/store'
-import { useAppSelector } from '@/hooks'
-import { defaultCountry, googleMapsKey } from '@/constants'
+import { userSelector } from '@/store/selectors'
+import { useAppSelector } from '@/hooks/redux'
+import { defaultCountry } from '@/constants/defaultValues'
+import { googleMapsKey } from '@/constants/envConfig'
 import type { StripeAddressElementOptions } from '@/types'
 
 export function AddressForm() {

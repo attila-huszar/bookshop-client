@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as usersApi from '@/api'
+import * as usersTransport from '@/api/users'
 import { UserRole } from '@/types'
+import { booksApi } from '../api/booksApi'
 import { bookshopApi } from '../api/bookshopApi'
+import { ordersApi } from '../api/ordersApi'
+import { usersApi } from '../api/usersApi'
 import { userSelector } from '../selectors'
 import { authSessionChanged } from '../slices/user'
 import { createAppStore } from '../store'
@@ -24,10 +27,10 @@ beforeEach(async () => {
   store = createAppStore()
   store.dispatch(authSessionChanged('old-token'))
   await store.dispatch(
-    bookshopApi.util.upsertQueryData('userProfile', undefined, profile),
+    usersApi.util.upsertQueryData('userProfile', undefined, profile),
   )
   await store.dispatch(
-    bookshopApi.util.upsertQueryData('userOrders', undefined, []),
+    ordersApi.util.upsertQueryData('userOrders', undefined, []),
   )
 })
 
@@ -38,7 +41,7 @@ afterEach(() => {
 
 describe('authentication workflows', () => {
   it('sets the new login session and clears data from the previous account', async () => {
-    vi.spyOn(usersApi, 'postUserLogin').mockResolvedValue({
+    vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
       accessToken: 'new-token',
       firstName: 'New',
     })
@@ -53,7 +56,7 @@ describe('authentication workflows', () => {
   })
 
   it('clears a failed login session and its private data', async () => {
-    vi.spyOn(usersApi, 'postUserLogin').mockRejectedValue(
+    vi.spyOn(usersTransport, 'postUserLogin').mockRejectedValue(
       new Error('Login failed'),
     )
 
@@ -70,7 +73,7 @@ describe('authentication workflows', () => {
   })
 
   it('preserves query data during a successful refresh of the same session', async () => {
-    vi.spyOn(usersApi, 'retrieveAuthTokens').mockResolvedValue({
+    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
       accessToken: 'refreshed-token',
     })
 
@@ -79,7 +82,7 @@ describe('authentication workflows', () => {
     expect(store.getState().user.accessToken).toBe('refreshed-token')
     expect(userSelector(store.getState()).userData).toEqual(profile)
     expect(
-      bookshopApi.endpoints.userOrders.select()(store.getState()).isSuccess,
+      ordersApi.endpoints.userOrders.select()(store.getState()).isSuccess,
     ).toBe(true)
   })
 
@@ -89,12 +92,12 @@ describe('authentication workflows', () => {
       store.dispatch(authSessionChanged(null))
       store.dispatch(bookshopApi.util.resetApiState())
       await store.dispatch(
-        bookshopApi.util.upsertQueryData('booksByProperty', 'recommended', []),
+        booksApi.util.upsertQueryData('booksByProperty', 'recommended', []),
       )
-      const cached = bookshopApi.endpoints.booksByProperty.select(
-        'recommended',
-      )(store.getState())
-      const refresh = vi.spyOn(usersApi, 'retrieveAuthTokens')
+      const cached = booksApi.endpoints.booksByProperty.select('recommended')(
+        store.getState(),
+      )
+      const refresh = vi.spyOn(usersTransport, 'retrieveAuthTokens')
 
       if (outcome === 'guest') {
         refresh.mockResolvedValue({ accessToken: null })
@@ -103,9 +106,9 @@ describe('authentication workflows', () => {
       }
 
       await store.dispatch(fetchAuthTokens())
-      const current = bookshopApi.endpoints.booksByProperty.select(
-        'recommended',
-      )(store.getState())
+      const current = booksApi.endpoints.booksByProperty.select('recommended')(
+        store.getState(),
+      )
 
       expect(store.getState().user.accessToken).toBeNull()
       expect(current.isSuccess).toBe(true)
@@ -118,9 +121,9 @@ describe('authentication workflows', () => {
     store.dispatch(authSessionChanged(null))
     store.dispatch(bookshopApi.util.resetApiState())
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('booksByProperty', 'recommended', []),
+      booksApi.util.upsertQueryData('booksByProperty', 'recommended', []),
     )
-    vi.spyOn(usersApi, 'retrieveAuthTokens').mockResolvedValue({
+    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
       accessToken: 'restored-token',
     })
 
@@ -133,7 +136,7 @@ describe('authentication workflows', () => {
   it.each(['expired', 'failed'])(
     'clears private data when refresh is %s',
     async (result) => {
-      const refresh = vi.spyOn(usersApi, 'retrieveAuthTokens')
+      const refresh = vi.spyOn(usersTransport, 'retrieveAuthTokens')
 
       if (result === 'expired') {
         refresh.mockResolvedValue({ accessToken: null })
@@ -154,7 +157,7 @@ describe('authentication workflows', () => {
     async (outcome) => {
       let finishRefresh!: () => void
 
-      vi.spyOn(usersApi, 'retrieveAuthTokens').mockImplementation(
+      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockImplementation(
         () =>
           new Promise((resolve, reject) => {
             finishRefresh = () => {
@@ -170,7 +173,7 @@ describe('authentication workflows', () => {
             }
           }),
       )
-      vi.spyOn(usersApi, 'postUserLogin').mockResolvedValue({
+      vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
         accessToken: 'new-login-token',
         firstName: 'New',
       })
@@ -182,7 +185,7 @@ describe('authentication workflows', () => {
       const newProfile = { ...profile, email: 'new@example.com' }
 
       await store.dispatch(
-        bookshopApi.util.upsertQueryData('userProfile', undefined, newProfile),
+        usersApi.util.upsertQueryData('userProfile', undefined, newProfile),
       )
       finishRefresh()
       await pendingRefresh
@@ -193,7 +196,7 @@ describe('authentication workflows', () => {
   )
 
   it('preserves the session and private cache when logout fails', async () => {
-    vi.spyOn(usersApi, 'postUserLogout').mockRejectedValue(
+    vi.spyOn(usersTransport, 'postUserLogout').mockRejectedValue(
       new Error('Logout failed'),
     )
 

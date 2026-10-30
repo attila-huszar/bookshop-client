@@ -1,99 +1,113 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import { type NavigateOptions, useNavigate } from 'react-router'
 import { Lottie } from 'lottie-react'
-import { ROUTE } from '@/routes'
-import { cartClear, paymentSelector, paymentSessionReset } from '@/store'
+import { ROUTE } from '@/routes/route'
+import { cartClear } from '@/store/slices/cart'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { usePaymentStatus } from '@/hooks/usePaymentStatus'
+import { resetCheckout } from '@/services/checkout'
 import {
-  useAppDispatch,
-  useAppSelector,
-  useMessages,
-  usePaymentStatus,
-} from '@/hooks'
-import {
-  getPaymentStatusView,
   isSuccessPaymentIntentStatus,
-} from '@/helpers/paymentStatus'
+  paymentStatusEmoji,
+} from '@/helpers/checkout'
+import checkmarkAnim from '@/assets/animations/checkmark.json'
+import clockAnim from '@/assets/animations/clock_loop.json'
+import exclamationAnim from '@/assets/animations/exclamation.json'
 import logo from '@/assets/image/logo.png'
 import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { getCheckoutStatusMessages } = useMessages()
-  const { payment } = useAppSelector(paymentSelector)
+  const payment = useAppSelector((state) => state.payment.payment)
   const { status, retry } = usePaymentStatus(payment?.paymentToken)
-  const hasHandledSuccessfulPayment = useRef(false)
+  const { type } = status
+  const handledPaymentId = useRef<string | null>(null)
+  const paymentId = payment?.paymentId
 
-  const isStripeSuccess = isSuccessPaymentIntentStatus(status.intent)
-
-  const statusText = getCheckoutStatusMessages()
+  const isStripeSuccess = isSuccessPaymentIntentStatus(type)
 
   useEffect(() => {
-    if (!isStripeSuccess) return
-    if (hasHandledSuccessfulPayment.current) return
+    if (
+      !isStripeSuccess ||
+      !paymentId ||
+      handledPaymentId.current === paymentId
+    ) {
+      return
+    }
 
-    hasHandledSuccessfulPayment.current = true
+    handledPaymentId.current = paymentId
 
     dispatch(cartClear())
-    dispatch(paymentSessionReset())
-  }, [dispatch, isStripeSuccess])
+  }, [dispatch, isStripeSuccess, paymentId])
 
-  const handleBackToShop = () => {
-    dispatch(paymentSessionReset())
-    void navigate('/')
-  }
-
-  const handleBackToCart = () => {
-    dispatch(paymentSessionReset())
-    void navigate(`/${ROUTE.CART}`, { replace: true })
+  const leaveCheckout = (path: string, options?: NavigateOptions) => {
+    dispatch(resetCheckout())
+    void navigate(path, options)
   }
 
   const canReturnToCart =
-    status.intent === 'requires_payment_method' || status.intent === 'canceled'
-  const canRetryStatus =
-    status.messageOverride?.type === 'failure' ||
-    status.messageOverride?.type === 'timeout'
+    type === 'requires_payment_method' || type === 'canceled'
+  const canRetryStatus = type === 'failure' || type === 'timeout'
   const canReturnToCheckout =
-    status.intent === 'requires_action' ||
-    status.intent === 'requires_confirmation'
+    type === 'requires_action' || type === 'requires_confirmation'
 
-  const handleReturnToCheckout = () => {
-    void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })
-  }
+  const messageKey = isStripeSuccess
+    ? 'paymentReceived'
+    : type === 'failure'
+      ? 'fetchFailed'
+      : type
 
-  const { animation, isLooping, primaryLine } = getPaymentStatusView({
-    status,
-    statusText,
-  })
+  const primaryLine = t(
+    `payment.status.${messageKey}`,
+    status.type === 'failure'
+      ? { details: status.details || t('common.unknownError') }
+      : status,
+  )
+
+  const isPending = !isStripeSuccess && !canReturnToCart && !canReturnToCheckout
+  const animation = isStripeSuccess
+    ? checkmarkAnim
+    : isPending
+      ? clockAnim
+      : exclamationAnim
 
   return (
     <StyledPaymentStatus>
       <Logo>
-        <img src={logo} alt="logo" />
+        <img src={logo} alt="Bookshop" />
         <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie src={animation} autoplay loop={isLooping} />
+        <Lottie src={animation} autoplay loop={isPending} />
       </LottieWrapper>
-      <p>{primaryLine}</p>
+      <p>
+        <span aria-hidden="true">{paymentStatusEmoji[type]}</span> {primaryLine}
+      </p>
       {canRetryStatus && (
         <button onClick={retry} type="button">
-          Check Payment Again
+          {t('payment.actions.checkAgain')}
         </button>
       )}
       {canReturnToCheckout && (
-        <button onClick={handleReturnToCheckout} type="button">
-          Return to Checkout
+        <button
+          onClick={() => void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })}
+          type="button">
+          {t('payment.actions.returnToCheckout')}
         </button>
       )}
       {canReturnToCart && (
-        <button onClick={handleBackToCart} type="button">
-          Back to Cart
+        <button
+          onClick={() => leaveCheckout(`/${ROUTE.CART}`, { replace: true })}
+          type="button">
+          {t('common.actions.backToCart')}
         </button>
       )}
       {(canReturnToCart || isStripeSuccess) && (
-        <button onClick={handleBackToShop} type="button">
-          Back to Shop
+        <button onClick={() => leaveCheckout('/')} type="button">
+          {t('common.actions.backToShop')}
         </button>
       )}
     </StyledPaymentStatus>

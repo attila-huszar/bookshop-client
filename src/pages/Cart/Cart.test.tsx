@@ -1,411 +1,239 @@
-import { toast } from 'react-hot-toast'
-import { useNavigate } from 'react-router'
-import { Providers } from '@/setupTests'
-import { render, screen, waitFor } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { MemoryRouter, useNavigate } from 'react-router'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { vi } from 'vitest'
-import { ROUTE } from '@/routes'
-import {
-  createAppStore,
-  paymentCreate,
-  paymentCreateReset,
-  refreshCartItems,
-  type RootState,
-} from '@/store'
-import { useAppDispatch, useAppSelector, useCart } from '@/hooks'
-import { sessionStorageAdapter } from '@/helpers'
-import { paymentIdKey } from '@/constants'
-import type {
-  CartState,
-  Cart as CartType,
-  PaymentState,
-  UserState,
-} from '@/types'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { cartRestored } from '@/store/slices/cart'
+import { checkoutReady } from '@/store/slices/payment'
+import { createAppStore } from '@/store/store'
+import { toast } from '@/components/AppToaster'
+import { useCart } from '@/hooks/useCart'
+import { startCheckout } from '@/services/checkout'
+import { HttpErrorCode } from '@/types/ApiError'
 import { Cart } from './Cart'
 
-vi.mock('@/store', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store')>()
-  return {
-    ...actual,
-    orderCreate: vi.fn(),
-    refreshCartItems: vi.fn(),
-    paymentCreate: vi.fn(),
-  }
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+vi.mock('@/hooks/useCart', () => ({ useCart: vi.fn() }))
+vi.mock('@/services/checkout', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/services/checkout')>()),
+  startCheckout: vi.fn(),
+}))
+
+const items = [
+  {
+    id: 1,
+    title: 'Book 1',
+    price: 20,
+    discount: 10,
+    discountPrice: 18,
+    quantity: 2,
+    imgUrl: 'book1.jpg',
+  },
+]
+let store: ReturnType<typeof createAppStore>
+const navigate = vi.fn()
+const refetch = vi.fn().mockResolvedValue(undefined)
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.spyOn(toast, 'error').mockReturnValue('test-toast')
+  store = createAppStore()
+  store.dispatch(cartRestored([{ id: 1, quantity: 2 }]))
+  vi.mocked(useNavigate).mockReturnValue(navigate)
+  vi.mocked(useCart).mockReturnValue({
+    cartItems: items,
+    isLoading: false,
+    isFetching: false,
+    error: undefined,
+    refetch,
+  })
+  vi.mocked(startCheckout).mockImplementation(
+    () => () => Promise.resolve({ type: 'stale' }),
+  )
 })
 
-const mockCartState: CartState = {
-  cartItems: [],
-  currentRequestId: null,
-  cartError: null,
+afterEach(() => {
+  vi.restoreAllMocks()
+  store.dispatch(bookshopApi.util.resetApiState())
+  localStorage.clear()
+  sessionStorage.clear()
+})
+
+function renderCart() {
+  return render(
+    <Provider store={store}>
+      <MemoryRouter>
+        <Cart />
+      </MemoryRouter>
+    </Provider>,
+  )
 }
 
-const mockPaymentState: PaymentState = {
-  payment: null,
-  paymentIsLoading: false,
-  paymentCreateError: null,
-  paymentCreateIssueCode: null,
-  paymentRetrieveError: null,
-}
-
-const mockUserState: UserState = {
-  accessToken: null,
-}
-
-describe('Cart component', () => {
-  const initialState = createAppStore().getState()
-  const mockNavigate = vi.fn()
-  const mockDispatch = vi.fn()
-  const mockCartItems: CartType[] = [
-    {
-      id: 1,
-      title: 'Book 1',
-      price: 20,
-      discount: 10,
-      discountPrice: 18,
-      quantity: 2,
-      imgUrl: 'book1.jpg',
-    },
-  ]
-
-  beforeEach(() => {
-    sessionStorageAdapter.remove(paymentIdKey)
-
+describe('Cart', () => {
+  it('shows loading until book details are available', () => {
     vi.mocked(useCart).mockReturnValue({
-      cartItems: mockCartItems,
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
+      cartItems: [],
+      isLoading: true,
+      isFetching: true,
+      error: undefined,
+      refetch,
     })
+    renderCart()
 
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: mockPaymentState,
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    mockDispatch.mockImplementation(() => ({
-      unwrap: vi.fn().mockResolvedValue(undefined),
-    }))
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
-
-    vi.mocked(useNavigate).mockReturnValue(mockNavigate)
+    expect(screen.getByText(/loading cart/i)).toBeVisible()
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should display loading when cart is loading', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: { ...mockCartState, currentRequestId: 'cart-request' },
-        payment: mockPaymentState,
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    expect(screen.getByText(/loading cart/i)).toBeInTheDocument()
-  })
-
-  it('should display cart error when cart fetch fails', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: {
-          ...mockCartState,
-          cartError: 'Failed to fetch cart items',
-        },
-        payment: mockPaymentState,
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    expect(
-      screen.getByText(/failed to load your cart\. please try again\./i),
-    ).toBeInTheDocument()
-    expect(screen.getByText('Failed to fetch cart items')).toBeInTheDocument()
-  })
-
-  it('should display empty cart message when cart is empty', async () => {
+  it('offers a retry after book details fail', async () => {
     vi.mocked(useCart).mockReturnValue({
-      cartItems: [] as CartType[],
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
+      cartItems: [],
+      isLoading: false,
+      isFetching: false,
+      error: { code: HttpErrorCode.UnknownResponse },
+      refetch,
     })
+    renderCart()
 
-    render(<Cart />, { wrapper: Providers })
-
-    expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument()
-    const button = screen.getByRole('button', { name: /go shopping/i })
-    expect(button).toBeInTheDocument()
-
-    await userEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.BOOKS}`)
+    expect(screen.getByText(/failed to load your cart/i)).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh' }))
+    expect(refetch).toHaveBeenCalledOnce()
   })
 
-  it('should render cart items correctly', () => {
-    render(<Cart />, { wrapper: Providers })
-
-    expect(screen.getByText('Book 1')).toBeInTheDocument()
-    expect(
-      screen.getAllByText((_content, element) =>
-        /\$\s*18/.test(element?.textContent ?? ''),
-      )[0],
-    ).toBeInTheDocument()
-  })
-
-  it('should handle add and remove quantity actions', async () => {
-    const mockAddQuantity = vi.fn()
-    const mockRemoveQuantity = vi.fn()
-
+  it('shows an empty basket and a shopping action', async () => {
     vi.mocked(useCart).mockReturnValue({
-      cartItems: mockCartItems,
-      addQuantity: mockAddQuantity,
-      removeQuantity: mockRemoveQuantity,
-      setQuantity: vi.fn(),
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
+      cartItems: [],
+      isLoading: false,
+      isFetching: false,
+      error: undefined,
+      refetch,
     })
+    renderCart()
 
-    render(<Cart />, { wrapper: Providers })
-
-    const addButton = screen.getByTitle('Add quantity')
-    const removeButton = screen.getByTitle('Remove quantity')
-
-    await userEvent.click(addButton)
-    expect(mockAddQuantity).toHaveBeenCalledWith(mockCartItems[0])
-
-    await userEvent.click(removeButton)
-    expect(mockRemoveQuantity).toHaveBeenCalledWith(mockCartItems[0])
+    expect(screen.getByText(/your cart is empty/i)).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: /go shopping/i }))
+    expect(navigate).toHaveBeenCalledWith('/books')
   })
 
-  it('should handle checkout and dispatch payment creation', async () => {
-    const mockThunk = vi.fn()
-    vi.mocked(paymentCreate).mockReturnValue(mockThunk)
+  it('renders book details and updates quantity intent', async () => {
+    renderCart()
+    expect(screen.getByText('Book 1')).toBeVisible()
 
-    render(<Cart />, { wrapper: Providers })
+    await userEvent.click(screen.getByTitle('Add quantity'))
+    expect(store.getState().cart.cartItems).toEqual([{ id: 1, quantity: 3 }])
+    await userEvent.click(screen.getByTitle('Remove quantity'))
+    expect(store.getState().cart.cartItems).toEqual([{ id: 1, quantity: 2 }])
+  })
 
-    const checkoutButton = screen.getByRole('button', { name: /checkout/i })
+  it('submits minimal items with the discounted total', async () => {
+    renderCart()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
 
-    await userEvent.click(checkoutButton)
+    expect(startCheckout).toHaveBeenCalledExactlyOnceWith({
+      items: [{ id: 1, quantity: 2 }],
+      expectedTotal: 36,
+    })
+  })
+
+  it('disables checkout while prices are refreshing', () => {
+    vi.mocked(useCart).mockReturnValue({
+      cartItems: items,
+      isLoading: false,
+      isFetching: true,
+      error: undefined,
+      refetch,
+    })
+    renderCart()
+
+    expect(screen.getByRole('button', { name: 'Checkout' })).toBeDisabled()
+  })
+
+  it('uses the same rounded unit price for the line, summary and checkout request', async () => {
+    const cartItems = [
+      {
+        ...items[0]!,
+        price: 9.99,
+        discount: 20,
+        discountPrice: 7.992,
+        quantity: 100,
+      },
+    ]
+    store.dispatch(cartRestored([{ id: 1, quantity: 100 }]))
+    vi.mocked(useCart).mockReturnValue({
+      cartItems,
+      isLoading: false,
+      isFetching: false,
+      error: undefined,
+      refetch,
+    })
+    renderCart()
+
+    expect(screen.getByText('7.99')).toBeInTheDocument()
+    expect(screen.getByText('799')).toBeInTheDocument()
+    expect(screen.getByText('$ 799.00')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+
+    expect(startCheckout).toHaveBeenCalledExactlyOnceWith({
+      items: [{ id: 1, quantity: 100 }],
+      expectedTotal: 799,
+    })
+  })
+
+  it('navigates to an existing checkout without creating another payment', async () => {
+    vi.mocked(startCheckout).mockImplementation(
+      () => () => Promise.resolve({ type: 'existing', paymentId: 'pi_saved' }),
+    )
+    renderCart()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+
+    expect(navigate).toHaveBeenCalledWith('/checkout', { replace: true })
+  })
+
+  it('navigates when the coordinator accepts a ready payment', async () => {
+    renderCart()
+    act(() => {
+      store.dispatch(
+        checkoutReady({
+          paymentId: 'pi_saved',
+          paymentToken: 'secret',
+          amount: 3600,
+        }),
+      )
+    })
 
     await waitFor(() =>
-      expect(paymentCreate).toHaveBeenCalledWith({
-        items: [{ id: 1, quantity: 2 }],
-        expectedTotal: 36,
-      }),
+      expect(navigate).toHaveBeenCalledWith('/checkout', { replace: true }),
     )
-    expect(mockDispatch).toHaveBeenCalledWith(mockThunk)
   })
 
-  it('should display an error toast on payment error', async () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: { ...mockPaymentState, paymentCreateError: 'Payment failed' },
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Payment failed', {
-        id: 'payment-error',
-      })
-    })
-  })
-
-  it('should refresh cart only once for the same price conflict error', async () => {
-    const mockRefreshCartItemsThunk = vi.fn()
-    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
-
-    const originalCartItems = [...mockCartItems]
-    const updatedCartItems = mockCartItems.map((item) => ({
-      ...item,
-      quantity: item.quantity + 1,
-    }))
-
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: {
-          ...mockPaymentState,
-          paymentCreateIssueCode: 'price_conflict',
-          paymentCreateError:
-            'Prices have been updated in your cart. Please review before checkout.',
-        },
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: originalCartItems,
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
-    })
-
-    const { rerender } = render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() =>
-      expect(refreshCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }]),
+  it('reports failed creation at display time', async () => {
+    vi.mocked(startCheckout).mockImplementation(
+      () => () => Promise.reject(new Error('Offline')),
     )
-    expect(mockDispatch).toHaveBeenCalledWith(mockRefreshCartItemsThunk)
+    renderCart()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
 
-    vi.mocked(useCart).mockReturnValue({
-      cartItems: updatedCartItems,
-      addQuantity: vi.fn(),
-      removeQuantity: vi.fn(),
-      setQuantity: vi.fn(),
-      addToCart: vi.fn(),
-      removeFromCart: vi.fn(),
-    })
-
-    rerender(<Cart />)
-
-    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
-    expect(toast.error).toHaveBeenCalledTimes(1)
+    expect(toast.error).toHaveBeenCalledWith('Offline', { id: 'payment-error' })
   })
 
-  it('should not re-trigger conflict handling after cart remount', async () => {
-    const mockRefreshCartItemsThunk = vi.fn()
-    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
-
-    let paymentState: PaymentState = {
-      ...mockPaymentState,
-      paymentCreateIssueCode: 'price_conflict',
-      paymentCreateError:
-        'Prices have been updated in your cart. Please review before checkout.',
-    }
-
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: paymentState,
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    mockDispatch.mockImplementation((action: { type?: string }) => {
-      if (action?.type === paymentCreateReset.type) {
-        paymentState = {
-          ...paymentState,
-          paymentCreateIssueCode: null,
-          paymentCreateError: null,
-        }
-      }
-
-      return {
-        unwrap: vi.fn().mockResolvedValue(undefined),
-      }
-    })
-
-    const { unmount } = render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
-    expect(toast.error).toHaveBeenCalledTimes(1)
-
-    unmount()
-
-    render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() => expect(refreshCartItems).toHaveBeenCalledTimes(1))
-    expect(toast.error).toHaveBeenCalledTimes(1)
-  })
-
-  it('should handle price conflicts even when the payment error message is blank', async () => {
-    const mockRefreshCartItemsThunk = vi.fn()
-    vi.mocked(refreshCartItems).mockReturnValue(mockRefreshCartItemsThunk)
-
-    let paymentState: PaymentState = {
-      ...mockPaymentState,
-      paymentCreateIssueCode: 'price_conflict',
-      paymentCreateError: '',
-    }
-
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: paymentState,
-        user: mockUserState,
-      }
-      return selector(mockState)
-    })
-
-    mockDispatch.mockImplementation((action: { type?: string }) => {
-      if (action?.type === paymentCreateReset.type) {
-        paymentState = {
-          ...paymentState,
-          paymentCreateIssueCode: null,
-          paymentCreateError: null,
-        }
-      }
-
-      return {
-        unwrap: vi.fn().mockResolvedValue(undefined),
-      }
-    })
-
-    render(<Cart />, { wrapper: Providers })
-
-    await waitFor(() =>
-      expect(refreshCartItems).toHaveBeenCalledWith([{ id: 1, quantity: 2 }]),
+  it('does not report an old error after leaving Cart', async () => {
+    let fail!: (error: Error) => void
+    vi.mocked(startCheckout).mockImplementation(
+      () => () =>
+        new Promise((_resolve, reject) => {
+          fail = reject
+        }),
     )
-    expect(mockDispatch).toHaveBeenCalledWith(mockRefreshCartItemsThunk)
-    expect(mockDispatch).toHaveBeenCalledWith(paymentCreateReset())
-    expect(toast.error).toHaveBeenCalledWith('', {
-      id: 'payment-error',
-    })
-  })
-
-  it('should redirect to checkout when payment session exists', () => {
-    vi.mocked(useAppSelector).mockImplementation((selector) => {
-      const mockState: RootState = {
-        ...initialState,
-        cart: mockCartState,
-        payment: {
-          ...mockPaymentState,
-          payment: {
-            paymentId: 'pi_123',
-            paymentToken: 'session_123',
-            amount: 4200,
-          },
-        },
-        user: mockUserState,
-      }
-      return selector(mockState)
+    const view = renderCart()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    view.unmount()
+    await act(async () => {
+      fail(new Error('Offline'))
+      await Promise.resolve()
     })
 
-    render(<Cart />, { wrapper: Providers })
-
-    expect(mockNavigate).toHaveBeenCalledWith(`/${ROUTE.CHECKOUT}`, {
-      replace: true,
-    })
+    expect(toast.error).not.toHaveBeenCalled()
   })
 })

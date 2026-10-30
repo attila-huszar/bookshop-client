@@ -1,19 +1,23 @@
 import { useEffect } from 'react'
-import { booksSelector } from '@/store'
-import { useBooksByPropertyQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
-import { Card, SwiperComponent } from '@/components'
-import { useAppSelector } from '@/hooks'
-import { scrollToTop } from '@/helpers'
+import { useTranslation } from 'react-i18next'
+import { useBooksByPropertyQuery } from '@/store/api/booksApi'
+import { Card } from '@/components/Card'
+import { SwiperComponent } from '@/components/SwiperComponent'
+import { scrollToTop } from '@/helpers/scrollToTop'
+import { CacheTime } from '@/constants/cacheTimes'
 import { StyledRecommended } from './Recommended.style'
 
 export function Recommended() {
-  useBooksByPropertyQuery('recommended', {
-    refetchOnMountOrArgChange: cacheTimes.featured,
-    refetchOnFocus: false,
-    refetchOnReconnect: false,
-  })
-  const { booksRecommended } = useAppSelector(booksSelector)
+  const { t } = useTranslation()
+
+  const { data: booksRecommended = [] } = useBooksByPropertyQuery(
+    'recommended',
+    {
+      refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    },
+  )
 
   useEffect(() => {
     scrollToTop()
@@ -25,7 +29,7 @@ export function Recommended() {
 
   return (
     <StyledRecommended>
-      <h2>Recommended for you</h2>
+      <h2>{t('home.recommended')}</h2>
       <SwiperComponent>
         {booksRecommended.map((book) => (
           <Card key={book.id} book={book} />

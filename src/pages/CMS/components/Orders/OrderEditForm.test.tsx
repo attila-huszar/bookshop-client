@@ -1,53 +1,30 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useUpdateOrderMutation } from '@/store/api/bookshopApi'
+import { useUpdateOrderMutation } from '@/store/api/ordersApi'
 import type { Order } from '@/types'
 import { OrderEditForm } from './OrderEditForm'
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/ordersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/ordersApi')>()),
   useUpdateOrderMutation: vi.fn(),
 }))
 
-vi.mock('@/components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components')>()
-  const { useField } = await import('formik')
+vi.mock('@/components/Button', () => ({
+  Button: ({ children, type, disabled }: React.ComponentProps<'button'>) => (
+    <button type={type} disabled={disabled}>
+      {children}
+    </button>
+  ),
+}))
 
-  return {
-    ...actual,
-    Button: ({ children, type, disabled }: React.ComponentProps<'button'>) => (
-      <button type={type} disabled={disabled}>
-        {children}
-      </button>
-    ),
-    FormikField: ({
-      name,
-      placeholder,
-      readOnly,
-    }: {
-      name: string
-      placeholder: string
-      readOnly?: boolean
-    }) => {
-      const [field] = useField<string | number | null>(name)
-
-      return (
-        <input
-          {...field}
-          value={field.value ?? ''}
-          placeholder={placeholder}
-          readOnly={readOnly}
-        />
-      )
-    },
-    CountrySelect: ({ readOnly }: { readOnly?: boolean }) => (
-      <button type="button" disabled={readOnly}>
-        Select country
-      </button>
-    ),
-  }
-})
+vi.mock('@/components/CountrySelect', () => ({
+  CountrySelect: ({ readOnly }: { readOnly?: boolean }) => (
+    <button type="button" disabled={readOnly}>
+      Select country
+    </button>
+  ),
+}))
 
 const order: Order = {
   id: 1,
@@ -143,9 +120,11 @@ describe('OrderEditForm', () => {
 
       await user.click(screen.getByRole('button', { name: /Save/ }))
       await waitFor(() => {
-        expect(dispatch).toHaveBeenCalledWith(
-          expect.objectContaining({ ...expected, paymentId: 'pi_test' }),
-        )
+        expect(dispatch).toHaveBeenCalledWith({
+          ...expected,
+          shipping: null,
+          paymentId: 'pi_test',
+        })
       })
       expect(dispatch).toHaveBeenCalledTimes(1)
     },

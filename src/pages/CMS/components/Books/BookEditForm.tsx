@@ -1,17 +1,20 @@
-import { ChangeEvent, FC, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useId, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { uploadProductImage } from '@/api'
-import { cmsAuthorsSelector } from '@/store'
-import {
-  useAddBookMutation,
-  useUpdateBookMutation,
-} from '@/store/api/bookshopApi'
-import { Alert, Button, FormikField, IconButton, toast } from '@/components'
-import { useAppSelector, useDebounce } from '@/hooks'
-import { log } from '@/services/logger'
-import { formatDate, getErrorMessage } from '@/helpers'
-import { bookSchema, validateImageFile } from '@/validation'
-import { BookWithAuthorId } from '@/types'
+import { uploadProductImage } from '@/api/cms'
+import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
+import { useAddBookMutation, useUpdateBookMutation } from '@/store/api/booksApi'
+import { Alert } from '@/components/Alert'
+import { toast } from '@/components/AppToaster'
+import { Button, IconButton } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { getErrorMessage } from '@/helpers/errors'
+import { formatDate } from '@/helpers/formatDate'
+import { calculatePriceCents } from '@/helpers/pricing'
+import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
+import { bookSchema } from '@/validation/productSchemas'
+import type { BookCreate, BookWithAuthorId } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
 import {
   BookGenreRow,
@@ -21,11 +24,16 @@ import {
   FullRow,
   MetadataBlock,
   Row,
-  SectionHeader,
 } from '../../styles'
 
-const initialBookValues: BookWithAuthorId = {
-  id: 0,
+type NumericBookField = 'publishYear' | 'rating' | 'price' | 'discount'
+type BookFormValues = Omit<
+  BookCreate,
+  'discountPrice' | 'authorId' | NumericBookField
+> &
+  Record<NumericBookField, number | ''> & { authorId: number | string }
+
+const initialBookValues: BookFormValues = {
   title: '',
   authorId: 0,
   genre: '',
@@ -35,7 +43,6 @@ const initialBookValues: BookWithAuthorId = {
   rating: 5,
   price: 0,
   discount: 0,
-  discountPrice: 0,
   topSellers: false,
   newRelease: false,
 }
@@ -46,14 +53,51 @@ type Props = {
   readOnly?: boolean
 }
 
-export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
+export const BookEditForm: FC<Props> = ({
+  editedItem,
+  onClose,
+  readOnly = false,
+}) => {
+  const { t } = useTranslation()
+
   const [addBook] = useAddBookMutation()
   const [updateBook] = useUpdateBookMutation()
-  const { authors, authorsLoading, authorsError } =
-    useAppSelector(cmsAuthorsSelector)
+  const {
+    data: authors = [],
+    isLoading: authorsLoading,
+    error: authorsError,
+  } = useCmsAuthorsQuery()
   const [showBookCover, setShowBookCover] = useState<boolean>(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const productImageInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const uploadInFlight = useRef(false)
+  const mounted = useRef(false)
+  const uploadToastId = useId()
+
+  useEffect(() => {
+    mounted.current = true
+
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
+  const initialValues: BookFormValues = editedItem
+    ? {
+        title: editedItem.title,
+        authorId: editedItem.authorId,
+        genre: editedItem.genre,
+        imgUrl: editedItem.imgUrl,
+        description: editedItem.description,
+        publishYear: editedItem.publishYear,
+        rating: editedItem.rating,
+        price: editedItem.price,
+        discount: editedItem.discount,
+        topSellers: editedItem.topSellers,
+        newRelease: editedItem.newRelease,
+      }
+    : initialBookValues
 
   const handleMouseMove = (
     e: React.MouseEvent<HTMLInputElement, MouseEvent>,
@@ -67,26 +111,32 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
     })
   }
 
-  const debouncedMouseMove = useDebounce(handleMouseMove, 10)
+  const debouncedMouseMove = useDebouncedCallback(handleMouseMove, 10)
 
   const handleProductImageClick = () => {
     productImageInputRef.current?.click()
   }
 
-  const handleProductImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    setFieldValue: FormikHelpers<BookFormValues>['setFieldValue'],
+  ) => {
     const fileInput = e.target
     const files = fileInput.files
 
-    if (!files || files.length === 0) {
+    const file = files?.[0]
+    fileInput.value = ''
+
+    if (!file || uploadInFlight.current || readOnly) {
       return
     }
 
-    const file = files[0]!
     const { valid, error } = validateImageFile(file)
 
-    if (!valid && error) {
-      toast.error(error, { id: 'product-image-upload-error' })
-      fileInput.value = ''
+    if (!valid) {
+      toast.error(error ?? t('cms.imageError'), {
+        id: `${uploadToastId}-error`,
+      })
 
       return
     }
@@ -95,75 +145,94 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
 
     formData.append('image', file)
 
-    toast.loading('Uploading image...', { id: 'product-image-upload' })
+    uploadInFlight.current = true
+    setIsUploading(true)
+    toast.loading(t('cms.uploadingImage'), { id: uploadToastId })
 
     try {
       const result = await uploadProductImage(formData)
 
-      toast.success('Image uploaded successfully', {
-        id: 'product-image-upload',
-      })
+      if (!mounted.current) {
+        toast.dismiss(uploadToastId)
 
-      return result.url
+        return
+      }
+
+      await setFieldValue('imgUrl', result.url)
+      toast.success(t('cms.imageUploaded'), {
+        id: uploadToastId,
+      })
     } catch (error) {
-      log.error('Image upload failed:', { error })
-
-      toast.error('Failed to upload image, please try again later', {
-        id: 'product-image-upload',
+      toast.error(getErrorMessage(error, t('cms.imageError')), {
+        id: uploadToastId,
       })
-
-      throw error
     } finally {
-      fileInput.value = ''
+      uploadInFlight.current = false
+
+      if (mounted.current) {
+        setIsUploading(false)
+      }
     }
   }
 
   const handleSubmit = async (
-    values: BookWithAuthorId,
-    actions: FormikHelpers<BookWithAuthorId>,
+    values: BookFormValues,
+    actions: FormikHelpers<BookFormValues>,
   ) => {
+    if (uploadInFlight.current) {
+      return
+    }
+
     try {
+      const price = Number(values.price)
+      const discount = Number(values.discount)
+      const bookValues: BookCreate = {
+        ...values,
+        authorId: Number(values.authorId),
+        publishYear: Number(values.publishYear),
+        rating: Number(values.rating),
+        price,
+        discount,
+        discountPrice: calculatePriceCents(price, discount) / 100,
+      }
+
       if (editedItem) {
-        const { createdAt, updatedAt, ...bookValues } = values
-
-        await updateBook(bookValues).unwrap()
+        await updateBook({ ...bookValues, id: editedItem.id }).unwrap()
       } else {
-        const { id, ...bookWithoutId } = values
-
-        await addBook(bookWithoutId).unwrap()
+        await addBook(bookValues).unwrap()
       }
 
       actions.resetForm()
-      toast.success(`Book ${editedItem ? 'updated' : 'added'} successfully`)
+      toast.success(t('cms.saved', { entity: t('catalogue.book') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
+      toast.error(getErrorMessage(error, t('common.unexpectedError')))
     }
   }
 
   if (authorsError && !authors.length) {
-    return <Alert message="Could not load authors" error={authorsError} />
+    return <Alert message={t('cms.authorsError')} error={authorsError} />
   }
 
   return (
     <Formik
       key="books"
-      initialValues={editedItem ?? initialBookValues}
+      initialValues={initialValues}
       validationSchema={bookSchema}
       onSubmit={handleSubmit}>
       {({ values, dirty, isSubmitting, setFieldValue }) => (
-        <Form>
-          <fieldset disabled={readOnly}>
+        <Form
+          aria-label={t('cms.information', { entity: t('catalogue.book') })}>
+          <fieldset disabled={readOnly || isUploading || isSubmitting}>
             {editedItem && (
               <>
-                <SectionHeader>Book Information</SectionHeader>
                 <MetadataBlock>
                   <div>
-                    <p>Book ID</p>
+                    <p>{t('cms.recordId', { entity: t('catalogue.book') })}</p>
                     <span>{editedItem.id}</span>
                   </div>
                   <div>
-                    <p>Created At</p>
+                    <p>{t('common.fields.createdAt')}</p>
                     <span>
                       {editedItem.createdAt
                         ? formatDate(editedItem.createdAt)
@@ -171,7 +240,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                     </span>
                   </div>
                   <div>
-                    <p>Updated At</p>
+                    <p>{t('common.fields.updatedAt')}</p>
                     <span>
                       {editedItem.updatedAt
                         ? formatDate(editedItem.updatedAt)
@@ -183,18 +252,22 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <BookTitleRow>
               <div>
-                <p>Title</p>
-                <FormikField name="title" placeholder="Title" type="text" />
+                <p>{t('common.fields.title')}</p>
+                <FormikField
+                  name="title"
+                  placeholder={t('common.fields.title')}
+                  type="text"
+                />
               </div>
               <div>
-                <p>Author</p>
+                <p>{t('common.fields.author')}</p>
                 <FormikField
                   name="authorId"
                   type="select"
                   disabled={authorsLoading}
                   aria-busy={authorsLoading}>
-                  <option value="" hidden>
-                    Please select an author...
+                  <option value={0} hidden>
+                    {t('cms.selectAuthor')}
                   </option>
                   {authors.map((author) => (
                     <option key={author.id} value={author.id}>
@@ -204,20 +277,20 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 </FormikField>
               </div>
               <div>
-                <p>Published</p>
+                <p>{t('common.fields.published')}</p>
                 <FormikField
                   name="publishYear"
-                  placeholder="Published"
+                  placeholder={t('common.fields.published')}
                   type="number"
                 />
               </div>
             </BookTitleRow>
             <FullRow>
               <div>
-                <p>Description</p>
+                <p>{t('common.fields.description')}</p>
                 <FormikField
                   name="description"
-                  placeholder="Description"
+                  placeholder={t('common.fields.description')}
                   type="textarea"
                   rows={4}
                 />
@@ -225,60 +298,67 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             </FullRow>
             <BookGenreRow>
               <div>
-                <p>Genre</p>
-                <FormikField name="genre" placeholder="Genre" type="text" />
+                <p>{t('common.fields.genre')}</p>
+                <FormikField
+                  name="genre"
+                  placeholder={t('common.fields.genre')}
+                  type="text"
+                />
               </div>
               <div>
-                <p>Rating</p>
-                <FormikField name="rating" placeholder="Rating" type="number" />
+                <p>{t('common.fields.rating')}</p>
+                <FormikField
+                  name="rating"
+                  placeholder={t('common.fields.rating')}
+                  type="number"
+                />
               </div>
             </BookGenreRow>
             <Row>
               <div>
-                <p>Price</p>
-                <FormikField name="price" placeholder="Price" type="number" />
-              </div>
-              <div>
-                <p>Discount %</p>
+                <p>{t('common.fields.price')}</p>
                 <FormikField
-                  name="discount"
-                  placeholder="Discount"
+                  name="price"
+                  placeholder={t('common.fields.price')}
                   type="number"
                 />
               </div>
               <div>
-                <p>Discount Price</p>
-                {(() => {
-                  const price = Number(values.price) || 0
-                  const discount = Number(values.discount) || 0
-                  const discountPrice = (price * (1 - discount / 100)).toFixed(
-                    2,
-                  )
-
-                  return (
-                    <FormikField
-                      value={discountPrice}
-                      readOnly
-                      name="discountPrice"
-                      placeholder="Discount Price"
-                      type="number"
-                    />
-                  )
-                })()}
+                <p>{t('common.fields.discountPercent')}</p>
+                <FormikField
+                  name="discount"
+                  placeholder={t('common.fields.discount')}
+                  type="number"
+                />
+              </div>
+              <div>
+                <p>{t('common.fields.discountPrice')}</p>
+                <FormikField
+                  value={(
+                    calculatePriceCents(
+                      Number(values.price) || 0,
+                      Number(values.discount) || 0,
+                    ) / 100
+                  ).toFixed(2)}
+                  readOnly
+                  aria-label={t('common.fields.discountPrice')}
+                  placeholder={t('common.fields.discountPrice')}
+                  type="number"
+                />
               </div>
             </Row>
             <BookSettingsRow>
               <div style={{ position: 'relative' }}>
-                <p>Image URL</p>
+                <p>{t('common.fields.imageUrl')}</p>
                 <FormikField
                   name="imgUrl"
-                  placeholder="Image URL"
+                  placeholder={t('common.fields.imageUrl')}
                   type="text"
                   onMouseEnter={() => setShowBookCover(true)}
                   onMouseMove={debouncedMouseMove}
                   onMouseLeave={() => setShowBookCover(false)}
                 />
-                {showBookCover && (
+                {showBookCover && values.imgUrl && (
                   <img
                     src={values.imgUrl}
                     style={{
@@ -292,7 +372,7 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                       zIndex: 1000,
                       pointerEvents: 'none',
                     }}
-                    alt="Book cover preview"
+                    alt={t('cms.bookCover')}
                   />
                 )}
               </div>
@@ -300,30 +380,29 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 <IconButton
                   type="button"
                   onClick={handleProductImageClick}
-                  title="Upload Image"
-                  icon={<UploadIcon />}
+                  title={t('cms.uploadImage')}
+                  icon={isUploading ? <SpinnerIcon /> : <UploadIcon />}
+                  aria-busy={isUploading}
                   $size="lg"
                 />
                 <input
                   type="file"
                   name="productImageInput"
-                  aria-label="Upload Product Image"
-                  onChange={(e) => {
-                    handleProductImageChange(e)
-                      .then((url) => setFieldValue('imgUrl', url))
-                      .catch(() => setFieldValue('imgUrl', ''))
-                  }}
-                  accept="image/*"
+                  aria-label={t('cms.uploadImage')}
+                  onChange={(e) =>
+                    void handleProductImageChange(e, setFieldValue)
+                  }
+                  accept={IMAGE_ACCEPT}
                   ref={productImageInputRef}
                   style={{ display: 'none' }}
                 />
               </div>
               <div>
-                <p>Top Sellers</p>
+                <p>{t('common.fields.topSellers')}</p>
                 <FormikField name="topSellers" type="checkbox" />
               </div>
               <div>
-                <p>New Release</p>
+                <p>{t('common.fields.newRelease')}</p>
                 <FormikField name="newRelease" type="checkbox" />
               </div>
             </BookSettingsRow>
@@ -334,15 +413,20 @@ export const BookEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               onClick={onClose}
               $size="sm"
               $color="neutral"
-              disabled={isSubmitting}>
-              {readOnly ? 'Close' : 'Cancel'}
+              disabled={isSubmitting || isUploading}>
+              {readOnly
+                ? t('common.actions.close')
+                : t('common.actions.cancel')}
             </Button>
             {!readOnly && (
               <Button
                 type="submit"
                 $size="sm"
-                disabled={!dirty || isSubmitting || authorsLoading}>
-                {isSubmitting && <SpinnerIcon height={22} />} Save
+                disabled={
+                  !dirty || isSubmitting || isUploading || authorsLoading
+                }>
+                {isSubmitting && <SpinnerIcon height={22} />}
+                {t('common.actions.save')}
               </Button>
             )}
           </FormButtons>

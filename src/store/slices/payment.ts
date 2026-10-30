@@ -1,83 +1,61 @@
-import { createSlice } from '@reduxjs/toolkit'
-import {
-  paymentCancel,
-  paymentCreate,
-  paymentRetrieve,
-} from '@/store/thunks/payment'
-import { PaymentState } from '@/types'
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import type { ApiError, PaymentSession, PaymentState } from '@/types'
 
 const initialState: PaymentState = {
   payment: null,
-  paymentIsLoading: false,
-  paymentCreateError: null,
-  paymentCreateIssueCode: null,
-  paymentRetrieveError: null,
+  phase: 'idle',
+  operationId: null,
+  error: null,
 }
 
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
   reducers: {
-    paymentSessionReset: () => initialState,
-    paymentCreateReset: (state) => {
-      state.paymentCreateError = null
-      state.paymentCreateIssueCode = null
+    checkoutStarted: (
+      state,
+      action: PayloadAction<{
+        operationId: string
+        phase: 'creating' | 'restoring' | 'canceling'
+      }>,
+    ) => {
+      state.operationId = action.payload.operationId
+      state.phase = action.payload.phase
+      state.error = null
+
+      if (state.phase === 'creating') {
+        state.payment = null
+      }
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(paymentCreate.pending, (state) => {
-        state.paymentIsLoading = true
-        state.paymentCreateError = null
-        state.paymentCreateIssueCode = null
-      })
-      .addCase(paymentCreate.fulfilled, (state, action) => {
-        state.payment = {
-          paymentId: action.payload.paymentId,
-          paymentToken: action.payload.paymentToken,
-          amount: action.payload.amount,
-        }
-        state.paymentIsLoading = false
-        state.paymentCreateError = null
-        state.paymentCreateIssueCode = null
-      })
-      .addCase(paymentCreate.rejected, (state, action) => {
+    checkoutReady: (state, action: PayloadAction<PaymentSession>) => {
+      state.payment = action.payload
+      state.phase = 'ready'
+      state.operationId = null
+      state.error = null
+    },
+    checkoutFailed: (state, action: PayloadAction<ApiError>) => {
+      if (state.phase === 'restoring') {
         state.payment = null
-        state.paymentIsLoading = false
-        state.paymentCreateError =
-          action.payload?.message ?? 'Failed to create payment'
-        state.paymentCreateIssueCode = action.payload?.code ?? 'unknown'
-      })
-      .addCase(paymentRetrieve.pending, (state) => {
-        state.paymentIsLoading = true
-        state.paymentRetrieveError = null
-      })
-      .addCase(paymentRetrieve.fulfilled, (state, action) => {
-        state.payment = {
-          paymentId: action.payload.paymentId,
-          paymentToken: action.payload.paymentToken,
-          amount: action.payload.amount,
-        }
-        state.paymentIsLoading = false
-        state.paymentRetrieveError = null
-      })
-      .addCase(paymentRetrieve.rejected, (state, action) => {
-        state.payment = null
-        state.paymentIsLoading = false
-        state.paymentRetrieveError =
-          action.payload?.message ??
-          action.error.message ??
-          'Failed to retrieve payment'
-      })
-      .addCase(paymentCancel.pending, (state) => {
-        state.paymentIsLoading = true
-      })
-      .addCase(paymentCancel.fulfilled, () => initialState)
-      .addCase(paymentCancel.rejected, (state) => {
-        state.paymentIsLoading = false
-      })
+      }
+
+      state.phase = 'failed'
+      state.operationId = null
+      state.error = action.payload
+    },
+    checkoutAborted: (state) => {
+      state.phase = state.payment ? 'ready' : 'idle'
+      state.operationId = null
+      state.error = null
+    },
+    checkoutReset: () => initialState,
   },
 })
 
 export const paymentReducer = paymentSlice.reducer
-export const { paymentSessionReset, paymentCreateReset } = paymentSlice.actions
+export const {
+  checkoutStarted,
+  checkoutReady,
+  checkoutFailed,
+  checkoutAborted,
+  checkoutReset,
+} = paymentSlice.actions

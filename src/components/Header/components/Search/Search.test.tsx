@@ -1,14 +1,32 @@
 import { useNavigate } from 'react-router'
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
+import * as publicApi from '@/api/baseRequest'
+import { authorsApi } from '@/store/api/authorsApi'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { useAppDispatch, useDebounce } from '@/hooks'
+import { useAppDispatch } from '@/hooks/redux'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { Search } from './Search'
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+
+vi.mock('@/hooks/useDebouncedCallback', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/useDebouncedCallback')>()),
+  useDebouncedCallback: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppDispatch: vi.fn(),
+}))
 
 const httpResponse = (data: unknown) =>
   ky.get('https://bookshop.test/mock', {
@@ -49,7 +67,7 @@ describe('Search', () => {
   beforeEach(() => {
     store = createAppStore()
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    vi.mocked(useDebounce).mockImplementation((fn) => fn)
+    vi.mocked(useDebouncedCallback).mockImplementation((fn) => fn)
     vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
   })
 
@@ -59,7 +77,7 @@ describe('Search', () => {
   })
 
   it('queries books and authors and navigates to the selected result', async () => {
-    const get = vi.spyOn(baseRequest, 'get').mockImplementation((url) =>
+    const get = vi.spyOn(publicApi, 'baseRequest').mockImplementation((url) =>
       httpResponse(
         url === 'books'
           ? [
@@ -76,7 +94,7 @@ describe('Search', () => {
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByText('Test Title')).toBeInTheDocument()
@@ -110,7 +128,7 @@ describe('Search', () => {
     }
     const anotherBook = { ...book, id: 2, title: 'Second Book' }
 
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((url, options) => {
       if (url === 'authors') {
         return httpResponse([{ id: 7, name: 'Author' }])
       }
@@ -125,15 +143,14 @@ describe('Search', () => {
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Author')
 
     expect(await screen.findByText('Second Book')).toBeInTheDocument()
     expect(screen.getAllByText('First Book')).toHaveLength(1)
     await waitFor(() => {
       expect(
-        bookshopApi.endpoints.bookSearch.select('Author')(store.getState())
-          .data,
+        booksApi.endpoints.bookSearch.select('Author')(store.getState()).data,
       ).toEqual([book])
     })
   })
@@ -143,7 +160,7 @@ describe('Search', () => {
     const pending = new Promise<void>((resolve) => {
       completeRequest = resolve
     })
-    vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: async () => {
@@ -157,7 +174,7 @@ describe('Search', () => {
     )
 
     render(<Search />, { wrapper: Providers })
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(screen.getByRole('button', { name: 'Search' })).toHaveAttribute(
@@ -171,27 +188,27 @@ describe('Search', () => {
     await act(async () => {
       completeRequest()
       await store.dispatch(
-        bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
+        booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
       )
       await store.dispatch(
-        bookshopApi.endpoints.authorSearch.initiate('Test', {
+        authorsApi.endpoints.authorSearch.initiate('Test', {
           subscribe: false,
         }),
       )
     })
 
-    expect(screen.getByRole('textbox', { name: 'search' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('')
     expect(screen.getByText('No search results...')).not.toBeVisible()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('shows a failed search instead of reporting no results', async () => {
-    vi.spyOn(baseRequest, 'get').mockRejectedValue(
+    vi.spyOn(publicApi, 'baseRequest').mockRejectedValue(
       new Error('Network unavailable'),
     )
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -205,11 +222,11 @@ describe('Search', () => {
     'aborts pending HTTP requests when the search is %s',
     async (action) => {
       const httpSignals: AbortSignal[] = []
-      vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+      vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
         pendingHttpResponse(options?.signal, httpSignals),
       )
       const { unmount } = render(<Search />, { wrapper: Providers })
-      const input = screen.getByRole('textbox', { name: 'search' })
+      const input = screen.getByRole('textbox', { name: 'Search' })
       fireEvent.change(input, { target: { value: 'Test' } })
 
       await waitFor(() => expect(httpSignals).toHaveLength(2))
@@ -226,11 +243,11 @@ describe('Search', () => {
       expect(previousSignals.every((signal) => signal.aborted)).toBe(true)
       await waitFor(() => {
         expect(
-          bookshopApi.endpoints.bookSearch.select('Test')(store.getState())
+          booksApi.endpoints.bookSearch.select('Test')(store.getState())
             .isError,
         ).toBe(true)
         expect(
-          bookshopApi.endpoints.authorSearch.select('Test')(store.getState())
+          authorsApi.endpoints.authorSearch.select('Test')(store.getState())
             .isError,
         ).toBe(true)
       })
@@ -251,7 +268,7 @@ describe('Search', () => {
 
   it('also aborts pending books-by-author requests when cleared', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((url, options) => {
       if (url === 'authors') {
         return httpResponse([{ id: 7, name: 'Author' }])
       }
@@ -266,7 +283,7 @@ describe('Search', () => {
       return httpResponse([])
     })
     render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: 'Author' },
     })
 
@@ -280,15 +297,15 @@ describe('Search', () => {
 
   it('does not abort a matching query already started by another consumer', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
       pendingHttpResponse(options?.signal, httpSignals),
     )
     const existingRequest = store.dispatch(
-      bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
+      booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
     )
     await waitFor(() => expect(httpSignals).toHaveLength(1))
     render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: 'Test' },
     })
     await waitFor(() => expect(httpSignals).toHaveLength(2))

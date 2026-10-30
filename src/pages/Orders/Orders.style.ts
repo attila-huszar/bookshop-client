@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledOrders = styled.main`
   padding-inline: 6.25rem;

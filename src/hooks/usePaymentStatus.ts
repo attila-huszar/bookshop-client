@@ -1,134 +1,114 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
-import type { PaymentIntentStatus } from '@/types/Stripe'
-import { useMessages } from './useMessages'
+import { getErrorMessage } from '@/helpers/errors'
+import type { PaymentStatusState } from '@/types/Payment'
 
-export type PaymentStatusMessageOverride =
-  | { type: 'retry'; attempt: number; maxRetries: number }
-  | { type: 'failure'; details: string }
-  | { type: 'timeout'; timeoutSeconds: number }
-
-export type PaymentStatusState = {
-  intent: PaymentIntentStatus | null
-  messageOverride: PaymentStatusMessageOverride | null
-}
-
-const MAX_RETRIES = 3
+const MAX_ATTEMPTS = 3
 const RETRY_DELAY = 5000
 const ABSOLUTE_TIMEOUT = 30000
+const INITIAL_STATUS: PaymentStatusState = { type: 'checking' }
 
 export function usePaymentStatus(paymentToken: string | null | undefined) {
   const stripe = useStripe()
-  const { getUnknownErrorDetails } = useMessages()
   const [retryCount, setRetryCount] = useState(0)
-  const [status, setStatus] = useState<PaymentStatusState>({
-    intent: null,
-    messageOverride: null,
-  })
+  const [status, setStatus] = useState<PaymentStatusState>(INITIAL_STATUS)
+  const [activePaymentToken, setActivePaymentToken] = useState(paymentToken)
+
+  // Keep the final result when checkout clears its session after success.
+  if (paymentToken && paymentToken !== activePaymentToken) {
+    setActivePaymentToken(paymentToken)
+    setStatus(INITIAL_STATUS)
+  }
 
   useEffect(() => {
-    if (!stripe || !paymentToken) return
-
-    const timeoutIds: ReturnType<typeof setTimeout>[] = []
-    let absoluteTimeoutId: ReturnType<typeof setTimeout> | null = null
-    let isSettled = false
-    let hasTimedOut = false
-
-    const isInactive = () => hasTimedOut || isSettled
-
-    const markSettled = () => {
-      isSettled = true
-      if (absoluteTimeoutId) {
-        clearTimeout(absoluteTimeoutId)
-      }
+    if (!stripe || !paymentToken) {
+      return
     }
 
-    const scheduleRetry = (attempt: number) => {
-      const timeoutId = setTimeout(
-        () => {
-          void retrievePaymentStatus(attempt + 1)
-        },
-        RETRY_DELAY * 2 ** (attempt - 1),
-      )
-      timeoutIds.push(timeoutId)
+    let retryTimeoutId: ReturnType<typeof setTimeout> | undefined
+    let active = true
+
+    const stopPolling = () => {
+      active = false
+      clearTimeout(retryTimeoutId)
+      clearTimeout(absoluteTimeoutId)
     }
 
     const retrievePaymentStatus = async (attempt = 1): Promise<void> => {
-      if (isInactive()) return
+      if (!active) {
+        return
+      }
 
       try {
         const { paymentIntent, error } =
           await stripe.retrievePaymentIntent(paymentToken)
 
-        if (isInactive()) return
-
-        if (error) {
-          throw new Error(error.message ?? 'Failed to retrieve payment intent')
-        }
-
-        setStatus({
-          intent: paymentIntent.status,
-          messageOverride: null,
-        })
-
-        if (paymentIntent.status !== 'processing') {
-          markSettled()
+        if (!active) {
           return
         }
 
-        if (attempt < MAX_RETRIES) {
-          scheduleRetry(attempt)
+        if (error) {
+          throw new Error(error.message)
+        }
+
+        setStatus({ type: paymentIntent.status })
+
+        if (paymentIntent.status !== 'processing') {
+          stopPolling()
+
+          return
         }
       } catch (error) {
-        if (isInactive()) return
-
-        if (attempt < MAX_RETRIES) {
-          setStatus({
-            intent: null,
-            messageOverride: {
-              type: 'retry',
-              attempt,
-              maxRetries: MAX_RETRIES,
-            },
-          })
-          scheduleRetry(attempt)
-        } else {
-          setStatus({
-            intent: null,
-            messageOverride: {
-              type: 'failure',
-              details: getUnknownErrorDetails(error),
-            },
-          })
-          markSettled()
+        if (!active) {
+          return
         }
+
+        if (attempt >= MAX_ATTEMPTS) {
+          setStatus({
+            type: 'failure',
+            details: getErrorMessage(error, ''),
+          })
+          stopPolling()
+
+          return
+        }
+
+        setStatus({
+          type: 'retry',
+          attempt: attempt + 1,
+          maxAttempts: MAX_ATTEMPTS,
+        })
+      }
+
+      if (attempt < MAX_ATTEMPTS) {
+        retryTimeoutId = setTimeout(
+          () => {
+            void retrievePaymentStatus(attempt + 1)
+          },
+          RETRY_DELAY * 2 ** (attempt - 1),
+        )
       }
     }
 
-    absoluteTimeoutId = setTimeout(() => {
-      if (isInactive()) return
-      hasTimedOut = true
+    const absoluteTimeoutId = setTimeout(() => {
+      if (!active) {
+        return
+      }
+
       setStatus({
-        intent: null,
-        messageOverride: {
-          type: 'timeout',
-          timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
-        },
+        type: 'timeout',
+        timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
       })
-      markSettled()
+      stopPolling()
     }, ABSOLUTE_TIMEOUT)
-    timeoutIds.push(absoluteTimeoutId)
 
     void retrievePaymentStatus()
 
-    return () => {
-      isSettled = true
-      timeoutIds.forEach(clearTimeout)
-    }
-  }, [getUnknownErrorDetails, retryCount, paymentToken, stripe])
+    return stopPolling
+  }, [retryCount, paymentToken, stripe])
 
   const retry = () => {
-    setStatus({ intent: null, messageOverride: null })
+    setStatus(INITIAL_STATUS)
     setRetryCount((current) => current + 1)
   }
 

@@ -1,14 +1,17 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { ROUTE } from '@/routes'
-import { logout, userSelector } from '@/store'
-import { Avatar, Button, IconButton, toast } from '@/components'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useBreakpoints,
-  useClickOutside,
-} from '@/hooks'
+import { ROUTE } from '@/routes/route'
+import { userSelector } from '@/store/selectors'
+import { logout } from '@/store/thunks/user'
+import { toast } from '@/components/AppToaster'
+import { Avatar } from '@/components/Avatar'
+import { Button, IconButton } from '@/components/Button'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { getErrorMessage } from '@/helpers/errors'
 import { UserRole } from '@/types'
 import {
   CMSIcon,
@@ -17,15 +20,23 @@ import {
   ProfileIcon,
   UserOutlineIcon,
 } from '@/assets/svg'
-import { MenuItem, MenuList, StyledMenu } from '../Menu/Menu.style'
+import { MenuItem } from '../Menu/Menu.style'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
+import {
+  AccountMenuList,
+  GuestActions,
+  StyledAccountMenu,
+} from './AccountMenu.style'
 
 export function AccountMenu() {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { accessToken, userData } = useAppSelector(userSelector)
   const menuRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -47,44 +58,57 @@ export function AccountMenu() {
     void navigate(`/${ROUTE.LOGIN}`)
   }
 
-  const handleLogout = () => {
-    toggleMenu()
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return
+    }
 
-    dispatch(logout())
-      .unwrap()
-      .then(() => {
-        toast.success(`${userData?.email} successfully logged out`, {
-          id: 'logout-success',
-        })
+    setIsLoggingOut(true)
+
+    try {
+      await dispatch(logout()).unwrap()
+      setMenuOpen(false)
+      toast.success(t('auth.loggedOut', { email: userData?.email ?? '' }), {
+        id: 'logout-success',
       })
-      .catch((error: Error) => {
-        toast.error(error.message, {
-          id: 'logout-error',
-        })
+      void navigate('/', { replace: true })
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('auth.logoutError')), {
+        id: 'logout-error',
       })
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   if (!isAuthenticated || !userData) {
-    return isMobile ? (
+    const loginButton = isMobile ? (
       <IconButton
         onClick={handleLoginClick}
         icon={<UserOutlineIcon />}
-        title="Login/Register"
+        title={t('auth.loginRegister')}
       />
     ) : (
       <Button
         onClick={handleLoginClick}
-        title="Login/Register"
+        title={t('auth.loginRegister')}
         $icon={<UserOutlineIcon />}
         $size="smMd"
         $inverted>
-        Log In
+        {t('auth.login')}
       </Button>
+    )
+
+    return (
+      <GuestActions>
+        {loginButton}
+        <LanguageSwitcher variant="icon" />
+      </GuestActions>
     )
   }
 
   const menuList = (
-    <MenuList>
+    <AccountMenuList>
       <li>
         <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
           <MenuItem>
@@ -97,7 +121,7 @@ export function AccountMenu() {
         <Link to={`/${ROUTE.ORDERS}`} onClick={toggleMenu}>
           <MenuItem>
             <OrdersIcon height="1.5rem" />
-            <span>Orders</span>
+            <span>{t('navigation.orders')}</span>
           </MenuItem>
         </Link>
       </li>
@@ -106,24 +130,29 @@ export function AccountMenu() {
           <Link to={`/${ROUTE.CMS}/orders`} onClick={toggleMenu}>
             <MenuItem>
               <CMSIcon height="1.5rem" />
-              <span>CMS</span>
+              <span>{t('navigation.cms')}</span>
             </MenuItem>
           </Link>
         </li>
       )}
       <li>
-        <Link to={'/'} onClick={handleLogout}>
-          <MenuItem>
-            <LogoutIcon height="1.5rem" />
-            <span>Logout</span>
-          </MenuItem>
-        </Link>
+        <LanguageSwitcher variant="menu" />
       </li>
-    </MenuList>
+      <li>
+        <MenuItem
+          as="button"
+          type="button"
+          disabled={isLoggingOut}
+          onClick={() => void handleLogout()}>
+          <LogoutIcon height="1.5rem" />
+          <span>{t('auth.logout')}</span>
+        </MenuItem>
+      </li>
+    </AccountMenuList>
   )
 
   return (
-    <StyledMenu ref={menuRef}>
+    <StyledAccountMenu ref={menuRef}>
       <Avatar
         imgUrl={userData.avatar ?? undefined}
         onClick={toggleMenu}
@@ -138,6 +167,6 @@ export function AccountMenu() {
           {menuList}
         </MenuDropdown>
       )}
-    </StyledMenu>
+    </StyledAccountMenu>
   )
 }

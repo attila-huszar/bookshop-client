@@ -3,7 +3,11 @@ import type { Filters } from '@/types'
 export const defaultCountry = 'hu'
 export const defaultCurrency = 'USD'
 export const defaultCurrencySymbol = '$'
-export const defaultLocale = 'hu-HU'
+
+export const languageOptions = [
+  { language: 'en', country: 'gb' },
+  { language: 'hu', country: 'hu' },
+] as const
 
 export const maxItemQuantity = 100
 
@@ -18,7 +22,7 @@ export const registrationInitialValues = {
   email: '',
   password: '',
   passwordConfirmation: '',
-  country: '',
+  country: defaultCountry,
   avatar: null,
 }
 
@@ -33,14 +37,11 @@ export const passwordResetInitialValues = {
   newPasswordConfirmation: '',
 }
 
-export const discountOptions: {
-  value: Filters['discount']
-  label: string
-}[] = [
-  { value: 'allBooks', label: 'All Books' },
-  { value: 'discountOnly', label: 'With Discount' },
-  { value: 'fullPriceOnly', label: 'Full Price Books' },
-]
+export const discountOptions = [
+  { value: 'allBooks', label: 'filters.allBooks' },
+  { value: 'discountOnly', label: 'filters.discountOnly' },
+  { value: 'fullPriceOnly', label: 'filters.fullPrice' },
+] as const satisfies readonly { value: Filters['discount']; label: string }[]
 
 export const filterInitialValues: Filters = {
   genre: [],

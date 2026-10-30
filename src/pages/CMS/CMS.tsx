@@ -1,26 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { userSelector } from '@/store'
+import { useTranslation } from 'react-i18next'
+import { NavLink, Outlet, useLocation } from 'react-router'
+import { useHardDeleteAuthorsMutation } from '@/store/api/authorsApi'
+import { useHardDeleteBooksMutation } from '@/store/api/booksApi'
 import {
-  useCmsAuthorsQuery,
-  useCmsBooksQuery,
-  useCmsOrdersQuery,
-  useCmsUsersQuery,
-  useHardDeleteAuthorsMutation,
-  useHardDeleteBooksMutation,
   useRestoreOrdersMutation,
-  useRestoreUsersMutation,
   useSoftDeleteOrdersMutation,
-  useSoftDeleteUsersMutation,
-} from '@/store/api/bookshopApi'
+} from '@/store/api/ordersApi'
 import {
-  Button,
-  ConfirmDialog,
-  ExtraSpace,
-  IconButton,
-  toast,
-} from '@/components'
-import { useAppSelector, useClickOutside } from '@/hooks'
+  useRestoreUsersMutation,
+  useSoftDeleteUsersMutation,
+} from '@/store/api/usersApi'
+import { setCmsCurrentPage } from '@/store/slices/cms'
+import { toast } from '@/components/AppToaster'
+import { Button, IconButton } from '@/components/Button'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { ExtraSpace } from '@/components/Header'
+import { useAppDispatch } from '@/hooks/redux'
+import { useClickOutside } from '@/hooks/useClickOutside'
 import type {
   Author,
   BookWithAuthorId,
@@ -30,18 +27,25 @@ import type {
   SelectContext,
 } from '@/types'
 import {
-  LogoutIcon,
   StoreIcon,
   StoreSlashIcon,
   UserIcon,
   UserSlashIcon,
+  XIcon,
 } from '@/assets/svg'
+import {
+  DialogBody,
+  DialogCloseButton,
+  DialogHeader,
+} from '@/styles/dialog.styles'
 import {
   AuthorEditForm,
   BookEditForm,
   OrderEditForm,
   UserEditForm,
 } from './components'
+import { CMSMenu } from './components/CMSMenu/CMSMenu'
+import { TermsSettingsDialog } from './components/TermsSettingsDialog/TermsSettingsDialog'
 import {
   MainContainer,
   MenuButtons,
@@ -51,11 +55,18 @@ import {
 } from './styles'
 
 const TABS = [
-  { label: 'Orders', value: 'orders' },
-  { label: 'Books', value: 'books' },
-  { label: 'Authors', value: 'authors' },
-  { label: 'Users', value: 'users' },
+  { label: 'navigation.orders', value: 'orders' },
+  { label: 'catalogue.books', value: 'books' },
+  { label: 'cms.authors', value: 'authors' },
+  { label: 'cms.users', value: 'users' },
 ] as const
+
+const ENTITY_LABELS = {
+  books: 'catalogue.book',
+  authors: 'common.fields.author',
+  orders: 'common.fields.order',
+  users: 'cms.user',
+} as const
 
 export type TabValue = (typeof TABS)[number]['value']
 
@@ -67,9 +78,10 @@ const isValidTab = (tab: string): tab is TabValue =>
   TABS.some((t) => t.value === tab)
 
 export const CMS = () => {
-  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const dispatch = useAppDispatch()
+  const [termsSettingsOpen, setTermsSettingsOpen] = useState(false)
   const location = useLocation()
-  const { userData } = useAppSelector(userSelector)
   const [hardDeleteAuthors, authorDeletion] = useHardDeleteAuthorsMutation()
   const [hardDeleteBooks, bookDeletion] = useHardDeleteBooksMutation()
   const [softDeleteOrders, orderRemoval] = useSoftDeleteOrdersMutation()
@@ -128,12 +140,18 @@ export const CMS = () => {
     activeTab === 'orders' ? showDeletedOrders : showDeletedUsers
   const actionLabel = supportsSoftDelete
     ? showDeleted
-      ? 'Restore'
-      : 'Remove'
-    : 'Delete'
+      ? t('common.actions.restore')
+      : t('common.actions.remove')
+    : t('common.actions.delete')
   const isRestoring = supportsSoftDelete && showDeleted
   const actionColor = isRestoring ? 'secondary' : 'danger'
-  const visibilityLabel = `Show ${showDeleted ? 'active' : 'removed'} ${activeTab}`
+  const entity = t(
+    TABS.find((tab) => tab.value === activeTab)!.label,
+  ).toLocaleLowerCase()
+  const visibilityLabel = t(
+    showDeleted ? 'cms.showActive' : 'cms.showRemoved',
+    { entity },
+  )
   const VisibilityIcon =
     activeTab === 'orders'
       ? showDeleted
@@ -143,17 +161,17 @@ export const CMS = () => {
         ? UserIcon
         : UserSlashIcon
   const confirmationMessage = isRestoring
-    ? `Restore selected ${activeTab}? They will appear in the active list again.${activeTab === 'users' ? ' Account access will be restored.' : ''}`
+    ? `${t('cms.confirmRestore', { entity })}${activeTab === 'users' ? ` ${t('cms.restoreAccess')}` : ''}`
     : supportsSoftDelete
-      ? `Remove selected ${activeTab}? ${activeTab === 'users' ? 'Account access will be disabled; email addresses and order history will be retained.' : 'Order history, payments, and emails will be retained.'} You can restore them from the removed ${activeTab} view.`
-      : `Delete selected ${activeTab} permanently? This action is irreversible. These records cannot be restored.`
-
-  useCmsBooksQuery({ skip: activeTab !== 'books' })
-  useCmsAuthorsQuery({
-    skip: activeTab !== 'authors' && activeTab !== 'books',
-  })
-  useCmsOrdersQuery({ skip: activeTab !== 'orders' })
-  useCmsUsersQuery({ skip: activeTab !== 'users' })
+      ? t('cms.confirmRemove', {
+          entity,
+          details: t(
+            activeTab === 'users'
+              ? 'cms.removeUsersDetails'
+              : 'cms.removeOrdersDetails',
+          ),
+        })
+      : t('cms.confirmDelete', { entity })
 
   const handleDialogClose = () => {
     setIsDialogOpen(false)
@@ -165,7 +183,7 @@ export const CMS = () => {
 
   const handleBulkActionClick = () => {
     if (!selectedItems[activeTab].length) {
-      toast('No items selected', {
+      toast(t('cms.noSelection'), {
         icon: '⚠️',
         style: { backgroundColor: 'var(--color-surface-container-low)' },
       })
@@ -193,10 +211,10 @@ export const CMS = () => {
 
       const action = supportsSoftDelete
         ? showDeleted
-          ? 'restored'
-          : 'removed'
-        : 'deleted'
-      toast.success(`Successfully ${action} selected ${activeTab}`)
+          ? t('cms.actions.restored')
+          : t('cms.actions.removed')
+        : t('cms.actions.deleted')
+      toast.success(t('cms.bulkSuccess', { action, entity }))
       setSelectedItems({
         orders: [],
         books: [],
@@ -205,7 +223,7 @@ export const CMS = () => {
       })
     } catch {
       toast.error(
-        `Failed to ${actionLabel.toLowerCase()} selected ${activeTab}`,
+        t('cms.bulkError', { action: actionLabel.toLocaleLowerCase(), entity }),
       )
     }
 
@@ -269,7 +287,7 @@ export const CMS = () => {
               activeTab === 'orders' ||
               (activeTab === 'users' && showDeletedUsers)
             }>
-            Add
+            {t('common.actions.add')}
           </Button>
           <Button
             onClick={handleBulkActionClick}
@@ -296,24 +314,16 @@ export const CMS = () => {
                   ...previous,
                   [activeTab]: [],
                 }))
+                dispatch(setCmsCurrentPage({ tab: activeTab, page: 1 }))
               }}
             />
           )}
-          <Button
-            onClick={() => void navigate('/')}
-            $icon={<LogoutIcon />}
-            $iconPos="right"
-            $size="smMd"
-            $inverted
-            type="button"
-            style={{ marginLeft: 'auto' }}>
-            {userData?.firstName}
-          </Button>
+          <CMSMenu onOpenTerms={() => setTermsSettingsOpen(true)} />
         </MenuButtons>
         <StyledTabs>
           {TABS.map((tab) => (
             <NavLink to={`/cms/${tab.value}`} key={tab.value}>
-              {tab.label}
+              {t(tab.label)}
             </NavLink>
           ))}
         </StyledTabs>
@@ -329,9 +339,29 @@ export const CMS = () => {
           }}
         />
       </MainContainer>
+      {termsSettingsOpen && (
+        <TermsSettingsDialog onClose={() => setTermsSettingsOpen(false)} />
+      )}
       {isDialogOpen && (
-        <StyledEditDialog ref={dialogRef} onCancel={handleDialogClose}>
-          {renderEditForm()}
+        <StyledEditDialog
+          ref={dialogRef}
+          aria-labelledby="cms-record-title"
+          onCancel={handleDialogClose}>
+          <DialogHeader>
+            <h2 id="cms-record-title">
+              {t('cms.information', {
+                entity: t(ENTITY_LABELS[activeTab]),
+              })}
+            </h2>
+            <DialogCloseButton
+              type="button"
+              aria-label={t('common.actions.close')}
+              title={t('common.actions.close')}
+              icon={<XIcon aria-hidden="true" />}
+              onClick={handleDialogClose}
+            />
+          </DialogHeader>
+          <DialogBody>{renderEditForm()}</DialogBody>
         </StyledEditDialog>
       )}
       <ConfirmDialog

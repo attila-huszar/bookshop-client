@@ -7,17 +7,17 @@ import {
 } from '@/assets/svg'
 
 export const menuLinks = [
-  { path: '/', name: 'Home', key: 'home', Icon: HomeIcon },
-  { path: '/books', name: 'Shop', key: 'shop', Icon: BookIcon },
-]
+  { path: '/', name: 'navigation.home', key: 'home', Icon: HomeIcon },
+  { path: '/books', name: 'navigation.shop', key: 'shop', Icon: BookIcon },
+] as const
 
 export const navLinks = [
-  { path: '#', name: 'About', key: 'about' },
-  { path: '#', name: 'Features', key: 'features' },
-  { path: '#', name: 'Pricing', key: 'pricing' },
-  { path: '#', name: 'Gallery', key: 'gallery' },
-  { path: '#', name: 'Team', key: 'team' },
-]
+  { path: '#', name: 'navigation.about', key: 'about' },
+  { path: '#', name: 'navigation.features', key: 'features' },
+  { path: '#', name: 'navigation.pricing', key: 'pricing' },
+  { path: '#', name: 'navigation.gallery', key: 'gallery' },
+  { path: '#', name: 'navigation.team', key: 'team' },
+] as const
 
 export const socialLinks = [
   { path: '#', name: 'Instagram', key: 'instagram', icon: instagramIcon },
@@ -26,8 +26,8 @@ export const socialLinks = [
 ]
 
 export const legalLinks = [
-  { path: '#', name: 'Privacy Policy', key: 'privacyPolicy' },
-  { path: '#', name: 'Terms of Use', key: 'termsOfUse' },
-  { path: '#', name: 'Sales and Refunds', key: 'salesAndRefunds' },
-  { path: '#', name: 'Legal', key: 'legal' },
-]
+  { path: '#', name: 'navigation.privacy', key: 'privacyPolicy' },
+  { path: '/terms', name: 'terms.title', key: 'termsOfUse' },
+  { path: '#', name: 'navigation.refunds', key: 'salesAndRefunds' },
+  { path: '#', name: 'navigation.legal', key: 'legal' },
+] as const

@@ -3,11 +3,11 @@ import { toast } from 'react-hot-toast'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
+import { useUpdateUserProfileMutation } from '@/store/api/usersApi'
 import { PasswordDialog } from './PasswordDialog'
 
-vi.mock('@/store/api/bookshopApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/bookshopApi')>()),
+vi.mock('@/store/api/usersApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/usersApi')>()),
   useUpdateUserProfileMutation: vi.fn(),
 }))
 

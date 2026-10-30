@@ -4,17 +4,15 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as privateApi from '@/api/authRequest'
 import * as usersApi from '@/api/users'
-import { authRequest } from '@/api'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
 import { createAppStore } from '@/store/store'
 import { logout } from '@/store/thunks/user'
 import type { EmailOutboxEntry } from '@/types'
 import { CMS } from '../../CMS'
 import { OrderEmails } from './OrderEmails'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 const entry: EmailOutboxEntry = {
   id: 'order-confirmed-pi_test',
@@ -41,7 +39,7 @@ beforeEach(() => {
   store = createAppStore()
   entries = [entry]
   total = 26
-  vi.spyOn(authRequest, 'get').mockImplementation(() =>
+  vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
     ky.get('https://bookshop.test/mock', {
       retry: 0,
       fetch: () =>
@@ -82,7 +80,7 @@ describe('Order emails', () => {
     const pending = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.mocked(authRequest.get).mockImplementation(() =>
+    vi.mocked(privateApi.authRequest).mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => pending,
@@ -124,19 +122,19 @@ describe('Order emails', () => {
 
     fireEvent.change(input, { target: { value: ' r ' } })
     await act(() => vi.advanceTimersByTimeAsync(300))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     fireEvent.change(input, { target: { value: 're' } })
     await act(() => vi.advanceTimersByTimeAsync(299))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     fireEvent.change(input, { target: { value: 'reader' } })
     await act(() => vi.advanceTimersByTimeAsync(299))
-    expect(authRequest.get).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     await act(() => vi.advanceTimersByTimeAsync(1))
-    expect(authRequest.get).toHaveBeenCalledTimes(2)
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(2)
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { ...criteria, search: 'reader' },
@@ -156,7 +154,7 @@ describe('Order emails', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     await act(() => vi.advanceTimersByTimeAsync(0))
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({
         searchParams: { ...criteria, page: 2, search: 'reader' },
@@ -171,7 +169,7 @@ describe('Order emails', () => {
     expect(input).toHaveValue('')
     expect(input).toHaveFocus()
     expect(screen.getByText('26 emails · Page 1 of 2')).toBeInTheDocument()
-    expect(authRequest.get).toHaveBeenLastCalledWith(
+    expect(privateApi.authRequest).toHaveBeenLastCalledWith(
       'cms/email-outbox',
       expect.objectContaining({ searchParams: criteria }),
     )
@@ -204,7 +202,7 @@ describe('Order emails', () => {
     expect(await screen.findByText('reader@example.com')).toBeInTheDocument()
     expect(screen.getByText('Sent', { selector: 'span' })).toBeInTheDocument()
     expect(
-      screen.getByRole('columnheader', { name: 'Last update' }),
+      screen.getByRole('columnheader', { name: 'Updated At' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('columnheader', { name: 'Queue processed' }),
@@ -219,14 +217,14 @@ describe('Order emails', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next' }))
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({ searchParams: { ...criteria, page: 2 } }),
       ),
     )
     await user.selectOptions(screen.getByLabelText('Status'), 'failed')
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({
           searchParams: { ...criteria, status: 'failed' },
@@ -239,7 +237,7 @@ describe('Order emails', () => {
     )
     await user.type(screen.getByLabelText('Recipient'), 'reader@example.com')
     await waitFor(() =>
-      expect(authRequest.get).toHaveBeenLastCalledWith(
+      expect(privateApi.authRequest).toHaveBeenLastCalledWith(
         'cms/email-outbox',
         expect.objectContaining({
           searchParams: {
@@ -275,7 +273,7 @@ describe('Order emails', () => {
 
   it('keeps refresh available after a request fails', async () => {
     const user = userEvent.setup()
-    vi.mocked(authRequest.get).mockRejectedValueOnce(
+    vi.mocked(privateApi.authRequest).mockRejectedValueOnce(
       new Error('Network unavailable'),
     )
     renderOutbox()
@@ -288,18 +286,18 @@ describe('Order emails', () => {
 
   it('clears cached outbox data on a session transition', async () => {
     const query = store.dispatch(
-      bookshopApi.endpoints.cmsEmailOutbox.initiate(criteria),
+      ordersApi.endpoints.cmsEmailOutbox.initiate(criteria),
     )
 
     await query.unwrap()
     expect(
-      bookshopApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
-        .data?.entries,
+      ordersApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState()).data
+        ?.entries,
     ).toEqual([entry])
     vi.spyOn(usersApi, 'postUserLogout').mockResolvedValue({ success: true })
     await store.dispatch(logout()).unwrap()
     expect(
-      bookshopApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
+      ordersApi.endpoints.cmsEmailOutbox.select(criteria)(store.getState())
         .isUninitialized,
     ).toBe(true)
     query.unsubscribe()

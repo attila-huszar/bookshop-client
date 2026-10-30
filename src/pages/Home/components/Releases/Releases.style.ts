@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 import { ReleasesTypes } from './Releases.types'
 
 export const StyledReleases = styled.section`

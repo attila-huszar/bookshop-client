@@ -1,16 +1,18 @@
 import { useRef, useState } from 'react'
-import { useCmsEmailOutboxQuery } from '@/store/api/bookshopApi'
-import { Alert, Button } from '@/components'
+import { useTranslation } from 'react-i18next'
+import { useCmsEmailOutboxQuery } from '@/store/api/ordersApi'
+import { Alert } from '@/components/Alert'
+import { Button } from '@/components/Button'
 import { ClearButton } from '@/components/Header/components/Search/Search.style'
-import { useDebounce } from '@/hooks'
-import { formatDate } from '@/helpers'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { formatDate } from '@/helpers/formatDate'
 import {
   type EmailOutboxStatus,
   emailOutboxStatuses,
   type OrderEmailType,
   orderEmailTypes,
 } from '@/types'
-import { SpinnerIcon, XMarkIcon } from '@/assets/svg'
+import { SpinnerIcon, XIcon } from '@/assets/svg'
 import {
   OutboxContainer,
   OutboxControls,
@@ -20,23 +22,18 @@ import {
   StatusBadge,
 } from './OrderEmails.style'
 
-const typeLabels: Record<OrderEmailType, string> = {
-  orderConfirmation: 'Customer confirmation',
-  adminPaymentNotification: 'Admin payment notification',
-}
-
-const statusLabel = (status: EmailOutboxStatus) =>
-  status.charAt(0).toUpperCase() + status.slice(1)
 const dateLabel = (date: string | null) => (date ? formatDate(date) : '—')
 
 export function OrderEmails({ paymentId }: { paymentId: string }) {
+  const { t } = useTranslation()
+
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<EmailOutboxStatus | ''>('')
   const [type, setType] = useState<OrderEmailType | ''>('')
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
-  const debouncedSearch = useDebounce((value: string) => {
+  const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearch(value)
     setPage(1)
   })
@@ -71,42 +68,43 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
   }
 
   return (
-    <OutboxContainer aria-label={`Emails for payment ${paymentId}`}>
+    <OutboxContainer
+      aria-label={t('cms.emails.forPayment', { paymentId: paymentId })}>
       <OutboxControls>
         <label>
-          Status
+          {t('common.fields.status')}
           <select
             value={status}
             onChange={(event) => {
               setStatus(event.target.value as EmailOutboxStatus | '')
               setPage(1)
             }}>
-            <option value="">All statuses</option>
+            <option value="">{t('cms.emails.allStatuses')}</option>
             {emailOutboxStatuses.map((value) => (
               <option key={value} value={value}>
-                {statusLabel(value)}
+                {t(`cms.emails.status.${value}`)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Email type
+          {t('cms.emails.type')}
           <select
             value={type}
             onChange={(event) => {
               setType(event.target.value as OrderEmailType | '')
               setPage(1)
             }}>
-            <option value="">All types</option>
+            <option value="">{t('cms.emails.allTypes')}</option>
             {orderEmailTypes.map((value) => (
               <option key={value} value={value}>
-                {typeLabels[value]}
+                {t(`cms.emails.${value}`)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Recipient
+          {t('cms.emails.recipient')}
           <RecipientSearch>
             <input
               ref={searchRef}
@@ -118,13 +116,13 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
             {searchInput && (
               <ClearButton
                 type="button"
-                title="Clear recipient search"
-                aria-label="Clear recipient search"
+                title={t('cms.emails.clearSearch')}
+                aria-label={t('cms.emails.clearSearch')}
                 onClick={() => {
                   handleSearchChange('')
                   searchRef.current?.focus()
                 }}>
-                <XMarkIcon
+                <XIcon
                   color="var(--color-on-surface-variant)"
                   aria-hidden="true"
                 />
@@ -139,45 +137,39 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
           disabled={isFetching}
           aria-busy={isFetching}>
           {isFetching && <SpinnerIcon height={22} aria-hidden="true" />}
-          Refresh
+          {t('common.actions.refresh')}
         </Button>
       </OutboxControls>
-      <p>
-        Sent means the mail server accepted the email. Processed entries predate
-        delivery tracking. Next attempt times are estimates; queued emails wait
-        for the worker.
-      </p>
-      {isError && (
-        <Alert message="Could not load order emails. Try refreshing." />
-      )}
+      <p>{t('cms.emails.help')}</p>
+      {isError && <Alert message={t('cms.emails.error')} />}
       {!isFetching && !isError && data?.entries.length === 0 && (
-        <Alert type="info" message="No emails for this order" />
+        <Alert type="info" message={t('cms.emails.empty')} />
       )}
       {data && data.entries.length > 0 && (
         <OutboxTable>
-          <table aria-label="Order emails">
+          <table aria-label={t('cms.emails.title')}>
             <thead>
               <tr>
-                <th scope="col">Email</th>
-                <th scope="col">Recipient</th>
-                <th scope="col">Status</th>
-                <th scope="col">Attempts</th>
-                <th scope="col">Created</th>
-                <th scope="col">Last update</th>
-                <th scope="col">Next attempt</th>
-                <th scope="col">Failure details</th>
+                <th scope="col">{t('common.fields.email')}</th>
+                <th scope="col">{t('cms.emails.recipient')}</th>
+                <th scope="col">{t('common.fields.status')}</th>
+                <th scope="col">{t('cms.emails.attempts')}</th>
+                <th scope="col">{t('common.fields.createdAt')}</th>
+                <th scope="col">{t('common.fields.updatedAt')}</th>
+                <th scope="col">{t('cms.emails.nextAttempt')}</th>
+                <th scope="col">{t('cms.emails.failure')}</th>
               </tr>
             </thead>
             <tbody>
               {data.entries.map((entry) => (
                 <tr key={entry.id}>
                   <td>
-                    {typeLabels[entry.type]}
+                    {t(`cms.emails.${entry.type}`)}
                     <small>
                       {entry.notificationType === 'new'
-                        ? 'New order'
+                        ? t('cms.emails.newOrder')
                         : entry.notificationType === 'error'
-                          ? 'Reconciliation failed'
+                          ? t('cms.emails.reconciliationFailed')
                           : ''}
                     </small>
                     <small>{entry.id}</small>
@@ -185,12 +177,15 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
                   <td>{entry.recipient}</td>
                   <td>
                     <StatusBadge data-status={entry.status}>
-                      {statusLabel(entry.status)}
+                      {t(`cms.emails.status.${entry.status}`)}
                     </StatusBadge>
                   </td>
                   <td>
-                    Queue: {entry.queueAttempts}
-                    <small>Delivery: {entry.deliveryAttempts}</small>
+                    {t('cms.emails.queue')}
+                    {entry.queueAttempts}
+                    <small>
+                      {t('cms.emails.delivery')} {entry.deliveryAttempts}
+                    </small>
                   </td>
                   <td>{dateLabel(entry.createdAt)}</td>
                   <td>
@@ -211,21 +206,21 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
       )}
       <OutboxPagination>
         <span>
-          {data?.total ?? 0} emails · Page {page} of {pages}
+          {t('cms.emails.pagination', { count: data?.total ?? 0, page, pages })}
         </span>
         <Button
           type="button"
           $size="smMd"
           disabled={page === 1 || isFetching}
           onClick={() => setPage(page - 1)}>
-          Previous
+          {t('common.actions.previous')}
         </Button>
         <Button
           type="button"
           $size="smMd"
           disabled={!data || page >= pages || isFetching}
           onClick={() => setPage(page + 1)}>
-          Next
+          {t('common.actions.next')}
         </Button>
       </OutboxPagination>
     </OutboxContainer>

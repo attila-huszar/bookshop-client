@@ -1,55 +1,76 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { shopLanguage } from '@/i18n'
 import {
   LinkAuthenticationElement,
   PaymentElement,
   useElements,
   useStripe,
 } from '@stripe/react-stripe-js'
-import { ROUTE } from '@/routes'
-import {
-  paymentCancel,
-  paymentSelector,
-  paymentSessionReset,
-  userSelector,
-} from '@/store'
-import { toast } from '@/components'
-import { useAppDispatch, useAppSelector, usePaymentSubmit } from '@/hooks'
-import { getErrorMessage } from '@/helpers/errors'
-import { defaultCurrency } from '@/constants'
-import type { StripePaymentElementOptions } from '@/types'
+import { ROUTE } from '@/routes/route'
+import { usePaymentTermsQuery } from '@/store/api/termsApi'
+import { userSelector } from '@/store/selectors'
+import { toast } from '@/components/AppToaster'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
+import { cancelCheckout } from '@/services/checkout'
+import { formatAmount } from '@/helpers/checkout'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { calculatePriceCents } from '@/helpers/pricing'
+import { defaultCurrency } from '@/constants/defaultValues'
+import type { ApiError, StripePaymentElementOptions } from '@/types'
+import { SpinnerIcon } from '@/assets/svg'
 
 export function CheckoutForm() {
+  const { t, i18n } = useTranslation()
+  const language = shopLanguage(i18n.resolvedLanguage)
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
-  const { payment } = useAppSelector(paymentSelector)
+  const payment = useAppSelector((state) => state.payment.payment)
   const [linkEmail, setLinkEmail] = useState('')
-  const [cancelError, setCancelError] = useState<string | null>(null)
+  const [cancelError, setCancelError] = useState<string | ApiError | null>(null)
   const [isCanceling, setIsCanceling] = useState(false)
+  const [acceptedTermsKey, setAcceptedTermsKey] = useState<string | null>(null)
+  const {
+    currentData: review,
+    isFetching: isTermsLoading,
+    isError: hasTermsError,
+    refetch: refetchTerms,
+  } = usePaymentTermsQuery(payment?.paymentId ?? '', {
+    skip: !payment?.paymentId,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: false,
+    refetchOnReconnect: false,
+  })
+  const terms = hasTermsError || isTermsLoading ? null : (review?.terms ?? null)
+  const termsKey = terms
+    ? JSON.stringify([payment?.paymentId, terms.version, language])
+    : null
+  const termsAccepted = termsKey !== null && acceptedTermsKey === termsKey
   const receiptEmail = (userData?.email ?? linkEmail).trim()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const {
-    handleSubmit,
-    retryPayment,
-    canRetry,
-    message,
-    setMessage,
-    isLoading,
-  } = usePaymentSubmit(receiptEmail)
+  const { handleSubmit, canRetry, message, setMessage, isLoading } =
+    usePaymentSubmit({
+      email: receiptEmail,
+      paymentId: payment?.paymentId ?? '',
+      terms,
+      termsAccepted,
+    })
 
   if (!payment) {
     return (
       <div>
         <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
-          Order information is missing. Please start checkout again.
+          {t('checkout.missingOrder')}
         </p>
         <button
           type="button"
           onClick={() => void navigate(`/${ROUTE.CART}`, { replace: true })}>
-          <span>Back to Cart</span>
+          <span>{t('common.actions.backToCart')}</span>
         </button>
       </div>
     )
@@ -57,18 +78,27 @@ export function CheckoutForm() {
 
   const paymentId = payment.paymentId
 
-  const orderForm = {
-    num: paymentId.slice(-6).toUpperCase(),
-    amount: (payment.amount / 100).toFixed(2),
-  }
+  const amount = formatAmount(payment.amount / 100, i18n.resolvedLanguage)
+  const currency = review?.order.currency ?? defaultCurrency
+  const statement = terms?.statements[language] ?? ''
+  const termsLinkText = t('terms.title', { context: 'accusative' })
+  const termsLinkIndex = statement.indexOf(termsLinkText)
+  const orderButtonLabel = t(
+    canRetry ? 'terms.retryButton' : 'terms.orderButton',
+    {
+      amount,
+      currency,
+    },
+  )
+  const isPaymentDisabled =
+    isLoading || isCanceling || !stripe || !elements || !termsAccepted
 
   const handleCancel = async () => {
     setCancelError(null)
 
     if (!paymentId) {
-      const errorMessage =
-        'Unable to cancel checkout right now: missing payment ID.'
-      setCancelError(errorMessage)
+      const errorMessage = t('checkout.missingPaymentId')
+      setCancelError('checkout.missingPaymentId')
       toast.error(errorMessage, { id: 'checkout-cancel-error' })
       return
     }
@@ -76,16 +106,15 @@ export function CheckoutForm() {
     setIsCanceling(true)
 
     try {
-      await dispatch(paymentCancel({ paymentId })).unwrap()
-      dispatch(paymentSessionReset())
-      void navigate(`/${ROUTE.CART}`, { replace: true })
-    } catch (error) {
-      const errorMessage = getErrorMessage(
-        error,
-        'Unable to cancel checkout right now. Please try again.',
-      )
+      const result = await dispatch(cancelCheckout(paymentId))
 
-      setCancelError(errorMessage)
+      if (result.type === 'cleared') {
+        void navigate(`/${ROUTE.CART}`, { replace: true })
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, t('checkout.cancelError'))
+
+      setCancelError(getApiError(error) ?? errorMessage)
       toast.error(errorMessage, { id: 'checkout-cancel-error' })
     } finally {
       setIsCanceling(false)
@@ -112,12 +141,6 @@ export function CheckoutForm() {
         setCancelError(null)
         void handleSubmit(e)
       }}>
-      <div>
-        <p>Order #{orderForm.num}</p>
-        <span>
-          {orderForm.amount} {defaultCurrency}
-        </span>
-      </div>
       {!userData?.email && (
         <LinkAuthenticationElement
           options={{ defaultValues: { email: linkEmail } }}
@@ -136,27 +159,107 @@ export function CheckoutForm() {
           setCancelError(null)
         }}
       />
+      {review && (
+        <section
+          className="checkout-review"
+          lang={language}
+          aria-label={t('checkout.summary')}>
+          <h3>{t('checkout.summary')}</h3>
+          <ul>
+            {review.order.items.map((item) => (
+              <li key={item.id}>
+                <span>
+                  {item.title}
+                  {item.author ? ` — ${item.author}` : ''} × {item.quantity}
+                </span>
+                <span>
+                  {formatAmount(
+                    calculatePriceCents(
+                      item.price,
+                      item.discount,
+                      item.quantity,
+                    ) / 100,
+                    i18n.resolvedLanguage,
+                  )}{' '}
+                  {currency}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p>{t('checkout.total', { amount, currency })}</p>
+        </section>
+      )}
+      <div className="checkout-terms" lang={language}>
+        {terms ? (
+          <div className="checkout-terms-acceptance">
+            <input
+              id="checkout-terms-accepted"
+              name="termsAccepted"
+              aria-label={statement}
+              type="checkbox"
+              required
+              checked={termsAccepted}
+              disabled={isLoading || isCanceling}
+              onChange={(event) => {
+                setAcceptedTermsKey(event.target.checked ? termsKey : null)
+                setMessage({ text: null, type: 'neutral' })
+              }}
+            />
+            <span>
+              {termsLinkIndex >= 0 && (
+                <label htmlFor="checkout-terms-accepted">
+                  {statement.slice(0, termsLinkIndex)}
+                </label>
+              )}
+              <a
+                href={terms.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t('terms.open')}>
+                {termsLinkIndex >= 0 ? termsLinkText : statement}
+              </a>
+              {termsLinkIndex >= 0 && (
+                <label htmlFor="checkout-terms-accepted">
+                  {statement.slice(termsLinkIndex + termsLinkText.length)}
+                </label>
+              )}
+            </span>
+          </div>
+        ) : (
+          <p role="status">
+            {isTermsLoading && (
+              <SpinnerIcon width={20} height={20} aria-hidden="true" />
+            )}
+            <span>
+              {isTermsLoading
+                ? t('terms.loading')
+                : hasTermsError
+                  ? t('terms.loadError')
+                  : t('terms.unavailable')}
+            </span>
+          </p>
+        )}
+        {hasTermsError && (
+          <button type="button" onClick={() => void refetchTerms()}>
+            {t('terms.reload')}
+          </button>
+        )}
+      </div>
       <button
         type="submit"
-        disabled={isLoading || !stripe || !elements}
+        disabled={isPaymentDisabled}
+        aria-busy={isLoading}
+        aria-label={orderButtonLabel}
+        lang={language}
         id="submit">
         <span>
           {isLoading ? (
-            <div className="spinner" id="spinner"></div>
+            <div className="spinner" id="spinner" aria-hidden="true"></div>
           ) : (
-            `${canRetry && message ? 'Retry Payment' : 'Pay'} ${orderForm.amount} ${defaultCurrency}`
+            orderButtonLabel
           )}
         </span>
       </button>
-      {canRetry && message && (
-        <button
-          type="button"
-          onClick={() => void retryPayment()}
-          disabled={isLoading || !stripe || !elements}
-          style={{ backgroundColor: 'var(--color-primary)' }}>
-          <span>Retry Payment Now</span>
-        </button>
-      )}
       <button
         type="button"
         onClick={() => void handleCancel()}
@@ -164,20 +267,23 @@ export function CheckoutForm() {
         style={{ backgroundColor: 'var(--color-on-surface-variant)' }}>
         <span>
           {isCanceling
-            ? 'Canceling checkout...'
+            ? t('checkout.canceling')
             : cancelError
-              ? 'Retry Cancel Checkout'
-              : 'Cancel Checkout'}
+              ? t('checkout.cancelRetry')
+              : t('checkout.cancel')}
         </span>
       </button>
       {cancelError && (
         <div id="cancel-message" style={{ marginTop: '1rem' }}>
-          {cancelError}
+          {typeof cancelError === 'string'
+            ? t(cancelError, { defaultValue: cancelError })
+            : getErrorMessage(cancelError, t('checkout.cancelError'))}
         </div>
       )}
-      {message && (
+      {message.text && (
         <div
           id="payment-message"
+          role={message.type === 'error' ? 'alert' : 'status'}
           className={message.type === 'error' ? 'error' : undefined}>
           {message.text}
         </div>

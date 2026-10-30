@@ -1,60 +1,72 @@
 import * as Yup from 'yup'
+import { i18n } from '@/i18n'
+import './locale'
 
 export const bookSchema = Yup.object().shape({
   title: Yup.string()
     .trim()
-    .min(2, 'Min 2 characters')
-    .max(100, 'Max 100 characters')
-    .required('Required'),
-  authorId: Yup.number().integer().positive().required('Required'),
-  publishYear: Yup.number().integer().positive('+').required('Required'),
+    .min(2, () => i18n.t('validation.minLength', { min: '2' }))
+    .max(100, () => i18n.t('validation.maxLength', { max: '100' }))
+    .required(() => i18n.t('validation.required')),
+  authorId: Yup.number()
+    .integer()
+    .positive()
+    .required(() => i18n.t('validation.required')),
+  publishYear: Yup.number()
+    .integer()
+    .positive(() => i18n.t('validation.positive'))
+    .required(() => i18n.t('validation.required')),
   description: Yup.string()
     .trim()
-    .min(10, 'Min 10 characters')
-    .max(500, 'Max 500 characters')
-    .required('Required'),
+    .min(10, () => i18n.t('validation.minLength', { min: '10' }))
+    .max(500, () => i18n.t('validation.maxLength', { max: '500' }))
+    .required(() => i18n.t('validation.required')),
   genre: Yup.string()
     .trim()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .required('Required'),
-  imgUrl: Yup.string().url('Invalid URL').required('Required'),
-  price: Yup.number().positive('+').required('Required'),
+    .min(2, () => i18n.t('validation.minLength', { min: '2' }))
+    .max(50, () => i18n.t('validation.maxLength', { max: '50' }))
+    .required(() => i18n.t('validation.required')),
+  imgUrl: Yup.string()
+    .url(() => i18n.t('validation.url'))
+    .required(() => i18n.t('validation.required')),
+  price: Yup.number()
+    .positive(() => i18n.t('validation.positive'))
+    .required(() => i18n.t('validation.required')),
   discount: Yup.number()
-    .integer('No fraction')
-    .min(0, 'Min 0%')
-    .max(100, 'Max 100%')
+    .integer(() => i18n.t('validation.integer'))
+    .min(0, () => i18n.t('validation.minimum', { min: '0%' }))
+    .max(100, () => i18n.t('validation.maximum', { max: '100%' }))
     .default(0),
   rating: Yup.number()
-    .min(1, 'Min 1')
-    .max(5, 'Max 5')
+    .min(1, () => i18n.t('validation.minimum', { min: '1' }))
+    .max(5, () => i18n.t('validation.maximum', { max: '5' }))
     .test(
       'max-1-decimal',
-      'Max 1 decimal',
+      () => i18n.t('validation.decimal'),
       (value) => value === undefined || Number.isInteger(value * 10),
     )
-    .required('Required'),
+    .required(() => i18n.t('validation.required')),
 })
 
 export const authorSchema = Yup.object().shape({
   name: Yup.string()
     .trim()
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters')
-    .required('Required'),
+    .min(2, () => i18n.t('validation.minLength', { min: '2' }))
+    .max(50, () => i18n.t('validation.maxLength', { max: '50' }))
+    .required(() => i18n.t('validation.required')),
   fullName: Yup.string()
     .trim()
     .transform((value: string | undefined) =>
       value === '' ? undefined : value,
     )
-    .min(2, 'Min 2 characters')
-    .max(100, 'Max 100 characters'),
+    .min(2, () => i18n.t('validation.minLength', { min: '2' }))
+    .max(100, () => i18n.t('validation.maxLength', { max: '100' })),
   birthYear: Yup.string().matches(/^[1-9]\d*$/, {
-    message: 'Positive whole year required',
+    message: () => i18n.t('validation.year'),
     excludeEmptyString: true,
   }),
   deathYear: Yup.string().matches(/^[1-9]\d*$/, {
-    message: 'Positive whole year required',
+    message: () => i18n.t('validation.year'),
     excludeEmptyString: true,
   }),
   homeland: Yup.string()
@@ -62,13 +74,13 @@ export const authorSchema = Yup.object().shape({
     .transform((value: string | undefined) =>
       value === '' ? undefined : value,
     )
-    .min(2, 'Min 2 characters')
-    .max(50, 'Max 50 characters'),
+    .min(2, () => i18n.t('validation.minLength', { min: '2' }))
+    .max(50, () => i18n.t('validation.maxLength', { max: '50' })),
   biography: Yup.string()
     .trim()
     .transform((value: string | undefined) =>
       value === '' ? undefined : value,
     )
-    .min(10, 'Min 10 characters')
-    .max(500, 'Max 500 characters'),
+    .min(10, () => i18n.t('validation.minLength', { min: '10' }))
+    .max(500, () => i18n.t('validation.maxLength', { max: '500' })),
 })

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFormikContext } from 'formik'
-import { useCountryCodesQuery } from '@/store/api/bookshopApi'
-import { useClickOutside } from '@/hooks'
-import { defaultCountry } from '@/constants'
+import { useCountryCodesQuery } from '@/store/api/usersApi'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { getFlagUrl } from '@/helpers/getFlagUrl'
 import { ChevronDownIcon } from '@/assets/svg'
-import { ErrorMessage, InputWrapper } from '@/styles'
+import { ErrorMessage, InputWrapper } from '@/styles/form.styles'
 import {
   CountryFlag,
   CountryName,
@@ -16,23 +17,49 @@ import {
 } from './CountrySelect.style'
 
 interface CountrySelectProps {
-  initial?: string
   fieldName?: string
   readOnly?: boolean
 }
 
 export function CountrySelect({
-  initial = defaultCountry,
   fieldName = 'country',
   readOnly = false,
 }: CountrySelectProps) {
-  const { setFieldValue, getFieldMeta, submitCount } =
-    useFormikContext<Record<string, unknown>>()
+  const { t, i18n } = useTranslation()
+
+  const {
+    setFieldValue,
+    setFieldTouched,
+    getFieldMeta,
+    submitCount,
+    validateField,
+  } = useFormikContext<Record<string, unknown>>()
+  const previousLanguage = useRef(i18n.resolvedLanguage)
+
+  useEffect(() => {
+    if (previousLanguage.current === i18n.resolvedLanguage) {
+      return
+    }
+
+    previousLanguage.current = i18n.resolvedLanguage
+    const meta = getFieldMeta(fieldName)
+
+    if (meta.error && (meta.touched || submitCount > 0)) {
+      void validateField(fieldName)
+    }
+  }, [
+    fieldName,
+    getFieldMeta,
+    i18n.resolvedLanguage,
+    submitCount,
+    validateField,
+  ])
+
   const {
     data: countries = {},
     isLoading,
     isError,
-  } = useCountryCodesQuery({
+  } = useCountryCodesQuery(undefined, {
     refetchOnFocus: false,
     refetchOnReconnect: false,
   })
@@ -44,11 +71,20 @@ export function CountrySelect({
 
   const meta = getFieldMeta(fieldName)
   const selectedCountry =
-    typeof meta.value === 'string'
-      ? meta.value.toLowerCase()
-      : initial.toLowerCase()
+    typeof meta.value === 'string' ? meta.value.toLowerCase() : ''
   const hasSelection = Boolean(selectedCountry)
-  const countryName = countries[selectedCountry]
+  const displayNames = new Intl.DisplayNames([i18n.resolvedLanguage ?? 'en'], {
+    type: 'region',
+  })
+  const localizedCountries = Object.fromEntries(
+    Object.entries(countries).map(([code, name]) => [
+      code,
+      i18n.resolvedLanguage === 'hu'
+        ? (displayNames.of(code.toUpperCase()) ?? name)
+        : name,
+    ]),
+  )
+  const countryName = localizedCountries[selectedCountry]
 
   useClickOutside(dropdownRef, () => setIsOpen(false))
 
@@ -70,17 +106,13 @@ export function CountrySelect({
     }
   }, [isOpen])
 
-  const countryList = Object.entries(countries).filter(([, name]) => {
+  const countryList = Object.entries(localizedCountries).filter(([, name]) => {
     if (!searchQuery) {
       return true
     }
 
     return name.toLowerCase().includes(searchQuery.toLowerCase())
   })
-
-  const getFlagUrl = (code: string) => {
-    return `https://flagcdn.com/${code.toLowerCase()}.svg`
-  }
 
   const onInputClick = () => {
     if (readOnly) {
@@ -95,6 +127,7 @@ export function CountrySelect({
       return
     }
 
+    void setFieldTouched(fieldName, true, false)
     void setFieldValue(fieldName, code, true)
     setIsOpen(false)
   }
@@ -114,7 +147,9 @@ export function CountrySelect({
           {hasSelection && (
             <CountryFlag
               src={getFlagUrl(selectedCountry)}
-              alt={`${countryName ?? selectedCountry} flag`}
+              alt={t('country.flag', {
+                country: countryName ?? selectedCountry,
+              })}
               loading="lazy"
             />
           )}
@@ -122,7 +157,7 @@ export function CountrySelect({
             {countryName ??
               (hasSelection
                 ? selectedCountry.toUpperCase()
-                : 'Select country...')}
+                : t('country.select'))}
           </CountryName>
         </div>
         <ChevronDownIcon />
@@ -132,7 +167,7 @@ export function CountrySelect({
           <SearchInput
             ref={searchInputRef}
             type="text"
-            placeholder="Search country..."
+            placeholder={t('country.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()}
@@ -140,11 +175,11 @@ export function CountrySelect({
           <OptionsList ref={listRef}>
             {isLoading ? (
               <OptionItem as="div" role="status" style={{ cursor: 'default' }}>
-                Loading countries…
+                {t('country.loading')}
               </OptionItem>
             ) : isError ? (
               <OptionItem as="div" role="alert" style={{ cursor: 'default' }}>
-                Could not load countries
+                {t('country.error')}
               </OptionItem>
             ) : countryList.length > 0 ? (
               countryList.map(([code, countryName]) => (
@@ -155,7 +190,7 @@ export function CountrySelect({
                   aria-selected={code === selectedCountry}>
                   <CountryFlag
                     src={getFlagUrl(code)}
-                    alt={`${countryName} flag`}
+                    alt={t('country.flag', { country: countryName })}
                     loading="lazy"
                   />
                   <CountryName>{countryName}</CountryName>
@@ -163,7 +198,7 @@ export function CountrySelect({
               ))
             ) : (
               <OptionItem as="div" style={{ cursor: 'default' }}>
-                No countries found
+                {t('country.empty')}
               </OptionItem>
             )}
           </OptionsList>

@@ -1,40 +1,104 @@
-import { Providers } from '@/setupTests'
-import { render, screen } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { ROUTE } from '@/routes'
+import ky from 'ky'
+import * as publicApi from '@/api/baseRequest'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { setBooksCurrentPage } from '@/store/slices/books'
+import { createAppStore } from '@/store/store'
+import { CacheTime } from '@/constants/cacheTimes'
 import { Menu } from './Menu'
 
-declare const global: typeof globalThis
+let store: ReturnType<typeof createAppStore>
 
-describe('Menu component', () => {
-  it('should render the menu button', () => {
-    render(<Menu />, { wrapper: Providers })
+beforeEach(() => {
+  store = createAppStore()
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation((path) =>
+    ky.get('https://bookshop.test/mock', {
+      retry: 0,
+      fetch: () =>
+        Promise.resolve(
+          Response.json(
+            path === 'books'
+              ? []
+              : { genre: [], price: [0, 100], publishYear: [1900, 2026] },
+          ),
+        ),
+    }),
+  )
+})
 
-    const button = screen.getByTitle('Menu')
-    expect(button).toBeInTheDocument()
+afterEach(() => {
+  act(() => {
+    store.dispatch(bookshopApi.util.resetApiState())
+  })
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
+
+const renderMenu = (path = '/') =>
+  render(
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[path]}>
+        <Menu />
+        <Routes>
+          <Route path="/" element={<p>Home page</p>} />
+          <Route path="/books" element={<p>Book catalogue</p>} />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
+  )
+
+describe('Menu', () => {
+  it('renders the menu without prefetching catalogue data', () => {
+    renderMenu()
+    expect(screen.getByTitle('Menu')).toBeInTheDocument()
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
   })
 
-  it('should navigate to home page when clicking home link', async () => {
-    render(<Menu />, { wrapper: Providers })
-
-    const menuButton = screen.getByTitle('Menu')
-    await userEvent.click(menuButton)
-
-    const homeLink = screen.getByText('Home')
-    await userEvent.click(homeLink)
-
-    expect(global.window.location.pathname).toBe('/')
+  it.each([
+    { link: 'Home', path: '/books', destination: 'Home page' },
+    { link: 'Shop', path: '/', destination: 'Book catalogue' },
+  ])('navigates to $link', async ({ link, path, destination }) => {
+    renderMenu(path)
+    await userEvent.click(screen.getByTitle('Menu'))
+    await userEvent.click(screen.getByRole('link', { name: link }))
+    expect(await screen.findByText(destination)).toBeInTheDocument()
   })
 
-  it('should navigate to shop page when clicking shop link', async () => {
-    render(<Menu />, { wrapper: Providers })
+  it('warms only Shop data on intent and refreshes only stale entries', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    store.dispatch(setBooksCurrentPage(3))
+    renderMenu()
+    await userEvent.click(screen.getByTitle('Menu'))
+    fireEvent.mouseEnter(screen.getByRole('link', { name: 'Home' }))
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
 
-    const menuButton = screen.getByTitle('Menu')
-    await userEvent.click(menuButton)
+    const shop = screen.getByRole('link', { name: 'Shop' })
+    fireEvent.focus(shop)
+    await act(async () => {
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(2)
+    expect(publicApi.baseRequest).toHaveBeenCalledWith(
+      'books',
+      expect.objectContaining({
+        searchParams: new URLSearchParams({ page: '3', limit: '8' }),
+      }),
+    )
 
-    const shopLink = screen.getByText('Shop')
-    await userEvent.click(shopLink)
-
-    expect(global.window.location.pathname).toContain(ROUTE.BOOKS)
+    fireEvent.mouseEnter(shop)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(2)
+    vi.setSystemTime(Date.now() + (CacheTime.FiveMinutes + 1) * 1_000)
+    fireEvent.mouseEnter(shop)
+    await act(async () => {
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(3)
   })
 })

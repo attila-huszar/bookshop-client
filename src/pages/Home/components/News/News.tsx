@@ -1,16 +1,16 @@
-import { newsSelector } from '@/store'
-import { useNewsQuery } from '@/store/api/bookshopApi'
-import { cacheTimes } from '@/store/api/cacheTimes'
-import { SwiperComponent } from '@/components'
-import { useAppSelector } from '@/hooks'
+import { useTranslation } from 'react-i18next'
+import { useNewsQuery } from '@/store/api/newsApi'
+import { SwiperComponent } from '@/components/SwiperComponent'
+import { CacheTime } from '@/constants/cacheTimes'
 import { StyledNews } from './News.style'
 import { NewsCard } from './NewsCard'
 
 export function News() {
-  useNewsQuery({
-    refetchOnMountOrArgChange: cacheTimes.featured,
+  const { t } = useTranslation()
+
+  const { data: newsItems = [] } = useNewsQuery(undefined, {
+    refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
-  const { newsItems } = useAppSelector(newsSelector)
 
   if (!newsItems.length) {
     return null
@@ -18,7 +18,7 @@ export function News() {
 
   return (
     <StyledNews>
-      <h2>News</h2>
+      <h2>{t('home.news')}</h2>
       <SwiperComponent>
         {newsItems.map((newsItem) => (
           <NewsCard key={newsItem.id} {...newsItem} />

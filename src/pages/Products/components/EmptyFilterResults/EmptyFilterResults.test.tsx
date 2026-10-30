@@ -8,11 +8,11 @@ import {
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { useAppDispatch } from '@/hooks'
+} from '@/store/slices/books'
+import { useAppDispatch } from '@/hooks/redux'
 import { EmptyFilterResults } from './EmptyFilterResults'
 
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/redux', () => ({
   useAppDispatch: vi.fn(),
 }))
 

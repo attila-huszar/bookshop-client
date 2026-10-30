@@ -8,18 +8,9 @@ import {
 } from 'react-router'
 import { Home } from '@/pages/Home/Home'
 import { Layout } from '@/pages/Layout/Layout'
-import { Alert, Loading } from '@/components'
-import {
-  appLoader,
-  authLoader,
-  cartLoader,
-  checkoutLoader,
-  cmsLoader,
-  landingPageLoader,
-  ordersLoader,
-  productLoader,
-  shopLoader,
-} from './loaders'
+import { Alert } from '@/components/Alert'
+import { Loading } from '@/components/Loading'
+import { appLoader, cartLoader, checkoutLoader } from './loaders'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { ROUTE } from './route'
@@ -59,6 +50,9 @@ const PasswordReset = lazy(() =>
 )
 const Checkout = lazy(() =>
   import('@/pages/Checkout/Checkout').then((m) => ({ default: m.Checkout })),
+)
+const Terms = lazy(() =>
+  import('@/pages/Terms/Terms').then((module) => ({ default: module.Terms })),
 )
 
 const CMS = lazy(() =>
@@ -102,17 +96,14 @@ const routes: RouteObject[] = [
       {
         index: true,
         element: <Home />,
-        loader: landingPageLoader,
       },
       {
         path: ROUTE.BOOKS,
         element: <Products />,
-        loader: shopLoader,
       },
       {
         path: ROUTE.BOOK,
         element: <Product />,
-        loader: productLoader,
       },
       {
         path: ROUTE.CART,
@@ -121,6 +112,7 @@ const routes: RouteObject[] = [
       },
       { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
       { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
+      { path: `${ROUTE.TERMS}/:version?`, element: <Terms /> },
       {
         element: <PublicRoute />,
         children: [
@@ -136,7 +128,6 @@ const routes: RouteObject[] = [
       },
       {
         element: <ProtectedRoute />,
-        loader: () => authLoader({ loginRequired: true }),
         children: [
           {
             path: ROUTE.ACCOUNT,
@@ -145,7 +136,6 @@ const routes: RouteObject[] = [
           {
             path: ROUTE.ORDERS,
             element: <Orders />,
-            loader: ordersLoader,
           },
         ],
       },
@@ -165,8 +155,7 @@ const routes: RouteObject[] = [
     loader: checkoutLoader,
   },
   {
-    element: <ProtectedRoute />,
-    loader: () => authLoader({ adminRequired: true }),
+    element: <ProtectedRoute adminRequired />,
     children: [
       {
         path: `${ROUTE.CMS}/*`,
@@ -179,22 +168,18 @@ const routes: RouteObject[] = [
           {
             path: 'orders',
             element: <CMSOrders />,
-            loader: () => cmsLoader('orders'),
           },
           {
             path: 'books',
             element: <CMSBooks />,
-            loader: () => cmsLoader('books'),
           },
           {
             path: 'authors',
             element: <CMSAuthors />,
-            loader: () => cmsLoader('authors'),
           },
           {
             path: 'users',
             element: <CMSUsers />,
-            loader: () => cmsLoader('users'),
           },
           {
             path: '*',
@@ -209,6 +194,7 @@ const routes: RouteObject[] = [
 const router = createBrowserRouter([
   {
     loader: appLoader,
+    shouldRevalidate: () => false,
     errorElement: <Alert fullScreen />,
     hydrateFallbackElement: <></>,
     children: routes,
