@@ -13,6 +13,7 @@ import { Button, IconButton } from '@/components/Button'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { formatDate } from '@/helpers/formatDate'
 import { languageOptions } from '@/constants/defaultValues'
+import { validationLimits } from '@/constants/validation'
 import type { ApiError } from '@/types/ApiError'
 import type { TermsDocument, TermsDocumentSummary } from '@/types/Terms'
 import { BinIcon, XIcon } from '@/assets/svg'
@@ -263,7 +264,7 @@ function TermsEditor({
               lang={language}
               value={content[language]}
               rows={8}
-              maxLength={20000}
+              maxLength={validationLimits.terms.contentMaxLength}
               required
               aria-describedby={error ? `${editorId}-error` : undefined}
               disabled={unavailable}

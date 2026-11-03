@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { catalogueFilterDefaults } from '@/constants/catalogue'
 import 'rc-slider/assets/index.css'
 import { Field, Form, Formik } from 'formik'
 import Slider from 'rc-slider'
@@ -47,19 +48,26 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
     })
   const dispatch = useAppDispatch()
 
-  const [priceMinInitialFloat = 0, priceMaxInitialFloat = 500] =
-    booksFilters.initial.price
+  const [
+    priceMinInitialFloat = 0,
+    priceMaxInitialFloat = catalogueFilterDefaults.maxPrice,
+  ] = booksFilters.initial.price
   const priceMinInitial = Math.floor(priceMinInitialFloat)
   const priceMaxInitial = Math.ceil(priceMaxInitialFloat)
 
-  const [priceMinFloat = 0, priceMaxFloat = 500] = booksFilters.active.price
+  const [priceMinFloat = 0, priceMaxFloat = catalogueFilterDefaults.maxPrice] =
+    booksFilters.active.price
   const priceMin = Math.floor(priceMinFloat)
   const priceMax = Math.ceil(priceMaxFloat)
 
-  const [yearMinInitial = 1000, yearMaxInitial = new Date().getFullYear()] =
-    booksFilters.initial.publishYear
-  const [yearMin = 1000, yearMax = new Date().getFullYear()] =
-    booksFilters.active.publishYear
+  const [
+    yearMinInitial = catalogueFilterDefaults.minYear,
+    yearMaxInitial = new Date().getFullYear(),
+  ] = booksFilters.initial.publishYear
+  const [
+    yearMin = catalogueFilterDefaults.minYear,
+    yearMax = new Date().getFullYear(),
+  ] = booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,

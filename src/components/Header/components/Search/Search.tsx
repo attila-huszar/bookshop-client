@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { CacheTime } from '@/constants/cacheTimes'
+import { validationLimits } from '@/constants/validation'
 import type { Book } from '@/types'
 import {
   imagePlaceholder,
@@ -127,7 +128,7 @@ export function Search() {
           aria-busy={isSearching}
           placeholder={t('catalogue.searchPlaceholder')}
           autoComplete="off"
-          maxLength={100}
+          maxLength={validationLimits.search.maxLength}
           onChange={handleSearchChange}
           onClick={() => setSearchOpen(hasQuery)}
           value={searchValue}

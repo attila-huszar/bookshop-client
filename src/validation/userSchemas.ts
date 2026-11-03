@@ -1,5 +1,6 @@
 import * as Yup from 'yup'
 import { i18n } from '@/i18n'
+import { validationLimits } from '@/constants/validation'
 import { UserRole } from '@/types'
 import { imageSchema } from './fileSchemas'
 import './locale'
@@ -10,7 +11,11 @@ export const emailSchema = Yup.string()
   .required(() => i18n.t('validation.required'))
 
 export const passwordSchema = Yup.string()
-  .min(6, () => i18n.t('validation.minLength', { min: '6' }))
+  .min(validationLimits.password.minLength, () =>
+    i18n.t('validation.minLength', {
+      min: String(validationLimits.password.minLength),
+    }),
+  )
   .matches(/^(?=.*[a-z])(?=.*\d)/, () => i18n.t('validation.numberRequired'))
   .required(() => i18n.t('validation.required'))
 
@@ -22,7 +27,11 @@ export const passwordConfirmSchema = Yup.string()
 
 export const nameSchema = Yup.string()
   .trim()
-  .max(100, () => i18n.t('validation.maxLength', { max: '100' }))
+  .max(validationLimits.personName.maxLength, () =>
+    i18n.t('validation.maxLength', {
+      max: String(validationLimits.personName.maxLength),
+    }),
+  )
   .required(() => i18n.t('validation.required'))
 
 export const countrySchema = Yup.string()
@@ -49,11 +58,26 @@ export const phoneSchema = Yup.string().matches(
 export const avatarSchema = Yup.string().url(() => i18n.t('validation.url'))
 
 export const optionalAddressSchema = Yup.object({
-  line1: Yup.string().max(200).nullable().optional(),
-  line2: Yup.string().max(200).nullable().optional(),
-  city: Yup.string().max(100).nullable().optional(),
-  state: Yup.string().max(100).nullable().optional(),
-  postal_code: Yup.string().max(30).nullable().optional(),
+  line1: Yup.string()
+    .max(validationLimits.address.lineMaxLength)
+    .nullable()
+    .optional(),
+  line2: Yup.string()
+    .max(validationLimits.address.lineMaxLength)
+    .nullable()
+    .optional(),
+  city: Yup.string()
+    .max(validationLimits.address.cityMaxLength)
+    .nullable()
+    .optional(),
+  state: Yup.string()
+    .max(validationLimits.address.stateMaxLength)
+    .nullable()
+    .optional(),
+  postal_code: Yup.string()
+    .max(validationLimits.address.postalCodeMaxLength)
+    .nullable()
+    .optional(),
   country: Yup.string()
     .trim()
     .lowercase()

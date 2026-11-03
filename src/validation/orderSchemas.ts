@@ -1,6 +1,7 @@
 import * as Yup from 'yup'
 import { i18n } from '@/i18n'
 import { maxItemQuantity } from '@/constants/defaultValues'
+import { validationLimits } from '@/constants/validation'
 import {
   emailSchema,
   nameSchema,
@@ -28,7 +29,11 @@ export const orderItemSchema = Yup.object().shape({
     .required(() => i18n.t('validation.required')),
   discount: Yup.number()
     .min(0, () => i18n.t('validation.minimum', { min: '0%' }))
-    .max(100, () => i18n.t('validation.maximum', { max: '100%' }))
+    .max(validationLimits.discountMaxPercent, () =>
+      i18n.t('validation.maximum', {
+        max: `${validationLimits.discountMaxPercent}%`,
+      }),
+    )
     .required(() => i18n.t('validation.required')),
   quantity: itemQuantitySchema,
 })
@@ -44,7 +49,10 @@ export const orderSchema = Yup.object().shape({
   email: emailSchema.nullable().notRequired(),
   shipping: Yup.object()
     .shape({
-      name: Yup.string().trim().max(200).optional(),
+      name: Yup.string()
+        .trim()
+        .max(validationLimits.order.shippingNameMaxLength)
+        .optional(),
       address: optionalAddressSchema,
       phone: phoneSchema.nullable().optional(),
     })

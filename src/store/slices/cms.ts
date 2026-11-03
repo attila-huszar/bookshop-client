@@ -1,10 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { paginationDefaults } from '@/constants/pagination'
 import type { SelectContext } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 
 const initialState = {
   currentPages: { orders: 1, books: 1, authors: 1, users: 1 },
-  itemsPerPage: 10,
+  itemsPerPage: paginationDefaults.cmsItemsPerPage,
 }
 
 const cmsSlice = createSlice({

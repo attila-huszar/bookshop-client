@@ -1,4 +1,5 @@
 import ky from 'ky'
+import { httpPolicy } from '@/constants/http'
 import { PATH } from './path'
 
 /** Log uploads use this transport without the application's error logging hook. */
@@ -7,9 +8,9 @@ export const transport = ky.create({
   headers: {
     'ngrok-skip-browser-warning': 'true',
   },
-  timeout: 10000,
+  timeout: httpPolicy.requestTimeoutMs,
   retry: {
-    limit: 3,
+    limit: httpPolicy.retryLimit,
     statusCodes: [408, 413, 500, 502, 503, 504],
   },
 })

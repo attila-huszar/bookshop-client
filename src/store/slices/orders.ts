@@ -1,8 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { paginationDefaults } from '@/constants/pagination'
 import { bookshopApi } from '../api/bookshopApi'
 import { ordersApi } from '../api/ordersApi'
 
-const initialState = { currentPage: 1, itemsPerPage: 10 }
+const initialState = {
+  currentPage: 1,
+  itemsPerPage: paginationDefaults.orderItemsPerPage,
+}
 
 const ordersSlice = createSlice({
   name: 'orders',

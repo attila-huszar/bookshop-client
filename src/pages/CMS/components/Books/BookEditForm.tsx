@@ -14,6 +14,7 @@ import { formatDate } from '@/helpers/formatDate'
 import { calculatePriceCents } from '@/helpers/pricing'
 import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
 import { bookSchema } from '@/validation/productSchemas'
+import { newBookPublishYear } from '@/constants/catalogue'
 import type { BookCreate, BookWithAuthorId } from '@/types'
 import { SpinnerIcon, UploadIcon } from '@/assets/svg'
 import {
@@ -39,7 +40,7 @@ const initialBookValues: BookFormValues = {
   genre: '',
   imgUrl: '',
   description: '',
-  publishYear: 2000,
+  publishYear: newBookPublishYear,
   rating: 5,
   price: 0,
   discount: 0,

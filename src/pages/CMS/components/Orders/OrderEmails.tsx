@@ -6,6 +6,8 @@ import { Button } from '@/components/Button'
 import { ClearButton } from '@/components/Header/components/Search/Search.style'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { formatDate } from '@/helpers/formatDate'
+import { paginationDefaults } from '@/constants/pagination'
+import { validationLimits } from '@/constants/validation'
 import {
   type EmailOutboxStatus,
   emailOutboxStatuses,
@@ -46,19 +48,25 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
     {
       paymentId,
       page,
-      limit: 25,
+      limit: paginationDefaults.emailOutboxItemsPerPage,
       ...(status ? { status } : {}),
       ...(type ? { type } : {}),
       ...(search ? { search } : {}),
     },
     { refetchOnMountOrArgChange: true },
   )
-  const pages = Math.max(1, Math.ceil((data?.total ?? 0) / 25))
+  const pages = Math.max(
+    1,
+    Math.ceil((data?.total ?? 0) / paginationDefaults.emailOutboxItemsPerPage),
+  )
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
     const trimmed = value.trim()
-    const nextSearch = trimmed.length >= 2 ? trimmed : ''
+    const nextSearch =
+      trimmed.length >= validationLimits.emailOutbox.searchMinLength
+        ? trimmed
+        : ''
     debouncedSearch(nextSearch)
 
     if (!nextSearch) {
@@ -110,7 +118,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
               ref={searchRef}
               type="search"
               value={searchInput}
-              maxLength={200}
+              maxLength={validationLimits.emailOutbox.searchMaxLength}
               onChange={(event) => handleSearchChange(event.target.value)}
             />
             {searchInput && (

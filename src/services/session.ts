@@ -1,15 +1,15 @@
 import { store } from '@/store/store'
 import { fetchAuthTokens } from '@/store/thunks/user'
-
-const GUEST_RETRY_DELAY_MS = 1_000
-const GUEST_MAX_ATTEMPTS = 4
+import { sessionRetryPolicy } from '@/constants/auth'
 
 let tokenFailureCount = 0
 let tokenNextAttemptAt = 0
 let tokenFetchPromise: Promise<void> | null = null
 
 const scheduleTokenRetry = () => {
-  const delay = GUEST_RETRY_DELAY_MS * 2 ** tokenFailureCount
+  const delay =
+    sessionRetryPolicy.initialDelayMs *
+    sessionRetryPolicy.multiplier ** tokenFailureCount
   tokenFailureCount++
   tokenNextAttemptAt = Date.now() + delay
 }
@@ -32,7 +32,7 @@ export const bootstrapSession = async () => {
   }
 
   if (
-    tokenFailureCount >= GUEST_MAX_ATTEMPTS ||
+    tokenFailureCount >= sessionRetryPolicy.maxAttempts ||
     Date.now() < tokenNextAttemptAt
   ) {
     return

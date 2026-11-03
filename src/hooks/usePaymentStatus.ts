@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
 import { getErrorMessage } from '@/helpers/errors'
+import { paymentStatusPolicy } from '@/constants/payment'
+import { TimeMs } from '@/constants/time'
 import type { PaymentStatusState } from '@/types/Payment'
 
-const MAX_ATTEMPTS = 3
-const RETRY_DELAY = 5000
-const ABSOLUTE_TIMEOUT = 30000
 const INITIAL_STATUS: PaymentStatusState = { type: 'checking' }
 
 export function usePaymentStatus(paymentToken: string | null | undefined) {
@@ -63,7 +62,7 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
           return
         }
 
-        if (attempt >= MAX_ATTEMPTS) {
+        if (attempt >= paymentStatusPolicy.maxAttempts) {
           setStatus({
             type: 'failure',
             details: getErrorMessage(error, ''),
@@ -76,16 +75,17 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
         setStatus({
           type: 'retry',
           attempt: attempt + 1,
-          maxAttempts: MAX_ATTEMPTS,
+          maxAttempts: paymentStatusPolicy.maxAttempts,
         })
       }
 
-      if (attempt < MAX_ATTEMPTS) {
+      if (attempt < paymentStatusPolicy.maxAttempts) {
         retryTimeoutId = setTimeout(
           () => {
             void retrievePaymentStatus(attempt + 1)
           },
-          RETRY_DELAY * 2 ** (attempt - 1),
+          paymentStatusPolicy.retryDelayMs *
+            paymentStatusPolicy.retryMultiplier ** (attempt - 1),
         )
       }
     }
@@ -97,10 +97,10 @@ export function usePaymentStatus(paymentToken: string | null | undefined) {
 
       setStatus({
         type: 'timeout',
-        timeoutSeconds: ABSOLUTE_TIMEOUT / 1000,
+        timeoutSeconds: paymentStatusPolicy.timeoutMs / TimeMs.OneSecond,
       })
       stopPolling()
-    }, ABSOLUTE_TIMEOUT)
+    }, paymentStatusPolicy.timeoutMs)
 
     void retrievePaymentStatus()
 

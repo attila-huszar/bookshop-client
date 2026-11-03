@@ -4,6 +4,7 @@ import { useFormikContext } from 'formik'
 import { useCountryCodesQuery } from '@/store/api/usersApi'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { getFlagUrl } from '@/helpers/getFlagUrl'
+import { uiTiming } from '@/constants/uiTiming'
 import { ChevronDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles/form.styles'
 import {
@@ -100,7 +101,10 @@ export function CountrySelect({
         searchInputRef.current.focus()
       }
     } else if (!isOpen) {
-      const timeoutId = setTimeout(() => setSearchQuery(''), 200)
+      const timeoutId = setTimeout(
+        () => setSearchQuery(''),
+        uiTiming.countrySearchResetMs,
+      )
 
       return () => clearTimeout(timeoutId)
     }
