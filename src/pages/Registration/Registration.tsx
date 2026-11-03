@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Form, Formik, type FormikProps } from 'formik'
 import { getUserCountry } from '@/api/users'
+import { ROUTE } from '@/routes/route'
 import { useRegisterMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { AuthorizationMenu } from '@/components/AuthorizationMenu'
@@ -66,7 +67,7 @@ export function Registration() {
       }
 
       toast.success(i18n.t('auth.registered', { email }))
-      void navigate('/', { replace: true })
+      void navigate(ROUTE.HOME, { replace: true })
     } catch (error) {
       if (lifecycle.active) {
         toast.error(getErrorMessage(error, i18n.t('auth.registerError')))
@@ -171,7 +172,7 @@ export function Registration() {
                 type="button"
                 title={t('common.actions.back')}
                 disabled={isSubmitting}
-                onClick={() => void navigate('/')}
+                onClick={() => void navigate(ROUTE.HOME)}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <SpinnerIcon height={28} />}

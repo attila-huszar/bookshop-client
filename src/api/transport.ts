@@ -1,8 +1,9 @@
 import ky from 'ky'
+import { PATH } from './path'
 
 /** Log uploads use this transport without the application's error logging hook. */
 export const transport = ky.create({
-  prefix: import.meta.env.PROD ? import.meta.env.VITE_SERVER_URL : '/api',
+  prefix: import.meta.env.PROD ? import.meta.env.VITE_SERVER_URL : PATH.api,
   headers: {
     'ngrok-skip-browser-warning': 'true',
   },

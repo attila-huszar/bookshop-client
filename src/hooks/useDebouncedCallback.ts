@@ -1,37 +1,35 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
-/** Debounces calls using the latest callback; delay changes affect future calls. */
+/** Debounces the latest callback; cancel clears queued work. Delay changes affect future calls. */
 export const useDebouncedCallback = <T extends unknown[]>(
   func: (...args: T) => unknown,
   delay = 300,
-): ((...args: T) => void) => {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+) => {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const callbackRef = useRef(func)
 
   useLayoutEffect(() => {
     callbackRef.current = func
   }, [func])
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-    }
+  const cancel = useCallback(() => {
+    clearTimeout(timeoutRef.current)
+    timeoutRef.current = undefined
   }, [])
 
-  return useCallback(
-    (...args: T) => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current)
-      }
+  useEffect(() => cancel, [cancel])
+
+  return useMemo(() => {
+    const debounced = (...args: T) => {
+      cancel()
 
       timeoutRef.current = setTimeout(() => {
-        timeoutRef.current = null
+        timeoutRef.current = undefined
         callbackRef.current(...args)
       }, delay)
-    },
-    [delay],
-  )
+    }
+    debounced.cancel = cancel
+
+    return debounced
+  }, [cancel, delay])
 }

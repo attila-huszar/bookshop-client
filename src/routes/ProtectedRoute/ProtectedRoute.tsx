@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { useUserProfileQuery } from '@/store/api/usersApi'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
@@ -20,7 +21,7 @@ export function ProtectedRoute({ adminRequired = false }) {
   })
 
   if (!accessToken) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={`/${ROUTE.LOGIN}`} replace />
   }
 
   if (!profile) {
@@ -39,7 +40,7 @@ export function ProtectedRoute({ adminRequired = false }) {
   }
 
   if (adminRequired && profile.role !== UserRole.Admin) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={`/${ROUTE.LOGIN}`} replace />
   }
 
   return <Outlet />

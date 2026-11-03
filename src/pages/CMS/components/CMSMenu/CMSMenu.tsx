@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { IconButton } from '@/components/Button'
 import { MenuItem } from '@/components/Header/components/Menu/Menu.style'
 import { MenuDrawer } from '@/components/Header/components/MenuDrawer/MenuDrawer'
@@ -51,7 +52,7 @@ export function CMSMenu({ onOpenTerms }: Props) {
         <LanguageSwitcher variant="menu" />
       </li>
       <li>
-        <Link to="/" onClick={() => setOpen(false)}>
+        <Link to={ROUTE.HOME} onClick={() => setOpen(false)}>
           <MenuItem>
             <LogoutIcon aria-hidden="true" />
             <span>{t('navigation.home')}</span>

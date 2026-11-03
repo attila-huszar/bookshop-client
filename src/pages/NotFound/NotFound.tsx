@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import books from '@/assets/image/books.png'
 import {
   BackButton,
@@ -18,7 +19,7 @@ export function NotFound() {
     if (hasPreviousPage) {
       void navigate(-1)
     } else {
-      void navigate('/')
+      void navigate(ROUTE.HOME)
     }
   }
 

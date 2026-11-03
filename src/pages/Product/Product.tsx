@@ -65,7 +65,7 @@ export function Product() {
     if (window.history?.length && window.history.length > 2) {
       void navigate(-1)
     } else {
-      void navigate('/')
+      void navigate(ROUTE.HOME)
     }
   }
 

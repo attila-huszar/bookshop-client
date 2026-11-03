@@ -14,7 +14,7 @@ export const termsApi = bookshopApi.injectEndpoints({
   endpoints: (build) => ({
     termsDocument: build.query<TermsDocument | null, string | undefined>({
       query: (version) => ({
-        url: version ? `${PATH.terms}/${version}` : PATH.terms,
+        url: version ? PATH.terms.byVersion(version) : PATH.terms.root,
       }),
       providesTags: (_result, _error, version) => [
         { type: 'TermsDocument', id: version ?? 'Current' },
@@ -33,7 +33,7 @@ export const termsApi = bookshopApi.injectEndpoints({
 
     paymentTerms: build.query<PaymentTermsReview, string>({
       query: (paymentId) => ({
-        url: `${PATH.payments}/${paymentId}/terms`,
+        url: PATH.payments.terms(paymentId),
         withAuth: true,
         credentials: 'include',
       }),
@@ -43,7 +43,7 @@ export const termsApi = bookshopApi.injectEndpoints({
 
     deleteTermsVersion: build.mutation<null, string>({
       query: (version) => ({
-        url: `${PATH.cms.terms}/${version}`,
+        url: PATH.cms.termsByVersion(version),
         method: 'delete',
         withAuth: true,
       }),
@@ -80,7 +80,7 @@ export const termsApi = bookshopApi.injectEndpoints({
       AcceptPaymentTermsRequest
     >({
       query: (request) => ({
-        url: `${PATH.payments}/${request.paymentId}/terms`,
+        url: PATH.payments.terms(request.paymentId),
         method: 'post',
         withAuth: true,
         credentials: 'include',

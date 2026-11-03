@@ -71,7 +71,7 @@ export function AccountMenu() {
       toast.success(t('auth.loggedOut', { email: userData?.email ?? '' }), {
         id: 'logout-success',
       })
-      void navigate('/', { replace: true })
+      void navigate(ROUTE.HOME, { replace: true })
     } catch (error) {
       toast.error(getErrorMessage(error, t('auth.logoutError')), {
         id: 'logout-error',
@@ -127,7 +127,7 @@ export function AccountMenu() {
       </li>
       {isAdmin && (
         <li>
-          <Link to={`/${ROUTE.CMS}/orders`} onClick={toggleMenu}>
+          <Link to={`/${ROUTE.CMS}/${ROUTE.ORDERS}`} onClick={toggleMenu}>
             <MenuItem>
               <CMSIcon height="1.5rem" />
               <span>{t('navigation.cms')}</span>

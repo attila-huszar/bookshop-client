@@ -12,13 +12,24 @@ const P = {
 } as const
 
 export const PATH = {
-  books: P.books,
+  api: '/api',
+  books: {
+    root: P.books,
+    search: `${P.books}/search`,
+  },
   authors: P.authors,
   news: P.news,
   orders: P.orders,
   searchOptions: P.searchOptions,
-  payments: P.payments,
-  terms: P.terms,
+  payments: {
+    root: P.payments,
+    byId: (paymentId: string) => `${P.payments}/${paymentId}`,
+    terms: (paymentId: string) => `${P.payments}/${paymentId}/${P.terms}`,
+  },
+  terms: {
+    root: P.terms,
+    byVersion: (version: string) => `${P.terms}/${version}`,
+  },
   users: {
     register: `${P.users}/register`,
     login: `${P.users}/login`,
@@ -36,6 +47,7 @@ export const PATH = {
   cms: {
     terms: `${P.cms}/${P.terms}`,
     termsHistory: `${P.cms}/${P.terms}/history`,
+    termsByVersion: (version: string) => `${P.cms}/${P.terms}/${version}`,
     orders: `${P.cms}/${P.orders}`,
     users: `${P.cms}/${P.users}`,
     restore: {

@@ -10,6 +10,8 @@ React pages and hooks consume domain APIs from `src/store/api`. Services coordin
 
 RTK Query is the single cache for catalogue data, profiles, orders, CMS entities, and payment HTTP requests. `bookshopApi.ts` owns the shared reducer, middleware, and cache tags. Domain modules register endpoints through `injectEndpoints`, allowing mutations to invalidate related queries across domains. Pages own subscriptions and loading/error presentation; loaders do not preload entity collections.
 
+Header search debounces normalized queries into one combined title/author request. The backend bounds and deduplicates suggestions, prioritizing title matches. Clearing, replacing, or unmounting the search aborts its pending request. Stale responses cannot replace the current query's suggestions, and responses do not reopen a dropdown dismissed by the user.
+
 Redux slices hold cart IDs and quantities, authentication/session state, checkout workflow state, and filter/pagination UI. Server responses remain immutable and never replace cart intent. Filters are normalized before becoming query arguments so equivalent criteria reuse the same cache entry. Catalogue pagination uses `currentData` to avoid presenting results for a previous page or filter as current.
 
 Endpoints opt into Ky's authenticated transport with `withAuth: true`. Guest payment requests also use that transport and explicitly include payment cookies. RTK Query owns server-data caching while Ky owns token attachment, cookies, and single-flight refresh.

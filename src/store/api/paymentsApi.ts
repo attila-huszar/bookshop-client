@@ -14,7 +14,7 @@ export const paymentsApi = bookshopApi.injectEndpoints({
   endpoints: (build) => ({
     payment: build.query<PaymentDetails, string>({
       query: (paymentId) => ({
-        url: `${PATH.payments}/${paymentId}`,
+        url: PATH.payments.byId(paymentId),
         withAuth: true,
         credentials: 'include',
       }),
@@ -35,7 +35,7 @@ export const paymentsApi = bookshopApi.injectEndpoints({
       }
     >({
       query: (request) => ({
-        url: PATH.payments,
+        url: PATH.payments.root,
         method: 'post',
         withAuth: true,
         credentials: 'include',
@@ -46,7 +46,7 @@ export const paymentsApi = bookshopApi.injectEndpoints({
 
     cancelPayment: build.mutation<void, string>({
       query: (paymentId) => ({
-        url: `${PATH.payments}/${paymentId}`,
+        url: PATH.payments.byId(paymentId),
         method: 'delete',
         withAuth: true,
         credentials: 'include',

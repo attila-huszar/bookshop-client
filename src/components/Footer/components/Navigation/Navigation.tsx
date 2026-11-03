@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { scrollToTop } from '@/helpers/scrollToTop'
 import { navLinks } from '@/constants/links'
 import logo from '@/assets/image/logo.png'
@@ -11,7 +12,7 @@ export function Navigation() {
   return (
     <>
       <StyledLogo>
-        <Link to="/" onClick={() => scrollToTop()}>
+        <Link to={ROUTE.HOME} onClick={() => scrollToTop()}>
           <img src={logo} alt="Bookshop" />
         </Link>
       </StyledLogo>

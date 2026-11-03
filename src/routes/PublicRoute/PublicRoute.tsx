@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { userSelector } from '@/store/selectors'
 import { Loading } from '@/components/Loading'
 import { useAppSelector } from '@/hooks/redux'
@@ -11,5 +12,5 @@ export const PublicRoute = () => {
     return <Loading fullScreen />
   }
 
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />
+  return isAuthenticated ? <Navigate to={ROUTE.HOME} replace /> : <Outlet />
 }

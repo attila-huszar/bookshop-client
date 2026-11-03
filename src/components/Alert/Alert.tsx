@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { getErrorMessage } from '@/helpers/errors'
 import { InfoIcon, WarningIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
@@ -29,7 +30,7 @@ export function Alert({
     if (hasPreviousPage) {
       void navigate(-1)
     } else {
-      void navigate('/')
+      void navigate(ROUTE.HOME)
     }
   }
 

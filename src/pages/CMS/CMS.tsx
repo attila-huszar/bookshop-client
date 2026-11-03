@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { ROUTE } from '@/routes/route'
 import { useHardDeleteAuthorsMutation } from '@/store/api/authorsApi'
 import { useHardDeleteBooksMutation } from '@/store/api/booksApi'
 import {
@@ -322,7 +323,7 @@ export const CMS = () => {
         </MenuButtons>
         <StyledTabs>
           {TABS.map((tab) => (
-            <NavLink to={`/cms/${tab.value}`} key={tab.value}>
+            <NavLink to={`/${ROUTE.CMS}/${tab.value}`} key={tab.value}>
               {t(tab.label)}
             </NavLink>
           ))}

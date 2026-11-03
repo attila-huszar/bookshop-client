@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import { shopLanguage } from '@/i18n'
+import { PATH } from '@/api/path'
 import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { Button } from '@/components/Button'
 import { serverUrl } from '@/constants/envConfig'
@@ -39,7 +40,7 @@ export function Terms() {
           <pre>{document.content[language]}</pre>
           <DownloadButton
             as="a"
-            href={`${serverUrl.replace(/\/$/, '')}/terms/${document.version}?download=true&language=${language}`}>
+            href={`${serverUrl.replace(/\/$/, '')}/${PATH.terms.byVersion(document.version)}?download=true&language=${language}`}>
             {t('terms.download')}
           </DownloadButton>
         </>

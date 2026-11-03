@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Form, Formik } from 'formik'
+import { ROUTE } from '@/routes/route'
 import { login } from '@/store/thunks/user'
 import { toast } from '@/components/AppToaster'
 import { AuthorizationMenu } from '@/components/AuthorizationMenu'
@@ -51,7 +52,7 @@ export function Login() {
       }
 
       toast.success(i18n.t('auth.welcome', { name: firstName }))
-      void navigate('/', { replace: true })
+      void navigate(ROUTE.HOME, { replace: true })
     } catch (error) {
       if (lifecycle.active) {
         toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
@@ -109,7 +110,7 @@ export function Login() {
                 type="button"
                 title={t('common.actions.back')}
                 disabled={isSubmitting}
-                onClick={() => void navigate('/')}
+                onClick={() => void navigate(ROUTE.HOME)}
               />
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <SpinnerIcon height={28} />}

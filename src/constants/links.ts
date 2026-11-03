@@ -1,3 +1,4 @@
+import { ROUTE } from '@/routes/route'
 import {
   BookIcon,
   facebookIcon,
@@ -7,8 +8,13 @@ import {
 } from '@/assets/svg'
 
 export const menuLinks = [
-  { path: '/', name: 'navigation.home', key: 'home', Icon: HomeIcon },
-  { path: '/books', name: 'navigation.shop', key: 'shop', Icon: BookIcon },
+  { path: ROUTE.HOME, name: 'navigation.home', key: 'home', Icon: HomeIcon },
+  {
+    path: `/${ROUTE.BOOKS}`,
+    name: 'navigation.shop',
+    key: 'shop',
+    Icon: BookIcon,
+  },
 ] as const
 
 export const navLinks = [
@@ -27,7 +33,7 @@ export const socialLinks = [
 
 export const legalLinks = [
   { path: '#', name: 'navigation.privacy', key: 'privacyPolicy' },
-  { path: '/terms', name: 'terms.title', key: 'termsOfUse' },
+  { path: `/${ROUTE.TERMS}`, name: 'terms.title', key: 'termsOfUse' },
   { path: '#', name: 'navigation.refunds', key: 'salesAndRefunds' },
   { path: '#', name: 'navigation.legal', key: 'legal' },
 ] as const

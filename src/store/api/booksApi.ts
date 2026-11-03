@@ -16,7 +16,7 @@ export const booksApi = bookshopApi.injectEndpoints({
   endpoints: (build) => ({
     books: build.query<{ books: Book[]; total: number }, BooksQueryArgs>({
       query: (arg) => ({
-        url: PATH.books,
+        url: PATH.books.root,
         searchParams: booksSearchParams(arg),
       }),
       transformResponse: (books: Book[], meta) => ({
@@ -28,30 +28,33 @@ export const booksApi = bookshopApi.injectEndpoints({
     }),
 
     book: build.query<Book, number>({
-      query: (id) => ({ url: PATH.books, searchParams: { id } }),
+      query: (id) => ({ url: PATH.books.root, searchParams: { id } }),
       keepUnusedDataFor: CacheTime.FiveMinutes,
       providesTags: ['Book'],
     }),
 
     booksByAuthor: build.query<Book[], number>({
-      query: (authorId) => ({ url: PATH.books, searchParams: { authorId } }),
+      query: (authorId) => ({
+        url: PATH.books.root,
+        searchParams: { authorId },
+      }),
       keepUnusedDataFor: CacheTime.FiveMinutes,
       providesTags: ['Book'],
     }),
 
     bookSearch: build.query<Book[], string>({
-      query: (title) => ({ url: PATH.books, searchParams: { title } }),
-      providesTags: ['Book'],
+      query: (q) => ({ url: PATH.books.search, searchParams: { q } }),
+      providesTags: ['Book', 'Author'],
     }),
 
     booksByProperty: build.query<
       Book[],
       'newRelease' | 'topSellers' | 'recommended'
     >({
-      query: (property) =>
-        property === 'recommended'
-          ? { url: `${PATH.books}/recommended` }
-          : { url: PATH.books, searchParams: { [property]: true } },
+      query: (property) => ({
+        url: PATH.books.root,
+        searchParams: { [property]: true },
+      }),
       keepUnusedDataFor: CacheTime.FifteenMinutes,
       providesTags: ['Book'],
     }),

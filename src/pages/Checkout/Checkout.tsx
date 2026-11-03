@@ -5,6 +5,7 @@ import { Navigate, useLocation } from 'react-router'
 import { i18n, shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
+import { ROUTE } from '@/routes/route'
 import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { InfoDialog } from '@/components/InfoDialog'
@@ -38,7 +39,7 @@ function StripeErrorFallback({ error }: FallbackProps) {
     })
   }, [dispatch, error])
 
-  return <Navigate to={'/'} replace />
+  return <Navigate to={ROUTE.HOME} replace />
 }
 
 export function Checkout() {

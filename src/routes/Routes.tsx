@@ -166,11 +166,11 @@ const routes: RouteObject[] = [
         ),
         children: [
           {
-            path: 'orders',
+            path: ROUTE.ORDERS,
             element: <CMSOrders />,
           },
           {
-            path: 'books',
+            path: ROUTE.BOOKS,
             element: <CMSBooks />,
           },
           {
@@ -183,7 +183,7 @@ const routes: RouteObject[] = [
           },
           {
             path: '*',
-            element: <Navigate to={'/cms/orders'} replace />,
+            element: <Navigate to={`/${ROUTE.CMS}/${ROUTE.ORDERS}`} replace />,
           },
         ],
       },

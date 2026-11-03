@@ -145,13 +145,10 @@ describe('homepage book errors', () => {
   it.each(['newRelease', 'topSellers', 'recommended'] as const)(
     'displays failures from the %s section',
     async (property) => {
-      vi.spyOn(publicApi, 'baseRequest').mockImplementation((url, options) => {
+      vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) => {
         const searchParams = options?.searchParams as
           Record<string, unknown> | undefined
-        const fails =
-          property === 'recommended'
-            ? url === 'books/recommended'
-            : searchParams?.[property] === true
+        const fails = searchParams?.[property] === true
 
         return ky.get('https://bookshop.test/mock', {
           retry: 0,

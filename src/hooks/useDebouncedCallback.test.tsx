@@ -12,6 +12,68 @@ afterEach(() => {
 })
 
 describe('useDebouncedCallback', () => {
+  it('cancels queued work repeatedly and can schedule new work afterward', () => {
+    const callback = vi.fn<(value: string) => void>()
+    const { result } = renderHook(() => useDebouncedCallback(callback))
+
+    act(() => {
+      result.current.cancel()
+      result.current('cancelled')
+      vi.advanceTimersByTime(200)
+      result.current.cancel()
+      result.current.cancel()
+      vi.advanceTimersByTime(1000)
+    })
+    expect(callback).not.toHaveBeenCalled()
+
+    act(() => {
+      result.current('next')
+      vi.advanceTimersByTime(300)
+    })
+    expect(callback).toHaveBeenCalledExactlyOnceWith('next')
+  })
+
+  it('cancels the latest queued call after earlier calls have been replaced', () => {
+    const callback = vi.fn<(value: string) => void>()
+    const { result } = renderHook(() => useDebouncedCallback(callback))
+
+    act(() => {
+      result.current('first')
+      vi.advanceTimersByTime(200)
+      result.current('last')
+      vi.advanceTimersByTime(200)
+      result.current.cancel()
+      vi.advanceTimersByTime(1000)
+    })
+    expect(callback).not.toHaveBeenCalled()
+  })
+
+  it('keeps scheduling and cancellation identities stable across callback changes', () => {
+    const originalCallback = vi.fn<(value: string) => void>()
+    const latestCallback = vi.fn<(value: string) => void>()
+    const { result, rerender } = renderHook(
+      (callback) => useDebouncedCallback(callback),
+      { initialProps: originalCallback },
+    )
+    const debounced = result.current
+    const cancel = debounced.cancel
+
+    act(() => {
+      debounced('pending')
+    })
+    rerender(latestCallback)
+
+    expect(result.current).toBe(debounced)
+    expect(result.current.cancel).toBe(cancel)
+
+    act(() => {
+      cancel()
+      vi.advanceTimersByTime(300)
+    })
+    expect(originalCallback).not.toHaveBeenCalled()
+    expect(latestCallback).not.toHaveBeenCalled()
+  })
+
   it('waits for the last call and uses its arguments', () => {
     const callback = vi.fn()
     const { result } = renderHook(() => useDebouncedCallback(callback))

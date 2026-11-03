@@ -948,6 +948,29 @@ describe('generated query hooks', () => {
 })
 
 describe('Ky adapter', () => {
+  it.each(['newRelease', 'topSellers', 'recommended'] as const)(
+    'requests %s through the books collection with a query flag',
+    async (property) => {
+      fetchMock.mockResolvedValueOnce(jsonResponse([book]))
+      const result = await store
+        .dispatch(
+          booksApi.endpoints.booksByProperty.initiate(property, {
+            subscribe: false,
+          }),
+        )
+        .unwrap()
+      const request = requestOf(fetchMock.mock.calls[0]![0])
+      const url = new URL(request.url)
+
+      expect(url.pathname).toBe('/api/books')
+      expect(Object.fromEntries(url.searchParams)).toEqual({
+        [property]: 'true',
+      })
+      expect(request.headers.has('authorization')).toBe(false)
+      expect(result).toEqual([book])
+    },
+  )
+
   it('preserves API codes and validation details in the cache for translation at display time', async () => {
     const failure = {
       code: 'VALIDATION_ERROR',
@@ -1035,7 +1058,7 @@ describe('Ky adapter', () => {
     const params = new URL(requestOf(fetchMock.mock.calls[0]![0]).url)
       .searchParams
 
-    expect(params.get('title')).toBe('A & B?genre=Fake')
+    expect(params.get('q')).toBe('A & B?genre=Fake')
     expect(params.has('genre')).toBe(false)
   })
 
