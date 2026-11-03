@@ -409,8 +409,8 @@
     }
   },
   "terms": {
+    "acceptance": "<label>Elolvastam és elfogadom az</label> <termsLink>Általános Szerződési Feltételeket (ÁSZF)</termsLink><label>.</label>",
     "title": "Általános Szerződési Feltételek (ÁSZF)",
-    "title_accusative": "Általános Szerződési Feltételeket (ÁSZF)",
     "open": "ÁSZF megnyitása (új lapon)",
     "published": "Közzétéve: {{date}}",
     "loading": "Az ÁSZF betöltése...",

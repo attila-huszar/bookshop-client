@@ -22,7 +22,6 @@ vi.mock('@/store/api/termsApi', async (importOriginal) => ({
 const document = {
   version: 'v1',
   content: { en: 'English terms', hu: 'Magyar feltételek' },
-  statements: { en: 'English declaration', hu: 'Magyar nyilatkozat' },
   publishedAt: '2026-10-14T10:00:00Z',
 }
 const publish = vi.fn()

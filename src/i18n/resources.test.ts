@@ -22,20 +22,17 @@ function flatten(
 }
 
 describe('interface translations', () => {
-  it('keeps base keys in the same order with matching placeholders across contexts', () => {
+  it('keeps keys in the same order with matching placeholders and markup', () => {
     const english = flatten(en)
     const hungarian = flatten(hu)
-    const baseKeys = (resource: Record<string, string>) =>
-      Object.keys(resource).filter((key) => !key.endsWith('_accusative'))
-    expect(baseKeys(hungarian)).toEqual(baseKeys(english))
+    expect(Object.keys(hungarian)).toEqual(Object.keys(english))
 
     for (const key of new Set([
       ...Object.keys(english),
       ...Object.keys(hungarian),
     ])) {
-      const baseKey = key.replace(/_accusative$/, '')
-      const englishText = english[key] ?? english[baseKey]
-      const hungarianText = hungarian[key] ?? hungarian[baseKey]
+      const englishText = english[key]
+      const hungarianText = hungarian[key]
       const placeholders = (value: string) => {
         const matches = Array.from(
           value.matchAll(/{{\s*([^},]+)(?:,[^}]*)?}}/g),

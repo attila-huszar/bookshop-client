@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { shopLanguage } from '@/i18n'
 import {
@@ -80,9 +80,6 @@ export function CheckoutForm() {
 
   const amount = formatAmount(payment.amount / 100, i18n.resolvedLanguage)
   const currency = review?.order.currency ?? defaultCurrency
-  const statement = terms?.statements[language] ?? ''
-  const termsLinkText = t('terms.title', { context: 'accusative' })
-  const termsLinkIndex = statement.indexOf(termsLinkText)
   const orderButtonLabel = t(
     canRetry ? 'terms.retryButton' : 'terms.orderButton',
     {
@@ -195,7 +192,7 @@ export function CheckoutForm() {
             <input
               id="checkout-terms-accepted"
               name="termsAccepted"
-              aria-label={statement}
+              aria-labelledby="checkout-terms-label"
               type="checkbox"
               required
               checked={termsAccepted}
@@ -205,24 +202,21 @@ export function CheckoutForm() {
                 setMessage({ text: null, type: 'neutral' })
               }}
             />
-            <span>
-              {termsLinkIndex >= 0 && (
-                <label htmlFor="checkout-terms-accepted">
-                  {statement.slice(0, termsLinkIndex)}
-                </label>
-              )}
-              <a
-                href={terms.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={t('terms.open')}>
-                {termsLinkIndex >= 0 ? termsLinkText : statement}
-              </a>
-              {termsLinkIndex >= 0 && (
-                <label htmlFor="checkout-terms-accepted">
-                  {statement.slice(termsLinkIndex + termsLinkText.length)}
-                </label>
-              )}
+            <span id="checkout-terms-label">
+              <Trans
+                i18nKey="terms.acceptance"
+                components={{
+                  label: <label htmlFor="checkout-terms-accepted" />,
+                  termsLink: (
+                    <a
+                      href={terms.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={t('terms.open')}
+                    />
+                  ),
+                }}
+              />
             </span>
           </div>
         ) : (

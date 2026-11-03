@@ -3,6 +3,7 @@ import { i18n } from '@/i18n'
 import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTermsDocumentQuery } from '@/store/api/termsApi'
+import { defaultTimeZone } from '@/constants/defaultValues'
 import { Terms } from './Terms'
 
 vi.mock('react-router', async (importOriginal) => ({
@@ -18,7 +19,6 @@ vi.mock('@/store/api/termsApi', async (importOriginal) => ({
 const document = {
   version: '11111111-1111-4111-8111-111111111111',
   content: { en: 'Original English terms', hu: 'Eredeti magyar feltételek' },
-  statements: { en: 'English declaration', hu: 'Magyar nyilatkozat' },
   publishedAt: '2026-10-14T10:00:00Z',
 }
 
@@ -62,7 +62,9 @@ describe('Published terms page', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByText(
-        `Közzétéve: ${new Date(document.publishedAt).toLocaleDateString('hu')}`,
+        `Közzétéve: ${new Date(document.publishedAt).toLocaleDateString('hu', {
+          timeZone: defaultTimeZone,
+        })}`,
       ),
     ).toBeInTheDocument()
     expect(screen.queryByText('Original English terms')).not.toBeInTheDocument()
@@ -73,6 +75,25 @@ describe('Published terms page', () => {
       ),
     )
   })
+
+  it.each([
+    ['2026-10-26T23:12:00.000Z', 'en', 'Published: 10/27/2026'],
+    ['2026-07-01T22:15:00.000Z', 'hu', 'Közzétéve: 2026. 07. 02.'],
+  ])(
+    'displays the Budapest publication date for %s in %s',
+    async (publishedAt, language, expected) => {
+      vi.mocked(useTermsDocumentQuery).mockReturnValue({
+        data: { ...document, publishedAt },
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      })
+      await i18n.changeLanguage(language)
+      render(<Terms />)
+
+      expect(screen.getByText(expected)).toBeInTheDocument()
+    },
+  )
 
   it('explains when no terms have been published', () => {
     vi.mocked(useTermsDocumentQuery).mockReturnValue({

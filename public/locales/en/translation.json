@@ -409,6 +409,7 @@
     }
   },
   "terms": {
+    "acceptance": "<label>I have read and accept the</label> <termsLink>Terms and Conditions</termsLink><label>.</label>",
     "title": "Terms and Conditions",
     "open": "Read Terms and Conditions (opens in a new tab)",
     "published": "Published: {{date}}",

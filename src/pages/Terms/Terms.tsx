@@ -4,6 +4,7 @@ import { shopLanguage } from '@/i18n'
 import { PATH } from '@/api/path'
 import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { Button } from '@/components/Button'
+import { defaultTimeZone } from '@/constants/defaultValues'
 import { serverUrl } from '@/constants/envConfig'
 import { Article, DownloadButton, PublishedDate } from './Terms.style'
 
@@ -34,7 +35,10 @@ export function Terms() {
         <>
           <PublishedDate>
             {t('terms.published', {
-              date: new Date(document.publishedAt).toLocaleDateString(language),
+              date: new Date(document.publishedAt).toLocaleDateString(
+                language,
+                { timeZone: defaultTimeZone },
+              ),
             })}
           </PublishedDate>
           <pre>{document.content[language]}</pre>

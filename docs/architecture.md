@@ -68,7 +68,7 @@ English and Hungarian interface resources live in `public/locales` and load over
 
 An explicit language choice is persisted and takes precedence over browser language detection. Automatic detection and loading fallbacks do not overwrite that preference. The document language, dates, amounts, and Stripe Elements locale follow the active interface language.
 
-API codes, roles, payment statuses, and filter values retain their wire representations. Errors are translated when displayed, allowing language changes without refetching cached failures. Visible field validation errors are revalidated without resetting entered values. Versioned legal statements come from the server and are never automatically translated by the interface.
+API codes, roles, payment statuses, and filter values retain their wire representations. Errors are translated when displayed, allowing language changes without refetching cached failures. Visible field validation errors are revalidated without resetting entered values. The terms document's bilingual body comes from the server. The acceptance checkbox wording comes from the interface translations; the server records the accepted document version, selected language, and acceptance timestamp.
 
 ## API errors and logging
 

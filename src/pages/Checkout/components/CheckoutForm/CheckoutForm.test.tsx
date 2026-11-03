@@ -31,10 +31,6 @@ const review = {
     url: 'https://bookshop.test/terms-v1.pdf',
     version: 'v1',
     publishedAt: '2026-10-14T10:00:00Z',
-    statements: {
-      en: 'I have read and accept the Terms and Conditions.',
-      hu: 'Elolvastam és elfogadom az Általános Szerződési Feltételeket (ÁSZF).',
-    },
   },
   order: {
     total: 12,
@@ -90,25 +86,26 @@ beforeEach(() => {
 })
 
 describe('Checkout terms checkbox', () => {
-  it('uses the declaration returned for the published version in both languages', async () => {
-    const statements = {
-      en: 'Version-specific English declaration',
-      hu: 'A verzióhoz tartozó magyar nyilatkozat',
-    }
-    mockReview({ ...review, terms: { ...review.terms, statements } })
+  it('uses translated checkbox wording and links in both languages', async () => {
     render(<CheckoutForm />, { wrapper: MemoryRouter })
 
     expect(
-      screen.getByRole('checkbox', { name: statements.en }),
+      screen.getByRole('checkbox', {
+        name: 'I have read and accept the Terms and Conditions.',
+      }),
     ).not.toBeChecked()
-    expect(screen.getByRole('link')).toHaveTextContent(statements.en)
+    expect(screen.getByRole('link')).toHaveTextContent('Terms and Conditions')
 
     await act(() => i18n.changeLanguage('hu'))
 
     expect(
-      screen.getByRole('checkbox', { name: statements.hu }),
+      screen.getByRole('checkbox', {
+        name: 'Elolvastam és elfogadom az Általános Szerződési Feltételeket (ÁSZF).',
+      }),
     ).not.toBeChecked()
-    expect(screen.getByRole('link')).toHaveTextContent(statements.hu)
+    expect(screen.getByRole('link')).toHaveTextContent(
+      'Általános Szerződési Feltételeket (ÁSZF)',
+    )
   })
 
   it('switches to Hungarian and requires acceptance of the displayed language', async () => {
@@ -131,7 +128,7 @@ describe('Checkout terms checkbox', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('checkbox')).toHaveAccessibleName(
-      review.terms.statements.hu,
+      'Elolvastam és elfogadom az Általános Szerződési Feltételeket (ÁSZF).',
     )
     expect(screen.queryByText(/Közzétéve:/)).not.toBeInTheDocument()
   })
@@ -144,7 +141,9 @@ describe('Checkout terms checkbox', () => {
 
     expect(checkbox).not.toBeChecked()
     expect(checkbox).toBeRequired()
-    expect(checkbox).toHaveAccessibleName(review.terms.statements.en)
+    expect(checkbox).toHaveAccessibleName(
+      'I have read and accept the Terms and Conditions.',
+    )
     expect(screen.getByRole('button', { name: paymentLabel })).toBeDisabled()
     const termsLink = screen.getByRole('link', { name: 'Terms and Conditions' })
     expect(termsLink).toHaveAttribute('rel', 'noopener noreferrer')
@@ -172,7 +171,7 @@ describe('Checkout terms checkbox', () => {
       screen.getByRole('button', { name: paymentLabel }),
     ).toHaveTextContent('12.00 EUR')
 
-    await userEvent.click(screen.getByText('I have read and accept the'))
+    await userEvent.click(screen.getByText(/I have read and accept the/))
     expect(screen.getByRole('button', { name: paymentLabel })).toBeEnabled()
     expect(usePaymentSubmit).toHaveBeenLastCalledWith(
       expect.objectContaining({ termsAccepted: true, terms: review.terms }),

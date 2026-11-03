@@ -26,10 +26,6 @@ const terms: CheckoutTerms = {
   url: 'https://bookshop.test/terms-v1.pdf',
   version: 'v1',
   publishedAt: '2026-10-14T10:00:00Z',
-  statements: {
-    en: 'I have read and accept the Terms and Conditions.',
-    hu: 'Elolvastam és elfogadom az Általános Szerződési Feltételeket (ÁSZF).',
-  },
 }
 const input = {
   email: 'guest@example.com',
@@ -53,7 +49,6 @@ beforeEach(() => {
   unwrap.mockReset().mockResolvedValue({
     version: terms.version,
     language: 'en',
-    statement: 'I have read and accept the Terms and Conditions.',
     acceptedAt: '2026-10-14T10:00:00Z',
   })
   acceptTerms.mockReturnValue({ unwrap })

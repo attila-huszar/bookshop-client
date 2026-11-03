@@ -4,7 +4,6 @@ import type { Order } from './Order'
 export type TermsDocument = {
   version: string
   content: Record<ShopLanguage, string>
-  statements: Record<ShopLanguage, string>
   publishedAt: string
 }
 
@@ -15,17 +14,13 @@ export type TermsDocumentSummary = Pick<
   'version' | 'publishedAt'
 > & { canDelete: boolean }
 
-export type CheckoutTerms = Pick<
-  TermsDocument,
-  'version' | 'statements' | 'publishedAt'
-> & {
+export type CheckoutTerms = Pick<TermsDocument, 'version' | 'publishedAt'> & {
   url: string
 }
 
 export type TermsAcceptance = Pick<TermsDocument, 'version'> & {
   language: ShopLanguage
   acceptedAt: string
-  statement: string
 }
 
 export type PaymentTermsReview = {

@@ -1,6 +1,7 @@
 import type { Filters } from '@/types'
 
 export const defaultCountry = 'hu'
+export const defaultTimeZone = 'Europe/Budapest'
 export const defaultCurrency = 'USD'
 export const defaultCurrencySymbol = '$'
 

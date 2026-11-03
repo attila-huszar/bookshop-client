@@ -200,7 +200,6 @@ describe('server-data cache', () => {
           : jsonResponse({
               version,
               language: 'en',
-              statement: 'Accept terms',
               acceptedAt: '2026-10-30T00:00:00Z',
             })
       }
@@ -210,7 +209,6 @@ describe('server-data cache', () => {
           version,
           url: `https://bookshop.test/terms/${version}`,
           publishedAt: '2026-10-30T00:00:00Z',
-          statements: { en: 'Accept terms', hu: 'Elfogadom' },
         },
         order: { total: 12, currency: 'USD', items: [] },
       })
@@ -317,7 +315,6 @@ describe('server-data cache', () => {
       version: 'unused',
       publishedAt: '2026-10-14T10:00:00.000Z',
       content: { en: 'English', hu: 'Magyar' },
-      statements: { en: 'Accept', hu: 'Elfogadom' },
     }
     let deleted = false
     fetchMock.mockImplementation((input) => {
@@ -348,7 +345,6 @@ describe('server-data cache', () => {
                     ? null
                     : {
                         version: document.version,
-                        statements: document.statements,
                         publishedAt: document.publishedAt,
                         url: '/terms/unused',
                       },
@@ -414,7 +410,6 @@ describe('server-data cache', () => {
       version: 'original',
       publishedAt: '2026-10-14T10:00:00.000Z',
       content: { en: 'Original English', hu: 'Eredeti magyar' },
-      statements: { en: 'Accept', hu: 'Elfogadom' },
     }
     let current = original
     let history = [
