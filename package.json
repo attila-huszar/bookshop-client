@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --cwd ../bookshop-server dev",
-    "dev:setup": "bun run --cwd ../bookshop-server dev:setup",
+    "setup": "bun run --cwd ../bookshop-server setup",
     "dev:client": "vite --host localhost --strictPort",
     "build": "tsc -b && vite build",
     "lint": "eslint . --max-warnings 0",

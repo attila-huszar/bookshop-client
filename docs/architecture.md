@@ -1,85 +1,49 @@
 # Frontend architecture
 
-This document describes the application's boundaries, state ownership, authentication, checkout guarantees, and operational constraints. Database adapters, Stripe webhooks, reconciliation, and email delivery belong to the [backend](../../bookshop-server/docs/architecture.md).
+The React/TypeScript client owns the storefront and CMS interface, browser state, and checkout workflow. The [backend](../../bookshop-server/docs/architecture.md) owns authentication rules, prices, order persistence, payment updates, and email delivery. Setup commands are in the [README](../README.md).
 
-## Application structure
+## State ownership
 
-React pages and hooks consume domain APIs from `src/store/api`. Services coordinate session and checkout workflows; transport modules own HTTP behavior; Redux slices own local intent and workflow state. Shared components expose folder-level entrypoints. Route definitions and constants remain separate so importing a route name does not initialize the router.
+RTK Query is the single cache for catalogue data, profiles, orders, CMS entities, and payment HTTP requests. Domain APIs in `src/store/api` share one reducer, middleware, and invalidation tags. Pages own subscriptions and loading/error presentation; query responses remain immutable.
 
-## Server data and local state
+Redux slices hold cart IDs and quantities, session state, checkout workflow, and filter/pagination UI. Server data does not replace cart intent. Equivalent filters share cache entries, and catalogue pages use data for the current query arguments.
 
-RTK Query is the single cache for catalogue data, profiles, orders, CMS entities, and payment HTTP requests. `bookshopApi.ts` owns the shared reducer, middleware, and cache tags. Domain modules register endpoints through `injectEndpoints`, allowing mutations to invalidate related queries across domains. Pages own subscriptions and loading/error presentation; loaders do not preload entity collections.
+Ky owns token attachment, cookies, and single-flight refresh. Guest payment requests include payment cookies. Authentication transitions clear private query data. API caches, payment tokens, and full PaymentIntent responses are never persisted; browser storage holds cart intent, language preference, and the safe payment ID used for recovery.
 
-Header search debounces normalized queries into one combined title/author request. The backend bounds and deduplicates suggestions, prioritizing title matches. Clearing, replacing, or unmounting the search aborts its pending request. Stale responses cannot replace the current query's suggestions, and responses do not reopen a dropdown dismissed by the user.
+## Sessions and routing
 
-Redux slices hold cart IDs and quantities, authentication/session state, checkout workflow state, and filter/pagination UI. Server responses remain immutable and never replace cart intent. Filters are normalized before becoming query arguments so equivalent criteria reuse the same cache entry. Catalogue pagination uses `currentData` to avoid presenting results for a previous page or filter as current.
+The root loader restores the cookie session and validates saved cart intent before pages mount. Protected routes wait for the current profile and role before mounting private pages, and respond to expiry or role changes. Transient authorization failures remain retryable.
 
-Endpoints opt into Ky's authenticated transport with `withAuth: true`. Guest payment requests also use that transport and explicitly include payment cookies. RTK Query owns server-data caching while Ky owns token attachment, cookies, and single-flight refresh.
+Concurrent 401 responses share one refresh, with at most one authentication retry per request. Responses from an older session cannot refresh or expire a newer login. Logout completes its local transition after the server clears cookies; failure remains retryable.
 
-Orders and CMS lists refresh on mount. Public queries use endpoint-specific freshness and retention settings; targeted prefetching shares their canonical entries. Private data is fetched only after route authorization. Authentication transitions clear private query data. API caches and payment tokens are never persisted to browser storage.
-
-## Startup, routing, and cart recovery
-
-The root `appLoader` restores the cookie session and validates saved cart intent before pages mount. Invalid stored carts restore as empty; startup does not fetch book details or repeat on ordinary navigation. Root and checkout recovery share `bootstrapSession`, including concurrent refresh work and bounded guest retry backoff.
-
-Protected routes subscribe to the current profile and role. They wait for authorization before mounting private pages and react to session expiry or role changes. Transient profile failures offer retry rather than granting access or leaving the page indefinitely loading.
-
-Cart reads subscribe to canonical book queries. Price-conflict recovery waits for older in-flight reads and then forces fresh requests, bypassing stale book cache entries without discarding basket quantities. The cart loader resumes an active checkout; the checkout loader restores its payment session. Product IDs are validated before querying.
-
-USD pricing rounds the base unit price to cents, applies the percentage discount and rounds the discounted unit to cents, then multiplies by quantity. CMS previews, price displays, cart totals and checkout summaries follow the same policy. Totals sum integer cents, and checkout compares them exactly with the server's recalculated amount. Existing checkout snapshots retain their recorded totals.
-
-## Authentication
-
-Concurrent 401 responses share one token refresh. A request retries authentication at most once, and responses from an older session cannot refresh or expire a newer login. Logout waits for server cookie clearing before completing the local transition; a failed logout remains retryable.
-
-Authentication forms ignore asynchronous completion after navigation. Registration country detection fills only an untouched selection. Email verification and reset-token previews share pending requests for the same token without caching completed results, so later attempts are validated again. Reset submission follows the current URL token and ignores stale completions.
+Cart reads subscribe to canonical book queries. Price-conflict recovery waits for older in-flight reads and forces fresh requests while preserving quantities.
 
 ## Checkout and payment recovery
 
-The application preserves the custom Stripe Payment Element/PaymentIntent integration and supports authenticated and guest checkout. The server owns prices and immutable order snapshots. The return page displays Stripe status; only backend webhooks and reconciliation mark an order paid. See the [backend checkout guarantees](../../bookshop-server/docs/architecture.md#custom-checkout).
+Checkout supports guests and account holders through Stripe's Payment Element and PaymentIntents. The server recalculates prices and persists the order snapshot. The return page displays Stripe status; backend webhooks and reconciliation own paid-state changes. See [backend checkout guarantees](../../bookshop-server/docs/architecture.md#custom-checkout).
 
-`src/services/checkout.ts` coordinates payment creation, restoration, and cancellation. It is the sole writer of the stored payment ID and accepted checkout transitions. The payment slice holds a minimal in-memory session, operation identity, workflow phase, and coded error. Responses pass strict validation before entering state. Payment tokens and full PaymentIntent responses are not persisted.
+`src/services/checkout.ts` coordinates payment creation, restoration, cancellation, and stored payment identity. The payment slice holds a validated, minimal in-memory session and operation identity. Asynchronous results must match the current operation and payment ID, so resetting checkout invalidates older completions.
 
-Recovery gives a Stripe return's payment ID precedence over an older stored checkout and strips Stripe IDs/secrets from the URL before further requests. Signed-in checkout waits for profile defaults; guest checkout and return-status display do not depend on a profile. Stripe's Address Element validates checkout address completeness.
+Stripe return identifiers take precedence over stored checkout state, and identifiers/secrets are stripped from the URL before further requests. Aborted restoration retains the safe payment ID; unavailable sessions clear it; transient failures remain retryable. Status polling is bounded and stops when its operation ends.
 
-Every asynchronous checkout result is checked against the current operation and payment ID. Resetting checkout invalidates older creates, reads, errors, and cancellations. Aborted restoration retains the safe payment ID; unavailable sessions clear it; transient failures remain retryable. A later restore waits for an older shared read before requesting fresh data.
-
-Identical creation retries retain their idempotency key until the attempt succeeds or the server reports that checkout ended. Changed carts and explicit resets start a fresh attempt. Cart persistence resets checkout only when basket intent changes. A price conflict refreshes prices without automatically submitting another payment.
-
-Status polling is bounded to three requests, with 5- and 10-second delays and a 30-second deadline. It ignores stopped requests, resets for another payment token, and retains the final result after checkout cleanup. Status data stays untranslated so language changes do not restart payment checks.
+Identical creation retries reuse an idempotency key. A changed cart or explicit fresh attempt receives a new key. A price conflict refreshes prices and requires another submission. Client totals follow the server's USD policy: round the unit price and discounted unit price to cents, multiply by quantity, and sum integer cents.
 
 ## Terms and CMS
 
-Terms are immutable, versioned legal documents managed separately from interface translations. CMS publication creates a revision, including when editing historical text. RTK Query caches current terms, history, and immutable archives; publication invalidates the current document and history.
+Terms are immutable bilingual documents served by the backend, separate from interface translations. Public routes expose current and archived versions. Checkout loads the persisted order summary and current terms, then records explicit acceptance of that version and language before Stripe confirmation. Missing terms, failed acceptance, or a changed version blocks submission; changed terms require a refreshed review and acceptance.
 
-The server's `canDelete` flag governs deletion of terms already referenced by orders. Deletion refreshes affected history/archive/checkout queries. Removing the last publication makes terms unavailable and blocks checkout.
+CMS publication creates a revision when content changes. The server's `canDelete` flag identifies unused versions; deleting the last publication makes checkout unavailable. See [backend terms guarantees](../../bookshop-server/docs/architecture.md#terms-publication-and-acceptance).
 
-Checkout obtains the persisted order summary and current terms from `GET /api/payments/:paymentId/terms`. The customer must explicitly accept that version in the selected language before payment confirmation. The client posts `{ accepted: true, version, language }` and waits for server acceptance before calling Stripe. Checkout terms do not refetch on focus or reconnect. If submission detects a changed version, the existing alert explains the rejection and the checkout review refreshes, requiring acceptance of the updated terms. Refreshing checkout or changing language requires acceptance again. Missing terms or failed acceptance prevents submission.
+CMS order creation is disabled. Only customer/shipping corrections are editable; payment state, totals, currency, and item snapshots are read-only. Orders and users support reversible soft deletion; catalogue deletion is permanent. Order email history is fetched on demand for the exact payment ID and exposes summaries without bodies, account links, or resend/delete actions.
 
-Public `/terms` and `/terms/:version` routes expose current and archived documents without authentication, including downloads of the selected version and language. The [backend terms documentation](../../bookshop-server/docs/architecture.md#terms-publication-and-acceptance) describes acceptance persistence and remaining merchant obligations.
+## Localization and API contracts
 
-CMS order creation stays disabled. Only customer/shipping corrections are submitted; payment state, paid markers, totals, currency, and item snapshots are read-only and protected by backend allowlists. Orders and users support reversible soft deletion; catalogue deletion is permanent.
+English and Hungarian interface resources load through i18next, with English fallback. An explicit language preference takes precedence over browser detection. Document language, dates, amounts, and Stripe Elements locale follow the active language; terms content comes from the backend.
 
-CMS order email history is scoped to the exact payment ID and fetched on demand. Summaries exclude bodies, account links, and lease tokens. The client offers no email resend or deletion command.
+API codes, roles, statuses, and filter values retain their wire representations. Client types describe public responses and commands. Errors are translated at display time from stable codes and sanitized validation metadata, so changing language does not require refetching failures. See [backend response contracts](../../bookshop-server/docs/architecture.md#api-response-and-error-contracts).
 
-## Localization
+Expected 4xx responses and intentional cancellations remain quiet. Final server/network failures are reported after retries, without query strings, cookies, or authorization headers. Log uploads bypass reporting to prevent recursion.
 
-English and Hungarian interface resources live in `public/locales` and load over HTTP through i18next. Both languages preload before the application renders; unavailable Hungarian resources fall back to English. Translation files remain separate deployment assets whose keys must match the application.
+## Runtime and development
 
-An explicit language choice is persisted and takes precedence over browser language detection. Automatic detection and loading fallbacks do not overwrite that preference. The document language, dates, amounts, and Stripe Elements locale follow the active interface language.
-
-API codes, roles, payment statuses, and filter values retain their wire representations. Errors are translated when displayed, allowing language changes without refetching cached failures. Visible field validation errors are revalidated without resetting entered values. The terms document's bilingual body comes from the server. The acceptance checkbox wording comes from the interface translations; the server records the accepted document version, selected language, and acceptance timestamp.
-
-## API errors and logging
-
-Client types describe public responses and commands rather than database records. Stable application error codes match the server's enums; validation responses include sanitized native Zod issue metadata. See the [backend response contracts](../../bookshop-server/docs/architecture.md#api-response-and-error-contracts).
-
-`src/helpers/errors.ts` maps codes to localized messages. Unknown codes and unrecognized responses use a safe fallback. Rethrowing preserves the original cause and public API details without logging again. RTK Query retains serializable error data; components translate it at display time.
-
-The shared request hook leaves expected 4xx responses quiet. Final 5xx, network, and timeout failures are logged after retries; recovered requests and intentional cancellations are silent. Auth retries do not duplicate reports. Request diagnostics exclude query strings, cookies, and authorization headers. Log uploads bypass the reporting hook to prevent recursion. Browser reports reach Loki through the API with `source="frontend"`.
-
-## Development and verification
-
-The client toolchain runs on Node.js; `.node-version` pins the supported build runtime. Production deploys static browser assets. Development scripts run local Vite alongside the backend's Docker Compose stack; container lifecycle and database setup are described in the [backend development notes](../../bookshop-server/docs/architecture.md#verification-and-production-follow-ups).
-
-Tests use real application hooks, stores, and routing where practical, with isolated browser/provider mocks. Coverage focuses on session transitions, cache invalidation and isolation, cart persistence, checkout recovery/idempotency, authentication flows, and translation consistency. Test/build scripts live in `package.json`; provider, webhook, database, and email checks belong to backend verification.
+The Node.js version is pinned in `.node-version`; Vite produces static browser assets. Development runs local Vite alongside the backend Docker stack. Database setup and container lifecycle belong to the [backend runtime](../../bookshop-server/docs/architecture.md#runtime-and-development).

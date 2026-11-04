@@ -21,12 +21,13 @@ export function PaymentStatus() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+
   const payment = useAppSelector((state) => state.payment.payment)
+  const paymentId = payment?.paymentId
   const { status, retry } = usePaymentStatus(payment?.paymentToken)
   const { type } = status
-  const handledPaymentId = useRef<string | null>(null)
-  const paymentId = payment?.paymentId
 
+  const handledPaymentId = useRef<string | null>(null)
   const isStripeSuccess = isSuccessPaymentIntentStatus(type)
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function PaymentStatus() {
   const canRetryStatus = type === 'failure' || type === 'timeout'
   const canReturnToCheckout =
     type === 'requires_action' || type === 'requires_confirmation'
+  const isPending = !isStripeSuccess && !canReturnToCart && !canReturnToCheckout
 
   const messageKey = isStripeSuccess
     ? 'paymentReceived'
@@ -67,7 +69,6 @@ export function PaymentStatus() {
       : status,
   )
 
-  const isPending = !isStripeSuccess && !canReturnToCart && !canReturnToCheckout
   const animation = isStripeSuccess
     ? checkmarkAnim
     : isPending

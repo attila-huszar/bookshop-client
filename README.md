@@ -49,17 +49,25 @@ Vite environment values are public. Keep Stripe secret keys in the backend.
 
 Before testing payments, publish English and Hungarian terms in the admin CMS under **Terms and Conditions**.
 
-Complete the [backend setup](https://github.com/attila-huszar/bookshop-server#setup), including server dependencies, credentials, the database choice, Docker's Loki plugin, and Stripe test webhook forwarding. The backend supports SQLite/Drizzle or MongoDB/Mongoose; select one with its `COMPOSE_PROFILES` setting.
+Complete the [backend setup](https://github.com/attila-huszar/bookshop-server#setup), including server dependencies, credentials, the database choice, Docker's Loki plugin, and Stripe test webhook forwarding. The backend supports SQLite/Drizzle or MongoDB/Mongoose; select one with its `DB_REPO` setting.
 
 ## Local development
 
-For the first startup with a fresh database:
+Initialize a fresh database once:
 
 ```sh
-npm run dev:setup
+npm run setup
 ```
 
-For later starts, run `npm run dev`. Both commands launch local Vite and the backend Docker services. Setup seeds the catalogue and an admin account using the server's `ADMIN_EMAIL`/`ADMIN_PASSWORD`; run it only for a fresh database. Ctrl+C stops the session and preserves stored data.
+Setup uses a temporary backend container to initialize the selected database and seed the catalogue and admin account using the server's `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Run it only for a fresh database.
+
+Start development separately:
+
+```sh
+npm run dev
+```
+
+Use `npm run dev` for subsequent starts too. It launches local Vite and the backend Docker services. Ctrl+C stops the session and preserves stored data.
 
 Open the shop at http://localhost:5173. Keep the client URLs and the backend's `CLIENT_BASE_URL` aligned if you change ports.
 
