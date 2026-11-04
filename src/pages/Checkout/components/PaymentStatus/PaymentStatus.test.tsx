@@ -26,7 +26,7 @@ vi.mock('@/hooks/usePaymentStatus', () => ({
 }))
 
 vi.mock('lottie-react', () => ({
-  Lottie: () => <div data-testid="payment-animation" />,
+  LottieLight: () => <div data-testid="payment-animation" />,
 }))
 
 describe('PaymentStatus', () => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type NavigateOptions, useNavigate } from 'react-router'
-import { Lottie } from 'lottie-react'
+import { LottieLight } from 'lottie-react'
 import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -81,7 +81,7 @@ export function PaymentStatus() {
         <h1>Bookshop</h1>
       </Logo>
       <LottieWrapper>
-        <Lottie src={animation} autoplay loop={isPending} />
+        <LottieLight src={animation} autoplay loop={isPending} />
       </LottieWrapper>
       <p>
         <span aria-hidden="true">{paymentStatusEmoji[type]}</span> {primaryLine}
