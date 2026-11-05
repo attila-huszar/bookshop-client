@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
@@ -15,32 +16,37 @@ vi.mock(import('formik'), async (importOriginal) => {
 })
 
 describe('FormikField', () => {
-  it('updates a visible validation error without resetting the form on language changes', async () => {
-    render(
-      <Formik
-        initialValues={{ firstName: '', email: 'reader@example.com' }}
-        validationSchema={registrationSchema.pick(['firstName', 'email'])}
-        onSubmit={vi.fn()}>
-        <Form>
-          <FormikField name="firstName" placeholder="First name" />
-          <FormikField name="email" placeholder="Email" />
-          <button type="submit">Save</button>
-        </Form>
-      </Formik>,
-    )
+  it.each(['text', 'select', 'textarea'] as const)(
+    'translates a visible %s error without resetting the form',
+    async (type) => {
+      render(
+        <Formik
+          initialValues={{ firstName: '', email: 'reader@example.com' }}
+          validationSchema={registrationSchema.pick(['firstName', 'email'])}
+          onSubmit={vi.fn()}>
+          <Form>
+            <FormikField name="firstName" placeholder="First name" type={type}>
+              {type === 'select' && <option value="">Choose a name</option>}
+            </FormikField>
+            <FormikField name="email" placeholder="Email" />
+            <button type="submit">Save</button>
+          </Form>
+        </Formik>,
+      )
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    expect(await screen.findByText('Required')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      expect(await screen.findByText('Required')).toBeInTheDocument()
 
-    await act(async () => {
-      await i18n.changeLanguage('hu')
-    })
+      await act(async () => {
+        await i18n.changeLanguage('hu')
+      })
 
-    expect(await screen.findByText('Kötelező')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Email')).toHaveValue(
-      'reader@example.com',
-    )
-  })
+      expect(await screen.findByText('Kötelező')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Email')).toHaveValue(
+        'reader@example.com',
+      )
+    },
+  )
 
   const mockSetFieldValue = vi.fn()
   const mockSetFieldTouched = vi.fn()
@@ -145,31 +151,32 @@ describe('FormikField', () => {
   })
 
   it('should render the password eye icon and toggle password visibility', async () => {
-    let showPassword = false
-    const setShowPasswordMock = vi.fn((prev) => !prev)
-    showPassword = setShowPasswordMock(showPassword)
+    function PasswordField() {
+      const [showPassword, setShowPassword] = useState(false)
 
-    render(
-      <Formik initialValues={{ password: '' }} onSubmit={() => undefined}>
-        <Form>
-          <FormikField
-            name="password"
-            placeholder="Enter password"
-            type="password"
-            showPassword={false}
-            setShowPassword={setShowPasswordMock}
-          />
-        </Form>
-      </Formik>,
-    )
+      return (
+        <Formik initialValues={{ password: '' }} onSubmit={() => undefined}>
+          <Form>
+            <FormikField
+              name="password"
+              placeholder="Enter password"
+              type={showPassword ? 'text' : 'password'}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+            />
+          </Form>
+        </Formik>
+      )
+    }
 
-    const passwordEye = screen.getByRole('button')
-    expect(passwordEye).toBeInTheDocument()
+    render(<PasswordField />)
+    const input = screen.getByPlaceholderText('Enter password')
+    expect(input).toHaveAttribute('type', 'password')
 
-    await userEvent.click(passwordEye)
-
-    expect(setShowPasswordMock).toHaveBeenCalledWith(false)
-    expect(showPassword).toBe(true)
+    await userEvent.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(input).toHaveAttribute('type', 'text')
+    await userEvent.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(input).toHaveAttribute('type', 'password')
   })
 
   it('should handle file input changes', async () => {
@@ -190,31 +197,5 @@ describe('FormikField', () => {
     expect(mockSetFieldValue).toHaveBeenCalledWith('avatar', testFile)
     expect(mockSetFieldTouched).toHaveBeenCalledWith('avatar', true)
     expect(mockValidateField).toHaveBeenCalledWith('avatar')
-  })
-
-  it('should display error messages when validation fails', async () => {
-    render(
-      <Formik
-        initialValues={{ testField: '' }}
-        onSubmit={() => undefined}
-        validate={(values) => {
-          const errors: Record<string, string> = {}
-          if (!values.testField) {
-            errors.testField = 'Field is required'
-          }
-          return errors
-        }}>
-        <Form>
-          <FormikField name="testField" placeholder="Enter value" type="text" />
-          <button type="submit">Submit</button>
-        </Form>
-      </Formik>,
-    )
-
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    await userEvent.click(submitButton)
-
-    const errorMessage = screen.getByText('Field is required')
-    expect(errorMessage).toBeInTheDocument()
   })
 })

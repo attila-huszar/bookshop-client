@@ -1,14 +1,6 @@
 import { Providers } from '@/testUtils'
 import { render, screen } from '@testing-library/react'
-import { vi } from 'vitest'
 import { Footer } from './Footer'
-
-vi.mock(import('./components'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-  }
-})
 
 describe('Footer Component', () => {
   it('should render Navigation, Subscribe, and Links components', () => {

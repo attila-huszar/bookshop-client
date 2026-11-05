@@ -2,14 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { Loading } from './Loading'
 
 describe('Loading Component', () => {
-  it('should display the default loading text', () => {
-    render(<Loading />)
+  it('shows the default message and accepts a custom message', () => {
+    const { rerender } = render(<Loading />)
 
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
-  })
-
-  it('should display custom loading text when provided', () => {
-    render(<Loading message="Please wait..." />)
+    rerender(<Loading message="Please wait..." />)
 
     expect(screen.getByText(/please wait.../i)).toBeInTheDocument()
   })

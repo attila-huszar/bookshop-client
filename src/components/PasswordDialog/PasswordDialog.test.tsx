@@ -34,17 +34,6 @@ describe('PasswordDialog', () => {
     vi.clearAllMocks()
   })
 
-  it('should render form fields and submit button', () => {
-    renderPasswordDialog(email)
-
-    expect(screen.getByPlaceholderText('Current Password')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('New Password')).toBeInTheDocument()
-    expect(
-      screen.getByPlaceholderText('Confirm New Password'),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
-  })
-
   it('sends both passwords to the profile endpoint and closes on success', async () => {
     mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve({}) })
 

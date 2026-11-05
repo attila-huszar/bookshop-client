@@ -50,7 +50,9 @@ export function FormikField({
     return <FileField {...props} name={props.name} />
   }
 
-  if (props.type === 'select') {
+  if (props.type === 'select' || props.type === 'textarea') {
+    const Control = props.type === 'select' ? Select : Textarea
+
     return (
       <Field {...props}>
         {({ field, form, meta }: FieldProps<string>) => {
@@ -58,13 +60,13 @@ export function FormikField({
 
           return (
             <InputWrapper>
-              <Select
+              <Control
                 {...field}
                 {...props}
                 $valid={shouldShowError && !meta.error}
                 $error={shouldShowError && meta.error}>
                 {children}
-              </Select>
+              </Control>
               {shouldShowError && meta.error && (
                 <ErrorMessage>{meta.error}</ErrorMessage>
               )}
@@ -77,31 +79,6 @@ export function FormikField({
 
   if (props.type === 'checkbox') {
     return <Field type="checkbox" {...props} />
-  }
-
-  if (props.type === 'textarea') {
-    return (
-      <Field {...props}>
-        {({ field, form, meta }: FieldProps<string>) => {
-          const shouldShowError = meta.touched && form.submitCount > 0
-
-          return (
-            <InputWrapper>
-              <Textarea
-                {...field}
-                {...props}
-                $valid={shouldShowError && !meta.error}
-                $error={shouldShowError && meta.error}>
-                {children}
-              </Textarea>
-              {shouldShowError && meta.error && (
-                <ErrorMessage>{meta.error}</ErrorMessage>
-              )}
-            </InputWrapper>
-          )
-        }}
-      </Field>
-    )
   }
 
   const renderInput = (fieldProps?: FieldProps<string>) => {

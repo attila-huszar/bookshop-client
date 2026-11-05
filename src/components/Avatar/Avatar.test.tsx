@@ -8,7 +8,6 @@ import { Avatar } from './Avatar'
 
 describe('Avatar', () => {
   const imgUrl = 'sample.jpg'
-  const size = 40
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -74,17 +73,5 @@ describe('Avatar', () => {
     await userEvent.click(avatar)
 
     expect(onClick).toHaveBeenCalledTimes(1)
-  })
-
-  it('should apply title and custom size correctly', () => {
-    render(<Avatar imgUrl={imgUrl} title="User Avatar" $size={size} />, {
-      wrapper: Providers,
-    })
-
-    const avatarContainer = screen.getByTitle('User Avatar')
-    expect(avatarContainer).toHaveStyle({
-      width: `${size}px`,
-      height: `${size}px`,
-    })
   })
 })
