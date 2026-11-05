@@ -3,9 +3,14 @@ import * as privateApi from '@/api/authRequest'
 import * as publicApi from '@/api/baseRequest'
 import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
-import { cartAdd, cartClear, cartQuantitySet } from '@/store/slices/cart'
+import {
+  cartAdd,
+  cartClear,
+  cartQuantitySet,
+  cartRestored,
+} from '@/store/slices/cart'
 import { createAppStore } from '@/store/store'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey, paymentIdempotencyKey } from '@/constants/keys'
 import type { PaymentIntentResponse } from '@/types'
 import { HttpErrorCode, PaymentErrorCode } from '@/types/ApiError'
@@ -54,11 +59,24 @@ function deferredResponse() {
 let store: ReturnType<typeof createAppStore>
 let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>
 let requests: Request[]
+const requestLock = vi.fn((_name: string, callback: () => unknown) =>
+  Promise.resolve().then(callback),
+)
 
 beforeEach(() => {
   sessionStorage.clear()
-  localStorage.removeItem(cartKey)
+  localStorage.clear()
+  vi.stubGlobal(
+    'navigator',
+    Object.assign(Object.create(navigator), {
+      locks: {
+        request: requestLock,
+      },
+    }),
+  )
   store = createAppStore()
+  localStorageAdapter.set(cartKey, payment.items)
+  store.dispatch(cartRestored(payment.items))
   fetchMock = vi
     .fn<typeof fetch>()
     .mockImplementation(() => Promise.resolve(json(session())))
@@ -79,7 +97,8 @@ beforeEach(() => {
 afterEach(() => {
   store.dispatch(bookshopApi.util.resetApiState())
   sessionStorage.clear()
-  localStorage.removeItem(cartKey)
+  localStorage.clear()
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
 
@@ -97,7 +116,8 @@ describe('checkout coordinator', () => {
     })
     expect(getCheckoutPaymentId()).toBe('pi_test')
     expect(Object.values(sessionStorage).join('')).not.toContain('_secret')
-    expect(sessionStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
+    expect(Object.values(localStorage).join('')).not.toContain('_secret')
+    expect(localStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
     const request = requests[0]!
     expect(request.credentials).toBe('include')
     expect(await request.json()).toEqual(payment)
@@ -165,6 +185,79 @@ describe('checkout coordinator', () => {
     ).toBe(first)
   })
 
+  it('reuses the same checkout in a second tab with empty session storage', async () => {
+    await store.dispatch(startCheckout(payment))
+    sessionStorage.clear()
+    const secondTab = createAppStore()
+
+    await expect(secondTab.dispatch(startCheckout(payment))).resolves.toEqual({
+      type: 'existing',
+      paymentId: 'pi_test',
+    })
+    fetchMock.mockResolvedValueOnce(json(intent()))
+    await secondTab.dispatch(restoreCheckout('pi_test'))
+
+    expect(
+      requests.filter((request) => request.method === 'POST'),
+    ).toHaveLength(1)
+    expect(secondTab.getState().payment.payment).toEqual(session())
+    secondTab.dispatch(bookshopApi.util.resetApiState())
+  })
+
+  it('shares one retry key and accepts the same payment from simultaneous tab starts', async () => {
+    const secondTab = createAppStore()
+    const firstResponse = deferredResponse()
+    const secondResponse = deferredResponse()
+    fetchMock
+      .mockReturnValueOnce(firstResponse.promise)
+      .mockReturnValueOnce(secondResponse.promise)
+
+    const first = store.dispatch(startCheckout(payment))
+    const second = secondTab.dispatch(startCheckout(payment))
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+
+    expect(requestLock).toHaveBeenCalledTimes(2)
+    const firstKey = requests[0]!.headers.get('Idempotency-Key')
+    expect(firstKey).toBeTruthy()
+    expect(requests[1]!.headers.get('Idempotency-Key')).toBe(firstKey)
+
+    firstResponse.resolve(json(session()))
+    await expect(first).resolves.toMatchObject({ type: 'ready' })
+    secondResponse.resolve(json(session()))
+    await expect(second).resolves.toMatchObject({ type: 'ready' })
+    expect(secondTab.getState().payment.payment).toEqual(
+      store.getState().payment.payment,
+    )
+    expect(Object.values(localStorage).join('')).not.toContain('_secret')
+    secondTab.dispatch(bookshopApi.util.resetApiState())
+  })
+
+  it('discards a create if another tab resets its shared retry key before the response', async () => {
+    const response = deferredResponse()
+    fetchMock.mockReturnValueOnce(response.promise)
+    const pending = store.dispatch(startCheckout(payment))
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    createAppStore().dispatch(resetCheckout())
+    response.resolve(json(session()))
+
+    await expect(pending).resolves.toEqual({ type: 'stale' })
+    expect(getCheckoutPaymentId()).toBeNull()
+    expect(store.getState().payment.phase).toBe('idle')
+  })
+
+  it('does not create another payment from a stale basket after another tab paid', async () => {
+    localStorageAdapter.remove(cartKey)
+
+    await expect(store.dispatch(startCheckout(payment))).resolves.toEqual({
+      type: 'stale',
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(store.getState().cart.cartItems).toEqual([])
+    expect(getCheckoutPaymentId()).toBeNull()
+  })
+
   it.each(['changed request', 'reset', 'ended'] as const)(
     'rotates the retry key after %s',
     async (reason) => {
@@ -214,7 +307,7 @@ describe('checkout coordinator', () => {
         startCheckout({ ...payment, expectedTotal: 13 }),
       )
       await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
-      const latestKey = sessionStorageAdapter.get(paymentIdempotencyKey)
+      const latestKey = localStorageAdapter.get(paymentIdempotencyKey)
 
       old.resolve(
         outcome === 'success'
@@ -227,9 +320,7 @@ describe('checkout coordinator', () => {
 
       await expect(first).resolves.toEqual({ type: 'stale' })
       expect(store.getState().payment.phase).toBe('creating')
-      expect(sessionStorageAdapter.get(paymentIdempotencyKey)).toEqual(
-        latestKey,
-      )
+      expect(localStorageAdapter.get(paymentIdempotencyKey)).toEqual(latestKey)
       expect(getCheckoutPaymentId()).toBeNull()
 
       latest.resolve(json(session('pi_new')))
@@ -425,13 +516,13 @@ describe('checkout coordinator', () => {
 
   it('uses the returned payment ID over the old checkout and retry key', () => {
     store.dispatch(recoverCheckout('pi_old'))
-    sessionStorageAdapter.set(paymentIdempotencyKey, {
+    localStorageAdapter.set(paymentIdempotencyKey, {
       fingerprint: 'old',
       clientIdempotencyKey: 'old',
     })
 
     expect(store.dispatch(recoverCheckout('pi_new'))).toBe('pi_new')
-    expect(sessionStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
+    expect(localStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
     expect(store.getState().payment.phase).toBe('idle')
   })
 

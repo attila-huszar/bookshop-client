@@ -5,6 +5,8 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
+import { localStorageAdapter } from '@/helpers/browserStorage'
+import { paymentIdKey } from '@/constants/keys'
 import type { CheckoutTerms } from '@/types'
 import { usePaymentSubmit } from './usePaymentSubmit'
 
@@ -46,6 +48,7 @@ const unwrap = vi.fn()
 
 beforeEach(() => {
   vi.clearAllMocks()
+  localStorageAdapter.set(paymentIdKey, input.paymentId)
   unwrap.mockReset().mockResolvedValue({
     version: terms.version,
     language: 'en',
@@ -66,7 +69,47 @@ beforeEach(() => {
   ] as unknown as ReturnType<typeof useAcceptPaymentTermsMutation>)
 })
 
+afterEach(() => {
+  localStorage.clear()
+})
+
 describe('Payment terms submission', () => {
+  it('blocks an obsolete checkout even before a cross-tab storage event is delivered', async () => {
+    const { result } = renderHook(() => usePaymentSubmit(input))
+    localStorageAdapter.remove(paymentIdKey)
+
+    await act(() => result.current.handleSubmit(submitEvent()))
+
+    expect(acceptTerms).not.toHaveBeenCalled()
+    expect(confirmPayment).not.toHaveBeenCalled()
+    expect(result.current.message.text).toBe(i18n.t('checkout.notReady'))
+  })
+
+  it('does not confirm an obsolete checkout after acceptance finishes in another tab', async () => {
+    let finish!: () => void
+    unwrap.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finish = resolve
+      }),
+    )
+    const { result } = renderHook(() => usePaymentSubmit(input))
+    let submitting!: Promise<void>
+
+    act(() => {
+      submitting = result.current.handleSubmit(submitEvent())
+    })
+    localStorageAdapter.set(paymentIdKey, 'pi_other')
+
+    await act(async () => {
+      finish()
+      await submitting
+    })
+
+    expect(confirmPayment).not.toHaveBeenCalled()
+    expect(result.current.message.text).toBe(i18n.t('checkout.missingSession'))
+    expect(result.current.isLoading).toBe(false)
+  })
+
   it('opens the payment status page after a non-redirect confirmation', async () => {
     const navigate = vi.fn()
     vi.mocked(useNavigate).mockReturnValue(navigate)

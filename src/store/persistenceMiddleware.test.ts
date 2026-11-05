@@ -1,9 +1,6 @@
 import * as usersApi from '@/api/users'
 import { recoverCheckout, resetCheckout } from '@/services/checkout'
-import {
-  localStorageAdapter,
-  sessionStorageAdapter,
-} from '@/helpers/browserStorage'
+import { localStorageAdapter } from '@/helpers/browserStorage'
 import { getClientIdempotencyKey } from '@/helpers/checkout'
 import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
 import {
@@ -42,12 +39,13 @@ describe('cart persistence', () => {
 
     expect(localStorageAdapter.get(cartKey)).toEqual([{ id: 1, quantity: 1 }])
     expect(Object.values(sessionStorage).join('')).not.toContain('secret')
+    expect(Object.values(localStorage).join('')).not.toContain('secret')
 
     store.dispatch(cartQuantityAdd({ id: 1 }))
 
     expect(localStorageAdapter.get(cartKey)).toEqual([{ id: 1, quantity: 2 }])
     expect(store.getState().payment.phase).toBe('idle')
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
+    expect(localStorageAdapter.get(paymentIdKey)).toBeNull()
 
     store.dispatch(cartClear())
     expect(localStorageAdapter.get(cartKey)).toBeNull()
@@ -61,7 +59,7 @@ describe('cart persistence', () => {
     store.dispatch(cartRestored([{ id: 1, quantity: 1 }]))
 
     expect(store.getState().payment.payment?.paymentId).toBe('pi_saved')
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
+    expect(localStorageAdapter.get(paymentIdKey)).toBe('pi_saved')
   })
 
   it('clears the retry key when an attempt is reset', () => {
@@ -72,7 +70,7 @@ describe('cart persistence', () => {
     })
     store.dispatch(resetCheckout())
 
-    expect(sessionStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
+    expect(localStorageAdapter.get(paymentIdempotencyKey)).toBeNull()
   })
 
   it('clears checkout after logout succeeds', async () => {
@@ -83,6 +81,6 @@ describe('cart persistence', () => {
     await store.dispatch(logout()).unwrap()
 
     expect(store.getState().payment.payment).toBeNull()
-    expect(sessionStorageAdapter.get(paymentIdKey)).toBeNull()
+    expect(localStorageAdapter.get(paymentIdKey)).toBeNull()
   })
 })

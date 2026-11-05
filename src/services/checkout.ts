@@ -1,6 +1,7 @@
 import type { Dispatch } from '@reduxjs/toolkit'
 import { booksApi } from '@/store/api/booksApi'
 import { type PaymentDetails, paymentsApi } from '@/store/api/paymentsApi'
+import { cartRestored } from '@/store/slices/cart'
 import {
   checkoutAborted,
   checkoutFailed,
@@ -9,10 +10,12 @@ import {
   checkoutStarted,
 } from '@/store/slices/payment'
 import type { AppDispatch, RootState } from '@/store/store'
-import { sessionStorageAdapter } from '@/helpers/browserStorage'
+import { localStorageAdapter } from '@/helpers/browserStorage'
 import {
   clearClientIdempotencyKey,
   getClientIdempotencyKey,
+  isCurrentClientIdempotencyKey,
+  readStoredCart,
   resetClientIdempotencyKey,
 } from '@/helpers/checkout'
 import { getApiError, toAppError } from '@/helpers/errors'
@@ -42,11 +45,11 @@ export type CheckoutResult =
   | { type: 'stale' }
 
 export const getCheckoutPaymentId = () =>
-  sessionStorageAdapter.get<string>(paymentIdKey)
+  localStorageAdapter.get<string>(paymentIdKey)
 
 /** The only writer of checkout IDs and accepted workflow transitions. */
 export const resetCheckout = () => (dispatch: Dispatch) => {
-  sessionStorageAdapter.remove(paymentIdKey)
+  localStorageAdapter.remove(paymentIdKey)
   resetClientIdempotencyKey()
   dispatch(checkoutReset())
 }
@@ -58,7 +61,7 @@ export const recoverCheckout =
 
     if (stripePaymentId && stripePaymentId !== stored) {
       dispatch(resetCheckout())
-      sessionStorageAdapter.set(paymentIdKey, stripePaymentId)
+      localStorageAdapter.set(paymentIdKey, stripePaymentId)
 
       return stripePaymentId
     }
@@ -199,9 +202,32 @@ const runCheckout =
     dispatch(checkoutStarted({ operationId, phase: command.type }))
 
     let expectedPaymentId = storedPaymentId
-    const isCurrent = () =>
-      getState().payment.operationId === operationId &&
-      getCheckoutPaymentId() === expectedPaymentId
+    const isCurrent = (resolvedPaymentId?: string) => {
+      const sharedPaymentId = getCheckoutPaymentId()
+      const sharedResult =
+        Boolean(resolvedPaymentId) && sharedPaymentId === resolvedPaymentId
+      const matchesCart =
+        command.type !== 'creating' ||
+        JSON.stringify(command.payment.items) ===
+          JSON.stringify(readStoredCart())
+
+      return (
+        matchesCart &&
+        getState().payment.operationId === operationId &&
+        (sharedPaymentId === expectedPaymentId || sharedResult) &&
+        (!clientIdempotencyKey ||
+          isCurrentClientIdempotencyKey(clientIdempotencyKey) ||
+          sharedResult)
+      )
+    }
+
+    const discardStaleResult = (): CheckoutResult => {
+      if (getState().payment.operationId === operationId) {
+        dispatch(checkoutReset())
+      }
+
+      return { type: 'stale' }
+    }
 
     try {
       const result = await requestCheckout(
@@ -211,8 +237,12 @@ const runCheckout =
       )
       signal?.throwIfAborted()
 
-      if (!isCurrent()) {
-        return { type: 'stale' }
+      if (
+        !isCurrent(
+          result.type === 'ready' ? result.payment.paymentId : undefined,
+        )
+      ) {
+        return discardStaleResult()
       }
 
       if (result.type === 'cleared') {
@@ -221,7 +251,7 @@ const runCheckout =
         const { paymentId, paymentToken, amount } =
           paymentSessionSchema.validateSync(result.payment)
 
-        sessionStorageAdapter.set(paymentIdKey, paymentId)
+        localStorageAdapter.set(paymentIdKey, paymentId)
         expectedPaymentId = paymentId
 
         if (clientIdempotencyKey) {
@@ -242,7 +272,7 @@ const runCheckout =
       }
 
       if (!isCurrent()) {
-        return { type: 'stale' }
+        return discardStaleResult()
       }
 
       const status =
@@ -275,7 +305,7 @@ const runCheckout =
         await dispatch(refreshCartPrices())
 
         if (!isCurrent()) {
-          return { type: 'stale' }
+          return discardStaleResult()
         }
       }
 
@@ -286,12 +316,35 @@ const runCheckout =
   }
 
 export const startCheckout =
-  (payment: PaymentIntentRequest) => (dispatch: AppDispatch) => {
-    const paymentId = getCheckoutPaymentId()
+  (payment: PaymentIntentRequest) => async (dispatch: AppDispatch) => {
+    // Serialize identity selection across tabs, then release before network I/O.
+    // Identical in-flight creates can retry the same server idempotency key.
+    const { result } = await navigator.locks.request(
+      'bookshop-checkout',
+      () => {
+        const paymentId = getCheckoutPaymentId()
 
-    return paymentId
-      ? Promise.resolve<CheckoutResult>({ type: 'existing', paymentId })
-      : dispatch(runCheckout({ type: 'creating', payment }))
+        if (!paymentId) {
+          const cartItems = readStoredCart()
+
+          if (JSON.stringify(payment.items) !== JSON.stringify(cartItems)) {
+            dispatch(cartRestored(cartItems))
+
+            return {
+              result: Promise.resolve<CheckoutResult>({ type: 'stale' }),
+            }
+          }
+        }
+
+        return {
+          result: paymentId
+            ? Promise.resolve<CheckoutResult>({ type: 'existing', paymentId })
+            : dispatch(runCheckout({ type: 'creating', payment })),
+        }
+      },
+    )
+
+    return result
   }
 
 export const restoreCheckout = (

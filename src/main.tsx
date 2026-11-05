@@ -3,8 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import './i18n'
 import { store } from '@/store/store'
+import { listenForCheckoutChanges } from '@/services/checkoutSync'
 import { log } from '@/services/logger'
 import App from './App.tsx'
+
+listenForCheckoutChanges(store.dispatch, () => store.getState())
 
 const container = document.getElementById('root')!
 const root = createRoot(container, {

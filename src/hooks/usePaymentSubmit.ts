@@ -5,6 +5,7 @@ import { shopLanguage } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
 import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
+import { getCheckoutPaymentId } from '@/services/checkout'
 import {
   checkoutQueryParams,
   getStripePaymentErrorMessage,
@@ -77,7 +78,12 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
       return
     }
 
-    if (!stripe || !elements || !paymentId) {
+    if (
+      !stripe ||
+      !elements ||
+      !paymentId ||
+      getCheckoutPaymentId() !== paymentId
+    ) {
       setMessage({ text: t('checkout.notReady'), type: 'error' })
 
       return
@@ -102,6 +108,12 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
       }).unwrap()
 
       if (!lifecycle.active) {
+        return
+      }
+
+      if (getCheckoutPaymentId() !== paymentId) {
+        setMessage({ text: t('checkout.missingSession'), type: 'error' })
+
         return
       }
 

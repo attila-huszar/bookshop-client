@@ -23,6 +23,7 @@ import * as privateApi from '@/api/authRequest'
 import * as publicApi from '@/api/baseRequest'
 import { PATH } from '@/api/path'
 import { CheckoutForm } from '@/pages/Checkout/components/CheckoutForm/CheckoutForm'
+import { recoverCheckout } from '@/services/checkout'
 import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
@@ -232,6 +233,7 @@ describe('server-data cache', () => {
         },
       }),
     )
+    store.dispatch(recoverCheckout('pi_submit'))
     store.dispatch(
       checkoutReady({
         paymentId: 'pi_submit',

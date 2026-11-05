@@ -10,7 +10,7 @@ import type {
   StripeError,
   StripeErrorType,
 } from '@/types'
-import { localStorageAdapter, sessionStorageAdapter } from './browserStorage'
+import { localStorageAdapter } from './browserStorage'
 
 type StoredPaymentIdempotency = {
   fingerprint: string
@@ -66,7 +66,7 @@ export function readStoredCart(): CartItem[] {
 /** Reuse the persisted key for identical retries; changed requests start a new attempt. */
 export function getClientIdempotencyKey(payment: PaymentIntentRequest): string {
   const fingerprint = JSON.stringify(payment)
-  const stored = sessionStorageAdapter.get<StoredPaymentIdempotency>(
+  const stored = localStorageAdapter.get<StoredPaymentIdempotency>(
     paymentIdempotencyKey,
   )
 
@@ -75,7 +75,7 @@ export function getClientIdempotencyKey(payment: PaymentIntentRequest): string {
   }
 
   const clientIdempotencyKey = crypto.randomUUID()
-  sessionStorageAdapter.set(paymentIdempotencyKey, {
+  localStorageAdapter.set(paymentIdempotencyKey, {
     fingerprint,
     clientIdempotencyKey,
   })
@@ -83,20 +83,23 @@ export function getClientIdempotencyKey(payment: PaymentIntentRequest): string {
   return clientIdempotencyKey
 }
 
+export function isCurrentClientIdempotencyKey(key: string): boolean {
+  return (
+    localStorageAdapter.get<StoredPaymentIdempotency>(paymentIdempotencyKey)
+      ?.clientIdempotencyKey === key
+  )
+}
+
 /** Clear only the expected key, preserving a newer attempt's persisted key. */
 export function clearClientIdempotencyKey(clientIdempotencyKey: string): void {
-  const stored = sessionStorageAdapter.get<StoredPaymentIdempotency>(
-    paymentIdempotencyKey,
-  )
-
-  if (stored?.clientIdempotencyKey === clientIdempotencyKey) {
+  if (isCurrentClientIdempotencyKey(clientIdempotencyKey)) {
     resetClientIdempotencyKey()
   }
 }
 
 /** Forget the attempt when checkout is explicitly reset or canceled. */
 export function resetClientIdempotencyKey(): void {
-  sessionStorageAdapter.remove(paymentIdempotencyKey)
+  localStorageAdapter.remove(paymentIdempotencyKey)
 }
 
 export const formatAmount = (
