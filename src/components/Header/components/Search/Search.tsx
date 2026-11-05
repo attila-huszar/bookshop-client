@@ -6,7 +6,7 @@ import { booksApi } from '@/store/api/booksApi'
 import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { validationLimits } from '@/constants/validation'
 import type { Book } from '@/types'
 import {

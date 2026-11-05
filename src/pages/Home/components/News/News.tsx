@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useNewsQuery } from '@/store/api/newsApi'
 import { SwiperComponent } from '@/components/SwiperComponent'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { StyledNews } from './News.style'
 import { NewsCard } from './NewsCard'
 

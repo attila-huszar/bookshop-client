@@ -4,7 +4,7 @@ import { useFormikContext } from 'formik'
 import { useCountryCodesQuery } from '@/store/api/usersApi'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { getFlagUrl } from '@/helpers/getFlagUrl'
-import { uiTiming } from '@/constants/uiTiming'
+import { uiTiming } from '@/constants/time'
 import { ChevronDownIcon } from '@/assets/svg'
 import { ErrorMessage, InputWrapper } from '@/styles/form.styles'
 import {

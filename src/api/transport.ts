@@ -1,5 +1,5 @@
 import ky from 'ky'
-import { httpPolicy } from '@/constants/http'
+import { httpPolicy } from '@/constants/time'
 import { PATH } from './path'
 
 /** Log uploads use this transport without the application's error logging hook. */

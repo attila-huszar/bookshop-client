@@ -17,7 +17,7 @@ import { booksQueryArgs } from '@/store/selectors'
 import { applyBooksFilters, setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
 import { useAppSelector } from '@/hooks/redux'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import type { Book } from '@/types'
 import { Products } from './Products'
 

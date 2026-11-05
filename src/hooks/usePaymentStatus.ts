@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStripe } from '@stripe/react-stripe-js'
 import { getErrorMessage } from '@/helpers/errors'
-import { paymentStatusPolicy } from '@/constants/payment'
-import { TimeMs } from '@/constants/time'
+import { paymentStatusPolicy, TimeMs } from '@/constants/time'
 import type { PaymentStatusState } from '@/types/Payment'
 
 const INITIAL_STATUS: PaymentStatusState = { type: 'checking' }

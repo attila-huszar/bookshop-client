@@ -8,7 +8,7 @@ import { Card } from '@/components/Card'
 import { Loading } from '@/components/Loading'
 import { Pagination } from '@/components/Pagination'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { SlidersIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter } from './components'
 import {

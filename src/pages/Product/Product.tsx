@@ -13,7 +13,7 @@ import { Recommended } from '@/components/Recommended'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { scrollToTop } from '@/helpers/scrollToTop'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import type { Book } from '@/types'
 import { CartAddIcon, ChevronLeftIcon, imagePlaceholder } from '@/assets/svg'
 import {

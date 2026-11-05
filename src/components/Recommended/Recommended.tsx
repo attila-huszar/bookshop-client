@@ -4,7 +4,7 @@ import { useBooksByPropertyQuery } from '@/store/api/booksApi'
 import { Card } from '@/components/Card'
 import { SwiperComponent } from '@/components/SwiperComponent'
 import { scrollToTop } from '@/helpers/scrollToTop'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { StyledRecommended } from './Recommended.style'
 
 export function Recommended() {

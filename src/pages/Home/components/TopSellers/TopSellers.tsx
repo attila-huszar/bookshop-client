@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useBooksByPropertyQuery } from '@/store/api/booksApi'
 import { Card } from '@/components/Card'
 import { SwiperComponent } from '@/components/SwiperComponent'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { StyledTopSellers } from './TopSellers.style'
 
 export function TopSellers() {

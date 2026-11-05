@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Toaster, useToasterStore } from 'react-hot-toast'
-import { uiTiming } from '@/constants/uiTiming'
+import { uiTiming } from '@/constants/time'
 import { registerToastHost, syncToastHost } from './toast'
 
 export function AppToaster() {

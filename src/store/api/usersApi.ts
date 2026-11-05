@@ -1,5 +1,5 @@
 import { PATH } from '@/api/path'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import type {
   CmsUser,
   CmsUserCreate,

@@ -7,7 +7,7 @@ import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import { Menu } from './Menu'
 
 let store: ReturnType<typeof createAppStore>

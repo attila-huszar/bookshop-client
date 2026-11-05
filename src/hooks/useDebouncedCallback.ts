@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
-import { uiTiming } from '@/constants/uiTiming'
+import { uiTiming } from '@/constants/time'
 
 /** Debounces the latest callback; cancel clears queued work. Delay changes affect future calls. */
 export const useDebouncedCallback = <T extends unknown[]>(

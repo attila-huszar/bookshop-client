@@ -1,6 +1,6 @@
 import { store } from '@/store/store'
 import { fetchAuthTokens } from '@/store/thunks/user'
-import { sessionRetryPolicy } from '@/constants/auth'
+import { sessionRetryPolicy } from '@/constants/time'
 
 let tokenFailureCount = 0
 let tokenNextAttemptAt = 0

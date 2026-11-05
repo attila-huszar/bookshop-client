@@ -6,7 +6,7 @@ import { booksQueryArgs } from '@/store/selectors'
 import { Button } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
-import { CacheTime } from '@/constants/cacheTimes'
+import { CacheTime } from '@/constants/time'
 import {
   ImageItem,
   ImageWrapper,
