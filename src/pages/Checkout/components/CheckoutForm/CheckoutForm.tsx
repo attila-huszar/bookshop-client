@@ -11,7 +11,6 @@ import {
 import { ROUTE } from '@/routes/route'
 import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
-import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { cancelCheckout } from '@/services/checkout'
@@ -62,18 +61,7 @@ export function CheckoutForm() {
     })
 
   if (!payment) {
-    return (
-      <div>
-        <p style={{ marginBottom: '1rem', textAlign: 'center' }}>
-          {t('checkout.missingOrder')}
-        </p>
-        <button
-          type="button"
-          onClick={() => void navigate(`/${ROUTE.CART}`, { replace: true })}>
-          <span>{t('common.actions.backToCart')}</span>
-        </button>
-      </div>
-    )
+    return null
   }
 
   const paymentId = payment.paymentId
@@ -93,13 +81,6 @@ export function CheckoutForm() {
   const handleCancel = async () => {
     setCancelError(null)
 
-    if (!paymentId) {
-      const errorMessage = t('checkout.missingPaymentId')
-      setCancelError('checkout.missingPaymentId')
-      toast.error(errorMessage, { id: 'checkout-cancel-error' })
-      return
-    }
-
     setIsCanceling(true)
 
     try {
@@ -112,7 +93,6 @@ export function CheckoutForm() {
       const errorMessage = getErrorMessage(error, t('checkout.cancelError'))
 
       setCancelError(getApiError(error) ?? errorMessage)
-      toast.error(errorMessage, { id: 'checkout-cancel-error' })
     } finally {
       setIsCanceling(false)
     }
@@ -268,9 +248,9 @@ export function CheckoutForm() {
         </span>
       </button>
       {cancelError && (
-        <div id="cancel-message" style={{ marginTop: '1rem' }}>
+        <div id="cancel-message" role="alert" style={{ marginTop: '1rem' }}>
           {typeof cancelError === 'string'
-            ? t(cancelError, { defaultValue: cancelError })
+            ? cancelError
             : getErrorMessage(cancelError, t('checkout.cancelError'))}
         </div>
       )}

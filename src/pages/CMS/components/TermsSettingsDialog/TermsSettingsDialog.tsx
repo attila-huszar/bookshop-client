@@ -195,10 +195,10 @@ function TermsEditor({
             </select>
           </label>
         )}
-        {archive.isFetching && <p role="status">{t('termsEditor.loading')}</p>}
+        {archive.isFetching && <p role="status">{t('terms.loading')}</p>}
         {archive.isError && (
           <div>
-            <p role="alert">{t('termsEditor.loadError')}</p>
+            <p role="alert">{t('terms.loadError')}</p>
             <Button type="button" onClick={() => void archive.refetch()}>
               {t('terms.reload')}
             </Button>
@@ -349,11 +349,11 @@ export function TermsSettingsDialog({ onClose }: { onClose: () => void }) {
       {(loading || failed) && <TermsHeader onClose={onClose} />}
       {loading ? (
         <DialogBody>
-          <p role="status">{t('termsEditor.loading')}</p>
+          <p role="status">{t('terms.loading')}</p>
         </DialogBody>
       ) : failed ? (
         <DialogBody>
-          <p role="alert">{t('termsEditor.loadError')}</p>
+          <p role="alert">{t('terms.loadError')}</p>
           <div className="actions">
             <Button type="button" $inverted onClick={onClose}>
               {t('common.actions.cancel')}

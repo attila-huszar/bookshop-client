@@ -24,6 +24,11 @@ export type PaymentSession = {
   amount: number
 }
 
+export type PaymentOperationPhase = 'creating' | 'restoring' | 'canceling'
+
+export type PaymentPhase =
+  PaymentOperationPhase | 'idle' | 'ready' | 'failed' | 'superseded'
+
 export type PaymentStatusState =
   | { type: PaymentIntentStatus | 'checking' }
   | { type: 'retry'; attempt: number; maxAttempts: number }

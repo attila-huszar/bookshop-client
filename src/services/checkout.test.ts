@@ -680,7 +680,7 @@ describe('checkout synchronization across tabs', () => {
 
     expect(store.getState().cart.cartItems).toEqual([])
     expect(store.getState().payment.payment).toBeNull()
-    expect(store.getState().payment.phase).toBe('idle')
+    expect(store.getState().payment.phase).toBe('superseded')
   })
 
   it('discards a superseded session without deleting the other tab checkout', () => {

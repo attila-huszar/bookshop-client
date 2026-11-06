@@ -1,13 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
-import { Navigate, useLocation } from 'react-router'
-import { i18n, shopLanguage } from '@/i18n'
+import { useLocation, useNavigate } from 'react-router'
+import { shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { ROUTE } from '@/routes/route'
 import { userSelector } from '@/store/selectors'
-import { toast } from '@/components/AppToaster'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Loading } from '@/components/Loading'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -15,6 +14,7 @@ import { resetCheckout } from '@/services/checkout'
 import { log } from '@/services/logger'
 import { checkoutQueryParams } from '@/helpers/checkout'
 import { stripeKey } from '@/constants/envConfig'
+import { uiTiming } from '@/constants/time'
 import type { StripeElementsOptions } from '@/types'
 import { StyledCheckout } from './Checkout.style'
 import { AddressForm, CheckoutForm } from './components'
@@ -27,19 +27,46 @@ const PaymentStatus = lazy(() =>
 
 const stripePromise = loadStripe(stripeKey)
 
+function CheckoutRedirect({ message }: { message: string }) {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+    const scheduleRedirect = () => {
+      clearTimeout(timeoutId)
+
+      if (document.visibilityState !== 'visible') {
+        return
+      }
+
+      timeoutId = setTimeout(() => {
+        void navigate(ROUTE.HOME, { replace: true })
+      }, uiTiming.checkoutRedirectMs)
+    }
+
+    scheduleRedirect()
+    document.addEventListener('visibilitychange', scheduleRedirect)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('visibilitychange', scheduleRedirect)
+    }
+  }, [navigate])
+
+  return <Loading message={message} fullScreen />
+}
+
 function StripeErrorFallback({ error }: FallbackProps) {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
 
   useEffect(() => {
     log.error('Stripe checkout failed', { error })
     dispatch(resetCheckout())
-    toast(i18n.t('checkout.missingSession'), {
-      icon: '🔄',
-      id: 'no-checkout-session',
-    })
   }, [dispatch, error])
 
-  return <Navigate to={ROUTE.HOME} replace />
+  return <CheckoutRedirect message={t('checkout.unavailable')} />
 }
 
 export function Checkout() {
@@ -64,6 +91,10 @@ export function Checkout() {
     }
   }, [paymentIsLoading, paymentRetrieveError])
 
+  if (phase === 'superseded') {
+    return <CheckoutRedirect message={t('checkout.changedInAnotherTab')} />
+  }
+
   if (paymentIsLoading) {
     return (
       <StyledCheckout>
@@ -84,6 +115,10 @@ export function Checkout() {
         />
       </StyledCheckout>
     )
+  }
+
+  if (!payment && !isStripeReturn) {
+    return <CheckoutRedirect message={t('checkout.unavailable')} />
   }
 
   if (!isStripeReturn && userIsLoading) {

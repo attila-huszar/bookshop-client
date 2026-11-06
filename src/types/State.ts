@@ -1,7 +1,7 @@
 import type { ApiError } from './ApiError'
 import type { CartItem } from './Cart'
 import type { BookCriteria, Filters } from './Filters'
-import type { PaymentSession } from './Payment'
+import type { PaymentPhase, PaymentSession } from './Payment'
 
 export type BooksState = {
   booksCurrentPage: number
@@ -23,7 +23,7 @@ export type CartState = {
 
 export type PaymentState = {
   payment: PaymentSession | null
-  phase: 'idle' | 'creating' | 'restoring' | 'ready' | 'canceling' | 'failed'
+  phase: PaymentPhase
   operationId: string | null
   error: ApiError | null
 }

@@ -1,3 +1,4 @@
+import { createInstance } from 'i18next'
 import { describe, expect, it } from 'vitest'
 import en from '../../public/locales/en/translation.json'
 import hu from '../../public/locales/hu/translation.json'
@@ -22,6 +23,29 @@ function flatten(
 }
 
 describe('interface translations', () => {
+  it.each([
+    ['en', 0, '0 emails · Page 1 of 1'],
+    ['en', 1, '1 email · Page 1 of 1'],
+    ['en', 2, '2 emails · Page 1 of 1'],
+    ['hu', 0, '0 e-mail · 1. oldal / 1'],
+    ['hu', 1, '1 e-mail · 1. oldal / 1'],
+    ['hu', 2, '2 e-mail · 1. oldal / 1'],
+  ] as const)(
+    'formats %s email pagination for a count of %s',
+    async (language, count, expected) => {
+      const instance = createInstance()
+      await instance.init({
+        lng: language,
+        fallbackLng: false,
+        resources: { en: { translation: en }, hu: { translation: hu } },
+      })
+
+      expect(
+        instance.t('cms.emails.pagination', { count, page: 1, pages: 1 }),
+      ).toBe(expected)
+    },
+  )
+
   it('keeps keys in the same order with matching placeholders and markup', () => {
     const english = flatten(en)
     const hungarian = flatten(hu)

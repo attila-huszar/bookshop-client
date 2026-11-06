@@ -5,6 +5,8 @@ import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
+import { checkoutSuperseded } from '@/store/slices/payment'
+import { useAppDispatch } from '@/hooks/redux'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { paymentIdKey } from '@/constants/keys'
 import type { CheckoutTerms } from '@/types'
@@ -23,6 +25,7 @@ vi.mock('@/store/api/termsApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
   useAcceptPaymentTermsMutation: vi.fn(),
 }))
+vi.mock('@/hooks/redux', () => ({ useAppDispatch: vi.fn() }))
 
 const terms: CheckoutTerms = {
   url: 'https://bookshop.test/terms-v1.pdf',
@@ -45,9 +48,11 @@ const confirmPayment = vi.fn<
 >()
 const acceptTerms = vi.fn()
 const unwrap = vi.fn()
+const dispatch = vi.fn()
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.mocked(useAppDispatch).mockReturnValue(dispatch)
   localStorageAdapter.set(paymentIdKey, input.paymentId)
   unwrap.mockReset().mockResolvedValue({
     version: terms.version,
@@ -82,7 +87,8 @@ describe('Payment terms submission', () => {
 
     expect(acceptTerms).not.toHaveBeenCalled()
     expect(confirmPayment).not.toHaveBeenCalled()
-    expect(result.current.message.text).toBe(i18n.t('checkout.notReady'))
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(checkoutSuperseded())
+    expect(result.current.message.text).toBeNull()
   })
 
   it('does not confirm an obsolete checkout after acceptance finishes in another tab', async () => {
@@ -106,7 +112,9 @@ describe('Payment terms submission', () => {
     })
 
     expect(confirmPayment).not.toHaveBeenCalled()
-    expect(result.current.message.text).toBe(i18n.t('checkout.missingSession'))
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(checkoutSuperseded())
+    expect(result.current.message.text).toBeNull()
+    expect(localStorageAdapter.get(paymentIdKey)).toBe('pi_other')
     expect(result.current.isLoading).toBe(false)
   })
 

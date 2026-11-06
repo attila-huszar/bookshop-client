@@ -293,7 +293,7 @@ describe('Terms settings modal', () => {
       render(<TermsSettingsDialog onClose={onClose} />)
 
       expect(screen.getByRole('alert')).toHaveTextContent(
-        'Unable to load terms.',
+        'Unable to load terms and conditions.',
       )
       expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
       await user.click(
@@ -369,14 +369,18 @@ describe('Terms settings modal', () => {
     const view = render(<TermsSettingsDialog onClose={onClose} />)
     await user.selectOptions(screen.getByRole('combobox'), 'v0')
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading terms...')
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading terms and conditions...',
+    )
     expect(screen.getByRole('textbox')).toBeDisabled()
     expect(
       screen.getByRole('button', { name: 'Save and publish' }),
     ).toBeDisabled()
     phase = 'error'
     view.rerender(<TermsSettingsDialog onClose={() => onClose()} />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Unable to load terms.')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Unable to load terms and conditions.',
+    )
     expect(
       screen.getByRole('button', { name: 'Save and publish' }),
     ).toBeDisabled()

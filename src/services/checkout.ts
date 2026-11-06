@@ -8,6 +8,7 @@ import {
   checkoutReady,
   checkoutReset,
   checkoutStarted,
+  checkoutSuperseded,
 } from '@/store/slices/payment'
 import type { AppDispatch, RootState } from '@/store/store'
 import { localStorageAdapter } from '@/helpers/browserStorage'
@@ -69,7 +70,7 @@ export function listenForCheckoutChanges(
       state.payment.payment.paymentId !== getCheckoutPaymentId()
     ) {
       // Do not remove the other tab's current ID or rotate its retry key.
-      store.dispatch(checkoutReset())
+      store.dispatch(checkoutSuperseded())
     }
   }
 

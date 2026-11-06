@@ -6,8 +6,10 @@ import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePaymentTermsQuery } from '@/store/api/termsApi'
 import { userSelector } from '@/store/selectors'
+import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
+import { PaymentErrorCode } from '@/types/ApiError'
 import { CheckoutForm } from './CheckoutForm'
 
 vi.mock('@stripe/react-stripe-js', () => ({
@@ -85,7 +87,40 @@ beforeEach(() => {
   mockReview(review)
 })
 
-describe('Checkout terms checkbox', () => {
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+describe('Checkout form', () => {
+  it('leaves missing-session messaging to the checkout page', () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) =>
+      selector === userSelector ? { userData: null } : null,
+    )
+    const { container } = render(<CheckoutForm />, { wrapper: MemoryRouter })
+
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('shows cancellation failures inline without a duplicate toast', async () => {
+    const errorToast = vi.spyOn(toast, 'error')
+    vi.mocked(useAppDispatch).mockReturnValue(
+      vi.fn().mockRejectedValue({ code: PaymentErrorCode.AlreadySucceeded }),
+    )
+    render(<CheckoutForm />, { wrapper: MemoryRouter })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Cancel Checkout' }),
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      i18n.t('errors.paymentAlreadySucceeded'),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Retry Cancel Checkout' }),
+    ).toBeEnabled()
+    expect(errorToast).not.toHaveBeenCalled()
+  })
+
   it('uses translated checkbox wording and links in both languages', async () => {
     render(<CheckoutForm />, { wrapper: MemoryRouter })
 

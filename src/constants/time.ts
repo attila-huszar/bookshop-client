@@ -2,6 +2,7 @@ export const enum TimeMs {
   TwoHundredMilliseconds = 200,
   ThreeHundredMilliseconds = 300,
   OneSecond = 1_000,
+  TwoSeconds = 2 * OneSecond,
   ThreeSeconds = 3 * OneSecond,
   FiveSeconds = 5 * OneSecond,
   TenSeconds = 10 * OneSecond,
@@ -23,6 +24,7 @@ export const uiTiming = {
   toastDurationMs: TimeMs.ThreeSeconds,
   defaultDebounceMs: TimeMs.ThreeHundredMilliseconds,
   countrySearchResetMs: TimeMs.TwoHundredMilliseconds,
+  checkoutRedirectMs: TimeMs.TwoSeconds,
 } as const
 
 export const httpPolicy = {

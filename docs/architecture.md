@@ -28,7 +28,7 @@ Stripe return identifiers take precedence over stored checkout state, and identi
 
 Identical creation retries reuse an idempotency key. A changed cart or explicit fresh attempt receives a new key. A price conflict refreshes prices and requires another submission. Client totals follow the server's USD policy: round the unit price and discounted unit price to cents, multiply by quantity, and sum integer cents.
 
-Tabs on the same origin share the safe checkout ID and retry key in local storage. A Web Lock serializes checkout identity selection so simultaneous starts reuse one server checkout; network requests run outside the lock. Storage and foreground events synchronize cart intent and discard superseded in-memory payment sessions. Submission checks the shared ID again after terms acceptance. Payment tokens remain in memory, and Stripe remains responsible for preventing a second successful payment on the same PaymentIntent. Checkout requires a secure browser context with Web Locks support.
+Tabs on the same origin share the safe checkout ID and retry key in local storage. A Web Lock serializes checkout identity selection so simultaneous starts reuse one server checkout; network requests run outside the lock. Storage and foreground events synchronize cart intent and discard superseded in-memory payment sessions. A superseded checkout exits the payment form without treating the identity change as proof of payment. Submission checks the shared ID again after terms acceptance. Payment tokens remain in memory, and Stripe remains responsible for preventing a second successful payment on the same PaymentIntent. Checkout requires a secure browser context with Web Locks support.
 
 ## Terms and CMS
 

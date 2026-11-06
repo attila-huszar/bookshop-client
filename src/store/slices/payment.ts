@@ -1,5 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { ApiError, PaymentSession, PaymentState } from '@/types'
+import type {
+  ApiError,
+  PaymentOperationPhase,
+  PaymentSession,
+  PaymentState,
+} from '@/types'
 
 const initialState: PaymentState = {
   payment: null,
@@ -16,7 +21,7 @@ const paymentSlice = createSlice({
       state,
       action: PayloadAction<{
         operationId: string
-        phase: 'creating' | 'restoring' | 'canceling'
+        phase: PaymentOperationPhase
       }>,
     ) => {
       state.operationId = action.payload.operationId
@@ -48,12 +53,17 @@ const paymentSlice = createSlice({
       state.error = null
     },
     checkoutReset: () => initialState,
+    checkoutSuperseded: (): PaymentState => ({
+      ...initialState,
+      phase: 'superseded',
+    }),
   },
 })
 
 export const paymentReducer = paymentSlice.reducer
 export const {
   checkoutStarted,
+  checkoutSuperseded,
   checkoutReady,
   checkoutFailed,
   checkoutAborted,

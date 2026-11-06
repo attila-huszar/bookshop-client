@@ -5,6 +5,7 @@ import { shopLanguage } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
 import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
+import { checkoutSuperseded } from '@/store/slices/payment'
 import { getCheckoutPaymentId } from '@/services/checkout'
 import {
   checkoutQueryParams,
@@ -15,6 +16,7 @@ import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { baseURL } from '@/constants/envConfig'
 import type { ApiError, CheckoutTerms, ErrorCode } from '@/types'
 import { HttpErrorCode, TermsErrorCode } from '@/types/ApiError'
+import { useAppDispatch } from './redux'
 
 const retryableApiCodes: readonly ErrorCode[] = [
   HttpErrorCode.Internal,
@@ -44,6 +46,7 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [message, setMessage] = useState<SubmitMessage>({
     text: null,
     type: 'neutral',
@@ -78,12 +81,13 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
       return
     }
 
-    if (
-      !stripe ||
-      !elements ||
-      !paymentId ||
-      getCheckoutPaymentId() !== paymentId
-    ) {
+    if (paymentId && getCheckoutPaymentId() !== paymentId) {
+      dispatch(checkoutSuperseded())
+
+      return
+    }
+
+    if (!stripe || !elements || !paymentId) {
       setMessage({ text: t('checkout.notReady'), type: 'error' })
 
       return
@@ -112,7 +116,7 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
       }
 
       if (getCheckoutPaymentId() !== paymentId) {
-        setMessage({ text: t('checkout.missingSession'), type: 'error' })
+        dispatch(checkoutSuperseded())
 
         return
       }
