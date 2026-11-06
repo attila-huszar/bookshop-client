@@ -78,8 +78,10 @@ export const StyledButton = styled.button<StyleTypes>`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  height: ${({ $size = 'md' }) => height[$size]};
+  gap: 0.25rem;
+  min-height: ${({ $size = 'md' }) => height[$size]};
+  height: auto;
+  padding-block: 0.25em;
   width: ${({ $size = 'md' }) => width[$size]};
   font-size: ${({ $textSize = 'md' }) => fontSize[$textSize]};
   font-weight: 700;
@@ -120,10 +122,17 @@ export const StyledButton = styled.button<StyleTypes>`
     transition: none;
   }
 
-  div {
+  > div[role='img'] {
     display: flex;
+    align-items: center;
     justify-content: center;
-    width: 15%;
-    max-height: 50%;
+    flex-shrink: 0;
+    width: 1.25em;
+    height: 1.25em;
+
+    > svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 `

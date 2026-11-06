@@ -7,4 +7,5 @@ export type Cart = Pick<
   quantity: number
 }
 
-export type MinimalCart = Pick<Cart, 'id' | 'quantity'>
+/** Basket intent shared by Redux, browser storage, and checkout requests. */
+export type CartItem = Pick<Cart, 'id' | 'quantity'>

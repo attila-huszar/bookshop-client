@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`

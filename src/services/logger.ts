@@ -1,21 +1,16 @@
-import { LogLevel, sendLog } from '@/api'
+import { LogLevel, sendLog } from '@/api/logs'
 
-class Logger {
-  info(message: string, meta?: unknown): void {
-    void sendLog(LogLevel.Info, message, meta)
-  }
-
-  warn(message: string, meta?: unknown): void {
-    void sendLog(LogLevel.Warn, message, meta)
-  }
-
-  error(message: string, meta?: unknown): void {
-    void sendLog(LogLevel.Error, message, meta)
-  }
-
+export const log = {
   debug(message: string, meta?: unknown): void {
-    void sendLog(LogLevel.Debug, message, meta)
-  }
+    sendLog(LogLevel.Debug, message, meta)
+  },
+  info(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Info, message, meta)
+  },
+  warn(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Warn, message, meta)
+  },
+  error(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Error, message, meta)
+  },
 }
-
-export const log = new Logger()

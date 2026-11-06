@@ -1,34 +1,43 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { vi } from 'vitest'
+import { booksApi } from '@/store/api/booksApi'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { booksQueryArgs } from '@/store/selectors'
 import {
   applyBooksFilters,
+  setBooksCurrentPage,
   setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { useAppDispatch } from '@/hooks'
+} from '@/store/slices/books'
+import { createAppStore } from '@/store/store'
 import { EmptyFilterResults } from './EmptyFilterResults'
 
-vi.mock('@/hooks', () => ({
-  useAppDispatch: vi.fn(),
-}))
-
 describe('EmptyFilterResults', () => {
-  const mockDispatch = vi.fn()
+  let store: ReturnType<typeof createAppStore>
 
   beforeEach(() => {
-    vi.mocked(useAppDispatch).mockReturnValue(mockDispatch)
+    store = createAppStore()
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
+    act(() => {
+      store.dispatch(bookshopApi.util.resetApiState())
+    })
   })
 
+  const renderEmptyResults = () =>
+    render(
+      <Provider store={store}>
+        <EmptyFilterResults />
+      </Provider>,
+    )
+
   it('should render the component with icon, message, and reset button', () => {
-    render(<EmptyFilterResults />)
+    renderEmptyResults()
 
     expect(
       screen.getByText(/sorry, no results match your filter criteria/i),
@@ -41,21 +50,36 @@ describe('EmptyFilterResults', () => {
     expect(screen.getByRole('img', { name: /no results/i })).toBeInTheDocument()
   })
 
-  it('should dispatch reset actions when the "Reset Filters" button is clicked', async () => {
-    render(<EmptyFilterResults />)
+  it('clears applied and draft filters and returns to the first page', async () => {
+    await store.dispatch(
+      booksApi.util.upsertQueryData('searchOptions', undefined, {
+        genre: ['Fiction'],
+        price: [0, 100],
+        publishYear: [1900, 2026],
+      }),
+    )
+    store.dispatch(setBooksFilterGenre('Fiction'))
+    store.dispatch(setBooksFilterPrice([10, 20]))
+    store.dispatch(setBooksFilterPublishYear([2000, 2020]))
+    store.dispatch(setBooksFilterDiscount('discountOnly'))
+    store.dispatch(setBooksFilterRating(4.5))
+    store.dispatch(
+      applyBooksFilters(store.getState().books.booksFilters.active),
+    )
+    store.dispatch(setBooksCurrentPage(3))
+    renderEmptyResults()
 
     const resetButton = screen.getByRole('button', { name: /reset filters/i })
     await userEvent.click(resetButton)
 
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(applyBooksFilters())
+    expect(booksQueryArgs(store.getState()).criteria).toBeUndefined()
+    expect(store.getState().books.booksCurrentPage).toBe(1)
+    expect(store.getState().books.booksFilters.active).toEqual({
+      genre: [],
+      price: [0, 100],
+      publishYear: [1900, 2026],
+      discount: 'allBooks',
+      rating: 0.5,
     })
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterGenre([]))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPrice([]))
-    expect(mockDispatch).toHaveBeenCalledWith(
-      setBooksFilterDiscount('allBooks'),
-    )
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterPublishYear([]))
-    expect(mockDispatch).toHaveBeenCalledWith(setBooksFilterRating(0.5))
   })
 })

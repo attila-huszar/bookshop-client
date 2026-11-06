@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledLayout = styled.div`
   --page-loading-height: calc(100dvh - 7.5rem);

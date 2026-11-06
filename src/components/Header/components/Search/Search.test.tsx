@@ -1,14 +1,25 @@
 import { useNavigate } from 'react-router'
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { baseRequest } from '@/api'
+import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { useAppDispatch, useDebounce } from '@/hooks'
+import { useAppDispatch } from '@/hooks/redux'
 import { Search } from './Search'
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
+
+vi.mock('@/hooks/redux', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/redux')>()),
+  useAppDispatch: vi.fn(),
+}))
 
 const httpResponse = (data: unknown) =>
   ky.get('https://bookshop.test/mock', {
@@ -49,7 +60,6 @@ describe('Search', () => {
   beforeEach(() => {
     store = createAppStore()
     vi.mocked(useNavigate).mockReturnValue(mockNavigate)
-    vi.mocked(useDebounce).mockImplementation((fn) => fn)
     vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
   })
 
@@ -58,40 +68,31 @@ describe('Search', () => {
     vi.restoreAllMocks()
   })
 
-  it('queries books and authors and navigates to the selected result', async () => {
-    const get = vi.spyOn(baseRequest, 'get').mockImplementation((url) =>
-      httpResponse(
-        url === 'books'
-          ? [
-              {
-                id: 1,
-                title: 'Test Title',
-                author: 'Test Author',
-                imgUrl: 'test.jpg',
-              },
-            ]
-          : [],
-      ),
+  it('queries combined search once and navigates to the selected result', async () => {
+    const get = vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+      httpResponse([
+        {
+          id: 1,
+          title: 'Test Title',
+          author: 'Test Author',
+          imgUrl: 'test.jpg',
+        },
+      ]),
     )
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByText('Test Title')).toBeInTheDocument()
     expect(get).toHaveBeenCalledWith(
-      'books',
+      'books/search',
       expect.objectContaining({
-        searchParams: { title: 'Test' },
+        searchParams: { q: 'Test' },
       }),
     )
-    expect(get).toHaveBeenCalledWith(
-      'authors',
-      expect.objectContaining({
-        searchParams: { name: 'Test' },
-      }),
-    )
+    expect(get).toHaveBeenCalledTimes(1)
 
     expect(screen.getByRole('link', { name: /Test Title/ })).toHaveAttribute(
       'href',
@@ -99,9 +100,12 @@ describe('Search', () => {
     )
     await userEvent.click(screen.getByTitle('Search'))
     expect(mockNavigate).toHaveBeenCalledWith('/book?id=1')
+
+    await userEvent.click(screen.getByRole('link', { name: /Test Title/ }))
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('')
   })
 
-  it('merges author matches without mutating cached book results', async () => {
+  it('renders the combined response without mutating the cached results', async () => {
     const book = {
       id: 1,
       title: 'First Book',
@@ -110,31 +114,21 @@ describe('Search', () => {
     }
     const anotherBook = { ...book, id: 2, title: 'Second Book' }
 
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
-      if (url === 'authors') {
-        return httpResponse([{ id: 7, name: 'Author' }])
-      }
-
-      return httpResponse(
-        typeof options?.searchParams === 'object' &&
-          'authorId' in options.searchParams
-          ? [book, anotherBook]
-          : [book],
-      )
-    })
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+      httpResponse([book, anotherBook]),
+    )
 
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Author')
 
     expect(await screen.findByText('Second Book')).toBeInTheDocument()
     expect(screen.getAllByText('First Book')).toHaveLength(1)
     await waitFor(() => {
       expect(
-        bookshopApi.endpoints.bookSearch.select('Author')(store.getState())
-          .data,
-      ).toEqual([book])
+        booksApi.endpoints.bookSearch.select('Author')(store.getState()).data,
+      ).toEqual([book, anotherBook])
     })
   })
 
@@ -143,7 +137,7 @@ describe('Search', () => {
     const pending = new Promise<void>((resolve) => {
       completeRequest = resolve
     })
-    vi.spyOn(baseRequest, 'get').mockImplementation(() =>
+    const get = vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: async () => {
@@ -157,7 +151,7 @@ describe('Search', () => {
     )
 
     render(<Search />, { wrapper: Providers })
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(screen.getByRole('button', { name: 'Search' })).toHaveAttribute(
@@ -166,32 +160,29 @@ describe('Search', () => {
     )
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.queryByText('No search results...')).not.toBeInTheDocument()
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(1))
 
     await userEvent.click(screen.getByTitle('Clear'))
     await act(async () => {
       completeRequest()
       await store.dispatch(
-        bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
-      )
-      await store.dispatch(
-        bookshopApi.endpoints.authorSearch.initiate('Test', {
-          subscribe: false,
-        }),
+        booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
       )
     })
 
-    expect(screen.getByRole('textbox', { name: 'search' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveFocus()
     expect(screen.getByText('No search results...')).not.toBeVisible()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('shows a failed search instead of reporting no results', async () => {
-    vi.spyOn(baseRequest, 'get').mockRejectedValue(
+    vi.spyOn(publicApi, 'baseRequest').mockRejectedValue(
       new Error('Network unavailable'),
     )
     render(<Search />, { wrapper: Providers })
 
-    await userEvent.click(screen.getByRole('textbox', { name: 'search' }))
+    await userEvent.click(screen.getByRole('textbox', { name: 'Search' }))
     await userEvent.paste('Test')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -205,14 +196,14 @@ describe('Search', () => {
     'aborts pending HTTP requests when the search is %s',
     async (action) => {
       const httpSignals: AbortSignal[] = []
-      vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+      vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
         pendingHttpResponse(options?.signal, httpSignals),
       )
       const { unmount } = render(<Search />, { wrapper: Providers })
-      const input = screen.getByRole('textbox', { name: 'search' })
+      const input = screen.getByRole('textbox', { name: 'Search' })
       fireEvent.change(input, { target: { value: 'Test' } })
 
-      await waitFor(() => expect(httpSignals).toHaveLength(2))
+      await waitFor(() => expect(httpSignals).toHaveLength(1))
       const previousSignals = [...httpSignals]
 
       if (action === 'clear') {
@@ -226,20 +217,16 @@ describe('Search', () => {
       expect(previousSignals.every((signal) => signal.aborted)).toBe(true)
       await waitFor(() => {
         expect(
-          bookshopApi.endpoints.bookSearch.select('Test')(store.getState())
-            .isError,
-        ).toBe(true)
-        expect(
-          bookshopApi.endpoints.authorSearch.select('Test')(store.getState())
+          booksApi.endpoints.bookSearch.select('Test')(store.getState())
             .isError,
         ).toBe(true)
       })
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 
       await waitFor(() =>
-        expect(httpSignals).toHaveLength(action === 'replace' ? 4 : 2),
+        expect(httpSignals).toHaveLength(action === 'replace' ? 2 : 1),
       )
-      expect(httpSignals.slice(2).every((signal) => !signal.aborted)).toBe(true)
+      expect(httpSignals.slice(1).every((signal) => !signal.aborted)).toBe(true)
       expect(
         screen
           .queryByRole('button', { name: 'Search' })
@@ -249,54 +236,59 @@ describe('Search', () => {
     },
   )
 
-  it('also aborts pending books-by-author requests when cleared', async () => {
+  it('trims queries and keeps a pending search when only surrounding whitespace changes', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((url, options) => {
-      if (url === 'authors') {
-        return httpResponse([{ id: 7, name: 'Author' }])
-      }
-
-      if (
-        typeof options?.searchParams === 'object' &&
-        'authorId' in options.searchParams
-      ) {
-        return pendingHttpResponse(options.signal, httpSignals)
-      }
-
-      return httpResponse([])
-    })
-    render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
-      target: { value: 'Author' },
+    const get = vi
+      .spyOn(publicApi, 'baseRequest')
+      .mockImplementation((_url, options) =>
+        pendingHttpResponse(options?.signal, httpSignals),
+      )
+    const { unmount } = render(<Search />, { wrapper: Providers })
+    const input = screen.getByRole('textbox', { name: 'Search' })
+    fireEvent.change(input, { target: { value: '   ' } })
+    expect(get).not.toHaveBeenCalled()
+    expect(input).toHaveAttribute('aria-busy', 'false')
+    fireEvent.change(input, {
+      target: { value: ' Author ' },
     })
 
     await waitFor(() => expect(httpSignals).toHaveLength(1))
-    await userEvent.click(screen.getByTitle('Clear'))
+    await userEvent.type(input, ' ')
 
-    expect(httpSignals[0]?.aborted).toBe(true)
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(get).toHaveBeenCalledExactlyOnceWith(
+      'books/search',
+      expect.objectContaining({
+        searchParams: { q: 'Author' },
+      }),
+    )
+    expect(httpSignals[0]?.aborted).toBe(false)
+    unmount()
   })
 
   it('does not abort a matching query already started by another consumer', async () => {
     const httpSignals: AbortSignal[] = []
-    vi.spyOn(baseRequest, 'get').mockImplementation((_url, options) =>
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation((_url, options) =>
       pendingHttpResponse(options?.signal, httpSignals),
     )
     const existingRequest = store.dispatch(
-      bookshopApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
+      booksApi.endpoints.bookSearch.initiate('Test', { subscribe: false }),
     )
     await waitFor(() => expect(httpSignals).toHaveLength(1))
+    const initiate = vi.spyOn(booksApi.endpoints.bookSearch, 'initiate')
     render(<Search />, { wrapper: Providers })
-    fireEvent.change(screen.getByRole('textbox', { name: 'search' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: 'Test' },
     })
-    await waitFor(() => expect(httpSignals).toHaveLength(2))
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
+    await waitFor(() => expect(initiate).toHaveBeenCalledTimes(1))
+    expect(httpSignals).toHaveLength(1)
 
     await userEvent.click(screen.getByTitle('Clear'))
 
     expect(httpSignals[0]?.aborted).toBe(false)
-    expect(httpSignals[1]?.aborted).toBe(true)
     await act(async () => {
       existingRequest.abort()
       await existingRequest
@@ -304,4 +296,94 @@ describe('Search', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
+
+  it('keeps the dropdown dismissed when a pending response arrives and can reopen empty results', async () => {
+    let completeRequest!: (response: Response) => void
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+      ky.get('https://bookshop.test/mock', {
+        retry: 0,
+        fetch: () =>
+          new Promise<Response>((resolve) => {
+            completeRequest = resolve
+          }),
+      }),
+    )
+    render(<Search />, { wrapper: Providers })
+    const input = screen.getByRole('textbox', { name: 'Search' })
+    fireEvent.change(input, { target: { value: 'Missing' } })
+    await waitFor(() => expect(completeRequest).toBeDefined())
+    fireEvent.pointerDown(document.body)
+
+    await act(async () => {
+      completeRequest(
+        new Response('[]', {
+          headers: { 'content-type': 'application/json' },
+        }),
+      )
+      await store.dispatch(
+        booksApi.endpoints.bookSearch.initiate('Missing', { subscribe: false }),
+      )
+    })
+
+    expect(screen.getByText('No search results...')).not.toBeVisible()
+    await userEvent.click(input)
+    expect(screen.getByText('No search results...')).toBeVisible()
+  })
+
+  it('debounces rapid changes into one request for the latest query', async () => {
+    const get = vi
+      .spyOn(publicApi, 'baseRequest')
+      .mockImplementation(() => httpResponse([]))
+    render(<Search />, { wrapper: Providers })
+    const input = screen.getByRole('textbox', { name: 'Search' })
+    fireEvent.change(input, { target: { value: 'To' } })
+    fireEvent.change(input, { target: { value: 'Tolk' } })
+    fireEvent.change(input, { target: { value: 'Tolkien' } })
+
+    expect(get).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(get).toHaveBeenCalledExactlyOnceWith(
+        'books/search',
+        expect.objectContaining({
+          searchParams: { q: 'Tolkien' },
+        }),
+      ),
+    )
+  })
+
+  it.each(['clear', 'shorten', 'unmount'] as const)(
+    'cancels the debounce timer when the search is %s',
+    async (action) => {
+      vi.useFakeTimers()
+
+      try {
+        const get = vi
+          .spyOn(publicApi, 'baseRequest')
+          .mockImplementation(() => httpResponse([]))
+        const { unmount } = render(<Search />, { wrapper: Providers })
+        fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
+          target: { value: 'Test' },
+        })
+
+        if (action === 'clear') {
+          fireEvent.click(screen.getByTitle('Clear'))
+        } else if (action === 'shorten') {
+          fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
+            target: { value: 'T' },
+          })
+        } else {
+          unmount()
+        }
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(300)
+        })
+
+        expect(get).not.toHaveBeenCalled()
+        unmount()
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
 })

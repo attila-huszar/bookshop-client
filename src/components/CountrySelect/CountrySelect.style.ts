@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { baseInputStyles, FormTypes } from '@/styles'
+import { baseInputStyles, FormTypes } from '@/styles/form.styles'
 
 interface OptionItemProps {
   $selected?: boolean

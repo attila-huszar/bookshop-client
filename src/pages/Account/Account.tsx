@@ -1,28 +1,23 @@
 import { ChangeEvent, useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Form, Formik } from 'formik'
-import { userSelector } from '@/store'
 import {
   useUpdateAvatarMutation,
   useUpdateUserProfileMutation,
-} from '@/store/api/bookshopApi'
-import {
-  Alert,
-  Avatar,
-  Button,
-  CountrySelect,
-  FormikField,
-  IconButton,
-  Loading,
-  PasswordDialog,
-  toast,
-} from '@/components'
-import { useAppSelector } from '@/hooks'
-import { getErrorMessage } from '@/helpers'
-import {
-  accountBasicSchema,
-  addressSchema,
-  validateImageFile,
-} from '@/validation'
+} from '@/store/api/usersApi'
+import { userSelector } from '@/store/selectors'
+import { Alert } from '@/components/Alert'
+import { toast } from '@/components/AppToaster'
+import { Avatar } from '@/components/Avatar'
+import { Button, IconButton } from '@/components/Button'
+import { CountrySelect } from '@/components/CountrySelect'
+import { FormikField } from '@/components/FormikField'
+import { Loading } from '@/components/Loading'
+import { PasswordDialog } from '@/components/PasswordDialog'
+import { useAppSelector } from '@/hooks/redux'
+import { getErrorMessage } from '@/helpers/errors'
+import { IMAGE_ACCEPT, validateImageFile } from '@/validation/fileSchemas'
+import { accountBasicSchema, addressSchema } from '@/validation/userSchemas'
 import type { StripeAddress, UserProfileUpdate } from '@/types'
 import { EditIcon, SpinnerIcon } from '@/assets/svg'
 import {
@@ -38,6 +33,8 @@ import {
 } from './Account.style'
 
 export function Account() {
+  const { t } = useTranslation()
+
   const { userData, userIsLoading, userError } = useAppSelector(userSelector)
   const [updateUserProfile, profileUpdate] = useUpdateUserProfileMutation()
   const [updateAvatar, avatarUpdate] = useUpdateAvatarMutation()
@@ -48,49 +45,30 @@ export function Account() {
   const passwordDialog = useRef<HTMLDialogElement>(null)
 
   if (userIsLoading) {
-    return <Loading message="Loading your account" fullScreen />
+    return <Loading message={t('account.loading')} fullScreen />
   }
 
   if (!userData) {
-    return (
-      <Alert
-        message="Could not load your account"
-        error={userError ?? undefined}
-      />
-    )
+    return <Alert message={t('account.error')} error={userError ?? undefined} />
   }
 
-  const handleUserInfoSubmit = async ({
-    firstName,
-    lastName,
-    phone,
-  }: UserProfileUpdate) => {
+  const handleUserInfoSubmit = async (
+    values: Pick<UserProfileUpdate, 'firstName' | 'lastName' | 'phone'>,
+  ) => {
     try {
-      await updateUserProfile({ firstName, lastName, phone }).unwrap()
+      await updateUserProfile(values).unwrap()
       setEditingUserInfo(false)
     } catch (error) {
-      toast.error(
-        getErrorMessage(error, 'Failed to update contact information'),
-      )
+      toast.error(getErrorMessage(error, t('account.updateError')))
     }
   }
 
   const handleAddressSubmit = async (values: StripeAddress) => {
-    const updateData: UserProfileUpdate = {
-      address: {
-        line1: values.line1,
-        line2: values.line2,
-        city: values.city,
-        state: values.state,
-        postal_code: values.postal_code,
-        country: values.country,
-      },
-    }
     try {
-      await updateUserProfile(updateData).unwrap()
+      await updateUserProfile({ address: values }).unwrap()
       setEditingAddress(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to update address'))
+      toast.error(getErrorMessage(error, t('account.addressError')))
     }
   }
 
@@ -101,37 +79,33 @@ export function Account() {
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const fileInput = e.target
     const files = fileInput.files
+    const file = files?.[0]
 
-    if (!files || files.length === 0) {
+    if (!file) {
       return
     }
 
-    const file = files[0]
+    fileInput.value = ''
     const { valid, error } = validateImageFile(file)
 
     if (!valid && error) {
       toast.error(error, { id: 'upload-error' })
-
       return
     }
 
     const formData = new FormData()
-    if (file) {
-      formData.append('avatar', file)
-    }
+    formData.append('avatar', file)
     void uploadAvatarFile(formData)
-
-    fileInput.value = ''
   }
 
   const uploadAvatarFile = async (formData: FormData) => {
-    toast.loading('Uploading avatar...', { id: 'avatar-upload' })
+    toast.loading(t('account.uploadingAvatar'), { id: 'avatar-upload' })
 
     try {
       await updateAvatar(formData).unwrap()
-      toast.success('Avatar updated successfully', { id: 'avatar-upload' })
-    } catch {
-      toast.error('Failed to update avatar, please try again later', {
+      toast.success(t('account.avatarUpdated'), { id: 'avatar-upload' })
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('account.avatarError')), {
         id: 'avatar-upload',
       })
     }
@@ -145,32 +119,34 @@ export function Account() {
     const { email, firstName, lastName, phone, address, avatar, country } =
       userData
 
-    const defaultCountry =
-      address && 'country' in address ? address.country! : country
-
     return (
       <StyledAccount>
         <h2>
-          Hello, <span>{firstName}</span>!
+          <Trans
+            i18nKey="account.hello"
+            values={{ name: firstName }}
+            components={{ name: <span /> }}
+          />
         </h2>
         <UserDataFields>
           <Details>
-            <h5>General Information</h5>
+            <h5>{t('account.information')}</h5>
             <div>
               <AvatarPanel>
                 <Avatar
                   imgUrl={avatar ?? undefined}
                   onClick={handleAvatarClick}
-                  title="Change Profile Picture"
+                  title={t('account.changeAvatar')}
                   $size={160}
                   $hoverControls
                 />
                 <input
                   type="file"
                   name="avatarChangeInput"
-                  aria-label="Change Avatar"
+                  aria-label={t('account.changeAvatar')}
                   onChange={handleAvatarChange}
-                  accept="image/*"
+                  disabled={userIsUpdating}
+                  accept={IMAGE_ACCEPT}
                   ref={inputFile}
                   style={{
                     position: 'absolute',
@@ -188,7 +164,7 @@ export function Account() {
                   onClick={handlePasswordDialogOpen}
                   $size="smMd"
                   $textSize="sm">
-                  Change Password
+                  {t('auth.changePassword')}
                 </Button>
                 <PasswordDialog ref={passwordDialog} email={email} />
               </AvatarPanel>
@@ -197,7 +173,6 @@ export function Account() {
                   initialValues={{
                     firstName,
                     lastName,
-                    email,
                     phone: phone ?? '',
                   }}
                   enableReinitialize
@@ -208,20 +183,20 @@ export function Account() {
                     <Form>
                       <GeneralLine>
                         <div>
-                          <p>First name</p>
+                          <p>{t('common.fields.firstName')}</p>
                           <FormikField
                             name="firstName"
-                            placeholder="First name"
+                            placeholder={t('common.fields.firstName')}
                             type="text"
                             autoComplete="given-name"
                             readOnly={!editingUserInfo}
                           />
                         </div>
                         <div>
-                          <p>Last name</p>
+                          <p>{t('common.fields.lastName')}</p>
                           <FormikField
                             name="lastName"
-                            placeholder="Last name"
+                            placeholder={t('common.fields.lastName')}
                             type="text"
                             autoComplete="family-name"
                             readOnly={!editingUserInfo}
@@ -230,20 +205,20 @@ export function Account() {
                       </GeneralLine>
                       <GeneralLine>
                         <div>
-                          <p>Email</p>
+                          <p>{t('common.fields.email')}</p>
                           <FormikField
-                            name="email"
-                            placeholder="Email"
+                            value={email}
+                            placeholder={t('common.fields.email')}
                             type="email"
                             autoComplete="email"
                             readOnly
                           />
                         </div>
                         <div>
-                          <p>Phone</p>
+                          <p>{t('common.fields.phone')}</p>
                           <FormikField
                             name="phone"
-                            placeholder="Phone"
+                            placeholder={t('common.fields.phone')}
                             type="tel"
                             inputMode="tel"
                             autoComplete="tel"
@@ -254,13 +229,14 @@ export function Account() {
                       {editingUserInfo && (
                         <ButtonWrapper>
                           <Button type="reset" $size="sm" $color="neutral">
-                            Cancel
+                            {t('common.actions.cancel')}
                           </Button>
                           <Button
                             $size="sm"
                             type="submit"
                             disabled={userIsUpdating || !dirty}>
-                            {userIsUpdating && <SpinnerIcon height={22} />} Save
+                            {userIsUpdating && <SpinnerIcon height={22} />}
+                            {t('common.actions.save')}
                           </Button>
                         </ButtonWrapper>
                       )}
@@ -272,25 +248,21 @@ export function Account() {
             <IconButton
               onClick={() => setEditingUserInfo(true)}
               icon={<EditIcon />}
-              title="Edit contact info"
+              title={t('account.editContact')}
               disabled={editingUserInfo}
             />
           </Details>
           <Details>
-            <h5>Address</h5>
+            <h5>{t('common.fields.address')}</h5>
             <Address>
               <Formik
                 initialValues={{
-                  line1: address && 'line1' in address ? address.line1 : '',
-                  line2: address && 'line2' in address ? address.line2 : '',
-                  city: address && 'city' in address ? address.city : '',
-                  state: address && 'state' in address ? address.state : '',
-                  postal_code:
-                    address && 'postal_code' in address
-                      ? address.postal_code
-                      : '',
-                  country:
-                    address && 'country' in address ? address.country : '',
+                  line1: address?.line1 ?? '',
+                  line2: address?.line2 ?? '',
+                  city: address?.city ?? '',
+                  state: address?.state ?? '',
+                  postal_code: address?.postal_code ?? '',
+                  country: address?.country ?? country,
                 }}
                 enableReinitialize
                 validationSchema={addressSchema}
@@ -300,20 +272,22 @@ export function Account() {
                   <Form>
                     <AddressLine>
                       <div>
-                        <p>Address line 1</p>
+                        <p>{t('common.fields.line1')}</p>
                         <FormikField
                           name="line1"
-                          placeholder="Address line 1"
+                          placeholder={t('common.fields.line1')}
                           type="text"
                           autoComplete="address-line1"
                           readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>Address line 2 (optional)</p>
+                        <p>
+                          {t('common.fields.line2')} ({t('common.optional')})
+                        </p>
                         <FormikField
                           name="line2"
-                          placeholder="Address line 2"
+                          placeholder={t('common.fields.line2')}
                           type="text"
                           autoComplete="address-line2"
                           readOnly={!editingAddress}
@@ -322,30 +296,32 @@ export function Account() {
                     </AddressLine>
                     <AddressLine>
                       <div>
-                        <p>City</p>
+                        <p>{t('common.fields.city')}</p>
                         <FormikField
                           name="city"
-                          placeholder="City"
+                          placeholder={t('common.fields.city')}
                           type="text"
                           autoComplete="address-level2"
                           readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>State</p>
+                        <p>
+                          {t('common.fields.state')} ({t('common.optional')})
+                        </p>
                         <FormikField
                           name="state"
-                          placeholder="State"
+                          placeholder={t('common.fields.state')}
                           type="text"
                           autoComplete="address-level1"
                           readOnly={!editingAddress}
                         />
                       </div>
                       <div>
-                        <p>Postal Code</p>
+                        <p>{t('common.fields.postalCode')}</p>
                         <FormikField
                           name="postal_code"
-                          placeholder="Postal Code"
+                          placeholder={t('common.fields.postalCode')}
                           type="text"
                           autoComplete="postal-code"
                           readOnly={!editingAddress}
@@ -354,23 +330,21 @@ export function Account() {
                     </AddressLine>
                     <AddressLine>
                       <div>
-                        <p>Country</p>
-                        <CountrySelect
-                          initial={defaultCountry}
-                          readOnly={!editingAddress}
-                        />
+                        <p>{t('common.fields.country')}</p>
+                        <CountrySelect readOnly={!editingAddress} />
                       </div>
                     </AddressLine>
                     {editingAddress && (
                       <ButtonWrapper>
                         <Button $size="sm" type="reset" $color="neutral">
-                          Cancel
+                          {t('common.actions.cancel')}
                         </Button>
                         <Button
                           $size="sm"
                           type="submit"
                           disabled={userIsUpdating || !dirty}>
-                          {userIsUpdating && <SpinnerIcon height={22} />} Save
+                          {userIsUpdating && <SpinnerIcon height={22} />}
+                          {t('common.actions.save')}
                         </Button>
                       </ButtonWrapper>
                     )}
@@ -381,7 +355,7 @@ export function Account() {
             <IconButton
               onClick={() => setEditingAddress(true)}
               icon={<EditIcon />}
-              title="Edit address"
+              title={t('account.editAddress')}
               disabled={editingAddress}
             />
           </Details>

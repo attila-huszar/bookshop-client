@@ -2,7 +2,6 @@ import js from '@eslint/js'
 import vitest from '@vitest/eslint-plugin'
 import prettierConfig from 'eslint-config-prettier'
 import prettier from 'eslint-plugin-prettier'
-import reactCompiler from 'eslint-plugin-react-compiler'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import testingLibrary from 'eslint-plugin-testing-library'
@@ -31,13 +30,11 @@ export default defineConfig(
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-      'react-compiler': reactCompiler,
       'react-refresh': reactRefresh,
       prettier,
       vitest,
     },
     rules: {
-      'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

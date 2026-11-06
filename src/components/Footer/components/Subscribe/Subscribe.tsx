@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { toast } from '@/components'
+import { useTranslation } from 'react-i18next'
+import { toast } from '@/components/AppToaster'
 import { SubscribeForm, Text } from './Subscribe.style'
 
 export function Subscribe() {
+  const { t } = useTranslation()
+
   const [email, setEmail] = useState('')
 
   const handleSubscribe = () => {
-    toast('Subscription feature not yet implemented', {
+    toast(t('home.subscribeUnavailable'), {
       icon: '💌',
     })
     setEmail('')
@@ -14,19 +17,17 @@ export function Subscribe() {
 
   return (
     <>
-      <Text>
-        Subscribe to stay tuned for new product and latest updates. Let's do it!
-      </Text>
+      <Text>{t('home.subscribeDescription')}</Text>
       <SubscribeForm>
         <input
           name="subscribe"
           type="email"
-          placeholder="Enter your email address"
+          placeholder={t('home.emailPlaceholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <button onClick={handleSubscribe} type="button">
-          Subscribe
+          {t('home.subscribe')}
         </button>
       </SubscribeForm>
     </>

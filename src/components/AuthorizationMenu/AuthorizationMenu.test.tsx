@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router'
 import { render, screen } from '@testing-library/react'
-import { ROUTE } from '@/routes'
+import { ROUTE } from '@/routes/route'
 import { AuthorizationMenu } from './AuthorizationMenu'
 
 describe('AuthorizationMenu', () => {
@@ -8,14 +8,12 @@ describe('AuthorizationMenu', () => {
     return render(<MemoryRouter>{children}</MemoryRouter>)
   }
 
-  it('should render login and register links', () => {
-    renderWithRouter(<AuthorizationMenu />)
-    expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /register/i })).toBeInTheDocument()
-  })
-
-  it('should have correct hrefs for login and register links', () => {
-    renderWithRouter(<AuthorizationMenu />)
+  it('renders authentication links and supplied content', () => {
+    renderWithRouter(
+      <AuthorizationMenu>
+        <span>Additional action</span>
+      </AuthorizationMenu>,
+    )
     expect(screen.getByRole('link', { name: /login/i })).toHaveAttribute(
       'href',
       `/${ROUTE.LOGIN}`,
@@ -24,15 +22,6 @@ describe('AuthorizationMenu', () => {
       'href',
       `/${ROUTE.REGISTER}`,
     )
-  })
-
-  it('should render children passed to the component', () => {
-    renderWithRouter(
-      <AuthorizationMenu>
-        <div data-testid="child-element">Child Content</div>
-      </AuthorizationMenu>,
-    )
-    expect(screen.getByTestId('child-element')).toBeInTheDocument()
-    expect(screen.getByText('Child Content')).toBeInTheDocument()
+    expect(screen.getByText('Additional action')).toBeInTheDocument()
   })
 })

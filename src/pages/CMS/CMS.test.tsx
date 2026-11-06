@@ -1,13 +1,16 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useOutletContext } from 'react-router'
+import { i18n } from '@/i18n'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import ky from 'ky'
+import ky, { type KyInstance } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import { ordersApi } from '@/store/api/ordersApi'
+import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
-import { toast } from '@/components'
+import { toast } from '@/components/AppToaster'
 import {
   type CmsOrder,
   type CMSOutletContext,
@@ -17,9 +20,6 @@ import {
 import { CMS } from './CMS'
 import { Orders } from './components/Orders/Orders'
 import { Users } from './components/Users/Users'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 const order: CmsOrder = {
   id: 1,
@@ -56,6 +56,8 @@ const account: CmsUser = {
 let accounts: CmsUser[]
 let store: ReturnType<typeof createAppStore>
 let orders: CmsOrder[]
+const remove = vi.fn<KyInstance['delete']>()
+const restore = vi.fn<KyInstance['patch']>()
 const response = (data: unknown) =>
   ky.get('https://bookshop.test/mock', {
     retry: 0,
@@ -83,11 +85,6 @@ beforeEach(() => {
   ) {
     this.removeAttribute('open')
   })
-  vi.spyOn(authRequest, 'get').mockImplementation((url) =>
-    response(
-      url === 'cms/users' ? accounts : url === 'cms/orders' ? orders : [],
-    ),
-  )
   const updateVisibility = (
     deleted: boolean,
     options: { json?: unknown } | undefined,
@@ -106,12 +103,31 @@ beforeEach(() => {
 
     return response(orderIds.length + userIds.length)
   }
-  vi.spyOn(authRequest, 'delete').mockImplementation((_url, options) =>
-    updateVisibility(true, options),
-  )
-  vi.spyOn(authRequest, 'patch').mockImplementation((_url, options) =>
-    updateVisibility(false, options),
-  )
+  remove
+    .mockReset()
+    .mockImplementation((_url, options) => updateVisibility(true, options))
+  restore
+    .mockReset()
+    .mockImplementation((_url, options) => updateVisibility(false, options))
+  vi.spyOn(privateApi, 'authRequest').mockImplementation((url, options) => {
+    if (options?.method === 'delete') {
+      return remove(url, options)
+    }
+
+    if (options?.method === 'patch') {
+      return restore(url, options)
+    }
+
+    return response(
+      url === 'cms/users'
+        ? accounts
+        : url === 'cms/orders'
+          ? orders
+          : url === 'cms/terms'
+            ? null
+            : [],
+    )
+  })
 })
 
 afterEach(() => {
@@ -119,6 +135,7 @@ afterEach(() => {
     store.dispatch(bookshopApi.util.resetApiState())
   })
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 function CatalogSelection({ tab }: { tab: 'books' | 'authors' }) {
@@ -139,6 +156,7 @@ function renderCMS(tab = 'orders') {
     <Provider store={store}>
       <MemoryRouter initialEntries={['/cms/' + tab]}>
         <Routes>
+          <Route path="/" element={<p>Storefront</p>} />
           <Route path="/cms" element={<CMS />}>
             <Route path="orders" element={<Orders />} />
             <Route path="users" element={<Users />} />
@@ -154,13 +172,129 @@ function renderCMS(tab = 'orders') {
   )
 }
 
+describe('CMS menu', () => {
+  it.each([390, 1024])(
+    'opens the terms editor from the menu at %ipx',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      renderCMS()
+      const user = userEvent.setup()
+      const trigger = screen.getByRole('button', { name: 'Menu' })
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        screen.queryByRole('button', { name: 'Terms and Conditions' }),
+      ).not.toBeInTheDocument()
+      await user.click(trigger)
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+      expect(
+        Boolean(screen.queryByRole('button', { name: 'Close menu' })),
+      ).toBe(width < 600)
+      await user.click(
+        screen.getByRole('button', { name: 'Terms and Conditions' }),
+      )
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        await screen.findByRole('dialog', { name: 'Terms and Conditions' }),
+      ).toBeInTheDocument()
+      await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    },
+  )
+
+  it.each([390, 1024])(
+    'dismisses the menu with Escape and outside clicks at %ipx',
+    async (width) => {
+      vi.stubGlobal('innerWidth', width)
+      renderCMS()
+      const user = userEvent.setup()
+      const trigger = screen.getByRole('button', { name: 'Menu' })
+      await user.click(trigger)
+
+      expect(
+        screen.getByRole('button', { name: 'Terms and Conditions' }),
+      ).toHaveFocus()
+      await user.keyboard('{Escape}')
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(trigger).toHaveFocus()
+      await user.click(trigger)
+      await user.click(screen.getByRole('link', { name: 'Orders' }))
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(
+        screen.queryByRole('button', { name: 'Terms and Conditions' }),
+      ).not.toBeInTheDocument()
+    },
+  )
+
+  it('returns to the storefront from the menu', async () => {
+    renderCMS()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(screen.getByRole('link', { name: 'Home' }))
+
+    expect(screen.getByText('Storefront')).toBeInTheDocument()
+  })
+
+  it('uses Hungarian labels in the mobile menu', async () => {
+    vi.stubGlobal('innerWidth', 390)
+    await i18n.changeLanguage('hu')
+    renderCMS()
+    const user = userEvent.setup()
+    const trigger = screen.getByRole('button', { name: 'Menü' })
+    await user.click(trigger)
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Általános Szerződési Feltételek (ÁSZF)',
+      }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Menü bezárása' }))
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveFocus()
+  })
+})
+
 describe('CMS deletion controls', () => {
+  it('translates controls and confirmations after a language change without changing request values', async () => {
+    renderCMS()
+    const selectOrder = await screen.findByRole('checkbox', {
+      name: 'Select order #1',
+    })
+
+    await act(async () => {
+      await i18n.changeLanguage('hu')
+    })
+
+    expect(screen.getByRole('link', { name: 'Rendelések' })).toBeInTheDocument()
+    await userEvent.click(selectOrder)
+    await userEvent.click(screen.getByRole('button', { name: 'Eltávolítás' }))
+    const dialog = screen.getByRole('dialog')
+    expect(
+      within(dialog).getByText(/eltávolítja a kijelölt tételeket/i),
+    ).toBeInTheDocument()
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Eltávolítás' }),
+    )
+
+    await waitFor(() => {
+      expect(remove).toHaveBeenCalledWith(
+        'cms/orders',
+        expect.objectContaining({ json: { orderIds: [1] } }),
+      )
+    })
+  })
+
   it('shows pending confirmation and prevents repeated removal requests', async () => {
     let completeRequest!: (value: Response) => void
     const pending = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.mocked(authRequest.delete).mockImplementation(() =>
+    remove.mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => pending,
@@ -182,7 +316,7 @@ describe('CMS deletion controls', () => {
       within(dialog).getByRole('button', { name: 'Cancel' }),
     ).toBeDisabled()
     await userEvent.click(confirm)
-    expect(authRequest.delete).toHaveBeenCalledTimes(1)
+    expect(remove).toHaveBeenCalledTimes(1)
 
     orders = [{ ...order, deletedAt: '2026-10-10T12:00:00Z' }]
     act(() => {
@@ -217,14 +351,14 @@ describe('CMS deletion controls', () => {
       )
       await screen.findByText('No ' + entity + ' found')
 
-      expect(authRequest.delete).toHaveBeenCalledWith(
+      expect(remove).toHaveBeenCalledWith(
         'cms/' + entity,
         expect.objectContaining({ json }),
       )
       const endpoint =
         entity === 'orders'
-          ? bookshopApi.endpoints.cmsOrders
-          : bookshopApi.endpoints.cmsUsers
+          ? ordersApi.endpoints.cmsOrders
+          : usersApi.endpoints.cmsUsers
       expect(
         endpoint.select()(store.getState()).data?.[0]?.deletedAt,
       ).toBeTruthy()
@@ -250,7 +384,7 @@ describe('CMS deletion controls', () => {
       )
       await screen.findByText('No deleted ' + entity + ' found')
 
-      expect(authRequest.patch).toHaveBeenLastCalledWith(
+      expect(restore).toHaveBeenLastCalledWith(
         'cms/restore/' + entity,
         expect.objectContaining({ json }),
       )
@@ -305,7 +439,7 @@ describe('CMS deletion controls', () => {
         'No items selected',
         expect.any(Object),
       )
-      expect(authRequest.patch).not.toHaveBeenCalled()
+      expect(restore).not.toHaveBeenCalled()
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     },
   )
@@ -313,9 +447,7 @@ describe('CMS deletion controls', () => {
   it.each(['orders', 'users'] as const)(
     'leaves %s visible when soft deletion fails',
     async (entity) => {
-      vi.mocked(authRequest.delete).mockRejectedValueOnce(
-        new Error('Server unavailable'),
-      )
+      remove.mockRejectedValueOnce(new Error('Server unavailable'))
       const user = userEvent.setup()
       const selection =
         'Select ' + (entity === 'orders' ? 'order' : 'user') + ' #1'
@@ -352,9 +484,9 @@ describe('CMS deletion controls', () => {
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveTextContent('This action is irreversible.')
       expect(dialog).toHaveTextContent('These records cannot be restored.')
-      expect(authRequest.delete).not.toHaveBeenCalled()
+      expect(remove).not.toHaveBeenCalled()
       await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-      expect(authRequest.delete).not.toHaveBeenCalled()
+      expect(restore).not.toHaveBeenCalled()
       await user.click(screen.getByRole('button', { name: 'Delete' }))
       await user.click(
         within(screen.getByRole('dialog')).getByRole('button', {
@@ -362,7 +494,7 @@ describe('CMS deletion controls', () => {
         }),
       )
       await waitFor(() =>
-        expect(authRequest.delete).toHaveBeenCalledWith(
+        expect(remove).toHaveBeenCalledWith(
           'cms/' + entity,
           expect.objectContaining({
             json: { [entity === 'books' ? 'bookIds' : 'authorIds']: [1] },

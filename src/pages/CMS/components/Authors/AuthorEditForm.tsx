@@ -1,24 +1,21 @@
 import { FC } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import {
   useAddAuthorMutation,
   useUpdateAuthorMutation,
-} from '@/store/api/bookshopApi'
-import { Button, FormikField, toast } from '@/components'
-import { formatDate, getErrorMessage } from '@/helpers'
-import { authorSchema } from '@/validation'
-import { Author } from '@/types'
+} from '@/store/api/authorsApi'
+import { toast } from '@/components/AppToaster'
+import { Button } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { getErrorMessage } from '@/helpers/errors'
+import { formatDate } from '@/helpers/formatDate'
+import { authorSchema } from '@/validation/productSchemas'
+import type { Author, AuthorCreate } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
-import {
-  FormButtons,
-  FullRow,
-  MetadataBlock,
-  Row,
-  SectionHeader,
-} from '../../styles'
+import { FormButtons, FullRow, MetadataBlock, Row } from '../../styles'
 
-const initialAuthorValues: Author = {
-  id: 0,
+const initialAuthorValues: AuthorCreate = {
   name: '',
   fullName: '',
   birthYear: '',
@@ -38,34 +35,45 @@ export const AuthorEditForm: FC<Props> = ({
   onClose,
   readOnly,
 }) => {
+  const { t } = useTranslation()
+
   const [addAuthor] = useAddAuthorMutation()
   const [updateAuthor] = useUpdateAuthorMutation()
 
+  const initialValues: AuthorCreate = editedItem
+    ? {
+        name: editedItem.name,
+        fullName: editedItem.fullName,
+        birthYear: editedItem.birthYear,
+        deathYear: editedItem.deathYear,
+        homeland: editedItem.homeland,
+        biography: editedItem.biography,
+      }
+    : initialAuthorValues
+
   const handleSubmit = async (
-    values: Author,
-    actions: FormikHelpers<Author>,
+    values: AuthorCreate,
+    actions: FormikHelpers<AuthorCreate>,
   ) => {
     try {
       if (editedItem) {
-        const { createdAt, updatedAt, ...authorValues } = values
-        await updateAuthor(authorValues).unwrap()
+        await updateAuthor({ ...values, id: editedItem.id }).unwrap()
       } else {
-        const { id, ...authorWithoutId } = values
-        await addAuthor(authorWithoutId).unwrap()
+        await addAuthor(values).unwrap()
       }
 
       actions.resetForm()
-      toast.success(`Author ${editedItem ? 'updated' : 'added'} successfully`)
+      toast.success(t('cms.saved', { entity: t('common.fields.author') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'An unexpected error occurred'))
+      toast.error(getErrorMessage(error, t('common.unexpectedError')))
     }
   }
 
   return (
     <Formik
       key="authors"
-      initialValues={editedItem ?? initialAuthorValues}
+      initialValues={initialValues}
       validationSchema={authorSchema}
       onSubmit={handleSubmit}>
       {({ dirty, isSubmitting }) => (
@@ -73,14 +81,15 @@ export const AuthorEditForm: FC<Props> = ({
           <fieldset disabled={readOnly}>
             {editedItem && (
               <>
-                <SectionHeader>Author Information</SectionHeader>
                 <MetadataBlock>
                   <div>
-                    <p>Author ID</p>
+                    <p>
+                      {t('cms.recordId', { entity: t('common.fields.author') })}
+                    </p>
                     <span>{editedItem.id}</span>
                   </div>
                   <div>
-                    <p>Created At</p>
+                    <p>{t('common.fields.createdAt')}</p>
                     <span>
                       {editedItem.createdAt
                         ? formatDate(editedItem.createdAt)
@@ -88,7 +97,7 @@ export const AuthorEditForm: FC<Props> = ({
                     </span>
                   </div>
                   <div>
-                    <p>Updated At</p>
+                    <p>{t('common.fields.updatedAt')}</p>
                     <span>
                       {editedItem.updatedAt
                         ? formatDate(editedItem.updatedAt)
@@ -100,42 +109,54 @@ export const AuthorEditForm: FC<Props> = ({
             )}
             <Row>
               <div>
-                <p>Name</p>
-                <FormikField name="name" placeholder="Name" type="text" />
-              </div>
-              <div>
-                <p>Full Name</p>
+                <p>{t('common.fields.name')}</p>
                 <FormikField
-                  name="fullName"
-                  placeholder="Full Name"
+                  name="name"
+                  placeholder={t('common.fields.name')}
                   type="text"
                 />
               </div>
               <div>
-                <p>Homeland</p>
+                <p>{t('common.fields.fullName')}</p>
+                <FormikField
+                  name="fullName"
+                  placeholder={t('common.fields.fullName')}
+                  type="text"
+                />
+              </div>
+              <div>
+                <p>{t('common.fields.homeland')}</p>
                 <FormikField
                   name="homeland"
-                  placeholder="Homeland"
+                  placeholder={t('common.fields.homeland')}
                   type="text"
                 />
               </div>
             </Row>
             <Row>
               <div>
-                <p>Birth</p>
-                <FormikField name="birthYear" placeholder="Birth" type="text" />
+                <p>{t('common.fields.birth')}</p>
+                <FormikField
+                  name="birthYear"
+                  placeholder={t('common.fields.birth')}
+                  type="text"
+                />
               </div>
               <div>
-                <p>Death</p>
-                <FormikField name="deathYear" placeholder="Death" type="text" />
+                <p>{t('common.fields.death')}</p>
+                <FormikField
+                  name="deathYear"
+                  placeholder={t('common.fields.death')}
+                  type="text"
+                />
               </div>
             </Row>
             <FullRow>
               <div>
-                <p>Biography</p>
+                <p>{t('common.fields.biography')}</p>
                 <FormikField
                   name="biography"
-                  placeholder="Biography"
+                  placeholder={t('common.fields.biography')}
                   type="textarea"
                   rows={4}
                 />
@@ -149,14 +170,17 @@ export const AuthorEditForm: FC<Props> = ({
               $size="sm"
               $color="neutral"
               disabled={isSubmitting}>
-              {readOnly ? 'Close' : 'Cancel'}
+              {readOnly
+                ? t('common.actions.close')
+                : t('common.actions.cancel')}
             </Button>
             {!readOnly && (
               <Button
                 type="submit"
                 $size="sm"
                 disabled={!dirty || isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={22} />} Save
+                {isSubmitting && <SpinnerIcon height={22} />}
+                {t('common.actions.save')}
               </Button>
             )}
           </FormButtons>
