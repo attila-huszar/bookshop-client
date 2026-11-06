@@ -9,14 +9,19 @@ import {
   cartQuantitySet,
   cartRestored,
 } from '@/store/slices/cart'
+import { checkoutReady } from '@/store/slices/payment'
 import { createAppStore } from '@/store/store'
-import { localStorageAdapter } from '@/helpers/browserStorage'
-import { cartKey, paymentIdempotencyKey } from '@/constants/keys'
+import {
+  localStorageAdapter,
+  sessionStorageAdapter,
+} from '@/helpers/browserStorage'
+import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
 import type { PaymentIntentResponse } from '@/types'
 import { HttpErrorCode, PaymentErrorCode } from '@/types/ApiError'
 import {
   cancelCheckout,
   getCheckoutPaymentId,
+  listenForCheckoutChanges,
   recoverCheckout,
   resetCheckout,
   restoreCheckout,
@@ -59,13 +64,18 @@ function deferredResponse() {
 let store: ReturnType<typeof createAppStore>
 let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>
 let requests: Request[]
-const requestLock = vi.fn((_name: string, callback: () => unknown) =>
-  Promise.resolve().then(callback),
-)
+let lockQueue: Promise<unknown>
+const requestLock = vi.fn((_name: string, callback: () => unknown) => {
+  const result = lockQueue.then(callback)
+  lockQueue = result.catch(() => undefined)
+
+  return result
+})
 
 beforeEach(() => {
   sessionStorage.clear()
   localStorage.clear()
+  lockQueue = Promise.resolve()
   vi.stubGlobal(
     'navigator',
     Object.assign(Object.create(navigator), {
@@ -169,6 +179,16 @@ describe('checkout coordinator', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('accepts equal basket intent regardless of stored field order', async () => {
+    localStorageAdapter.set(cartKey, [{ quantity: 1, id: 7 }])
+
+    await expect(store.dispatch(startCheckout(payment))).resolves.toEqual({
+      type: 'ready',
+      payment: session(),
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('preserves the same retry key after a network failure', async () => {
     fetchMock.mockRejectedValueOnce(new TypeError('Offline'))
     await expect(store.dispatch(startCheckout(payment))).rejects.toMatchObject({
@@ -256,6 +276,20 @@ describe('checkout coordinator', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(store.getState().cart.cartItems).toEqual([])
     expect(getCheckoutPaymentId()).toBeNull()
+  })
+
+  it('discards a create after another tab edits the basket before storage events arrive', async () => {
+    const response = deferredResponse()
+    fetchMock.mockReturnValueOnce(response.promise)
+    const pending = store.dispatch(startCheckout(payment))
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    localStorageAdapter.set(cartKey, [{ id: 7, quantity: 2 }])
+    response.resolve(json(session()))
+
+    await expect(pending).resolves.toEqual({ type: 'stale' })
+    expect(getCheckoutPaymentId()).toBeNull()
+    expect(store.getState().payment.phase).toBe('idle')
   })
 
   it.each(['changed request', 'reset', 'ended'] as const)(
@@ -616,5 +650,94 @@ describe('checkout coordinator', () => {
         }),
       ),
     ).rejects.toMatchObject({ name: 'AbortError' })
+  })
+})
+
+describe('checkout synchronization across tabs', () => {
+  let stop: () => void
+
+  const storageEvent = (key: string | null, storageArea = localStorage) => {
+    window.dispatchEvent(new StorageEvent('storage', { key, storageArea }))
+  }
+
+  beforeEach(() => {
+    store.dispatch(recoverCheckout('pi_shared'))
+    store.dispatch(checkoutReady(session('pi_shared')))
+    stop = listenForCheckoutChanges(store)
+  })
+
+  afterEach(() => {
+    stop()
+  })
+
+  it('clears the paid basket and obsolete payment form when another tab finishes', () => {
+    const secondTab = createAppStore()
+    secondTab.dispatch(resetCheckout())
+    localStorageAdapter.remove(cartKey)
+
+    storageEvent(paymentIdKey)
+    storageEvent(cartKey)
+
+    expect(store.getState().cart.cartItems).toEqual([])
+    expect(store.getState().payment.payment).toBeNull()
+    expect(store.getState().payment.phase).toBe('idle')
+  })
+
+  it('discards a superseded session without deleting the other tab checkout', () => {
+    localStorageAdapter.set(paymentIdKey, 'pi_new')
+    localStorageAdapter.set(cartKey, [{ id: 7, quantity: 2 }])
+    storageEvent(paymentIdKey)
+
+    expect(store.getState().payment.payment).toBeNull()
+    expect(localStorageAdapter.get(paymentIdKey)).toBe('pi_new')
+    expect(store.getState().cart.cartItems).toEqual([{ id: 7, quantity: 2 }])
+  })
+
+  it('reads the latest storage when an older event is delivered', () => {
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: paymentIdKey,
+        oldValue: 'pi_shared',
+        newValue: 'pi_old',
+        storageArea: localStorage,
+      }),
+    )
+
+    expect(store.getState().payment.payment?.paymentId).toBe('pi_shared')
+  })
+
+  it('keeps equal basket intent without replacing Redux state', () => {
+    const cartItems = store.getState().cart.cartItems
+    localStorageAdapter.set(cartKey, [{ quantity: 1, id: 7 }])
+
+    storageEvent(cartKey)
+
+    expect(store.getState().cart.cartItems).toBe(cartItems)
+  })
+
+  it.each(['focus', 'pageshow', 'visibilitychange'])(
+    'synchronizes a background tab on %s without a storage event',
+    (event) => {
+      localStorageAdapter.remove(paymentIdKey)
+      localStorageAdapter.remove(cartKey)
+      const target = event === 'visibilitychange' ? document : window
+      target.dispatchEvent(new Event(event))
+
+      expect(store.getState().payment.payment).toBeNull()
+      expect(store.getState().cart.cartItems).toEqual([])
+    },
+  )
+
+  it('ignores unrelated storage and removes listeners on cleanup', () => {
+    localStorageAdapter.remove(paymentIdKey)
+    sessionStorageAdapter.set(paymentIdKey, 'pi_other')
+    storageEvent('language')
+    storageEvent(paymentIdempotencyKey)
+    storageEvent(paymentIdKey, sessionStorage)
+    expect(store.getState().payment.payment?.paymentId).toBe('pi_shared')
+
+    stop()
+    storageEvent(paymentIdKey)
+    expect(store.getState().payment.payment?.paymentId).toBe('pi_shared')
   })
 })

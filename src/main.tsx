@@ -3,19 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import './i18n'
 import { store } from '@/store/store'
-import { listenForCheckoutChanges } from '@/services/checkoutSync'
-import { log } from '@/services/logger'
+import { listenForCheckoutChanges } from '@/services/checkout'
+import { rootErrorHandlers } from '@/helpers/errors'
 import App from './App.tsx'
 
-listenForCheckoutChanges(store.dispatch, () => store.getState())
+listenForCheckoutChanges(store, import.meta.hot)
 
 const container = document.getElementById('root')!
-const root = createRoot(container, {
-  onUncaughtError: (error, errorInfo) =>
-    void log.error('Uncaught React error', { error, errorInfo }),
-  onRecoverableError: (error, errorInfo) =>
-    void log.error('Recoverable React error', { error, errorInfo }),
-})
+
+const root = createRoot(container, rootErrorHandlers)
 
 root.render(
   <StrictMode>

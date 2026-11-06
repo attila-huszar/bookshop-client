@@ -1,6 +1,8 @@
+import type { RootOptions } from 'react-dom/client'
 import { i18n } from '@/i18n'
 import type { ParseKeys } from 'i18next'
 import { isHTTPError, isKyError, isNetworkError, isTimeoutError } from 'ky'
+import { log } from '@/services/logger'
 import {
   type ApiError,
   type ApiValidationIssue,
@@ -12,6 +14,13 @@ import {
   UserErrorCode,
   ValidationRule,
 } from '@/types/ApiError'
+
+export const rootErrorHandlers = {
+  onUncaughtError: (error, errorInfo) =>
+    log.error('Uncaught React error', { error, errorInfo }),
+  onRecoverableError: (error, errorInfo) =>
+    log.error('Recoverable React error', { error, errorInfo }),
+} satisfies RootOptions
 
 const apiErrorKeys = {
   [HttpErrorCode.BadRequest]: 'errors.badRequest',

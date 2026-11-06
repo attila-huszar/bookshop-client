@@ -1,6 +1,6 @@
 import type { Dispatch } from '@reduxjs/toolkit'
 import { booksApi } from '@/store/api/booksApi'
-import { type PaymentDetails, paymentsApi } from '@/store/api/paymentsApi'
+import { paymentsApi } from '@/store/api/paymentsApi'
 import { cartRestored } from '@/store/slices/cart'
 import {
   checkoutAborted,
@@ -11,17 +11,21 @@ import {
 } from '@/store/slices/payment'
 import type { AppDispatch, RootState } from '@/store/store'
 import { localStorageAdapter } from '@/helpers/browserStorage'
+import { areCartItemsEqual, readStoredCart } from '@/helpers/checkout'
+import { getApiError, toAppError } from '@/helpers/errors'
 import {
   clearClientIdempotencyKey,
   getClientIdempotencyKey,
   isCurrentClientIdempotencyKey,
-  readStoredCart,
   resetClientIdempotencyKey,
-} from '@/helpers/checkout'
-import { getApiError, toAppError } from '@/helpers/errors'
+} from '@/helpers/idempotency'
 import { paymentSessionSchema } from '@/validation/paymentSchemas'
-import { paymentIdKey } from '@/constants/keys'
-import type { PaymentIntentRequest, PaymentSession } from '@/types'
+import { cartKey, paymentIdKey } from '@/constants/keys'
+import type {
+  PaymentIntentRequest,
+  PaymentIntentStatus,
+  PaymentSession,
+} from '@/types'
 import { HttpErrorCode, PaymentErrorCode } from '@/types/ApiError'
 
 type CheckoutCommand =
@@ -38,7 +42,7 @@ export type CheckoutResult =
   | {
       type: 'ready'
       payment: PaymentSession
-      status?: PaymentDetails['status']
+      status?: PaymentIntentStatus
     }
   | { type: 'existing'; paymentId: string }
   | { type: 'cleared' }
@@ -46,6 +50,56 @@ export type CheckoutResult =
 
 export const getCheckoutPaymentId = () =>
   localStorageAdapter.get<string>(paymentIdKey)
+
+/** Read current shared state, since a queued event can describe an older write. */
+export function listenForCheckoutChanges(
+  store: { dispatch: AppDispatch; getState: () => RootState },
+  hot?: ImportMeta['hot'],
+) {
+  const synchronize = () => {
+    const cartItems = readStoredCart()
+    const state = store.getState()
+
+    if (!areCartItemsEqual(state.cart.cartItems, cartItems)) {
+      store.dispatch(cartRestored(cartItems))
+    }
+
+    if (
+      state.payment.payment &&
+      state.payment.payment.paymentId !== getCheckoutPaymentId()
+    ) {
+      // Do not remove the other tab's current ID or rotate its retry key.
+      store.dispatch(checkoutReset())
+    }
+  }
+
+  const onStorage = (event: StorageEvent) => {
+    if (
+      event.storageArea === localStorage &&
+      (event.key === null ||
+        event.key === cartKey ||
+        event.key === paymentIdKey)
+    ) {
+      synchronize()
+    }
+  }
+
+  window.addEventListener('storage', onStorage)
+  window.addEventListener('focus', synchronize)
+  window.addEventListener('pageshow', synchronize)
+  document.addEventListener('visibilitychange', synchronize)
+
+  const stop = () => {
+    window.removeEventListener('storage', onStorage)
+    window.removeEventListener('focus', synchronize)
+    window.removeEventListener('pageshow', synchronize)
+    document.removeEventListener('visibilitychange', synchronize)
+  }
+
+  hot?.dispose(stop)
+
+  return stop
+}
 
 /** The only writer of checkout IDs and accepted workflow transitions. */
 export const resetCheckout = () => (dispatch: Dispatch) => {
@@ -203,21 +257,28 @@ const runCheckout =
 
     let expectedPaymentId = storedPaymentId
     const isCurrent = (resolvedPaymentId?: string) => {
+      if (getState().payment.operationId !== operationId) {
+        return false
+      }
+
+      if (
+        command.type === 'creating' &&
+        !areCartItemsEqual(command.payment.items, readStoredCart())
+      ) {
+        return false
+      }
+
       const sharedPaymentId = getCheckoutPaymentId()
-      const sharedResult =
-        Boolean(resolvedPaymentId) && sharedPaymentId === resolvedPaymentId
-      const matchesCart =
-        command.type !== 'creating' ||
-        JSON.stringify(command.payment.items) ===
-          JSON.stringify(readStoredCart())
+
+      // Another tab may already have accepted this same idempotent response.
+      if (resolvedPaymentId && sharedPaymentId === resolvedPaymentId) {
+        return true
+      }
 
       return (
-        matchesCart &&
-        getState().payment.operationId === operationId &&
-        (sharedPaymentId === expectedPaymentId || sharedResult) &&
+        sharedPaymentId === expectedPaymentId &&
         (!clientIdempotencyKey ||
-          isCurrentClientIdempotencyKey(clientIdempotencyKey) ||
-          sharedResult)
+          isCurrentClientIdempotencyKey(clientIdempotencyKey))
       )
     }
 
@@ -317,29 +378,27 @@ const runCheckout =
 
 export const startCheckout =
   (payment: PaymentIntentRequest) => async (dispatch: AppDispatch) => {
-    // Serialize identity selection across tabs, then release before network I/O.
+    // Wrap the promise so the lock releases before the network request finishes.
     // Identical in-flight creates can retry the same server idempotency key.
     const { result } = await navigator.locks.request(
       'bookshop-checkout',
-      () => {
+      (): { result: CheckoutResult | Promise<CheckoutResult> } => {
         const paymentId = getCheckoutPaymentId()
 
-        if (!paymentId) {
-          const cartItems = readStoredCart()
+        if (paymentId) {
+          return { result: { type: 'existing', paymentId } }
+        }
 
-          if (JSON.stringify(payment.items) !== JSON.stringify(cartItems)) {
-            dispatch(cartRestored(cartItems))
+        const cartItems = readStoredCart()
 
-            return {
-              result: Promise.resolve<CheckoutResult>({ type: 'stale' }),
-            }
-          }
+        if (!areCartItemsEqual(payment.items, cartItems)) {
+          dispatch(cartRestored(cartItems))
+
+          return { result: { type: 'stale' } }
         }
 
         return {
-          result: paymentId
-            ? Promise.resolve<CheckoutResult>({ type: 'existing', paymentId })
-            : dispatch(runCheckout({ type: 'creating', payment })),
+          result: dispatch(runCheckout({ type: 'creating', payment })),
         }
       },
     )

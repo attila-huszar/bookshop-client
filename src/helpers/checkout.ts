@@ -1,21 +1,15 @@
 import { i18n } from '@/i18n'
 import type { TFunction } from 'i18next'
 import { storedCartSchema } from '@/validation/orderSchemas'
-import { cartKey, paymentIdempotencyKey } from '@/constants/keys'
+import { cartKey } from '@/constants/keys'
 import type {
   CartItem,
-  PaymentIntentRequest,
   PaymentIntentStatus,
   PaymentStatusState,
   StripeError,
   StripeErrorType,
 } from '@/types'
 import { localStorageAdapter } from './browserStorage'
-
-type StoredPaymentIdempotency = {
-  fingerprint: string
-  clientIdempotencyKey: string
-}
 
 export const checkoutQueryParams = {
   paymentIntent: 'payment_intent',
@@ -63,44 +57,16 @@ export function readStoredCart(): CartItem[] {
   }
 }
 
-/** Reuse the persisted key for identical retries; changed requests start a new attempt. */
-export function getClientIdempotencyKey(payment: PaymentIntentRequest): string {
-  const fingerprint = JSON.stringify(payment)
-  const stored = localStorageAdapter.get<StoredPaymentIdempotency>(
-    paymentIdempotencyKey,
+export const areCartItemsEqual = (
+  first: readonly CartItem[],
+  second: readonly CartItem[],
+): boolean =>
+  first.length === second.length &&
+  first.every(
+    (item, index) =>
+      item.id === second[index]?.id &&
+      item.quantity === second[index]?.quantity,
   )
-
-  if (stored?.fingerprint === fingerprint && stored.clientIdempotencyKey) {
-    return stored.clientIdempotencyKey
-  }
-
-  const clientIdempotencyKey = crypto.randomUUID()
-  localStorageAdapter.set(paymentIdempotencyKey, {
-    fingerprint,
-    clientIdempotencyKey,
-  })
-
-  return clientIdempotencyKey
-}
-
-export function isCurrentClientIdempotencyKey(key: string): boolean {
-  return (
-    localStorageAdapter.get<StoredPaymentIdempotency>(paymentIdempotencyKey)
-      ?.clientIdempotencyKey === key
-  )
-}
-
-/** Clear only the expected key, preserving a newer attempt's persisted key. */
-export function clearClientIdempotencyKey(clientIdempotencyKey: string): void {
-  if (isCurrentClientIdempotencyKey(clientIdempotencyKey)) {
-    resetClientIdempotencyKey()
-  }
-}
-
-/** Forget the attempt when checkout is explicitly reset or canceled. */
-export function resetClientIdempotencyKey(): void {
-  localStorageAdapter.remove(paymentIdempotencyKey)
-}
 
 export const formatAmount = (
   amount: number,
