@@ -44,7 +44,6 @@ describe('PasswordReset', () => {
   const password = 'NewPass123!'
 
   beforeEach(() => {
-    vi.clearAllMocks()
     vi.mocked(useNavigate).mockReturnValue(navigate)
     vi.mocked(useLocation).mockReturnValue(location)
     vi.mocked(postVerifyPasswordReset)

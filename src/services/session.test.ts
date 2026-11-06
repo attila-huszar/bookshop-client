@@ -15,7 +15,6 @@ async function setup() {
 
 afterEach(() => {
   vi.useRealTimers()
-  vi.clearAllMocks()
 })
 
 describe('session bootstrap', () => {

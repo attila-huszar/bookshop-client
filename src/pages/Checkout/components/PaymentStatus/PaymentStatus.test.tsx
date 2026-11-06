@@ -34,7 +34,6 @@ describe('PaymentStatus', () => {
   const navigate = vi.fn()
 
   beforeEach(() => {
-    vi.clearAllMocks()
     vi.mocked(useAppDispatch).mockReturnValue(dispatch)
     vi.mocked(useAppSelector).mockReturnValue({
       paymentId: 'pi_test',

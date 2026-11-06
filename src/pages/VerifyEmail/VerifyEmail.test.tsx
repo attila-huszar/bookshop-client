@@ -30,7 +30,6 @@ describe('VerifyEmail', () => {
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
     vi.mocked(useNavigate).mockReturnValue(navigate)
     vi.mocked(useLocation).mockReturnValue(location)
     vi.mocked(postVerifyEmail).mockReset()

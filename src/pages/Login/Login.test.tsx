@@ -33,7 +33,6 @@ const navigate = vi.fn()
 let store: ReturnType<typeof createAppStore>
 
 beforeEach(() => {
-  vi.clearAllMocks()
   store = createAppStore()
   vi.mocked(useNavigate).mockReturnValue(navigate)
   vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue(account)

@@ -130,6 +130,13 @@ describe('Account page', () => {
 
   it('should handle avatar image change correctly', async () => {
     const file = new File(['avatar'], 'avatar.png', { type: 'image/png' })
+    const updateAvatar = vi.fn().mockReturnValue({
+      unwrap: () => Promise.resolve({}),
+    })
+    vi.mocked(useUpdateAvatarMutation).mockReturnValue([
+      updateAvatar,
+      { isLoading: false, reset: vi.fn() },
+    ])
 
     render(<Account />, { wrapper: Providers })
 
@@ -139,10 +146,18 @@ describe('Account page', () => {
     const fileInput = screen.getByLabelText(/Change Profile Picture/i)
     await userEvent.upload(fileInput, file)
 
-    // Avatar upload triggers dispatch with the file
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalled()
+      expect(updateAvatar).toHaveBeenCalledExactlyOnceWith(expect.any(FormData))
     })
+    const form = updateAvatar.mock.calls[0]![0] as FormData
+
+    expect(Array.from(form.keys())).toEqual(['avatar'])
+    expect(form.get('avatar')).toMatchObject({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    })
+    expect(mockDispatch).not.toHaveBeenCalled()
   })
 
   it('should enable editing the address section when edit is clicked', async () => {

@@ -2,18 +2,10 @@ import { useState } from 'react'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { Form, Formik, FormikContextType, useFormikContext } from 'formik'
-import { MockedFunction, vi } from 'vitest'
+import { Form, Formik } from 'formik'
+import { vi } from 'vitest'
 import { registrationSchema } from '@/validation/userSchemas'
 import { FormikField } from './FormikField'
-
-vi.mock(import('formik'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    useFormikContext: vi.fn(),
-  }
-})
 
 describe('FormikField', () => {
   it.each(['text', 'select', 'textarea'] as const)(
@@ -47,27 +39,6 @@ describe('FormikField', () => {
       )
     },
   )
-
-  const mockSetFieldValue = vi.fn()
-  const mockSetFieldTouched = vi.fn()
-  const mockValidateField = vi.fn()
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    const mockUseFormikContext = useFormikContext as MockedFunction<
-      typeof useFormikContext
-    >
-    mockUseFormikContext.mockReturnValue({
-      setFieldValue: mockSetFieldValue,
-      setFieldTouched: mockSetFieldTouched,
-      validateField: mockValidateField,
-      submitCount: 0,
-      getFieldMeta: () => ({
-        touched: false,
-        error: '',
-      }),
-    } as unknown as FormikContextType<unknown>)
-  })
 
   it('should render the input field and allow typing', async () => {
     render(
@@ -179,14 +150,21 @@ describe('FormikField', () => {
     expect(input).toHaveAttribute('type', 'password')
   })
 
-  it('should handle file input changes', async () => {
+  it('stores an uploaded file in Formik and marks the field touched', async () => {
     const testFile = new File(['dummy'], 'test.png', { type: 'image/png' })
+    const onSubmit = vi.fn()
 
     render(
-      <Formik initialValues={{ avatar: null }} onSubmit={() => undefined}>
-        <Form>
-          <FormikField name="avatar" type="file" />
-        </Form>
+      <Formik
+        initialValues={{ avatar: null as File | null }}
+        onSubmit={onSubmit}>
+        {({ touched }) => (
+          <Form>
+            <FormikField name="avatar" type="file" />
+            {touched.avatar && <p>Avatar selected</p>}
+            <button type="submit">Save</button>
+          </Form>
+        )}
       </Formik>,
     )
 
@@ -194,8 +172,15 @@ describe('FormikField', () => {
     expect(fileInput).toBeInTheDocument()
 
     await userEvent.upload(fileInput, testFile)
-    expect(mockSetFieldValue).toHaveBeenCalledWith('avatar', testFile)
-    expect(mockSetFieldTouched).toHaveBeenCalledWith('avatar', true)
-    expect(mockValidateField).toHaveBeenCalledWith('avatar')
+    expect(await screen.findByText('Avatar selected')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith(
+        { avatar: testFile },
+        expect.anything(),
+      )
+    })
   })
 })

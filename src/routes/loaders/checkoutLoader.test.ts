@@ -22,7 +22,6 @@ const load = (query = '', signal?: AbortSignal) =>
   })
 
 beforeEach(() => {
-  vi.clearAllMocks()
   store.dispatch(resetCheckout())
   store.dispatch(recoverCheckout('pi_test'))
   vi.mocked(bootstrapSession).mockResolvedValue(undefined)

@@ -36,7 +36,6 @@ describe('Registration', () => {
   const navigate = vi.fn()
 
   beforeEach(async () => {
-    vi.clearAllMocks()
     store = createAppStore()
     await store.dispatch(
       usersApi.util.upsertQueryData('countryCodes', undefined, {

@@ -42,7 +42,6 @@ describe('AccountMenu component', () => {
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
     vi.unstubAllGlobals()
   })
 

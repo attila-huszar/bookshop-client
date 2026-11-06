@@ -29,11 +29,10 @@ describe('Price Component', () => {
     expect(screen.getByText('12,50')).toBeInTheDocument()
   })
 
-  it('should render without discount in card component', () => {
+  it('shows the price once when there is no discount', () => {
     render(<Price {...defaultProps} />)
 
-    expect(screen.getByText('100')).toBeInTheDocument()
-    expect(screen.queryByText(/del/i)).not.toBeInTheDocument()
+    expect(screen.getAllByText('100')).toHaveLength(1)
   })
 
   it('should render with discount in product component', () => {

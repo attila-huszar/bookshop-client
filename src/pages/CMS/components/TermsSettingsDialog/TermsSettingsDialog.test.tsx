@@ -37,7 +37,6 @@ const unwrap = vi.fn()
 const onClose = vi.fn<() => void>()
 
 beforeEach(() => {
-  vi.clearAllMocks()
   vi.mocked(useCmsTermsQuery).mockReturnValue({
     data: document,
     isFetching: false,

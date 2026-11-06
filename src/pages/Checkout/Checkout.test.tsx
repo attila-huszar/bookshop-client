@@ -37,7 +37,6 @@ let store: ReturnType<typeof createAppStore>
 let stopCheckoutSync: (() => void) | undefined
 
 beforeEach(() => {
-  vi.clearAllMocks()
   localStorage.clear()
   store = createAppStore()
   store.dispatch(recoverCheckout('pi_saved'))

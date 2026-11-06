@@ -72,7 +72,6 @@ function mockReview(
 }
 
 beforeEach(() => {
-  vi.clearAllMocks()
   vi.mocked(useStripe).mockReturnValue({} as ReturnType<typeof useStripe>)
   vi.mocked(useElements).mockReturnValue({} as ReturnType<typeof useElements>)
   vi.mocked(useAppSelector).mockImplementation((selector) => {

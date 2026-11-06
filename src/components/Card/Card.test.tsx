@@ -35,7 +35,6 @@ let store: ReturnType<typeof createAppStore>
 const navigate = vi.fn()
 
 beforeEach(() => {
-  vi.clearAllMocks()
   store = createAppStore()
   vi.mocked(useNavigate).mockReturnValue(navigate)
   vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>

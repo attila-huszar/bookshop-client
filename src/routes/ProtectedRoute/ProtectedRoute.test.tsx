@@ -40,7 +40,6 @@ describe('ProtectedRoute', () => {
     act(() => {
       store.dispatch(bookshopApi.util.resetApiState())
     })
-    vi.clearAllMocks()
   })
 
   const renderRoute = (adminRequired = false) =>

@@ -30,10 +30,6 @@ describe('PasswordDialog', () => {
     ])
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
-
   it('sends both passwords to the profile endpoint and closes on success', async () => {
     mockDispatch.mockReturnValue({ unwrap: () => Promise.resolve({}) })
 

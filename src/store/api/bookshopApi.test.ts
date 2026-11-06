@@ -188,7 +188,7 @@ function StoreProvider({ children }: { children: ReactNode }) {
 describe('server-data cache', () => {
   it('refreshes changed checkout terms after submission, without focus or reconnect requests', async () => {
     let version = 'original'
-    let finishReview: (() => void) | undefined
+    let finishReview!: () => void
     let holdReview = false
     fetchMock.mockImplementation(async (input) => {
       const request = requestOf(input)
@@ -286,7 +286,7 @@ describe('server-data cache', () => {
     ])
 
     act(() => {
-      finishReview?.()
+      finishReview()
     })
     expect(await screen.findByRole('checkbox')).not.toBeChecked()
     expect(screen.getByRole('link')).toHaveAttribute(

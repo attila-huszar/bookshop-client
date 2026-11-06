@@ -51,7 +51,6 @@ const unwrap = vi.fn()
 const dispatch = vi.fn()
 
 beforeEach(() => {
-  vi.clearAllMocks()
   vi.mocked(useAppDispatch).mockReturnValue(dispatch)
   localStorageAdapter.set(paymentIdKey, input.paymentId)
   unwrap.mockReset().mockResolvedValue({
@@ -334,7 +333,7 @@ describe('Payment terms submission', () => {
   })
 
   it('waits for persisted acceptance before confirming with Stripe', async () => {
-    let finishAcceptance: (() => void) | undefined
+    let finishAcceptance!: () => void
     unwrap.mockImplementationOnce(
       () =>
         new Promise<void>((resolve) => {
@@ -357,7 +356,7 @@ describe('Payment terms submission', () => {
     expect(confirmPayment).not.toHaveBeenCalled()
 
     await act(async () => {
-      finishAcceptance?.()
+      finishAcceptance()
       await submitting
     })
 
@@ -400,7 +399,7 @@ describe('Payment terms submission', () => {
   })
 
   it('ignores duplicate submissions while acceptance is being saved', async () => {
-    let finishAcceptance: (() => void) | undefined
+    let finishAcceptance!: () => void
     unwrap.mockImplementationOnce(
       () =>
         new Promise<void>((resolve) => {
@@ -415,7 +414,7 @@ describe('Payment terms submission', () => {
     })
     await act(() => result.current.handleSubmit(submitEvent()))
     await act(async () => {
-      finishAcceptance?.()
+      finishAcceptance()
       await submitting
     })
 

@@ -51,10 +51,7 @@ describe('interface translations', () => {
     const hungarian = flatten(hu)
     expect(Object.keys(hungarian)).toEqual(Object.keys(english))
 
-    for (const key of new Set([
-      ...Object.keys(english),
-      ...Object.keys(hungarian),
-    ])) {
+    for (const key of Object.keys(english)) {
       const englishText = english[key]
       const hungarianText = hungarian[key]
       const placeholders = (value: string) => {

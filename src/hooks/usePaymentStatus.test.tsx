@@ -135,7 +135,7 @@ describe('Payment status polling', () => {
   })
 
   it('ignores an old payment response after switching to another payment', async () => {
-    let finishOldPayment: ((result: RetrievalResult) => void) | undefined
+    let finishOldPayment!: (result: RetrievalResult) => void
     retrievePaymentIntent
       .mockImplementationOnce(
         () =>
@@ -154,14 +154,14 @@ describe('Payment status polling', () => {
     expect(result.current.status.type).toBe('processing')
 
     await act(async () => {
-      finishOldPayment?.(retrieved('succeeded'))
+      finishOldPayment(retrieved('succeeded'))
       await vi.advanceTimersByTimeAsync(0)
     })
     expect(result.current.status.type).toBe('processing')
   })
 
   it('ignores a response after timeout and starts a fresh polling window on retry', async () => {
-    let finishTimedOutPayment: ((result: RetrievalResult) => void) | undefined
+    let finishTimedOutPayment!: (result: RetrievalResult) => void
     retrievePaymentIntent
       .mockImplementationOnce(
         () =>
@@ -177,7 +177,7 @@ describe('Payment status polling', () => {
     expect(vi.getTimerCount()).toBe(0)
 
     await act(async () => {
-      finishTimedOutPayment?.(retrieved('requires_payment_method'))
+      finishTimedOutPayment(retrieved('requires_payment_method'))
       await vi.advanceTimersByTimeAsync(0)
     })
     expect(result.current.status.type).toBe('timeout')

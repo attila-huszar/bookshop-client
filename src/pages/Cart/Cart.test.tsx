@@ -38,7 +38,6 @@ const navigate = vi.fn()
 const refetch = vi.fn().mockResolvedValue(undefined)
 
 beforeEach(() => {
-  vi.clearAllMocks()
   vi.spyOn(toast, 'error').mockReturnValue('test-toast')
   store = createAppStore()
   store.dispatch(cartRestored([{ id: 1, quantity: 2 }]))
