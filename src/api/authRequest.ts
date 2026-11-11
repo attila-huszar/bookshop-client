@@ -2,6 +2,7 @@ import { baseRequest } from './baseRequest'
 
 type AuthSession = {
   getAccessToken: () => string | null
+  getSessionVersion: () => number
   refresh: () => Promise<{ accessToken: string | null }>
   expire: (accessToken: string) => void
 }
@@ -13,13 +14,20 @@ export function configureAuthRequest(session: AuthSession): void {
   authSession = session
 }
 
-let refreshPromise: ReturnType<AuthSession['refresh']> | null = null
+type PendingRefresh = {
+  session: AuthSession
+  version: number
+  promise: ReturnType<AuthSession['refresh']>
+}
+
+let pendingRefresh: PendingRefresh | null = null
 
 export const authRequest = baseRequest.extend({
   hooks: {
     beforeRequest: [
-      ({ request }) => {
+      ({ request, options }) => {
         const accessToken = authSession?.getAccessToken()
+        options.context.sessionVersion = authSession?.getSessionVersion()
 
         if (accessToken) {
           request.headers.set('Authorization', `Bearer ${accessToken}`)
@@ -35,11 +43,15 @@ export const authRequest = baseRequest.extend({
         }
 
         const session = authSession
+        const version = session.getSessionVersion()
         const accessToken = session.getAccessToken()
         const authorization = accessToken ? `Bearer ${accessToken}` : null
 
         // Responses from a previous session must not refresh or expire this one.
-        if (request.headers.get('Authorization') !== authorization) {
+        if (
+          request.headers.get('Authorization') !== authorization ||
+          options.context.sessionVersion !== version
+        ) {
           return response
         }
 
@@ -51,14 +63,28 @@ export const authRequest = baseRequest.extend({
           return response
         }
 
-        refreshPromise ??= session.refresh().finally(() => {
-          refreshPromise = null
-        })
-        const tokens = await refreshPromise
+        if (
+          pendingRefresh?.session !== session ||
+          pendingRefresh.version !== version
+        ) {
+          const pending: PendingRefresh = {
+            session,
+            version,
+            promise: session.refresh().finally(() => {
+              if (pendingRefresh === pending) {
+                pendingRefresh = null
+              }
+            }),
+          }
+          pendingRefresh = pending
+        }
+
+        const tokens = await pendingRefresh.promise
 
         if (
           tokens.accessToken &&
           session === authSession &&
+          version === session.getSessionVersion() &&
           tokens.accessToken === session.getAccessToken()
         ) {
           return authRequest(request, {

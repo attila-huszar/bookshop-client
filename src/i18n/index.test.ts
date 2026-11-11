@@ -3,7 +3,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next'
 import { Provider } from 'react-redux'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { log } from '@/api/logs'
 import { Links } from '@/components/Footer/components/Links/Links'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
@@ -343,4 +343,128 @@ describe('HTTP translation loading', () => {
       expect(localStorage.getItem('language')).toBeNull()
     },
   )
+})
+
+describe('cross-tab language preferences', () => {
+  let stop: (() => void) | undefined
+
+  afterEach(() => {
+    stop?.()
+    stop = undefined
+  })
+
+  function notifyLanguageChange(storageArea = localStorage, key = 'language') {
+    window.dispatchEvent(new StorageEvent('storage', { storageArea, key }))
+  }
+
+  it('adopts the current saved preference and updates mounted content without writing it back', async () => {
+    await importTranslations()
+    stop = translations.listenForLanguageChanges()
+    render(createElement(TermsTitle))
+    localStorage.setItem('language', 'hu')
+    const save = vi.spyOn(Storage.prototype, 'setItem')
+
+    await act(async () => {
+      const changed = new Promise<void>((resolve) => {
+        translations.i18n.once('languageChanged', () => resolve())
+      })
+
+      // The stored value is authoritative, even if an older event was queued.
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          storageArea: localStorage,
+          key: 'language',
+          newValue: 'en',
+        }),
+      )
+      await changed
+    })
+
+    expect(await screen.findByText(hu.terms.title)).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe('hu')
+    expect(save).not.toHaveBeenCalled()
+    expect(fetchTranslations).toHaveBeenCalledTimes(2)
+  })
+
+  it('ignores unrelated storage events and invalid saved languages', async () => {
+    await importTranslations()
+    stop = translations.listenForLanguageChanges()
+    const change = vi.spyOn(translations.i18n, 'changeLanguage')
+    localStorage.setItem('language', 'hu')
+    notifyLanguageChange(sessionStorage)
+    notifyLanguageChange(localStorage, 'cart')
+    localStorage.setItem('language', '{"language":"hu"}')
+    notifyLanguageChange()
+
+    expect(change).not.toHaveBeenCalled()
+    expect(translations.i18n.resolvedLanguage).toBe('en')
+  })
+
+  it('catches missed preferences when a tab becomes visible', async () => {
+    await importTranslations()
+    stop = translations.listenForLanguageChanges()
+    localStorage.setItem('language', 'hu')
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(translations.i18n.resolvedLanguage).toBe('en')
+
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+    document.dispatchEvent(new Event('visibilitychange'))
+
+    await waitFor(() => expect(translations.i18n.resolvedLanguage).toBe('hu'))
+  })
+
+  it('keeps the active language when the other language cannot be loaded', async () => {
+    fetchTranslations.mockImplementation((url) =>
+      Promise.resolve(
+        url.includes('/hu/')
+          ? new Response('Missing', { status: 404 })
+          : jsonResponse('en'),
+      ),
+    )
+    await importTranslations()
+    stop = translations.listenForLanguageChanges()
+    localStorage.setItem('language', 'hu')
+    const loaded = vi.spyOn(translations.i18n, 'loadLanguages')
+    notifyLanguageChange()
+    await loaded.mock.results[0]?.value
+
+    expect(translations.i18n.resolvedLanguage).toBe('en')
+    expect(document.documentElement.lang).toBe('en')
+    expect(localStorage.getItem('language')).toBe('hu')
+  })
+
+  it('ignores an obsolete preference while loading and stops pending synchronization on cleanup', async () => {
+    await importTranslations()
+    let finish!: () => void
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    const load = vi
+      .spyOn(translations.i18n, 'loadLanguages')
+      .mockReturnValue(pending)
+    const change = vi.spyOn(translations.i18n, 'changeLanguage')
+    stop = translations.listenForLanguageChanges()
+    localStorage.setItem('language', 'hu')
+    notifyLanguageChange()
+    localStorage.setItem('language', 'en')
+    finish()
+    await pending
+
+    expect(change).not.toHaveBeenCalled()
+
+    const next = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    load.mockReturnValue(next)
+    localStorage.setItem('language', 'hu')
+    notifyLanguageChange()
+    stop()
+    stop = undefined
+    finish()
+    await next
+    window.dispatchEvent(new Event('focus'))
+
+    expect(change).not.toHaveBeenCalled()
+  })
 })

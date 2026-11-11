@@ -56,6 +56,66 @@ i18n.on('languageChanged', (language: string) => {
   )
 })
 
+export function listenForLanguageChanges(hot?: ImportMeta['hot']) {
+  let stopped = false
+
+  const synchronize = async () => {
+    const language = storedLanguage()
+
+    if (!language || language === i18n.resolvedLanguage) {
+      return
+    }
+
+    try {
+      await i18n.loadLanguages(language)
+
+      if (
+        stopped ||
+        storedLanguage() !== language ||
+        !i18n.hasResourceBundle(language, 'translation')
+      ) {
+        return
+      }
+
+      await i18n.changeLanguage(language)
+    } catch (error) {
+      log.error('Unable to synchronize language', { error })
+    }
+  }
+
+  const onStorage = (event: StorageEvent) => {
+    if (
+      event.storageArea === localStorage &&
+      (event.key === languageStorageKey || event.key === null)
+    ) {
+      void synchronize()
+    }
+  }
+
+  const onForeground = () => {
+    if (document.visibilityState === 'visible') {
+      void synchronize()
+    }
+  }
+
+  window.addEventListener('storage', onStorage)
+  window.addEventListener('focus', onForeground)
+  window.addEventListener('pageshow', onForeground)
+  document.addEventListener('visibilitychange', onForeground)
+
+  const stop = () => {
+    stopped = true
+    window.removeEventListener('storage', onStorage)
+    window.removeEventListener('focus', onForeground)
+    window.removeEventListener('pageshow', onForeground)
+    document.removeEventListener('visibilitychange', onForeground)
+  }
+
+  hot?.dispose(stop)
+
+  return stop
+}
+
 void i18n.init<HttpBackendOptions>(
   {
     lng: storedLanguage() ?? browserLanguage() ?? 'en',

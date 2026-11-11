@@ -8,7 +8,13 @@ import { usersApi } from '../api/usersApi'
 import { userSelector } from '../selectors'
 import { authSessionChanged } from '../slices/user'
 import { createAppStore } from '../store'
-import { bootstrapSession, fetchAuthTokens, login, logout } from './user'
+import {
+  bootstrapSession,
+  fetchAuthTokens,
+  listenForSessionChanges,
+  login,
+  logout,
+} from './user'
 
 const profile = {
   uuid: '11111111-1111-4111-8111-111111111111',
@@ -22,6 +28,17 @@ const profile = {
   role: UserRole.User,
 }
 let store: ReturnType<typeof createAppStore>
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (error: Error) => void
+  const promise = new Promise<T>((done, fail) => {
+    resolve = done
+    reject = fail
+  })
+
+  return { promise, resolve, reject }
+}
 
 describe('session bootstrap', () => {
   beforeEach(async () => {
@@ -308,6 +325,288 @@ describe('authentication workflows', () => {
     await expect(store.dispatch(logout()).unwrap()).rejects.toMatchObject({
       message: 'Logout failed',
     })
+
+    expect(store.getState().user.accessToken).toBe('old-token')
+    expect(userSelector(store.getState()).userData).toEqual(profile)
+  })
+})
+
+describe('cross-tab sessions', () => {
+  let stop: (() => void) | undefined
+  let channel: {
+    onmessage: ((event: MessageEvent<unknown>) => void) | null
+    postMessage: ReturnType<typeof vi.fn>
+    close: ReturnType<typeof vi.fn>
+  }
+
+  beforeEach(async () => {
+    await store.dispatch(bootstrapSession())
+    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
+      accessToken: null,
+    })
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+    channel = { onmessage: null, postMessage: vi.fn(), close: vi.fn() }
+    vi.stubGlobal(
+      'BroadcastChannel',
+      vi.fn(function () {
+        return channel
+      }),
+    )
+  })
+
+  afterEach(() => {
+    stop?.()
+    stop = undefined
+    vi.unstubAllGlobals()
+  })
+
+  function receiveChange() {
+    channel.onmessage?.(
+      new MessageEvent('message', { data: 'session-changed' }),
+    )
+  }
+
+  it('immediately clears the old account and restores cookies without rebroadcasting', async () => {
+    const pending = deferred<{ accessToken: string | null }>()
+    vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValue(
+      pending.promise,
+    )
+    stop = listenForSessionChanges(store)
+
+    receiveChange()
+
+    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().bookshopApi.queries).toEqual({})
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+
+    pending.resolve({ accessToken: 'other-account-token' })
+    await vi.waitFor(() =>
+      expect(store.getState().user.accessToken).toBe('other-account-token'),
+    )
+    expect(channel.postMessage).not.toHaveBeenCalled()
+  })
+
+  it('bypasses guest retry backoff after a login notification', async () => {
+    store.dispatch(authSessionChanged(null))
+    await store.dispatch(bootstrapSession())
+    await store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+    vi.mocked(usersTransport.retrieveAuthTokens).mockResolvedValue({
+      accessToken: 'other-tab-login',
+    })
+    stop = listenForSessionChanges(store)
+
+    receiveChange()
+
+    await vi.waitFor(() =>
+      expect(store.getState().user.accessToken).toBe('other-tab-login'),
+    )
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not restore an older guest refresh after another tab logs out', async () => {
+    const pending = deferred<{ accessToken: string | null }>()
+    store.dispatch(authSessionChanged(null))
+    vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValueOnce(
+      pending.promise,
+    )
+    const oldRefresh = store.dispatch(bootstrapSession())
+    stop = listenForSessionChanges(store)
+
+    receiveChange()
+    await vi.waitFor(() =>
+      expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2),
+    )
+    pending.resolve({ accessToken: 'obsolete-token' })
+    await oldRefresh
+
+    expect(store.getState().user.accessToken).toBeNull()
+    expect(channel.postMessage).not.toHaveBeenCalled()
+  })
+
+  it.each(['successful', 'failed'])(
+    'ignores an older %s login after a remote logout',
+    async (outcome) => {
+      const pending = deferred<{ accessToken: string; firstName: string }>()
+      vi.spyOn(usersTransport, 'postUserLogin').mockReturnValue(pending.promise)
+      const oldLogin = store.dispatch(
+        login({ email: 'old@example.com', password: 'Password123!' }),
+      )
+      stop = listenForSessionChanges(store)
+      receiveChange()
+      await store.dispatch(bootstrapSession({ force: true }))
+
+      if (outcome === 'successful') {
+        pending.resolve({ accessToken: 'obsolete-token', firstName: 'Old' })
+      } else {
+        pending.reject(new Error('Login failed'))
+      }
+
+      await oldLogin
+
+      expect(store.getState().user.accessToken).toBeNull()
+    },
+  )
+
+  it('ignores an older logout after a remote login', async () => {
+    const pending = deferred<{ success: boolean }>()
+    vi.spyOn(usersTransport, 'postUserLogout').mockReturnValue(pending.promise)
+    const oldLogout = store.dispatch(logout())
+    vi.mocked(usersTransport.retrieveAuthTokens).mockResolvedValue({
+      accessToken: 'other-tab-login',
+    })
+    stop = listenForSessionChanges(store)
+    receiveChange()
+    await store.dispatch(bootstrapSession({ force: true }))
+    pending.resolve({ success: true })
+    await oldLogout
+
+    expect(store.getState().user.accessToken).toBe('other-tab-login')
+  })
+
+  it('only broadcasts a signal after successful explicit login and logout', async () => {
+    vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
+      accessToken: 'new-token',
+      firstName: 'New',
+    })
+    vi.spyOn(usersTransport, 'postUserLogout').mockResolvedValue({
+      success: true,
+    })
+    stop = listenForSessionChanges(store)
+
+    await store.dispatch(
+      login({ email: 'new@example.com', password: 'Password123!' }),
+    )
+    expect(channel.postMessage).toHaveBeenCalledExactlyOnceWith(
+      'session-changed',
+    )
+    await store.dispatch(fetchAuthTokens())
+    expect(channel.postMessage).toHaveBeenCalledTimes(1)
+    await store.dispatch(logout())
+    expect(channel.postMessage.mock.calls).toEqual([
+      ['session-changed'],
+      ['session-changed'],
+    ])
+  })
+
+  it('does not broadcast failed login or logout attempts', async () => {
+    vi.spyOn(usersTransport, 'postUserLogin').mockRejectedValue(
+      new Error('Login failed'),
+    )
+    vi.spyOn(usersTransport, 'postUserLogout').mockRejectedValue(
+      new Error('Logout failed'),
+    )
+    stop = listenForSessionChanges(store)
+
+    await store.dispatch(
+      login({ email: 'new@example.com', password: 'WrongPass123!' }),
+    )
+    await store.dispatch(logout())
+
+    expect(channel.postMessage).not.toHaveBeenCalled()
+  })
+
+  it('keeps login working if sending a notification throws', async () => {
+    vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
+      accessToken: 'new-token',
+      firstName: 'New',
+    })
+    stop = listenForSessionChanges(store)
+    channel.postMessage.mockImplementation(() => {
+      throw new Error('Unavailable')
+    })
+
+    await store
+      .dispatch(login({ email: 'new@example.com', password: 'Password123!' }))
+      .unwrap()
+
+    expect(store.getState().user.accessToken).toBe('new-token')
+  })
+
+  it('restores the cookie session on foreground without BroadcastChannel support', async () => {
+    vi.stubGlobal('BroadcastChannel', undefined)
+    const pending = deferred<{ accessToken: string | null }>()
+    vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValue(
+      pending.promise,
+    )
+    stop = listenForSessionChanges(store)
+
+    window.dispatchEvent(new Event('focus'))
+    window.dispatchEvent(new Event('pageshow'))
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+    pending.resolve({ accessToken: 'current-cookie-token' })
+
+    await vi.waitFor(() =>
+      expect(store.getState().user.accessToken).toBe('current-cookie-token'),
+    )
+    expect(store.getState().bookshopApi.queries).toEqual({})
+  })
+
+  it('ignores unrelated messages and background events, and cleans up listeners', () => {
+    stop = listenForSessionChanges(store)
+    channel.onmessage?.(
+      new MessageEvent('message', { data: { type: 'unknown' } }),
+    )
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(usersTransport.retrieveAuthTokens).not.toHaveBeenCalled()
+
+    stop()
+    expect(channel.close).toHaveBeenCalledTimes(1)
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+    window.dispatchEvent(new Event('focus'))
+    expect(usersTransport.retrieveAuthTokens).not.toHaveBeenCalled()
+    stop = undefined
+  })
+
+  it('does not join an older bootstrap or let it overwrite a newer foreground check', async () => {
+    const pending = deferred<{ accessToken: string | null }>()
+    store.dispatch(authSessionChanged(null))
+    vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValueOnce(
+      pending.promise,
+    )
+    const oldBootstrap = store.dispatch(bootstrapSession())
+    stop = listenForSessionChanges(store)
+    window.dispatchEvent(new Event('focus'))
+    await store.dispatch(bootstrapSession({ force: true }))
+
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
+    pending.resolve({ accessToken: 'obsolete-token' })
+    await oldBootstrap
+
+    expect(store.getState().user.accessToken).toBeNull()
+  })
+
+  it.each(['same account', 'different account'])(
+    'preserves cached data only for the %s during foreground restoration',
+    async (account) => {
+      const token = (uuid: string, iat: number) =>
+        `header.${btoa(JSON.stringify({ uuid, iat }))}.signature`
+      store.dispatch(authSessionChanged(token(profile.uuid, 1)))
+      vi.mocked(usersTransport.retrieveAuthTokens).mockResolvedValue({
+        accessToken: token(
+          account === 'same account' ? profile.uuid : 'other-user',
+          2,
+        ),
+      })
+      stop = listenForSessionChanges(store)
+      window.dispatchEvent(new Event('focus'))
+      await store.dispatch(bootstrapSession({ force: true }))
+
+      expect(userSelector(store.getState()).userData).toEqual(
+        account === 'same account' ? profile : null,
+      )
+    },
+  )
+
+  it('preserves an authenticated session and private data if a foreground check fails', async () => {
+    vi.mocked(usersTransport.retrieveAuthTokens).mockRejectedValue(
+      new Error('Offline'),
+    )
+    stop = listenForSessionChanges(store)
+    window.dispatchEvent(new Event('focus'))
+    await store.dispatch(bootstrapSession({ force: true }))
 
     expect(store.getState().user.accessToken).toBe('old-token')
     expect(userSelector(store.getState()).userData).toEqual(profile)

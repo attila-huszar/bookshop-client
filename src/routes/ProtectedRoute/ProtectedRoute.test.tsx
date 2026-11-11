@@ -7,7 +7,11 @@ import { vi } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
-import { authSessionChanged } from '@/store/slices/user'
+import {
+  authSessionChanged,
+  authSessionRestoring,
+  authTokenRefreshed,
+} from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
 import { UserRole } from '@/types'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -140,6 +144,39 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Login Page')).toBeInTheDocument()
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
   })
+
+  it.each(['logged in', 'logged out'])(
+    'waits for a changed cookie session before deciding whether the user is %s',
+    async (session) => {
+      vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
+        ky.get('https://bookshop.test/mock', {
+          retry: 0,
+          fetch: () => Promise.resolve(Response.json(profile)),
+        }),
+      )
+      renderRoute()
+      act(() => {
+        store.dispatch(authSessionRestoring())
+        store.dispatch(bookshopApi.util.resetApiState())
+      })
+
+      expect(screen.getByRole('status')).toBeInTheDocument()
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+      expect(screen.queryByText('Login Page')).not.toBeInTheDocument()
+
+      act(() => {
+        store.dispatch(
+          authTokenRefreshed(session === 'logged in' ? 'new-token' : null),
+        )
+      })
+
+      expect(
+        await screen.findByText(
+          session === 'logged in' ? 'Protected Content' : 'Login Page',
+        ),
+      ).toBeInTheDocument()
+    },
+  )
 
   it('removes admin content when the current account loses its admin role', async () => {
     renderRoute(true)

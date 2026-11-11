@@ -35,6 +35,7 @@ export const store = createAppStore()
 setupListeners(store.dispatch)
 configureAuthRequest({
   getAccessToken: () => store.getState().user.accessToken,
+  getSessionVersion: () => store.getState().user.sessionVersion,
   refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
   expire: (accessToken) => store.dispatch(expireAuthSession(accessToken)),
 })

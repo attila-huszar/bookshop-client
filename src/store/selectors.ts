@@ -30,15 +30,19 @@ export const homeBooksErrorSelector = createSelector(
 export const userSelector = createSelector(
   [
     (state: RootState) => state.user.accessToken,
+    (state: RootState) => state.user.isRestoring,
     usersApi.endpoints.userProfile.select(),
   ],
-  (accessToken, profile) => ({
-    accessToken,
-    userData: accessToken ? (profile.data ?? null) : null,
-    userIsLoading:
-      Boolean(accessToken) &&
-      (profile.isUninitialized ||
-        (profile.isLoading && profile.data === undefined)),
-    userError: accessToken ? (profile.error ?? null) : null,
-  }),
+  (accessToken, isRestoring, profile) => {
+    const profileIsLoading =
+      profile.data === undefined &&
+      (profile.isUninitialized || profile.isLoading)
+
+    return {
+      accessToken,
+      userData: accessToken ? (profile.data ?? null) : null,
+      userIsLoading: isRestoring || (Boolean(accessToken) && profileIsLoading),
+      userError: accessToken ? (profile.error ?? null) : null,
+    }
+  },
 )

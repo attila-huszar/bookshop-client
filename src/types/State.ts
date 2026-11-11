@@ -15,6 +15,8 @@ export type BooksState = {
 
 export type UserState = {
   accessToken: string | null
+  sessionVersion: number
+  isRestoring: boolean
 }
 
 export type CartState = {

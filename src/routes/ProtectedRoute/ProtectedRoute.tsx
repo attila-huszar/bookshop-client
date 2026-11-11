@@ -10,7 +10,7 @@ import { UserRole } from '@/types'
 
 export function ProtectedRoute({ adminRequired = false }) {
   const { t } = useTranslation()
-  const accessToken = useAppSelector((state) => state.user.accessToken)
+  const { accessToken, isRestoring } = useAppSelector((state) => state.user)
   const {
     data: profile,
     isError,
@@ -19,6 +19,10 @@ export function ProtectedRoute({ adminRequired = false }) {
   } = useUserProfileQuery(undefined, {
     skip: !accessToken,
   })
+
+  if (isRestoring) {
+    return <Loading fullScreen />
+  }
 
   if (!accessToken) {
     return <Navigate to={`/${ROUTE.LOGIN}`} replace />

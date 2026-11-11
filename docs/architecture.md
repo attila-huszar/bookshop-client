@@ -16,6 +16,8 @@ The root loader restores the cookie session and validates saved cart intent befo
 
 Concurrent 401 responses share one refresh, with at most one authentication retry per request. Responses from an older session cannot refresh or expire a newer login. Logout completes its local transition after the server clears cookies; failure remains retryable.
 
+Successful login and logout notify other tabs through BroadcastChannel without sharing tokens or account data. Receivers clear their local session and query cache before restoring the shared cookie session; private routes wait for restoration before deciding whether to redirect. Session revisions reject obsolete authentication responses. Foreground checks restore the current cookie session even when messaging is unavailable or a notification was missed. A changed account clears cached data, while an unchanged account preserves mounted forms and a failed foreground check preserves the current session. Token identity is read only for cache cleanup; authorization remains on the backend. These browser notifications do not revoke backend-issued tokens.
+
 Cart reads subscribe to canonical book queries. Price-conflict recovery waits for older in-flight reads and forces fresh requests while preserving quantities.
 
 ## Checkout and payment recovery
@@ -41,6 +43,8 @@ CMS order creation is disabled. Only customer/shipping corrections are editable;
 ## Localization and API contracts
 
 English and Hungarian interface resources load through i18next, with English fallback. An explicit language preference takes precedence over browser detection. Document language, dates, amounts, and Stripe Elements locale follow the active language; terms content comes from the backend.
+
+Tabs adopt saved language changes through storage and foreground events once the requested resources are available. Adopting another tab's preference does not write it back to storage.
 
 API codes, roles, statuses, and filter values retain their wire representations. Client types describe public responses and commands. Errors are translated at display time from stable codes and sanitized validation metadata, so changing language does not require refetching failures. See [backend response contracts](../../bookshop-server/docs/architecture.md#api-response-and-error-contracts).
 

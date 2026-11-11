@@ -127,6 +127,7 @@ beforeEach(() => {
   })
   privateApi.configureAuthRequest({
     getAccessToken: () => accessToken,
+    getSessionVersion: () => store.getState().user.sessionVersion,
     refresh,
     expire,
   })
@@ -177,6 +178,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
   privateApi.configureAuthRequest({
     getAccessToken: () => appStore.getState().user.accessToken,
+    getSessionVersion: () => appStore.getState().user.sessionVersion,
     refresh: () => appStore.dispatch(fetchAuthTokens()).unwrap(),
     expire: (rejectedToken) =>
       appStore.dispatch(expireAuthSession(rejectedToken)),
@@ -1214,6 +1216,7 @@ describe('Ky adapter', () => {
       )
       privateApi.configureAuthRequest({
         getAccessToken: () => store.getState().user.accessToken,
+        getSessionVersion: () => store.getState().user.sessionVersion,
         refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
         expire: (rejectedToken) =>
           store.dispatch(expireAuthSession(rejectedToken)),

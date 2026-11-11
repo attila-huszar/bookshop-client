@@ -55,6 +55,7 @@ beforeEach(() => {
   })
   privateApi.configureAuthRequest({
     getAccessToken: () => accessToken,
+    getSessionVersion: () => store.getState().user.sessionVersion,
     refresh,
     expire,
   })
@@ -96,6 +97,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
   privateApi.configureAuthRequest({
     getAccessToken: () => appStore.getState().user.accessToken,
+    getSessionVersion: () => appStore.getState().user.sessionVersion,
     refresh: () => appStore.dispatch(fetchAuthTokens()).unwrap(),
     expire: (rejectedToken) =>
       appStore.dispatch(expireAuthSession(rejectedToken)),
@@ -446,6 +448,7 @@ describe('Ky transport through payment endpoints', () => {
     )
     privateApi.configureAuthRequest({
       getAccessToken: () => store.getState().user.accessToken,
+      getSessionVersion: () => store.getState().user.sessionVersion,
       refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
       expire: (rejectedToken) =>
         store.dispatch(expireAuthSession(rejectedToken)),
@@ -555,6 +558,76 @@ describe('Ky transport through payment endpoints', () => {
     expect(capturedRequests[1]!.headers.get('authorization')).toBe(
       'Bearer new-token',
     )
+  })
+
+  it.each(['guest', 'authenticated'])(
+    'ignores an old %s request after a session transition with the same token value',
+    async (session) => {
+      accessToken = session === 'guest' ? null : 'same-token'
+      let respond!: (response: Response) => void
+      fetchMock.mockReturnValue(
+        new Promise<Response>((resolve) => {
+          respond = resolve
+        }),
+      )
+      const pending = postPaymentIntent(
+        { items: [{ id: 7, quantity: 1 }], expectedTotal: 1000 },
+        'same-attempt',
+      ).catch((error: unknown) => error)
+      await vi.waitFor(() => expect(capturedRequests).toHaveLength(1))
+      store.dispatch(authSessionChanged(accessToken))
+      respond(jsonResponse({}, 401))
+
+      expect(await pending).toMatchObject({ status: 401 })
+      expect(refresh).not.toHaveBeenCalled()
+      expect(expire).not.toHaveBeenCalled()
+      expect(capturedRequests).toHaveLength(1)
+    },
+  )
+
+  it('starts a separate single-flight refresh for a newer session while an old refresh is pending', async () => {
+    let finishOldRefresh!: (tokens: { accessToken: string | null }) => void
+    refresh
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishOldRefresh = resolve
+          }),
+      )
+      .mockImplementationOnce(() => {
+        accessToken = 'current-token'
+
+        return Promise.resolve({ accessToken })
+      })
+    fetchMock.mockImplementation((input) =>
+      Promise.resolve(
+        jsonResponse(
+          {},
+          requestOf(input).headers.get('authorization') ===
+            'Bearer current-token'
+            ? 200
+            : 401,
+        ),
+      ),
+    )
+    const oldRequest = postPaymentIntent(
+      { items: [{ id: 7, quantity: 1 }], expectedTotal: 1000 },
+      'old-attempt',
+    ).catch((error: unknown) => error)
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(1))
+    store.dispatch(authSessionChanged('new-session'))
+    accessToken = 'new-session'
+
+    await postPaymentIntent(
+      { items: [{ id: 7, quantity: 1 }], expectedTotal: 1000 },
+      'new-attempt',
+    )
+    expect(refresh).toHaveBeenCalledTimes(2)
+    finishOldRefresh({ accessToken: 'obsolete-token' })
+
+    expect(await oldRequest).toMatchObject({ status: 401 })
+    expect(accessToken).toBe('current-token')
+    expect(expire).not.toHaveBeenCalled()
   })
 
   it('aborts payment retrieval with its caller without refreshing or expiring the session', async () => {
