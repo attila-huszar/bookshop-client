@@ -58,7 +58,8 @@ vi.mock('react-hot-toast', () => ({
   useToasterStore: () => ({ toasts: [] }),
 }))
 
-vi.mock('@/services/logger', () => ({
+vi.mock('@/api/logs', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/logs')>()),
   log: {
     debug: vi.fn(),
     info: vi.fn(),

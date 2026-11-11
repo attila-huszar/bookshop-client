@@ -3,13 +3,16 @@ import {
   recoverCheckout,
   resetCheckout,
   restoreCheckout,
-} from '@/services/checkout'
-import { bootstrapSession } from '@/services/session'
+} from '@/store/thunks/checkout'
+import { bootstrapSession } from '@/store/thunks/user'
 import { checkoutLoader } from './checkoutLoader'
 
-vi.mock('@/services/session', () => ({ bootstrapSession: vi.fn() }))
-vi.mock('@/services/checkout', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/checkout')>()),
+vi.mock('@/store/thunks/user', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/user')>()),
+  bootstrapSession: vi.fn(),
+}))
+vi.mock('@/store/thunks/checkout', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/checkout')>()),
   restoreCheckout: vi.fn(),
 }))
 
@@ -24,7 +27,7 @@ const load = (query = '', signal?: AbortSignal) =>
 beforeEach(() => {
   store.dispatch(resetCheckout())
   store.dispatch(recoverCheckout('pi_test'))
-  vi.mocked(bootstrapSession).mockResolvedValue(undefined)
+  vi.mocked(bootstrapSession).mockReturnValue(() => Promise.resolve())
   vi.mocked(restoreCheckout).mockImplementation(
     () => () =>
       Promise.resolve({
@@ -85,9 +88,10 @@ describe('checkout loader routing', () => {
   it('bootstraps authentication before restoring the checkout', async () => {
     let finish!: () => void
     vi.mocked(bootstrapSession).mockReturnValue(
-      new Promise<void>((resolve) => {
-        finish = resolve
-      }),
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
     )
     const pending = load()
     expect(restoreCheckout).not.toHaveBeenCalled()
@@ -106,9 +110,10 @@ describe('checkout loader routing', () => {
   it('does not restore after navigation is canceled during authentication', async () => {
     let finish!: () => void
     vi.mocked(bootstrapSession).mockReturnValue(
-      new Promise<void>((resolve) => {
-        finish = resolve
-      }),
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
     )
     const controller = new AbortController()
     const pending = load('', controller.signal)

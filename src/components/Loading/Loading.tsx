@@ -4,16 +4,14 @@ import { StyledLoading, Text } from './Loading.style'
 
 type Props = {
   message?: string
-  color?: string
   fullScreen?: boolean
 }
 
-export function Loading({
-  message,
-  color = 'var(--color-on-surface)',
-  fullScreen = false,
-}: Props) {
+export function Loading({ message, fullScreen = false }: Props) {
   const { t } = useTranslation()
+  const color = fullScreen
+    ? 'var(--color-on-primary)'
+    : 'var(--color-on-surface)'
 
   return (
     <StyledLoading $fullScreen={fullScreen} role="status">

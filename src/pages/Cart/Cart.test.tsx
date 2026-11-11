@@ -6,9 +6,9 @@ import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartRestored } from '@/store/slices/cart'
 import { checkoutReady } from '@/store/slices/payment'
 import { createAppStore } from '@/store/store'
+import { startCheckout } from '@/store/thunks/checkout'
 import { toast } from '@/components/AppToaster'
 import { useCart } from '@/hooks/useCart'
-import { startCheckout } from '@/services/checkout'
 import { HttpErrorCode } from '@/types/ApiError'
 import { Cart } from './Cart'
 
@@ -17,8 +17,8 @@ vi.mock('react-router', async (importOriginal) => ({
   useNavigate: vi.fn(),
 }))
 vi.mock('@/hooks/useCart', () => ({ useCart: vi.fn() }))
-vi.mock('@/services/checkout', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/checkout')>()),
+vi.mock('@/store/thunks/checkout', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/checkout')>()),
   startCheckout: vi.fn(),
 }))
 
@@ -170,7 +170,7 @@ describe('Cart', () => {
 
     expect(screen.getByText('7.99')).toBeInTheDocument()
     expect(screen.getByText('799')).toBeInTheDocument()
-    expect(screen.getByText('$ 799.00')).toBeInTheDocument()
+    expect(screen.getByText('$ 799')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
 

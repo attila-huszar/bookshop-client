@@ -1,7 +1,7 @@
 import { initReactI18next } from 'react-i18next'
 import i18next, { type i18n as I18n } from 'i18next'
 import HttpBackend, { type HttpBackendOptions } from 'i18next-http-backend'
-import { log } from '@/services/logger'
+import { log } from '@/api/logs'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 
 export type ShopLanguage = 'en' | 'hu'

@@ -1,5 +1,5 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
-import { resetCheckout } from '@/services/checkout'
+import { resetCheckout } from '@/store/thunks/checkout'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey } from '@/constants/keys'
 import {

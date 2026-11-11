@@ -1,19 +1,19 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
+import { log } from '@/api/logs'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
 import { cartClear } from '@/store/slices/cart'
 import { checkoutReady } from '@/store/slices/payment'
 import { authSessionChanged } from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
-import { toast } from '@/components/AppToaster'
 import {
   listenForCheckoutChanges,
   recoverCheckout,
   resetCheckout,
-} from '@/services/checkout'
-import { log } from '@/services/logger'
+} from '@/store/thunks/checkout'
+import { toast } from '@/components/AppToaster'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { paymentIdKey } from '@/constants/keys'
 import { uiTiming } from '@/constants/time'

@@ -1,5 +1,5 @@
 import { store } from '@/store/store'
-import { recoverCheckout, resetCheckout } from '@/services/checkout'
+import { recoverCheckout, resetCheckout } from '@/store/thunks/checkout'
 import { cartLoader } from './cartLoader'
 
 beforeEach(() => {

@@ -4,9 +4,9 @@ import { type NavigateOptions, useNavigate } from 'react-router'
 import { LottieLight } from 'lottie-react'
 import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
+import { resetCheckout } from '@/store/thunks/checkout'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
-import { resetCheckout } from '@/services/checkout'
 import {
   isSuccessPaymentIntentStatus,
   paymentStatusEmoji,

@@ -1,17 +1,16 @@
 import { HTTPError } from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { log } from '@/api/logs'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { ordersApi } from '@/store/api/ordersApi'
 import { paymentsApi } from '@/store/api/paymentsApi'
 import { authSessionChanged } from '@/store/slices/user'
 import { store as appStore, createAppStore } from '@/store/store'
 import { expireAuthSession, fetchAuthTokens } from '@/store/thunks/user'
-import { log } from '@/services/logger'
 import type { PaymentIntentRequest } from '@/types'
 import * as privateApi from './authRequest'
 import * as publicApi from './baseRequest'
 import { uploadProductImage } from './cms'
-import { LogLevel, sendLog } from './logs'
 import { transport } from './transport'
 import {
   postPasswordReset,
@@ -404,6 +403,8 @@ describe('request failure logging', () => {
   })
 
   it('does not report failed log uploads as another request failure', async () => {
+    const { log: actualLog } =
+      await vi.importActual<typeof import('./logs')>('./logs')
     const loggingClient = transport.extend({
       prefix: 'https://bookshop.test/api',
       retry: 0,
@@ -411,7 +412,7 @@ describe('request failure logging', () => {
     vi.spyOn(transport, 'post').mockImplementation(loggingClient.post)
     fetchMock.mockResolvedValueOnce(jsonResponse({}, 400))
 
-    sendLog(LogLevel.Error, 'Request failed')
+    actualLog.error('Request failed')
 
     await vi.waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(1)

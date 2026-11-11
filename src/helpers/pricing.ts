@@ -1,3 +1,10 @@
+export const formatAmount = (amount: number, language = 'en'): string =>
+  amount.toLocaleString(language, {
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  })
+
 /** Convert a decimal amount to cents without binary rounding at decimal ties. */
 export function toCents(amount: number): number {
   const [coefficient, exponent = '0'] = amount.toString().split('e')

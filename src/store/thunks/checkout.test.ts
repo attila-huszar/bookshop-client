@@ -16,6 +16,7 @@ import {
   sessionStorageAdapter,
 } from '@/helpers/browserStorage'
 import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'
+import { checkoutRetryPolicy } from '@/constants/time'
 import type { PaymentIntentResponse } from '@/types'
 import { HttpErrorCode, PaymentErrorCode } from '@/types/ApiError'
 import {
@@ -113,6 +114,157 @@ afterEach(() => {
 })
 
 describe('checkout coordinator', () => {
+  describe('checkout contention retries', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('keeps checkout creating and reuses the payload and key until ready', async () => {
+      fetchMock
+        .mockResolvedValueOnce(
+          json({ code: PaymentErrorCode.CheckoutInProgress }, 409),
+        )
+        .mockResolvedValueOnce(json(session()))
+      const pending = store.dispatch(startCheckout(payment))
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+      expect(store.getState().payment.phase).toBe('creating')
+
+      await vi.advanceTimersByTimeAsync(checkoutRetryPolicy.delayMs)
+
+      await expect(pending).resolves.toMatchObject({ type: 'ready' })
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(requests[1]!.headers.get('Idempotency-Key')).toBe(
+        requests[0]!.headers.get('Idempotency-Key'),
+      )
+      expect(await requests[0]!.json()).toEqual(payment)
+      expect(await requests[1]!.json()).toEqual(payment)
+      expect(store.getState().bookshopApi.mutations).toEqual({})
+    })
+
+    it('bounds automatic retries and preserves the key for a later manual retry', async () => {
+      fetchMock.mockImplementation(() =>
+        Promise.resolve(
+          json({ code: PaymentErrorCode.CheckoutInProgress }, 409),
+        ),
+      )
+      const pending = store
+        .dispatch(startCheckout(payment))
+        .catch((error: unknown) => error)
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      await vi.advanceTimersByTimeAsync(checkoutRetryPolicy.delayMs * 3)
+
+      expect(await pending).toMatchObject({
+        code: PaymentErrorCode.CheckoutInProgress,
+      })
+      expect(fetchMock).toHaveBeenCalledTimes(checkoutRetryPolicy.maxAttempts)
+      expect(store.getState().payment).toMatchObject({
+        phase: 'failed',
+        error: { code: PaymentErrorCode.CheckoutInProgress },
+      })
+      expect(localStorageAdapter.get(paymentIdempotencyKey)).toMatchObject({
+        clientIdempotencyKey: requests[0]!.headers.get('Idempotency-Key'),
+      })
+      expect(store.getState().bookshopApi.mutations).toEqual({})
+
+      fetchMock.mockResolvedValueOnce(json(session()))
+      await expect(
+        store.dispatch(startCheckout(payment)),
+      ).resolves.toMatchObject({ type: 'ready' })
+      expect(
+        new Set(
+          requests.map((request) => request.headers.get('Idempotency-Key')),
+        ).size,
+      ).toBe(1)
+    })
+
+    it.each(['reset', 'cart change', 'replacement payment', 'replacement key'])(
+      'stops retrying after %s during the delay',
+      async (change) => {
+        fetchMock.mockResolvedValueOnce(
+          json({ code: PaymentErrorCode.CheckoutInProgress }, 409),
+        )
+        const pending = store.dispatch(startCheckout(payment))
+        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+        if (change === 'reset') {
+          store.dispatch(resetCheckout())
+        } else if (change === 'cart change') {
+          store.dispatch(cartAdd({ id: 8 }))
+        } else if (change === 'replacement payment') {
+          localStorageAdapter.set(paymentIdKey, 'pi_other')
+        } else {
+          localStorageAdapter.set(paymentIdempotencyKey, {
+            fingerprint: JSON.stringify(payment),
+            clientIdempotencyKey: 'new-key',
+          })
+        }
+
+        await vi.advanceTimersByTimeAsync(checkoutRetryPolicy.delayMs)
+
+        await expect(pending).resolves.toEqual({ type: 'stale' })
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+      },
+    )
+
+    it('preserves a newer checkout completed while an older retry is waiting', async () => {
+      fetchMock
+        .mockResolvedValueOnce(
+          json({ code: PaymentErrorCode.CheckoutInProgress }, 409),
+        )
+        .mockResolvedValueOnce(json(session('pi_new')))
+      const old = store.dispatch(startCheckout(payment))
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+      store.dispatch(resetCheckout())
+      await store.dispatch(startCheckout(payment))
+
+      await vi.advanceTimersByTimeAsync(checkoutRetryPolicy.delayMs)
+
+      await expect(old).resolves.toEqual({ type: 'stale' })
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(getCheckoutPaymentId()).toBe('pi_new')
+      expect(store.getState().payment).toMatchObject({
+        phase: 'ready',
+        payment: session('pi_new'),
+      })
+    })
+  })
+
+  it('allows checkout without Web Locks and reuses the existing retry key', async () => {
+    localStorageAdapter.set(paymentIdempotencyKey, {
+      fingerprint: JSON.stringify(payment),
+      clientIdempotencyKey: 'existing-retry-key',
+    })
+    vi.stubGlobal(
+      'navigator',
+      Object.assign(Object.create(navigator), {
+        locks: undefined,
+      }),
+    )
+
+    await expect(store.dispatch(startCheckout(payment))).resolves.toEqual({
+      type: 'ready',
+      payment: session(),
+    })
+
+    expect(requestLock).not.toHaveBeenCalled()
+    expect(requests[0]!.headers.get('Idempotency-Key')).toBe(
+      'existing-retry-key',
+    )
+    expect(getCheckoutPaymentId()).toBe('pi_test')
+    expect(store.getState().payment.payment).toEqual(session())
+
+    await expect(store.dispatch(startCheckout(payment))).resolves.toEqual({
+      type: 'existing',
+      paymentId: 'pi_test',
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('stores only the safe ID and keeps Stripe credentials in memory', async () => {
     await expect(store.dispatch(startCheckout(payment))).resolves.toEqual({
       type: 'ready',
@@ -189,21 +341,35 @@ describe('checkout coordinator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it('preserves the same retry key after a network failure', async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError('Offline'))
-    await expect(store.dispatch(startCheckout(payment))).rejects.toMatchObject({
-      code: HttpErrorCode.UnknownResponse,
-    })
-    const first = (fetchMock.mock.calls[0]![0] as Request).headers.get(
-      'Idempotency-Key',
-    )
+  it.each([true, false])(
+    'preserves the same retry key after a network failure with Web Locks available: %s',
+    async (locksAvailable) => {
+      if (!locksAvailable) {
+        vi.stubGlobal(
+          'navigator',
+          Object.assign(Object.create(navigator), {
+            locks: undefined,
+          }),
+        )
+      }
 
-    await store.dispatch(startCheckout(payment))
+      fetchMock.mockRejectedValueOnce(new TypeError('Offline'))
+      await expect(
+        store.dispatch(startCheckout(payment)),
+      ).rejects.toMatchObject({
+        code: HttpErrorCode.UnknownResponse,
+      })
+      const first = (fetchMock.mock.calls[0]![0] as Request).headers.get(
+        'Idempotency-Key',
+      )
 
-    expect(
-      (fetchMock.mock.calls[1]![0] as Request).headers.get('Idempotency-Key'),
-    ).toBe(first)
-  })
+      await store.dispatch(startCheckout(payment))
+
+      expect(
+        (fetchMock.mock.calls[1]![0] as Request).headers.get('Idempotency-Key'),
+      ).toBe(first)
+    },
+  )
 
   it('reuses the same checkout in a second tab with empty session storage', async () => {
     await store.dispatch(startCheckout(payment))

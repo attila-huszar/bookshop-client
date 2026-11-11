@@ -1,16 +1,23 @@
-import { MemoryRouter } from 'react-router'
+import { StrictMode } from 'react'
+import { MemoryRouter, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { usePaymentTermsQuery } from '@/store/api/termsApi'
+import * as checkoutActions from '@/store/thunks/checkout'
+import { usePaymentTermsQuery } from '@/store/api/paymentsApi'
 import { userSelector } from '@/store/selectors'
 import { toast } from '@/components/AppToaster'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
 import { PaymentErrorCode } from '@/types/ApiError'
 import { CheckoutForm } from './CheckoutForm'
+
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: vi.fn(),
+}))
 
 vi.mock('@stripe/react-stripe-js', () => ({
   useElements: vi.fn(),
@@ -26,7 +33,7 @@ vi.mock('@/hooks/redux', () => ({
 vi.mock('@/hooks/usePaymentSubmit', () => ({
   usePaymentSubmit: vi.fn(),
 }))
-vi.mock('@/store/api/termsApi', () => ({ usePaymentTermsQuery: vi.fn() }))
+vi.mock('@/store/api/paymentsApi', () => ({ usePaymentTermsQuery: vi.fn() }))
 
 const review = {
   terms: {
@@ -51,11 +58,12 @@ const review = {
   },
 }
 const paymentLabel = /place order and pay|retry payment/i
+const navigate = vi.fn()
 const submitState = {
   handleSubmit: vi.fn(),
   canRetry: false,
-  message: { text: null, type: 'neutral' as const },
-  setMessage: vi.fn(),
+  error: null,
+  clearError: vi.fn(),
   isLoading: false,
 }
 
@@ -72,6 +80,7 @@ function mockReview(
 }
 
 beforeEach(() => {
+  vi.mocked(useNavigate).mockReturnValue(navigate)
   vi.mocked(useStripe).mockReturnValue({} as ReturnType<typeof useStripe>)
   vi.mocked(useElements).mockReturnValue({} as ReturnType<typeof useElements>)
   vi.mocked(useAppSelector).mockImplementation((selector) => {
@@ -91,6 +100,71 @@ afterEach(() => {
 })
 
 describe('Checkout form', () => {
+  it('returns to Cart after a successful cancellation', async () => {
+    const cancel = vi.spyOn(checkoutActions, 'cancelCheckout')
+    vi.mocked(useAppDispatch).mockReturnValue(
+      vi.fn().mockImplementation(() => {
+        cancel.mock.calls[0]![1]?.()
+
+        return Promise.resolve({ type: 'cleared' })
+      }),
+    )
+    render(
+      <StrictMode>
+        <CheckoutForm />
+      </StrictMode>,
+      { wrapper: MemoryRouter },
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Cancel Checkout' }),
+    )
+
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/cart', { replace: true })
+  })
+
+  it.each(['success', 'failure'])(
+    'ignores a pending cancellation %s after unmount and remount',
+    async (outcome) => {
+      const cancel = vi.spyOn(checkoutActions, 'cancelCheckout')
+      let complete!: () => void
+      const pending = new Promise((resolve, reject) => {
+        complete = () => {
+          if (outcome === 'success') {
+            cancel.mock.calls[0]![1]?.()
+            resolve({ type: 'cleared' })
+          } else {
+            reject(
+              Object.assign(new Error('Already paid'), {
+                code: PaymentErrorCode.AlreadySucceeded,
+              }),
+            )
+          }
+        }
+      })
+      vi.mocked(useAppDispatch).mockReturnValue(
+        vi.fn().mockReturnValue(pending),
+      )
+      const { unmount } = render(<CheckoutForm />, { wrapper: MemoryRouter })
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Cancel Checkout' }),
+      )
+      unmount()
+      render(<CheckoutForm />, { wrapper: MemoryRouter })
+
+      await act(async () => {
+        complete()
+        await pending.catch(() => undefined)
+      })
+
+      expect(navigate).not.toHaveBeenCalled()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Cancel Checkout' }),
+      ).toBeEnabled()
+    },
+  )
+
   it('leaves missing-session messaging to the checkout page', () => {
     vi.mocked(useAppSelector).mockImplementation((selector) =>
       selector === userSelector ? { userData: null } : null,
@@ -203,7 +277,7 @@ describe('Checkout form', () => {
     ).toHaveTextContent('Ordered book')
     expect(
       screen.getByRole('button', { name: paymentLabel }),
-    ).toHaveTextContent('12.00 EUR')
+    ).toHaveTextContent('12 EUR')
 
     await userEvent.click(screen.getByText(/I have read and accept the/))
     expect(screen.getByRole('button', { name: paymentLabel })).toBeEnabled()
@@ -220,7 +294,7 @@ describe('Checkout form', () => {
     vi.mocked(usePaymentSubmit).mockReturnValue({
       ...submitState,
       canRetry: true,
-      message: { text: 'Connection failed', type: 'error' },
+      error: 'Connection failed',
     })
     render(<CheckoutForm />, { wrapper: MemoryRouter })
     const checkbox = screen.getByRole('checkbox')

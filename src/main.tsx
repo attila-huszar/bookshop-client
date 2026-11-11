@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import './i18n'
 import { store } from '@/store/store'
-import { listenForCheckoutChanges } from '@/services/checkout'
+import { listenForCheckoutChanges } from '@/store/thunks/checkout'
 import { rootErrorHandlers } from '@/helpers/errors'
 import App from './App.tsx'
 

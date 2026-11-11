@@ -8,7 +8,7 @@ import { usersApi } from '../api/usersApi'
 import { userSelector } from '../selectors'
 import { authSessionChanged } from '../slices/user'
 import { createAppStore } from '../store'
-import { fetchAuthTokens, login, logout } from './user'
+import { bootstrapSession, fetchAuthTokens, login, logout } from './user'
 
 const profile = {
   uuid: '11111111-1111-4111-8111-111111111111',
@@ -22,6 +22,111 @@ const profile = {
   role: UserRole.User,
 }
 let store: ReturnType<typeof createAppStore>
+
+describe('session bootstrap', () => {
+  beforeEach(async () => {
+    await store.dispatch(bootstrapSession())
+    store.dispatch(authSessionChanged(null))
+    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
+      accessToken: null,
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('reuses an existing access token without making a request', async () => {
+    store.dispatch(authSessionChanged('access-token'))
+
+    await store.dispatch(bootstrapSession())
+
+    expect(usersTransport.retrieveAuthTokens).not.toHaveBeenCalled()
+  })
+
+  it('shares one pending cookie refresh across startup and checkout', async () => {
+    let finish!: () => void
+    vi.mocked(usersTransport.retrieveAuthTokens).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = () => resolve({ accessToken: 'restored-token' })
+        }),
+    )
+
+    const first = store.dispatch(bootstrapSession())
+    const second = store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+
+    finish()
+    await Promise.all([first, second])
+    await store.dispatch(bootstrapSession())
+
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+    expect(store.getState().user.accessToken).toBe('restored-token')
+  })
+
+  it('counts concurrent guest attempts once and backs off subsequent refreshes', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    await Promise.all([
+      store.dispatch(bootstrapSession()),
+      store.dispatch(bootstrapSession()),
+      store.dispatch(bootstrapSession()),
+    ])
+    await store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+
+    vi.setSystemTime(Date.now() + 1_000)
+    await store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
+
+    vi.setSystemTime(Date.now() + 1_000)
+    await store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
+
+    vi.setSystemTime(Date.now() + 1_000)
+    await store.dispatch(bootstrapSession())
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(3)
+  })
+
+  it('resets guest backoff after a session is established', async () => {
+    await store.dispatch(bootstrapSession())
+    store.dispatch(authSessionChanged('access-token'))
+    await store.dispatch(bootstrapSession())
+    store.dispatch(authSessionChanged(null))
+    await store.dispatch(bootstrapSession())
+
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
+  })
+
+  it('stops refreshing after four unsuccessful guest attempts', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const startedAt = Date.now()
+
+    for (const elapsed of [0, 1_000, 3_000, 7_000]) {
+      vi.setSystemTime(startedAt + elapsed)
+      await store.dispatch(bootstrapSession())
+    }
+
+    vi.setSystemTime(startedAt + 60_000)
+    await store.dispatch(bootstrapSession())
+
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(4)
+  })
+
+  it('resets guest backoff when a cookie refresh establishes the session', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    await store.dispatch(bootstrapSession())
+    vi.setSystemTime(Date.now() + 1_000)
+    vi.mocked(usersTransport.retrieveAuthTokens).mockResolvedValueOnce({
+      accessToken: 'restored-token',
+    })
+    await store.dispatch(bootstrapSession())
+    store.dispatch(authSessionChanged(null))
+    await store.dispatch(bootstrapSession())
+
+    expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(3)
+  })
+})
 
 beforeEach(async () => {
   store = createAppStore()

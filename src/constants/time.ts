@@ -44,3 +44,8 @@ export const paymentStatusPolicy = {
   timeoutMs: TimeMs.ThirtySeconds,
   retryMultiplier: 2,
 } as const
+
+export const checkoutRetryPolicy = {
+  maxAttempts: 3,
+  delayMs: 500,
+} as const

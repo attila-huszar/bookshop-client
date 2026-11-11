@@ -5,7 +5,7 @@ import { userEvent } from '@testing-library/user-event'
 import { cartRestored } from '@/store/slices/cart'
 import { checkoutReady } from '@/store/slices/payment'
 import { createAppStore } from '@/store/store'
-import { recoverCheckout } from '@/services/checkout'
+import { recoverCheckout } from '@/store/thunks/checkout'
 import { BasketButton } from './BasketButton'
 
 describe('BasketButton', () => {

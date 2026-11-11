@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useEffect, useRef, useState } from 'react'
+import { Trans } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import { shopLanguage } from '@/i18n'
 import {
   LinkAuthenticationElement,
   PaymentElement,
@@ -9,21 +8,32 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js'
 import { ROUTE } from '@/routes/route'
-import { usePaymentTermsQuery } from '@/store/api/termsApi'
+import { usePaymentTermsQuery } from '@/store/api/paymentsApi'
 import { userSelector } from '@/store/selectors'
+import { cancelCheckout } from '@/store/thunks/checkout'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useLanguage } from '@/hooks/useLanguage'
 import { usePaymentSubmit } from '@/hooks/usePaymentSubmit'
-import { cancelCheckout } from '@/services/checkout'
-import { formatAmount } from '@/helpers/checkout'
 import { getApiError, getErrorMessage } from '@/helpers/errors'
 import { calculatePriceCents } from '@/helpers/pricing'
 import { defaultCurrency } from '@/constants/defaultValues'
 import type { ApiError, StripePaymentElementOptions } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
 
+const paymentElementOptions: StripePaymentElementOptions = {
+  layout: 'accordion',
+  business: {
+    name: 'Bookshop',
+  },
+  fields: {
+    billingDetails: {
+      email: 'never',
+    },
+  },
+}
+
 export function CheckoutForm() {
-  const { t, i18n } = useTranslation()
-  const language = shopLanguage(i18n.resolvedLanguage)
+  const { t, language, formatAmount } = useLanguage()
   const stripe = useStripe()
   const elements = useElements()
   const { userData } = useAppSelector(userSelector)
@@ -51,8 +61,18 @@ export function CheckoutForm() {
   const receiptEmail = (userData?.email ?? linkEmail).trim()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
-  const { handleSubmit, canRetry, message, setMessage, isLoading } =
+  useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
+
+    return () => {
+      lifecycle.active = false
+    }
+  }, [])
+
+  const { handleSubmit, canRetry, error, clearError, isLoading } =
     usePaymentSubmit({
       email: receiptEmail,
       paymentId: payment?.paymentId ?? '',
@@ -66,7 +86,7 @@ export function CheckoutForm() {
 
   const paymentId = payment.paymentId
 
-  const amount = formatAmount(payment.amount / 100, i18n.resolvedLanguage)
+  const amount = formatAmount(payment.amount / 100)
   const currency = review?.order.currency ?? defaultCurrency
   const orderButtonLabel = t(
     canRetry ? 'terms.retryButton' : 'terms.orderButton',
@@ -79,35 +99,37 @@ export function CheckoutForm() {
     isLoading || isCanceling || !stripe || !elements || !termsAccepted
 
   const handleCancel = async () => {
+    const lifecycle = lifecycleRef.current
+
+    if (!lifecycle?.active || isCanceling || isLoading) {
+      return
+    }
+
     setCancelError(null)
 
     setIsCanceling(true)
 
     try {
-      const result = await dispatch(cancelCheckout(paymentId))
-
-      if (result.type === 'cleared') {
-        void navigate(`/${ROUTE.CART}`, { replace: true })
-      }
+      await dispatch(
+        cancelCheckout(paymentId, () => {
+          if (lifecycle.active) {
+            void navigate(`/${ROUTE.CART}`, { replace: true })
+          }
+        }),
+      )
     } catch (error) {
+      if (!lifecycle.active) {
+        return
+      }
+
       const errorMessage = getErrorMessage(error, t('checkout.cancelError'))
 
       setCancelError(getApiError(error) ?? errorMessage)
     } finally {
-      setIsCanceling(false)
+      if (lifecycle.active) {
+        setIsCanceling(false)
+      }
     }
-  }
-
-  const paymentElementOptions: StripePaymentElementOptions = {
-    layout: 'accordion',
-    business: {
-      name: 'Bookshop',
-    },
-    fields: {
-      billingDetails: {
-        email: 'never',
-      },
-    },
   }
 
   return (
@@ -123,7 +145,7 @@ export function CheckoutForm() {
           options={{ defaultValues: { email: linkEmail } }}
           onChange={(e) => {
             setLinkEmail(e.value.email)
-            setMessage({ text: null, type: 'neutral' })
+            clearError()
             setCancelError(null)
           }}
         />
@@ -132,7 +154,7 @@ export function CheckoutForm() {
         id="payment-element"
         options={paymentElementOptions}
         onChange={() => {
-          setMessage({ text: null, type: 'neutral' })
+          clearError()
           setCancelError(null)
         }}
       />
@@ -156,7 +178,6 @@ export function CheckoutForm() {
                       item.discount,
                       item.quantity,
                     ) / 100,
-                    i18n.resolvedLanguage,
                   )}{' '}
                   {currency}
                 </span>
@@ -179,7 +200,7 @@ export function CheckoutForm() {
               disabled={isLoading || isCanceling}
               onChange={(event) => {
                 setAcceptedTermsKey(event.target.checked ? termsKey : null)
-                setMessage({ text: null, type: 'neutral' })
+                clearError()
               }}
             />
             <span id="checkout-terms-label">
@@ -254,12 +275,9 @@ export function CheckoutForm() {
             : getErrorMessage(cancelError, t('checkout.cancelError'))}
         </div>
       )}
-      {message.text && (
-        <div
-          id="payment-message"
-          role={message.type === 'error' ? 'alert' : 'status'}
-          className={message.type === 'error' ? 'error' : undefined}>
-          {message.text}
+      {error && (
+        <div id="payment-message" role="alert" className="error">
+          {error}
         </div>
       )}
     </form>

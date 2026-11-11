@@ -2,16 +2,16 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
-import { shopLanguage } from '@/i18n'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
+import { log } from '@/api/logs'
 import { ROUTE } from '@/routes/route'
 import { userSelector } from '@/store/selectors'
+import { resetCheckout } from '@/store/thunks/checkout'
 import { InfoDialog } from '@/components/InfoDialog'
 import { Loading } from '@/components/Loading'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { resetCheckout } from '@/services/checkout'
-import { log } from '@/services/logger'
+import { useLanguage } from '@/hooks/useLanguage'
 import { checkoutQueryParams } from '@/helpers/checkout'
 import { stripeKey } from '@/constants/envConfig'
 import { uiTiming } from '@/constants/time'
@@ -70,7 +70,7 @@ function StripeErrorFallback({ error }: FallbackProps) {
 }
 
 export function Checkout() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLanguage()
 
   const location = useLocation()
   const { userIsLoading } = useAppSelector(userSelector)
@@ -126,7 +126,7 @@ export function Checkout() {
   }
 
   const options: StripeElementsOptions = {
-    locale: shopLanguage(i18n.resolvedLanguage),
+    locale: language,
     clientSecret: checkoutPaymentToken,
     appearance: { theme: 'stripe', variables: {} },
     loader: 'auto',

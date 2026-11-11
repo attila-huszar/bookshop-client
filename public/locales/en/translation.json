@@ -252,6 +252,7 @@
     "cancelError": "Unable to cancel checkout right now. Please try again.",
     "priceChanged": "Prices have been updated in your cart. Please review before checkout.",
     "createError": "Order creation failed",
+    "inProgress": "Checkout is still being prepared. Please try again.",
     "sessionUnavailable": "This payment session is no longer accessible. Please start a new checkout.",
     "sessionEnded": "This payment session has ended. Please start a new checkout.",
     "summary": "Order summary",

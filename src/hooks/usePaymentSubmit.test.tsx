@@ -4,7 +4,8 @@ import { i18n } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAcceptPaymentTermsMutation } from '@/store/api/termsApi'
+import { useLazyPaymentQuery } from '@/store/api/paymentsApi'
+import { useAcceptPaymentTermsMutation } from '@/store/api/paymentsApi'
 import { checkoutSuperseded } from '@/store/slices/payment'
 import { useAppDispatch } from '@/hooks/redux'
 import { localStorageAdapter } from '@/helpers/browserStorage'
@@ -21,11 +22,12 @@ vi.mock('@stripe/react-stripe-js', () => ({
   useElements: vi.fn(),
   useStripe: vi.fn(),
 }))
-vi.mock('@/store/api/termsApi', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/api/termsApi')>()),
+vi.mock('@/hooks/redux', () => ({ useAppDispatch: vi.fn() }))
+vi.mock('@/store/api/paymentsApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/api/paymentsApi')>()),
+  useLazyPaymentQuery: vi.fn(),
   useAcceptPaymentTermsMutation: vi.fn(),
 }))
-vi.mock('@/hooks/redux', () => ({ useAppDispatch: vi.fn() }))
 
 const terms: CheckoutTerms = {
   url: 'https://bookshop.test/terms-v1.pdf',
@@ -43,14 +45,26 @@ const submitEvent = () =>
 const confirmPayment = vi.fn<
   (request: { confirmParams: { receipt_email: string } }) => Promise<{
     paymentIntent?: { status: string }
-    error?: { type: string; message?: string }
+    error?: { type: string; message?: string; code?: string }
   }>
 >()
 const acceptTerms = vi.fn()
 const unwrap = vi.fn()
 const dispatch = vi.fn()
+const retrievePayment = vi.fn()
+const retrievePaymentResult = vi.fn()
 
 beforeEach(() => {
+  retrievePaymentResult.mockReset().mockResolvedValue({
+    paymentId: input.paymentId,
+    status: 'requires_payment_method',
+  })
+  retrievePayment.mockReturnValue({ unwrap: retrievePaymentResult })
+  vi.mocked(useLazyPaymentQuery).mockReturnValue([
+    retrievePayment,
+    {},
+    {},
+  ] as unknown as ReturnType<typeof useLazyPaymentQuery>)
   vi.mocked(useAppDispatch).mockReturnValue(dispatch)
   localStorageAdapter.set(paymentIdKey, input.paymentId)
   unwrap.mockReset().mockResolvedValue({
@@ -78,6 +92,126 @@ afterEach(() => {
 })
 
 describe('Payment terms submission', () => {
+  it.each(['succeeded', 'processing', 'requires_capture', 'canceled'])(
+    'opens current %s status after a competing confirmation',
+    async (status) => {
+      confirmPayment.mockResolvedValueOnce({
+        error: {
+          type: 'invalid_request_error',
+          code: 'payment_intent_unexpected_state',
+        },
+      })
+      retrievePaymentResult.mockResolvedValueOnce({ status })
+      const navigate = vi.fn()
+      vi.mocked(useNavigate).mockReturnValue(navigate)
+      const { result } = renderHook(() => usePaymentSubmit(input))
+
+      await act(() => result.current.handleSubmit(submitEvent()))
+
+      expect(retrievePayment).toHaveBeenCalledExactlyOnceWith('pi_test', false)
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(
+        `/checkout?redirect_status=${status}`,
+        { replace: true },
+      )
+      expect(confirmPayment).toHaveBeenCalledTimes(1)
+      expect(result.current.error).toBeNull()
+    },
+  )
+
+  it('recovers a successful payment after a lost confirmation response', async () => {
+    confirmPayment.mockResolvedValueOnce({
+      error: { type: 'api_connection_error' },
+    })
+    retrievePaymentResult.mockResolvedValueOnce({ status: 'succeeded' })
+    const navigate = vi.fn()
+    vi.mocked(useNavigate).mockReturnValue(navigate)
+    const { result } = renderHook(() => usePaymentSubmit(input))
+
+    await act(() => result.current.handleSubmit(submitEvent()))
+
+    expect(navigate).toHaveBeenCalledWith(
+      '/checkout?redirect_status=succeeded',
+      { replace: true },
+    )
+    expect(confirmPayment).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    'requires_payment_method',
+    'requires_confirmation',
+    'requires_action',
+    'lookup failure',
+  ])(
+    'preserves the confirmation error on %s during status recovery',
+    async (status) => {
+      confirmPayment.mockResolvedValueOnce({
+        error: { type: 'api_connection_error' },
+      })
+
+      if (status === 'lookup failure') {
+        retrievePaymentResult.mockRejectedValueOnce(new Error('Lookup failed'))
+      } else {
+        retrievePaymentResult.mockResolvedValueOnce({ status })
+      }
+
+      const navigate = vi.fn()
+      vi.mocked(useNavigate).mockReturnValue(navigate)
+      const { result } = renderHook(() => usePaymentSubmit(input))
+
+      await act(() => result.current.handleSubmit(submitEvent()))
+
+      expect(navigate).not.toHaveBeenCalled()
+      expect(result.current.error).toBe(
+        i18n.t('payment.errors.api_connection_error'),
+      )
+      expect(result.current.canRetry).toBe(true)
+    },
+  )
+
+  it.each(['unmount', 'checkout replaced'])(
+    'discards recovered payment status after %s',
+    async (change) => {
+      confirmPayment.mockResolvedValueOnce({
+        error: { type: 'api_connection_error' },
+      })
+      let finish!: () => void
+      retrievePaymentResult.mockReturnValueOnce(
+        new Promise((resolve) => {
+          finish = () => resolve({ status: 'succeeded' })
+        }),
+      )
+      const navigate = vi.fn()
+      vi.mocked(useNavigate).mockReturnValue(navigate)
+      const { result, unmount } = renderHook(() => usePaymentSubmit(input))
+      let submitting!: Promise<void>
+
+      await act(async () => {
+        submitting = result.current.handleSubmit(submitEvent())
+        await Promise.resolve()
+      })
+
+      if (change === 'unmount') {
+        unmount()
+      } else {
+        localStorageAdapter.set(paymentIdKey, 'pi_other')
+      }
+
+      await act(async () => {
+        finish()
+        await submitting
+      })
+
+      expect(navigate).not.toHaveBeenCalled()
+
+      expect(dispatch.mock.calls).toEqual(
+        change === 'checkout replaced' ? [[checkoutSuperseded()]] : [],
+      )
+      expect(localStorageAdapter.get(paymentIdKey)).toBe(
+        change === 'checkout replaced' ? 'pi_other' : input.paymentId,
+      )
+    },
+  )
+
   it('blocks an obsolete checkout even before a cross-tab storage event is delivered', async () => {
     const { result } = renderHook(() => usePaymentSubmit(input))
     localStorageAdapter.remove(paymentIdKey)
@@ -87,7 +221,7 @@ describe('Payment terms submission', () => {
     expect(acceptTerms).not.toHaveBeenCalled()
     expect(confirmPayment).not.toHaveBeenCalled()
     expect(dispatch).toHaveBeenCalledExactlyOnceWith(checkoutSuperseded())
-    expect(result.current.message.text).toBeNull()
+    expect(result.current.error).toBeNull()
   })
 
   it('does not confirm an obsolete checkout after acceptance finishes in another tab', async () => {
@@ -112,7 +246,7 @@ describe('Payment terms submission', () => {
 
     expect(confirmPayment).not.toHaveBeenCalled()
     expect(dispatch).toHaveBeenCalledExactlyOnceWith(checkoutSuperseded())
-    expect(result.current.message.text).toBeNull()
+    expect(result.current.error).toBeNull()
     expect(localStorageAdapter.get(paymentIdKey)).toBe('pi_other')
     expect(result.current.isLoading).toBe(false)
   })
@@ -153,7 +287,7 @@ describe('Payment terms submission', () => {
 
       await act(() => result.current.handleSubmit(submitEvent()))
 
-      expect(result.current.message.text).toBe(i18n.t('checkout.notReady'))
+      expect(result.current.error).toBe(i18n.t('checkout.notReady'))
       expect(result.current.isLoading).toBe(false)
       expect(acceptTerms).not.toHaveBeenCalled()
       expect(confirmPayment).not.toHaveBeenCalled()
@@ -167,7 +301,7 @@ describe('Payment terms submission', () => {
 
     await act(() => result.current.handleSubmit(submitEvent()))
 
-    expect(result.current.message.text).toBe(i18n.t('checkout.missingEmail'))
+    expect(result.current.error).toBe(i18n.t('checkout.missingEmail'))
     expect(acceptTerms).not.toHaveBeenCalled()
     expect(confirmPayment).not.toHaveBeenCalled()
   })
@@ -181,10 +315,10 @@ describe('Payment terms submission', () => {
     expect(result.current.canRetry).toBe(true)
 
     act(() => {
-      result.current.setMessage({ text: null, type: 'neutral' })
+      result.current.clearError()
     })
 
-    expect(result.current.message.text).toBeNull()
+    expect(result.current.error).toBeNull()
     expect(result.current.canRetry).toBe(false)
     expect(confirmPayment).toHaveBeenCalledTimes(1)
   })
@@ -233,12 +367,12 @@ describe('Payment terms submission', () => {
     const { result } = renderHook(() => usePaymentSubmit(input))
     await act(() => result.current.handleSubmit(submitEvent()))
 
-    expect(result.current.message.text).toBe(i18n.t('errors.termsChanged'))
+    expect(result.current.error).toBe(i18n.t('errors.termsChanged'))
     expect(result.current.canRetry).toBe(false)
 
     await act(() => i18n.changeLanguage('hu'))
 
-    expect(result.current.message.text).toBe(i18n.t('errors.termsChanged'))
+    expect(result.current.error).toBe(i18n.t('errors.termsChanged'))
     expect(acceptTerms).toHaveBeenCalledTimes(1)
     expect(confirmPayment).not.toHaveBeenCalled()
   })
@@ -275,7 +409,7 @@ describe('Payment terms submission', () => {
 
     await act(() => result.current.handleSubmit(submitEvent()))
 
-    expect(result.current.message.text).toBe(
+    expect(result.current.error).toBe(
       'Nem sikerült csatlakozni a fizetési szolgáltatáshoz. Kérjük, ellenőrizze az internetkapcsolatát.',
     )
     expect(result.current.canRetry).toBe(true)
@@ -291,7 +425,7 @@ describe('Payment terms submission', () => {
 
       await act(() => result.current.handleSubmit(submitEvent()))
 
-      expect(result.current.message.text).toBe('Specific payment details')
+      expect(result.current.error).toBe('Specific payment details')
       expect(result.current.canRetry).toBe(false)
     },
   )
@@ -305,7 +439,7 @@ describe('Payment terms submission', () => {
 
     await act(() => result.current.handleSubmit(submitEvent()))
 
-    expect(result.current.message.text).toBe(
+    expect(result.current.error).toBe(
       'Váratlan hiba történt. Kérjük, próbálja újra.',
     )
   })
@@ -317,7 +451,7 @@ describe('Payment terms submission', () => {
 
     await act(() => result.current.handleSubmit(submitEvent()))
 
-    expect(result.current.message.text).toMatch(/accept the terms/)
+    expect(result.current.error).toMatch(/accept the terms/)
     expect(acceptTerms).not.toHaveBeenCalled()
     expect(confirmPayment).not.toHaveBeenCalled()
   })
@@ -376,7 +510,7 @@ describe('Payment terms submission', () => {
     await act(() => result.current.handleSubmit(submitEvent()))
 
     expect(confirmPayment).not.toHaveBeenCalled()
-    expect(result.current.message.text).toBe('The terms have changed.')
+    expect(result.current.error).toBe('The terms have changed.')
     expect(result.current.isLoading).toBe(false)
   })
 

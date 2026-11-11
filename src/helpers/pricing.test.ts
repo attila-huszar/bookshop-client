@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { calculatePriceCents, toCents } from './pricing'
+import { calculatePriceCents, formatAmount, toCents } from './pricing'
+
+describe('amount formatting', () => {
+  it('preserves locale and fractional digits across repeated mixed calls', () => {
+    for (let pass = 0; pass < 2; pass++) {
+      expect(formatAmount(1200, 'en')).toBe('1200')
+      expect(formatAmount(12.5, 'en')).toBe('12.50')
+      expect(formatAmount(1200, 'hu')).toBe('1200')
+      expect(formatAmount(12.5, 'hu')).toBe('12,50')
+      expect(formatAmount(0)).toBe('0')
+      expect(formatAmount(-12.5, 'hu')).toBe('-12,50')
+    }
+  })
+})
 
 describe('cent pricing', () => {
   it.each([

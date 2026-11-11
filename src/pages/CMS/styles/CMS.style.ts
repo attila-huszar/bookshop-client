@@ -2,8 +2,6 @@ import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledCMS = styled.section`
-  --page-loading-height: 0px;
-
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -29,6 +27,13 @@ export const MainContainer = styled.div`
   ${media.down('sm')`
     padding: 0.75rem;
   `}
+`
+
+export const LoadingContainer = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
 `
 
 export const MenuButtons = styled.div`

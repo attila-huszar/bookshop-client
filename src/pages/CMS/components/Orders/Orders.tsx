@@ -11,7 +11,7 @@ import { formatPaymentStatus } from '@/helpers/checkout'
 import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, EnvelopeIcon } from '@/assets/svg'
-import { TableActions } from '../../styles/CMS.style'
+import { LoadingContainer, TableActions } from '../../styles/CMS.style'
 import { OrderEmails } from './OrderEmails'
 import { OrdersTable } from './Orders.style'
 
@@ -39,7 +39,11 @@ export const Orders = () => {
     useCmsPagination('orders', orders.length)
 
   if (ordersLoading) {
-    return <Loading message={t('cms.ordersLoading')} fullScreen />
+    return (
+      <LoadingContainer>
+        <Loading message={t('cms.ordersLoading')} />
+      </LoadingContainer>
+    )
   }
 
   if (ordersError) {

@@ -9,7 +9,11 @@ import { Pagination } from '@/components/Pagination'
 import { useCmsPagination } from '@/hooks/useCmsPagination'
 import { CMSOutletContext } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
-import { StyledTable, TableActions } from '../../styles/CMS.style'
+import {
+  LoadingContainer,
+  StyledTable,
+  TableActions,
+} from '../../styles/CMS.style'
 
 export const Books = () => {
   const { t } = useTranslation()
@@ -33,7 +37,11 @@ export const Books = () => {
     useCmsPagination('books', books.length)
 
   if (booksLoading) {
-    return <Loading message={t('catalogue.loading')} fullScreen />
+    return (
+      <LoadingContainer>
+        <Loading message={t('catalogue.loading')} />
+      </LoadingContainer>
+    )
   }
 
   if (booksError) {

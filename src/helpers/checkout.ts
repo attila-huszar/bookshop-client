@@ -1,15 +1,11 @@
 import { i18n } from '@/i18n'
 import type { TFunction } from 'i18next'
-import { storedCartSchema } from '@/validation/orderSchemas'
-import { cartKey } from '@/constants/keys'
 import type {
-  CartItem,
   PaymentIntentStatus,
   PaymentStatusState,
   StripeError,
   StripeErrorType,
 } from '@/types'
-import { localStorageAdapter } from './browserStorage'
 
 export const checkoutQueryParams = {
   paymentIntent: 'payment_intent',
@@ -45,39 +41,6 @@ const retryableStripeErrorTypes: readonly StripeErrorType[] = [
   'api_error',
   'rate_limit_error',
 ]
-
-/** Restore the saved basket, or start empty if any stored item is invalid. */
-export function readStoredCart(): CartItem[] {
-  try {
-    return storedCartSchema.validateSync(
-      localStorageAdapter.get<unknown>(cartKey),
-    )
-  } catch {
-    return []
-  }
-}
-
-export const areCartItemsEqual = (
-  first: readonly CartItem[],
-  second: readonly CartItem[],
-): boolean =>
-  first.length === second.length &&
-  first.every(
-    (item, index) =>
-      item.id === second[index]?.id &&
-      item.quantity === second[index]?.quantity,
-  )
-
-export const formatAmount = (
-  amount: number,
-  language = 'en',
-  minimumFractionDigits = 2,
-): string =>
-  amount.toLocaleString(language, {
-    minimumFractionDigits,
-    maximumFractionDigits: 2,
-    useGrouping: false,
-  })
 
 export const isSuccessPaymentIntentStatus = (
   status: unknown,

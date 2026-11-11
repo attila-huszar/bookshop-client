@@ -1,5 +1,5 @@
 import { isHTTPError, isTimeoutError } from 'ky'
-import { log } from '@/services/logger'
+import { log } from '@/api/logs'
 import { transport } from './transport'
 
 const loggedErrors = new WeakSet<Error>()

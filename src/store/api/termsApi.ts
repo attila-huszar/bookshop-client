@@ -1,10 +1,6 @@
 import { PATH } from '@/api/path'
-import { CacheTime } from '@/constants/time'
 import type {
-  AcceptPaymentTermsRequest,
-  PaymentTermsReview,
   PublishTermsRequest,
-  TermsAcceptance,
   TermsDocument,
   TermsDocumentSummary,
 } from '@/types'
@@ -29,16 +25,6 @@ export const termsApi = bookshopApi.injectEndpoints({
     cmsTermsHistory: build.query<TermsDocumentSummary[], void>({
       query: () => ({ url: PATH.cms.termsHistory, withAuth: true }),
       providesTags: [{ type: 'TermsDocument', id: 'History' }],
-    }),
-
-    paymentTerms: build.query<PaymentTermsReview, string>({
-      query: (paymentId) => ({
-        url: PATH.payments.terms(paymentId),
-        withAuth: true,
-        credentials: 'include',
-      }),
-      keepUnusedDataFor: CacheTime.None,
-      providesTags: ['CheckoutTerms'],
     }),
 
     deleteTermsVersion: build.mutation<null, string>({
@@ -74,25 +60,6 @@ export const termsApi = bookshopApi.injectEndpoints({
               'CheckoutTerms',
             ],
     }),
-
-    acceptPaymentTerms: build.mutation<
-      TermsAcceptance,
-      AcceptPaymentTermsRequest
-    >({
-      query: (request) => ({
-        url: PATH.payments.terms(request.paymentId),
-        method: 'post',
-        withAuth: true,
-        credentials: 'include',
-        json: {
-          accepted: request.accepted,
-          version: request.version,
-          language: request.language,
-        },
-      }),
-      invalidatesTags: (_result, error) =>
-        error?.status === 412 ? ['CheckoutTerms'] : [],
-    }),
   }),
 })
 
@@ -102,6 +69,4 @@ export const {
   useCmsTermsHistoryQuery,
   useDeleteTermsVersionMutation,
   usePublishTermsMutation,
-  usePaymentTermsQuery,
-  useAcceptPaymentTermsMutation,
 } = termsApi

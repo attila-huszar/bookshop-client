@@ -1,5 +1,5 @@
 import * as usersApi from '@/api/users'
-import { recoverCheckout, resetCheckout } from '@/services/checkout'
+import { recoverCheckout, resetCheckout } from '@/store/thunks/checkout'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { getClientIdempotencyKey } from '@/helpers/idempotency'
 import { cartKey, paymentIdempotencyKey, paymentIdKey } from '@/constants/keys'

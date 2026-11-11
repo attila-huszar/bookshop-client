@@ -1,7 +1,7 @@
 import { i18n } from '@/i18n'
 import ky, { NetworkError, TimeoutError } from 'ky'
 import { describe, expect, it, vi } from 'vitest'
-import { log } from '@/services/logger'
+import { log } from '@/api/logs'
 import {
   AuthErrorCode,
   HttpErrorCode,
@@ -33,6 +33,23 @@ async function requestFailure(body: unknown) {
 }
 
 describe('toAppError', () => {
+  it.each([
+    ['en', en],
+    ['hu', hu],
+  ] as const)(
+    'translates checkout contention in %s',
+    async (language, translations) => {
+      await i18n.changeLanguage(language)
+
+      expect(
+        getErrorMessage(
+          { code: PaymentErrorCode.CheckoutInProgress },
+          'Fallback',
+        ),
+      ).toBe(translations.checkout.inProgress)
+    },
+  )
+
   it('preserves validation details and the original cause without logging again', async () => {
     const failure = await requestFailure({
       code: 'VALIDATION_ERROR',
@@ -182,6 +199,7 @@ describe('getApiError', () => {
     ['INVALID_CREDENTIALS', AuthErrorCode.InvalidCredentials],
     ['EMAIL_ALREADY_EXISTS', UserErrorCode.EmailAlreadyExists],
     ['PRICE_CONFLICT', PaymentErrorCode.PriceConflict],
+    ['CHECKOUT_IN_PROGRESS', PaymentErrorCode.CheckoutInProgress],
     ['TERMS_CHANGED', TermsErrorCode.Changed],
     ['UNKNOWN_API_ERROR', HttpErrorCode.UnknownResponse],
   ])('recognizes the API code %s', (incoming, expected) => {

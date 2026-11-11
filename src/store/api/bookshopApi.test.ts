@@ -1,6 +1,6 @@
 import { createElement, type ReactNode } from 'react'
 import { Provider, useSelector } from 'react-redux'
-import { MemoryRouter } from 'react-router'
+import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { i18n } from '@/i18n'
 import {
   act,
@@ -21,10 +21,11 @@ import {
 } from 'vitest'
 import * as privateApi from '@/api/authRequest'
 import * as publicApi from '@/api/baseRequest'
+import { log } from '@/api/logs'
 import { PATH } from '@/api/path'
+import { cartLoader } from '@/routes/loaders/cartLoader'
+import { recoverCheckout } from '@/store/thunks/checkout'
 import { CheckoutForm } from '@/pages/Checkout/components/CheckoutForm/CheckoutForm'
-import { recoverCheckout } from '@/services/checkout'
-import { log } from '@/services/logger'
 import { getErrorMessage } from '@/helpers/errors'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
 import { UserRole } from '@/types'
@@ -39,6 +40,7 @@ import { booksApi, useSearchOptionsQuery } from './booksApi'
 import { bookshopApi } from './bookshopApi'
 import { booksSearchParams, buildBookCriteria } from './booksQuery'
 import { ordersApi } from './ordersApi'
+import { paymentsApi } from './paymentsApi'
 import { termsApi } from './termsApi'
 import { usersApi, useUserProfileQuery } from './usersApi'
 
@@ -184,6 +186,67 @@ afterEach(() => {
 function StoreProvider({ children }: { children: ReactNode }) {
   return createElement(Provider, { store, children })
 }
+
+it('returns to Cart when cancellation clears the payment and unmounts the form', async () => {
+  fetchMock.mockImplementation((input) =>
+    Promise.resolve(
+      jsonResponse(
+        requestOf(input).method === 'DELETE'
+          ? {}
+          : {
+              terms: {
+                url: 'https://bookshop.test/terms/v1',
+                version: 'v1',
+                publishedAt: '2026-10-14T10:00:00Z',
+              },
+              order: { items: [], total: 12, currency: 'USD' },
+            },
+      ),
+    ),
+  )
+  store.dispatch(recoverCheckout('pi_cancel'))
+  store.dispatch(
+    checkoutReady({
+      paymentId: 'pi_cancel',
+      paymentToken: 'test',
+      amount: 1200,
+    }),
+  )
+
+  function CheckoutPage() {
+    const payment = useSelector((state: RootState) => state.payment.payment)
+
+    return createElement(
+      payment ? CheckoutForm : 'p',
+      null,
+      payment ? undefined : 'Checkout unavailable',
+    )
+  }
+
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/checkout',
+        element: createElement(CheckoutPage),
+      },
+      {
+        path: '/cart',
+        loader: cartLoader,
+        element: createElement('p', null, 'Cart page'),
+      },
+    ],
+    { initialEntries: ['/checkout'] },
+  )
+  render(createElement(RouterProvider, { router }), { wrapper: StoreProvider })
+
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Cancel Checkout' }),
+  )
+
+  expect(await screen.findByText('Cart page')).toBeInTheDocument()
+  expect(store.getState().payment.payment).toBeNull()
+  router.dispose()
+})
 
 describe('server-data cache', () => {
   it('refreshes changed checkout terms after submission, without focus or reconnect requests', async () => {
@@ -363,7 +426,7 @@ describe('server-data cache', () => {
       termsApi.endpoints.cmsTermsHistory.initiate(),
     )
     const checkout = store.dispatch(
-      termsApi.endpoints.paymentTerms.initiate('pi_terms'),
+      paymentsApi.endpoints.paymentTerms.initiate('pi_terms'),
     )
     await Promise.all([
       current.unwrap(),
@@ -389,7 +452,7 @@ describe('server-data cache', () => {
         termsApi.endpoints.cmsTermsHistory.select()(store.getState()).data,
       ).toEqual([])
       expect(
-        termsApi.endpoints.paymentTerms.select('pi_terms')(store.getState())
+        paymentsApi.endpoints.paymentTerms.select('pi_terms')(store.getState())
           .data?.terms,
       ).toBeNull()
       expect(
@@ -1108,7 +1171,7 @@ describe('Ky adapter', () => {
 
     await store
       .dispatch(
-        termsApi.endpoints.paymentTerms.initiate('pi_guest', {
+        paymentsApi.endpoints.paymentTerms.initiate('pi_guest', {
           subscribe: false,
         }),
       )

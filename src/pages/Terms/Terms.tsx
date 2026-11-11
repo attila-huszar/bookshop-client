@@ -1,17 +1,15 @@
-import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
-import { shopLanguage } from '@/i18n'
 import { PATH } from '@/api/path'
 import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { Button } from '@/components/Button'
+import { useLanguage } from '@/hooks/useLanguage'
 import { serverUrl } from '@/constants/envConfig'
 import { timeZone } from '@/constants/time'
 import { Article, DownloadButton, PublishedDate } from './Terms.style'
 
 export function Terms() {
   const { version } = useParams()
-  const { t, i18n } = useTranslation()
-  const language = shopLanguage(i18n.resolvedLanguage)
+  const { t, language } = useLanguage()
   const {
     data: document,
     isLoading,

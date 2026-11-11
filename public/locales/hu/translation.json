@@ -252,6 +252,7 @@
     "cancelError": "A fizetés most nem szakítható meg. Kérjük, próbálja újra.",
     "priceChanged": "A kosárban szereplő árak megváltoztak. Fizetés előtt kérjük, ellenőrizze őket.",
     "createError": "A rendelés létrehozása nem sikerült.",
+    "inProgress": "A fizetés előkészítése még folyamatban van. Kérjük, próbálja újra.",
     "sessionUnavailable": "Ez a fizetési munkamenet már nem érhető el. Kérjük, indítson új fizetést.",
     "sessionEnded": "Ez a fizetési munkamenet befejeződött. Kérjük, indítson új fizetést.",
     "summary": "Rendelés összesítése",

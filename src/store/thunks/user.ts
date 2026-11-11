@@ -1,10 +1,60 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { postUserLogin, postUserLogout, retrieveAuthTokens } from '@/api/users'
-import { resetCheckout } from '@/services/checkout'
+import { resetCheckout } from '@/store/thunks/checkout'
+import { sessionRetryPolicy } from '@/constants/time'
 import type { LoginRequest, LoginResponse } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 import { authSessionChanged } from '../slices/user'
 import type { AppDispatch, RootState } from '../store'
+
+let tokenFailureCount = 0
+let tokenNextAttemptAt = 0
+let tokenFetchPromise: Promise<void> | null = null
+
+const resetTokenRetry = () => {
+  tokenFailureCount = 0
+  tokenNextAttemptAt = 0
+}
+
+/** Share cookie-session restoration across callers, with bounded retries for guests. */
+export const bootstrapSession =
+  () => async (dispatch: AppDispatch, getState: () => RootState) => {
+    if (getState().user.accessToken) {
+      resetTokenRetry()
+
+      return
+    }
+
+    if (tokenFetchPromise) {
+      return tokenFetchPromise
+    }
+
+    if (
+      tokenFailureCount >= sessionRetryPolicy.maxAttempts ||
+      Date.now() < tokenNextAttemptAt
+    ) {
+      return
+    }
+
+    // Guest navigation continues even when session restoration is rejected.
+    tokenFetchPromise = dispatch(fetchAuthTokens())
+      .then(() => {
+        if (getState().user.accessToken) {
+          resetTokenRetry()
+        } else {
+          tokenNextAttemptAt =
+            Date.now() +
+            sessionRetryPolicy.initialDelayMs *
+              sessionRetryPolicy.multiplier ** tokenFailureCount
+          tokenFailureCount++
+        }
+      })
+      .finally(() => {
+        tokenFetchPromise = null
+      })
+
+    return tokenFetchPromise
+  }
 
 export const expireAuthSession =
   (accessToken: string) =>

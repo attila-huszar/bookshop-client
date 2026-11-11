@@ -1,5 +1,4 @@
 import { type ChangeEvent, Fragment, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { ROUTE } from '@/routes/route'
@@ -10,6 +9,7 @@ import {
   cartQuantitySet,
   cartRemove,
 } from '@/store/slices/cart'
+import { startCheckout } from '@/store/thunks/checkout'
 import { Alert } from '@/components/Alert'
 import { toast } from '@/components/AppToaster'
 import { Button, IconButton } from '@/components/Button'
@@ -18,8 +18,7 @@ import { Loading } from '@/components/Loading'
 import { Price } from '@/components/Price'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useCart } from '@/hooks/useCart'
-import { startCheckout } from '@/services/checkout'
-import { formatAmount } from '@/helpers/checkout'
+import { useLanguage } from '@/hooks/useLanguage'
 import { enforceMinMax } from '@/helpers/enforceMinMax'
 import { getErrorMessage } from '@/helpers/errors'
 import { calculatePriceCents } from '@/helpers/pricing'
@@ -56,7 +55,7 @@ import {
 } from './Cart.style'
 
 export function Cart() {
-  const { t, i18n: translations } = useTranslation()
+  const { t, formatAmount } = useLanguage()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const {
@@ -269,21 +268,18 @@ export function Cart() {
             <div>
               <h4>{t('cart.subtotal')}</h4>
               <h4>
-                {defaultCurrencySymbol}{' '}
-                {formatAmount(price, translations.resolvedLanguage)}
+                {defaultCurrencySymbol} {formatAmount(price)}
               </h4>
               <h4>{t('cart.discount')}</h4>
               <h4>
-                {defaultCurrencySymbol} -
-                {formatAmount(discount, translations.resolvedLanguage)}
+                {defaultCurrencySymbol} -{formatAmount(discount)}
               </h4>
             </div>
           )}
           <div>
             <p>{t('cart.total')}</p>
             <p>
-              {defaultCurrencySymbol}{' '}
-              {formatAmount(discountPrice, translations.resolvedLanguage)}
+              {defaultCurrencySymbol} {formatAmount(discountPrice)}
             </p>
           </div>
         </TotalPrice>

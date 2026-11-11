@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
+import { getCheckoutPaymentId } from '@/store/thunks/checkout'
 import { Button, IconButton } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
-import { getCheckoutPaymentId } from '@/services/checkout'
 import { CartIcon } from '@/assets/svg'
 import { CartItemCount, StyledBasketButton } from './BasketButton.style'
 

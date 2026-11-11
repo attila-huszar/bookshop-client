@@ -7,9 +7,9 @@ import { useBookQuery } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { store } from '@/store/store'
+import { recoverCheckout, resetCheckout } from '@/store/thunks/checkout'
+import { bootstrapSession } from '@/store/thunks/user'
 import { BasketButton } from '@/components/Header/components/BasketButton/BasketButton'
-import { recoverCheckout, resetCheckout } from '@/services/checkout'
-import { bootstrapSession } from '@/services/session'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey } from '@/constants/keys'
 import { appLoader } from './appLoader'
@@ -20,13 +20,16 @@ vi.mock('@/store/store', async (importOriginal) => {
 
   return { ...actual, store: actual.createAppStore() }
 })
-vi.mock('@/services/session', () => ({ bootstrapSession: vi.fn() }))
+vi.mock('@/store/thunks/user', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/user')>()),
+  bootstrapSession: vi.fn(),
+}))
 
 let router: ReturnType<typeof createMemoryRouter> | undefined
 
 beforeEach(() => {
   localStorageAdapter.set(cartKey, [{ id: 7, quantity: 2 }])
-  vi.mocked(bootstrapSession).mockResolvedValue(undefined)
+  vi.mocked(bootstrapSession).mockReturnValue(() => Promise.resolve())
 })
 
 afterEach(() => {
@@ -135,9 +138,10 @@ describe('startup cart restoration', () => {
   it('mounts page queries after bootstrap, while cart restoration itself makes no requests', async () => {
     let finish!: () => void
     vi.mocked(bootstrapSession).mockReturnValue(
-      new Promise<void>((resolve) => {
-        finish = resolve
-      }),
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
     )
     const request = vi
       .spyOn(publicApi, 'baseRequest')

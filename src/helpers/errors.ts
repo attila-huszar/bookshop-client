@@ -2,7 +2,7 @@ import type { RootOptions } from 'react-dom/client'
 import { i18n } from '@/i18n'
 import type { ParseKeys } from 'i18next'
 import { isHTTPError, isKyError, isNetworkError, isTimeoutError } from 'ky'
-import { log } from '@/services/logger'
+import { log } from '@/api/logs'
 import {
   type ApiError,
   type ApiValidationIssue,
@@ -42,6 +42,7 @@ const apiErrorKeys = {
   [PaymentErrorCode.AccessDenied]: 'checkout.sessionUnavailable',
   [PaymentErrorCode.PriceConflict]: 'checkout.priceChanged',
   [PaymentErrorCode.CheckoutEnded]: 'checkout.sessionEnded',
+  [PaymentErrorCode.CheckoutInProgress]: 'checkout.inProgress',
   [TermsErrorCode.Unavailable]: 'terms.unavailable',
   [TermsErrorCode.InUse]: 'termsEditor.inUse',
   [TermsErrorCode.Changed]: 'errors.termsChanged',

@@ -8,7 +8,11 @@ import { Pagination } from '@/components/Pagination'
 import { useCmsPagination } from '@/hooks/useCmsPagination'
 import { CMSOutletContext } from '@/types'
 import { EditIcon } from '@/assets/svg'
-import { StyledTable, TableActions } from '../../styles/CMS.style'
+import {
+  LoadingContainer,
+  StyledTable,
+  TableActions,
+} from '../../styles/CMS.style'
 
 export const Users = () => {
   const { t } = useTranslation()
@@ -33,7 +37,11 @@ export const Users = () => {
     useCmsPagination('users', users.length)
 
   if (usersLoading) {
-    return <Loading message={t('cms.usersLoading')} fullScreen />
+    return (
+      <LoadingContainer>
+        <Loading message={t('cms.usersLoading')} />
+      </LoadingContainer>
+    )
   }
 
   if (usersError) {

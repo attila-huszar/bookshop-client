@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { createSelector } from '@reduxjs/toolkit'
 import { booksApi } from '@/store/api/booksApi'
-import { refreshCartPrices } from '@/services/checkout'
+import { refreshCartPrices } from '@/store/thunks/cart'
 import { CacheTime } from '@/constants/time'
 import type { Cart } from '@/types'
 import { useAppDispatch, useAppSelector } from './redux'

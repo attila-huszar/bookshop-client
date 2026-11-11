@@ -10,4 +10,12 @@ describe('Loading Component', () => {
 
     expect(screen.getByText(/please wait.../i)).toBeInTheDocument()
   })
+
+  it('uses white for full-screen loading', () => {
+    render(<Loading fullScreen />)
+
+    expect(screen.getByText(/loading/i)).toHaveStyle({
+      color: 'var(--color-on-primary)',
+    })
+  })
 })

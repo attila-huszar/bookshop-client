@@ -1,5 +1,4 @@
 import type { Dispatch } from '@reduxjs/toolkit'
-import { booksApi } from '@/store/api/booksApi'
 import { paymentsApi } from '@/store/api/paymentsApi'
 import { cartRestored } from '@/store/slices/cart'
 import {
@@ -11,8 +10,9 @@ import {
   checkoutSuperseded,
 } from '@/store/slices/payment'
 import type { AppDispatch, RootState } from '@/store/store'
+import { refreshCartPrices } from '@/store/thunks/cart'
 import { localStorageAdapter } from '@/helpers/browserStorage'
-import { areCartItemsEqual, readStoredCart } from '@/helpers/checkout'
+import { areCartItemsEqual, readStoredCart } from '@/helpers/cart'
 import { getApiError, toAppError } from '@/helpers/errors'
 import {
   clearClientIdempotencyKey,
@@ -22,6 +22,7 @@ import {
 } from '@/helpers/idempotency'
 import { paymentSessionSchema } from '@/validation/paymentSchemas'
 import { cartKey, paymentIdKey } from '@/constants/keys'
+import { checkoutRetryPolicy } from '@/constants/time'
 import type {
   PaymentIntentRequest,
   PaymentIntentStatus,
@@ -37,7 +38,7 @@ type CheckoutCommand =
       signal?: AbortSignal
       reuseExisting?: boolean
     }
-  | { type: 'canceling'; paymentId: string }
+  | { type: 'canceling'; paymentId: string; onCanceled?: () => void }
 
 export type CheckoutResult =
   | {
@@ -103,11 +104,18 @@ export function listenForCheckoutChanges(
 }
 
 /** The only writer of checkout IDs and accepted workflow transitions. */
-export const resetCheckout = () => (dispatch: Dispatch) => {
-  localStorageAdapter.remove(paymentIdKey)
-  resetClientIdempotencyKey()
-  dispatch(checkoutReset())
-}
+export const resetCheckout =
+  (onCleared?: () => void) => (dispatch: Dispatch) => {
+    localStorageAdapter.remove(paymentIdKey)
+    resetClientIdempotencyKey()
+
+    try {
+      // Navigation sees cleared storage before resetting state unmounts the form.
+      onCleared?.()
+    } finally {
+      dispatch(checkoutReset())
+    }
+  }
 
 /** Adopt a Stripe return before navigation strips its query parameters. */
 export const recoverCheckout =
@@ -122,30 +130,6 @@ export const recoverCheckout =
     }
 
     return stored
-  }
-
-/** Refresh canonical book queries; prices never replace basket intent. */
-export const refreshCartPrices =
-  () =>
-  async (dispatch: AppDispatch, getState: () => RootState): Promise<void> => {
-    await Promise.allSettled(
-      getState().cart.cartItems.map(async (item) => {
-        const running = dispatch(
-          booksApi.util.getRunningQueryThunk('book', item.id),
-        )
-
-        if (running) {
-          await running
-        }
-
-        await dispatch(
-          booksApi.endpoints.book.initiate(item.id, {
-            subscribe: false,
-            forceRefetch: true,
-          }),
-        ).unwrap()
-      }),
-    )
   }
 
 async function requestCheckout(
@@ -292,11 +276,40 @@ const runCheckout =
     }
 
     try {
-      const result = await requestCheckout(
-        command,
-        dispatch,
-        clientIdempotencyKey,
-      )
+      let result: CheckoutResult
+
+      for (let attempt = 1; ; attempt++) {
+        try {
+          result = await requestCheckout(
+            command,
+            dispatch,
+            clientIdempotencyKey,
+          )
+
+          break
+        } catch (error) {
+          if (
+            command.type !== 'creating' ||
+            getApiError(error)?.code !== PaymentErrorCode.CheckoutInProgress ||
+            attempt >= checkoutRetryPolicy.maxAttempts
+          ) {
+            throw error
+          }
+
+          if (!isCurrent()) {
+            return discardStaleResult()
+          }
+
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, checkoutRetryPolicy.delayMs * attempt)
+          })
+
+          if (!isCurrent()) {
+            return discardStaleResult()
+          }
+        }
+      }
+
       signal?.throwIfAborted()
 
       if (
@@ -308,7 +321,11 @@ const runCheckout =
       }
 
       if (result.type === 'cleared') {
-        dispatch(resetCheckout())
+        dispatch(
+          resetCheckout(
+            command.type === 'canceling' ? command.onCanceled : undefined,
+          ),
+        )
       } else if (result.type === 'ready') {
         const { paymentId, paymentToken, amount } =
           paymentSessionSchema.validateSync(result.payment)
@@ -381,28 +398,32 @@ export const startCheckout =
   (payment: PaymentIntentRequest) => async (dispatch: AppDispatch) => {
     // Wrap the promise so the lock releases before the network request finishes.
     // Identical in-flight creates can retry the same server idempotency key.
-    const { result } = await navigator.locks.request(
-      'bookshop-checkout',
-      (): { result: CheckoutResult | Promise<CheckoutResult> } => {
-        const paymentId = getCheckoutPaymentId()
+    const selectCheckout = (): {
+      result: CheckoutResult | Promise<CheckoutResult>
+    } => {
+      const paymentId = getCheckoutPaymentId()
 
-        if (paymentId) {
-          return { result: { type: 'existing', paymentId } }
-        }
+      if (paymentId) {
+        return { result: { type: 'existing', paymentId } }
+      }
 
-        const cartItems = readStoredCart()
+      const cartItems = readStoredCart()
 
-        if (!areCartItemsEqual(payment.items, cartItems)) {
-          dispatch(cartRestored(cartItems))
+      if (!areCartItemsEqual(payment.items, cartItems)) {
+        dispatch(cartRestored(cartItems))
 
-          return { result: { type: 'stale' } }
-        }
+        return { result: { type: 'stale' } }
+      }
 
-        return {
-          result: dispatch(runCheckout({ type: 'creating', payment })),
-        }
-      },
-    )
+      return {
+        result: dispatch(runCheckout({ type: 'creating', payment })),
+      }
+    }
+
+    // Without Web Locks, retain retries and shared identity on a best-effort basis.
+    const { result } = navigator.locks?.request
+      ? await navigator.locks.request('bookshop-checkout', selectCheckout)
+      : selectCheckout()
 
     return result
   }
@@ -412,5 +433,5 @@ export const restoreCheckout = (
   options: { signal?: AbortSignal; reuseExisting?: boolean } = {},
 ) => runCheckout({ type: 'restoring', paymentId, ...options })
 
-export const cancelCheckout = (paymentId: string) =>
-  runCheckout({ type: 'canceling', paymentId })
+export const cancelCheckout = (paymentId: string, onCanceled?: () => void) =>
+  runCheckout({ type: 'canceling', paymentId, onCanceled })

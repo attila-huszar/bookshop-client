@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs, replace } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { store } from '@/store/store'
-import { recoverCheckout, restoreCheckout } from '@/services/checkout'
-import { bootstrapSession } from '@/services/session'
+import { recoverCheckout, restoreCheckout } from '@/store/thunks/checkout'
+import { bootstrapSession } from '@/store/thunks/user'
 import {
   checkoutQueryParams,
   isSuccessPaymentIntentStatus,
@@ -36,7 +36,7 @@ export const checkoutLoader = async ({
   }
 
   const isStripeReturn = params.has(checkoutQueryParams.redirectStatus)
-  await bootstrapSession()
+  await store.dispatch(bootstrapSession())
   signal.throwIfAborted()
 
   try {
