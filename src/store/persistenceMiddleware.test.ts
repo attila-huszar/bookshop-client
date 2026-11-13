@@ -11,7 +11,7 @@ import {
 } from './slices/cart'
 import { checkoutReady } from './slices/payment'
 import { createAppStore } from './store'
-import { logout } from './thunks/user'
+import { logout } from './thunks/auth'
 
 afterEach(() => {
   vi.restoreAllMocks()

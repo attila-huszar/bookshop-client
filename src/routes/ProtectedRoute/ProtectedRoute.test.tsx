@@ -8,10 +8,10 @@ import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
 import {
-  authSessionChanged,
-  authSessionRestoring,
-  authTokenRefreshed,
-} from '@/store/slices/user'
+  authSessionChangeCompleted,
+  authSessionRefreshed,
+  authSessionRestorationStarted,
+} from '@/store/slices/auth'
 import { createAppStore } from '@/store/store'
 import { UserRole } from '@/types'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -33,7 +33,7 @@ describe('ProtectedRoute', () => {
 
   beforeEach(async () => {
     store = createAppStore()
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
     await store.dispatch(
       usersApi.util.upsertQueryData('userProfile', undefined, profile),
     )
@@ -130,7 +130,7 @@ describe('ProtectedRoute', () => {
   })
 
   it('redirects guests without rendering private content', () => {
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     renderRoute()
     expect(screen.getByText('Login Page')).toBeInTheDocument()
   })
@@ -138,7 +138,7 @@ describe('ProtectedRoute', () => {
   it('redirects immediately when an already-authorized session expires', () => {
     renderRoute()
     act(() => {
-      store.dispatch(authSessionChanged(null))
+      store.dispatch(authSessionChangeCompleted(null))
     })
 
     expect(screen.getByText('Login Page')).toBeInTheDocument()
@@ -156,7 +156,7 @@ describe('ProtectedRoute', () => {
       )
       renderRoute()
       act(() => {
-        store.dispatch(authSessionRestoring())
+        store.dispatch(authSessionRestorationStarted())
         store.dispatch(bookshopApi.util.resetApiState())
       })
 
@@ -166,7 +166,7 @@ describe('ProtectedRoute', () => {
 
       act(() => {
         store.dispatch(
-          authTokenRefreshed(session === 'logged in' ? 'new-token' : null),
+          authSessionRefreshed(session === 'logged in' ? 'new-token' : null),
         )
       })
 

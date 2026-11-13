@@ -91,7 +91,7 @@ describe('Login', () => {
       i18n.t('auth.welcome', { name: 'Jane' }),
     )
     expect(navigate).toHaveBeenCalledExactlyOnceWith('/', { replace: true })
-    expect(store.getState().user.accessToken).toBe('access-token')
+    expect(store.getState().auth.accessToken).toBe('access-token')
   })
 
   it('keeps entered credentials and permits retry after a rejected login', async () => {

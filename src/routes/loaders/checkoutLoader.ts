@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs, replace } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { store } from '@/store/store'
+import { bootstrapSession } from '@/store/thunks/auth'
 import { recoverCheckout, restoreCheckout } from '@/store/thunks/checkout'
-import { bootstrapSession } from '@/store/thunks/user'
 import {
   checkoutQueryParams,
   isSuccessPaymentIntentStatus,

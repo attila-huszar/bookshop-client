@@ -4,9 +4,9 @@ import { act, render, screen } from '@testing-library/react'
 import { log } from '@/api/logs'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
+import { authSessionChangeCompleted } from '@/store/slices/auth'
 import { cartClear } from '@/store/slices/cart'
 import { checkoutReady } from '@/store/slices/payment'
-import { authSessionChanged } from '@/store/slices/user'
 import { createAppStore } from '@/store/store'
 import {
   listenForCheckoutChanges,
@@ -75,7 +75,7 @@ function renderCheckout(path = '/checkout') {
 
 describe('checkout session readiness', () => {
   it('waits for the signed-in profile before mounting Stripe forms with address defaults', async () => {
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
     renderCheckout()
 
     expect(screen.getByText('Loading your checkout')).toBeInTheDocument()
@@ -110,7 +110,7 @@ describe('checkout session readiness', () => {
   })
 
   it('shows a Stripe return result without waiting for account details', async () => {
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
     renderCheckout('/checkout?redirect_status=succeeded')
 
     expect(await screen.findByText('Payment result')).toBeInTheDocument()

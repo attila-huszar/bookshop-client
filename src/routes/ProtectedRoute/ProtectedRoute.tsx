@@ -10,7 +10,7 @@ import { UserRole } from '@/types'
 
 export function ProtectedRoute({ adminRequired = false }) {
   const { t } = useTranslation()
-  const { accessToken, isRestoring } = useAppSelector((state) => state.user)
+  const { accessToken, isRestoring } = useAppSelector((state) => state.auth)
   const {
     data: profile,
     isError,

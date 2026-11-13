@@ -30,11 +30,11 @@ import { getErrorMessage } from '@/helpers/errors'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
 import { UserRole } from '@/types'
 import { booksQueryArgs, userSelector } from '../selectors'
+import { authSessionChangeCompleted } from '../slices/auth'
 import { applyBooksFilters } from '../slices/books'
 import { checkoutReady } from '../slices/payment'
-import { authSessionChanged } from '../slices/user'
 import { store as appStore, createAppStore, type RootState } from '../store'
-import { expireAuthSession, fetchAuthTokens } from '../thunks/user'
+import { expireAuthSession, fetchAuthTokens } from '../thunks/auth'
 import { authorsApi } from './authorsApi'
 import { booksApi, useSearchOptionsQuery } from './booksApi'
 import { bookshopApi } from './bookshopApi'
@@ -115,7 +115,7 @@ beforeEach(() => {
     paymentIntent: { status: 'succeeded' },
   })
   store = createAppStore()
-  store.dispatch(authSessionChanged('old-token'))
+  store.dispatch(authSessionChangeCompleted('old-token'))
   accessToken = 'old-token'
   refresh = vi
     .fn<() => Promise<{ accessToken: string | null }>>()
@@ -127,7 +127,7 @@ beforeEach(() => {
   })
   privateApi.configureAuthRequest({
     getAccessToken: () => accessToken,
-    getSessionVersion: () => store.getState().user.sessionVersion,
+    getSessionVersion: () => store.getState().auth.sessionVersion,
     refresh,
     expire,
   })
@@ -177,8 +177,8 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   privateApi.configureAuthRequest({
-    getAccessToken: () => appStore.getState().user.accessToken,
-    getSessionVersion: () => appStore.getState().user.sessionVersion,
+    getAccessToken: () => appStore.getState().auth.accessToken,
+    getSessionVersion: () => appStore.getState().auth.sessionVersion,
     refresh: () => appStore.dispatch(fetchAuthTokens()).unwrap(),
     expire: (rejectedToken) =>
       appStore.dispatch(expireAuthSession(rejectedToken)),
@@ -889,7 +889,7 @@ describe('user profile cache', () => {
 
     await Promise.all(queries.map((query) => query.unwrap()))
     expect(get).toHaveBeenCalledTimes(1)
-    expect(store.getState().user).not.toHaveProperty('userData')
+    expect(store.getState().auth).not.toHaveProperty('userData')
     expect(userSelector(store.getState()).userData).toEqual(profile)
   })
 
@@ -1210,13 +1210,13 @@ describe('Ky adapter', () => {
   ])(
     'stops subscribed profile requests and clears private data when $reason',
     async ({ refreshedAccessToken }) => {
-      store.dispatch(authSessionChanged('old-token'))
+      store.dispatch(authSessionChangeCompleted('old-token'))
       await store.dispatch(
         ordersApi.util.upsertQueryData('userOrders', undefined, []),
       )
       privateApi.configureAuthRequest({
-        getAccessToken: () => store.getState().user.accessToken,
-        getSessionVersion: () => store.getState().user.sessionVersion,
+        getAccessToken: () => store.getState().auth.accessToken,
+        getSessionVersion: () => store.getState().auth.sessionVersion,
         refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
         expire: (rejectedToken) =>
           store.dispatch(expireAuthSession(rejectedToken)),
@@ -1234,7 +1234,7 @@ describe('Ky adapter', () => {
       const view = renderHook(
         () => {
           const sessionToken = useSelector(
-            (state: RootState) => state.user.accessToken,
+            (state: RootState) => state.auth.accessToken,
           )
 
           return useUserProfileQuery(undefined, { skip: !sessionToken })
@@ -1243,7 +1243,7 @@ describe('Ky adapter', () => {
       )
 
       await waitFor(() => {
-        expect(store.getState().user.accessToken).toBeNull()
+        expect(store.getState().auth.accessToken).toBeNull()
         expect(
           ordersApi.endpoints.userOrders.select()(store.getState())
             .isUninitialized,

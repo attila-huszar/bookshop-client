@@ -1,14 +1,14 @@
 import { store } from '@/store/store'
+import { bootstrapSession } from '@/store/thunks/auth'
 import {
   recoverCheckout,
   resetCheckout,
   restoreCheckout,
 } from '@/store/thunks/checkout'
-import { bootstrapSession } from '@/store/thunks/user'
 import { checkoutLoader } from './checkoutLoader'
 
-vi.mock('@/store/thunks/user', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/thunks/user')>()),
+vi.mock('@/store/thunks/auth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/auth')>()),
   bootstrapSession: vi.fn(),
 }))
 vi.mock('@/store/thunks/checkout', async (importOriginal) => ({

@@ -54,10 +54,10 @@ export const getCheckoutPaymentId = () =>
   localStorageAdapter.get<string>(paymentIdKey)
 
 /** Read current shared state, since a queued event can describe an older write. */
-export function listenForCheckoutChanges(
-  store: { dispatch: AppDispatch; getState: () => RootState },
-  hot?: ImportMeta['hot'],
-) {
+export function listenForCheckoutChanges(store: {
+  dispatch: AppDispatch
+  getState: () => RootState
+}) {
   const synchronize = () => {
     const cartItems = readStoredCart()
     const state = store.getState()
@@ -91,16 +91,12 @@ export function listenForCheckoutChanges(
   window.addEventListener('pageshow', synchronize)
   document.addEventListener('visibilitychange', synchronize)
 
-  const stop = () => {
+  return () => {
     window.removeEventListener('storage', onStorage)
     window.removeEventListener('focus', synchronize)
     window.removeEventListener('pageshow', synchronize)
     document.removeEventListener('visibilitychange', synchronize)
   }
-
-  hot?.dispose(stop)
-
-  return stop
 }
 
 /** The only writer of checkout IDs and accepted workflow transitions. */

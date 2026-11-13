@@ -9,7 +9,7 @@ import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { ordersApi } from '@/store/api/ordersApi'
 import { usersApi } from '@/store/api/usersApi'
-import { authSessionChanged } from '@/store/slices/user'
+import { authSessionChangeCompleted } from '@/store/slices/auth'
 import { createAppStore } from '@/store/store'
 import { type Order, UserRole } from '@/types'
 import { HttpErrorCode } from '@/types/ApiError'
@@ -54,7 +54,7 @@ let nextResponse: () => Promise<Response>
 
 beforeEach(async () => {
   store = createAppStore()
-  store.dispatch(authSessionChanged('access-token'))
+  store.dispatch(authSessionChangeCompleted('access-token'))
   await store.dispatch(
     usersApi.util.upsertQueryData('userProfile', undefined, {
       uuid: 'reader',

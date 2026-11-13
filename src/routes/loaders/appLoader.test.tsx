@@ -7,8 +7,8 @@ import { useBookQuery } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartClear } from '@/store/slices/cart'
 import { store } from '@/store/store'
+import { bootstrapSession } from '@/store/thunks/auth'
 import { recoverCheckout, resetCheckout } from '@/store/thunks/checkout'
-import { bootstrapSession } from '@/store/thunks/user'
 import { BasketButton } from '@/components/Header/components/BasketButton/BasketButton'
 import { localStorageAdapter } from '@/helpers/browserStorage'
 import { cartKey } from '@/constants/keys'
@@ -20,8 +20,8 @@ vi.mock('@/store/store', async (importOriginal) => {
 
   return { ...actual, store: actual.createAppStore() }
 })
-vi.mock('@/store/thunks/user', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/store/thunks/user')>()),
+vi.mock('@/store/thunks/auth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/thunks/auth')>()),
   bootstrapSession: vi.fn(),
 }))
 

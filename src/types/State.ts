@@ -13,7 +13,7 @@ export type BooksState = {
   }
 }
 
-export type UserState = {
+export type AuthState = {
   accessToken: string | null
   sessionVersion: number
   isRestoring: boolean

@@ -6,7 +6,7 @@ import { bookshopApi } from '../api/bookshopApi'
 import { ordersApi } from '../api/ordersApi'
 import { usersApi } from '../api/usersApi'
 import { userSelector } from '../selectors'
-import { authSessionChanged } from '../slices/user'
+import { authSessionChangeCompleted } from '../slices/auth'
 import { createAppStore } from '../store'
 import {
   bootstrapSession,
@@ -14,7 +14,7 @@ import {
   listenForSessionChanges,
   login,
   logout,
-} from './user'
+} from './auth'
 
 const profile = {
   uuid: '11111111-1111-4111-8111-111111111111',
@@ -27,7 +27,12 @@ const profile = {
   avatar: null,
   role: UserRole.User,
 }
+const oldToken = token(profile.uuid, 1)
 let store: ReturnType<typeof createAppStore>
+
+function token(uuid: string, iat: number) {
+  return `header.${btoa(JSON.stringify({ uuid, iat }))}.signature`
+}
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -40,21 +45,38 @@ function deferred<T>() {
   return { promise, resolve, reject }
 }
 
+async function seedPrivateQueries() {
+  await store.dispatch(
+    usersApi.util.upsertQueryData('userProfile', undefined, profile),
+  )
+  await store.dispatch(
+    ordersApi.util.upsertQueryData('userOrders', undefined, []),
+  )
+}
+
+beforeEach(async () => {
+  store = createAppStore()
+  store.dispatch(authSessionChangeCompleted(oldToken))
+  // An established session resets module-level guest retry backoff.
+  await store.dispatch(bootstrapSession())
+})
+
+afterEach(() => {
+  store.dispatch(bookshopApi.util.resetApiState())
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
+
 describe('session bootstrap', () => {
-  beforeEach(async () => {
-    await store.dispatch(bootstrapSession())
-    store.dispatch(authSessionChanged(null))
+  beforeEach(() => {
+    store.dispatch(authSessionChangeCompleted(null))
     vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
       accessToken: null,
     })
   })
 
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
   it('reuses an existing access token without making a request', async () => {
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
 
     await store.dispatch(bootstrapSession())
 
@@ -62,24 +84,21 @@ describe('session bootstrap', () => {
   })
 
   it('shares one pending cookie refresh across startup and checkout', async () => {
-    let finish!: () => void
-    vi.mocked(usersTransport.retrieveAuthTokens).mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finish = () => resolve({ accessToken: 'restored-token' })
-        }),
+    const pending = deferred<{ accessToken: string | null }>()
+    vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValueOnce(
+      pending.promise,
     )
 
     const first = store.dispatch(bootstrapSession())
     const second = store.dispatch(bootstrapSession())
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
 
-    finish()
+    pending.resolve({ accessToken: 'restored-token' })
     await Promise.all([first, second])
     await store.dispatch(bootstrapSession())
 
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
-    expect(store.getState().user.accessToken).toBe('restored-token')
+    expect(store.getState().auth.accessToken).toBe('restored-token')
   })
 
   it('counts concurrent guest attempts once and backs off subsequent refreshes', async () => {
@@ -107,9 +126,9 @@ describe('session bootstrap', () => {
 
   it('resets guest backoff after a session is established', async () => {
     await store.dispatch(bootstrapSession())
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
     await store.dispatch(bootstrapSession())
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     await store.dispatch(bootstrapSession())
 
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
@@ -138,30 +157,16 @@ describe('session bootstrap', () => {
       accessToken: 'restored-token',
     })
     await store.dispatch(bootstrapSession())
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     await store.dispatch(bootstrapSession())
 
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(3)
   })
 })
 
-beforeEach(async () => {
-  store = createAppStore()
-  store.dispatch(authSessionChanged('old-token'))
-  await store.dispatch(
-    usersApi.util.upsertQueryData('userProfile', undefined, profile),
-  )
-  await store.dispatch(
-    ordersApi.util.upsertQueryData('userOrders', undefined, []),
-  )
-})
-
-afterEach(() => {
-  store.dispatch(bookshopApi.util.resetApiState())
-  vi.restoreAllMocks()
-})
-
 describe('authentication workflows', () => {
+  beforeEach(seedPrivateQueries)
+
   it('sets the new login session and clears data from the previous account', async () => {
     vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
       accessToken: 'new-token',
@@ -172,7 +177,7 @@ describe('authentication workflows', () => {
       .dispatch(login({ email: 'new@example.com', password: 'Password123!' }))
       .unwrap()
 
-    expect(store.getState().user.accessToken).toBe('new-token')
+    expect(store.getState().auth.accessToken).toBe('new-token')
     expect(userSelector(store.getState()).userData).toBeNull()
     expect(store.getState().bookshopApi.queries).toEqual({})
   })
@@ -190,28 +195,94 @@ describe('authentication workflows', () => {
         .unwrap(),
     ).rejects.toMatchObject({ message: 'Login failed' })
 
-    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().auth.accessToken).toBeNull()
     expect(store.getState().bookshopApi.queries).toEqual({})
   })
 
-  it('preserves query data during a successful refresh of the same session', async () => {
-    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
-      accessToken: 'refreshed-token',
-    })
+  it.each(['same account', 'different account'])(
+    'preserves query data only for the %s during token refresh',
+    async (account) => {
+      const refreshedToken = token(
+        account === 'same account'
+          ? profile.uuid
+          : '22222222-2222-4222-8222-222222222222',
+        2,
+      )
+      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
+        accessToken: refreshedToken,
+      })
 
-    await store.dispatch(fetchAuthTokens()).unwrap()
+      await store.dispatch(fetchAuthTokens()).unwrap()
 
-    expect(store.getState().user.accessToken).toBe('refreshed-token')
-    expect(userSelector(store.getState()).userData).toEqual(profile)
-    expect(
-      ordersApi.endpoints.userOrders.select()(store.getState()).isSuccess,
-    ).toBe(true)
-  })
+      expect(store.getState().auth.accessToken).toBe(refreshedToken)
+      expect(userSelector(store.getState()).userData).toEqual(
+        account === 'same account' ? profile : null,
+      )
+      expect(
+        ordersApi.endpoints.userOrders.select()(store.getState()).isSuccess,
+      ).toBe(account === 'same account')
+    },
+  )
+
+  it.each(['refresh', 'session-check'] as const)(
+    'handles an unreadable account identity during %s',
+    async (mode) => {
+      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
+        accessToken: 'unreadable-new-token',
+      })
+
+      await store.dispatch(fetchAuthTokens(mode)).unwrap()
+
+      expect(store.getState().auth.accessToken).toBe('unreadable-new-token')
+      expect(userSelector(store.getState()).userData).toEqual(
+        mode === 'session-check' ? null : profile,
+      )
+    },
+  )
+
+  it.each(['login', 'logout'])(
+    'invalidates an older refresh as soon as %s starts, preserving the current session until completion',
+    async (operation) => {
+      const pendingRefresh = deferred<{ accessToken: string | null }>()
+      const pendingChange = deferred<void>()
+      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockReturnValue(
+        pendingRefresh.promise,
+      )
+      vi.spyOn(usersTransport, 'postUserLogin').mockImplementation(async () => {
+        await pendingChange.promise
+
+        return { accessToken: 'new-token', firstName: 'New' }
+      })
+      vi.spyOn(usersTransport, 'postUserLogout').mockImplementation(
+        async () => {
+          await pendingChange.promise
+
+          return { success: true }
+        },
+      )
+
+      const refresh = store.dispatch(fetchAuthTokens())
+      const change =
+        operation === 'login'
+          ? store.dispatch(
+              login({ email: 'new@example.com', password: 'Password123!' }),
+            )
+          : store.dispatch(logout())
+      pendingRefresh.resolve({ accessToken: 'obsolete-token' })
+      await refresh
+
+      expect(store.getState().auth.accessToken).toBe(oldToken)
+      expect(userSelector(store.getState()).userData).toEqual(profile)
+
+      pendingChange.resolve()
+      await change
+    },
+  )
 
   it.each(['guest', 'failed'])(
     'preserves public recommendations when a guest session check is %s',
     async (outcome) => {
-      store.dispatch(authSessionChanged(null))
+      store.dispatch(authSessionChangeCompleted(null))
       store.dispatch(bookshopApi.util.resetApiState())
       await store.dispatch(
         booksApi.util.upsertQueryData('booksByProperty', 'recommended', []),
@@ -232,7 +303,7 @@ describe('authentication workflows', () => {
         store.getState(),
       )
 
-      expect(store.getState().user.accessToken).toBeNull()
+      expect(store.getState().auth.accessToken).toBeNull()
       expect(current.isSuccess).toBe(true)
       expect(current.data).toBe(cached.data)
       expect(current.fulfilledTimeStamp).toBe(cached.fulfilledTimeStamp)
@@ -240,7 +311,7 @@ describe('authentication workflows', () => {
   )
 
   it('clears cached queries when restoring a logged-in session for a guest', async () => {
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     store.dispatch(bookshopApi.util.resetApiState())
     await store.dispatch(
       booksApi.util.upsertQueryData('booksByProperty', 'recommended', []),
@@ -251,7 +322,7 @@ describe('authentication workflows', () => {
 
     await store.dispatch(fetchAuthTokens()).unwrap()
 
-    expect(store.getState().user.accessToken).toBe('restored-token')
+    expect(store.getState().auth.accessToken).toBe('restored-token')
     expect(store.getState().bookshopApi.queries).toEqual({})
   })
 
@@ -268,7 +339,7 @@ describe('authentication workflows', () => {
 
       await store.dispatch(fetchAuthTokens())
 
-      expect(store.getState().user.accessToken).toBeNull()
+      expect(store.getState().auth.accessToken).toBeNull()
       expect(userSelector(store.getState()).userData).toBeNull()
       expect(store.getState().bookshopApi.queries).toEqual({})
     },
@@ -277,23 +348,9 @@ describe('authentication workflows', () => {
   it.each(['successful', 'expired', 'failed'])(
     'preserves a newer login and its private data when an older refresh is %s',
     async (outcome) => {
-      let finishRefresh!: () => void
-
-      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockImplementation(
-        () =>
-          new Promise((resolve, reject) => {
-            finishRefresh = () => {
-              if (outcome === 'failed') {
-                reject(new Error('Session expired'))
-
-                return
-              }
-
-              resolve({
-                accessToken: outcome === 'expired' ? null : 'refreshed-token',
-              })
-            }
-          }),
+      const pending = deferred<{ accessToken: string | null }>()
+      vi.spyOn(usersTransport, 'retrieveAuthTokens').mockReturnValue(
+        pending.promise,
       )
       vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
         accessToken: 'new-login-token',
@@ -309,10 +366,17 @@ describe('authentication workflows', () => {
       await store.dispatch(
         usersApi.util.upsertQueryData('userProfile', undefined, newProfile),
       )
-      finishRefresh()
+      if (outcome === 'failed') {
+        pending.reject(new Error('Session expired'))
+      } else {
+        pending.resolve({
+          accessToken: outcome === 'expired' ? null : 'refreshed-token',
+        })
+      }
+
       await pendingRefresh
 
-      expect(store.getState().user.accessToken).toBe('new-login-token')
+      expect(store.getState().auth.accessToken).toBe('new-login-token')
       expect(userSelector(store.getState()).userData).toEqual(newProfile)
     },
   )
@@ -326,7 +390,7 @@ describe('authentication workflows', () => {
       message: 'Logout failed',
     })
 
-    expect(store.getState().user.accessToken).toBe('old-token')
+    expect(store.getState().auth.accessToken).toBe(oldToken)
     expect(userSelector(store.getState()).userData).toEqual(profile)
   })
 })
@@ -340,7 +404,7 @@ describe('cross-tab sessions', () => {
   }
 
   beforeEach(async () => {
-    await store.dispatch(bootstrapSession())
+    await seedPrivateQueries()
     vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
       accessToken: null,
     })
@@ -375,19 +439,19 @@ describe('cross-tab sessions', () => {
 
     receiveChange()
 
-    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().auth.accessToken).toBeNull()
     expect(store.getState().bookshopApi.queries).toEqual({})
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
 
     pending.resolve({ accessToken: 'other-account-token' })
     await vi.waitFor(() =>
-      expect(store.getState().user.accessToken).toBe('other-account-token'),
+      expect(store.getState().auth.accessToken).toBe('other-account-token'),
     )
     expect(channel.postMessage).not.toHaveBeenCalled()
   })
 
   it('bypasses guest retry backoff after a login notification', async () => {
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     await store.dispatch(bootstrapSession())
     await store.dispatch(bootstrapSession())
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
@@ -399,14 +463,14 @@ describe('cross-tab sessions', () => {
     receiveChange()
 
     await vi.waitFor(() =>
-      expect(store.getState().user.accessToken).toBe('other-tab-login'),
+      expect(store.getState().auth.accessToken).toBe('other-tab-login'),
     )
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(2)
   })
 
   it('does not restore an older guest refresh after another tab logs out', async () => {
     const pending = deferred<{ accessToken: string | null }>()
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValueOnce(
       pending.promise,
     )
@@ -420,7 +484,7 @@ describe('cross-tab sessions', () => {
     pending.resolve({ accessToken: 'obsolete-token' })
     await oldRefresh
 
-    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().auth.accessToken).toBeNull()
     expect(channel.postMessage).not.toHaveBeenCalled()
   })
 
@@ -444,7 +508,7 @@ describe('cross-tab sessions', () => {
 
       await oldLogin
 
-      expect(store.getState().user.accessToken).toBeNull()
+      expect(store.getState().auth.accessToken).toBeNull()
     },
   )
 
@@ -461,7 +525,7 @@ describe('cross-tab sessions', () => {
     pending.resolve({ success: true })
     await oldLogout
 
-    expect(store.getState().user.accessToken).toBe('other-tab-login')
+    expect(store.getState().auth.accessToken).toBe('other-tab-login')
   })
 
   it('only broadcasts a signal after successful explicit login and logout', async () => {
@@ -520,7 +584,7 @@ describe('cross-tab sessions', () => {
       .dispatch(login({ email: 'new@example.com', password: 'Password123!' }))
       .unwrap()
 
-    expect(store.getState().user.accessToken).toBe('new-token')
+    expect(store.getState().auth.accessToken).toBe('new-token')
   })
 
   it('restores the cookie session on foreground without BroadcastChannel support', async () => {
@@ -538,7 +602,7 @@ describe('cross-tab sessions', () => {
     pending.resolve({ accessToken: 'current-cookie-token' })
 
     await vi.waitFor(() =>
-      expect(store.getState().user.accessToken).toBe('current-cookie-token'),
+      expect(store.getState().auth.accessToken).toBe('current-cookie-token'),
     )
     expect(store.getState().bookshopApi.queries).toEqual({})
   })
@@ -562,7 +626,7 @@ describe('cross-tab sessions', () => {
 
   it('does not join an older bootstrap or let it overwrite a newer foreground check', async () => {
     const pending = deferred<{ accessToken: string | null }>()
-    store.dispatch(authSessionChanged(null))
+    store.dispatch(authSessionChangeCompleted(null))
     vi.mocked(usersTransport.retrieveAuthTokens).mockReturnValueOnce(
       pending.promise,
     )
@@ -575,18 +639,17 @@ describe('cross-tab sessions', () => {
     pending.resolve({ accessToken: 'obsolete-token' })
     await oldBootstrap
 
-    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().auth.accessToken).toBeNull()
   })
 
   it.each(['same account', 'different account'])(
     'preserves cached data only for the %s during foreground restoration',
     async (account) => {
-      const token = (uuid: string, iat: number) =>
-        `header.${btoa(JSON.stringify({ uuid, iat }))}.signature`
-      store.dispatch(authSessionChanged(token(profile.uuid, 1)))
       vi.mocked(usersTransport.retrieveAuthTokens).mockResolvedValue({
         accessToken: token(
-          account === 'same account' ? profile.uuid : 'other-user',
+          account === 'same account'
+            ? profile.uuid
+            : '22222222-2222-4222-8222-222222222222',
           2,
         ),
       })
@@ -608,7 +671,7 @@ describe('cross-tab sessions', () => {
     window.dispatchEvent(new Event('focus'))
     await store.dispatch(bootstrapSession({ force: true }))
 
-    expect(store.getState().user.accessToken).toBe('old-token')
+    expect(store.getState().auth.accessToken).toBe(oldToken)
     expect(userSelector(store.getState()).userData).toEqual(profile)
   })
 })

@@ -8,7 +8,7 @@ import { GlobalStyle } from '@/styles/global.styles'
 function App() {
   useTranslation()
 
-  const accessToken = useAppSelector((state) => state.user.accessToken)
+  const accessToken = useAppSelector((state) => state.auth.accessToken)
   useUserProfileQuery(undefined, { skip: !accessToken })
 
   return (

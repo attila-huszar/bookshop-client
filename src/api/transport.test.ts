@@ -4,9 +4,9 @@ import { log } from '@/api/logs'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { ordersApi } from '@/store/api/ordersApi'
 import { paymentsApi } from '@/store/api/paymentsApi'
-import { authSessionChanged } from '@/store/slices/user'
+import { authSessionChangeCompleted } from '@/store/slices/auth'
 import { store as appStore, createAppStore } from '@/store/store'
-import { expireAuthSession, fetchAuthTokens } from '@/store/thunks/user'
+import { expireAuthSession, fetchAuthTokens } from '@/store/thunks/auth'
 import type { PaymentIntentRequest } from '@/types'
 import * as privateApi from './authRequest'
 import * as publicApi from './baseRequest'
@@ -55,7 +55,7 @@ beforeEach(() => {
   })
   privateApi.configureAuthRequest({
     getAccessToken: () => accessToken,
-    getSessionVersion: () => store.getState().user.sessionVersion,
+    getSessionVersion: () => store.getState().auth.sessionVersion,
     refresh,
     expire,
   })
@@ -96,8 +96,8 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   privateApi.configureAuthRequest({
-    getAccessToken: () => appStore.getState().user.accessToken,
-    getSessionVersion: () => appStore.getState().user.sessionVersion,
+    getAccessToken: () => appStore.getState().auth.accessToken,
+    getSessionVersion: () => appStore.getState().auth.sessionVersion,
     refresh: () => appStore.dispatch(fetchAuthTokens()).unwrap(),
     expire: (rejectedToken) =>
       appStore.dispatch(expireAuthSession(rejectedToken)),
@@ -442,13 +442,13 @@ function postPaymentIntent(
 
 describe('Ky transport through payment endpoints', () => {
   it('clears the session and private cache when checkout rejects the refreshed token', async () => {
-    store.dispatch(authSessionChanged('old-token'))
+    store.dispatch(authSessionChangeCompleted('old-token'))
     await store.dispatch(
       ordersApi.util.upsertQueryData('userOrders', undefined, []),
     )
     privateApi.configureAuthRequest({
-      getAccessToken: () => store.getState().user.accessToken,
-      getSessionVersion: () => store.getState().user.sessionVersion,
+      getAccessToken: () => store.getState().auth.accessToken,
+      getSessionVersion: () => store.getState().auth.sessionVersion,
       refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
       expire: (rejectedToken) =>
         store.dispatch(expireAuthSession(rejectedToken)),
@@ -468,7 +468,7 @@ describe('Ky transport through payment endpoints', () => {
       postPaymentIntent(payment, 'same-attempt'),
     ).rejects.toMatchObject({ name: 'AbortError' })
 
-    expect(store.getState().user.accessToken).toBeNull()
+    expect(store.getState().auth.accessToken).toBeNull()
     expect(
       ordersApi.endpoints.userOrders.select()(store.getState()).isUninitialized,
     ).toBe(true)
@@ -575,7 +575,7 @@ describe('Ky transport through payment endpoints', () => {
         'same-attempt',
       ).catch((error: unknown) => error)
       await vi.waitFor(() => expect(capturedRequests).toHaveLength(1))
-      store.dispatch(authSessionChanged(accessToken))
+      store.dispatch(authSessionChangeCompleted(accessToken))
       respond(jsonResponse({}, 401))
 
       expect(await pending).toMatchObject({ status: 401 })
@@ -615,7 +615,7 @@ describe('Ky transport through payment endpoints', () => {
       'old-attempt',
     ).catch((error: unknown) => error)
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(1))
-    store.dispatch(authSessionChanged('new-session'))
+    store.dispatch(authSessionChangeCompleted('new-session'))
     accessToken = 'new-session'
 
     await postPaymentIntent(

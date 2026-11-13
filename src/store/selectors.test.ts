@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bookshopApi } from './api/bookshopApi'
 import { ordersApi } from './api/ordersApi'
 import { booksQueryArgs, userSelector } from './selectors'
+import { authSessionChangeCompleted } from './slices/auth'
 import { setBooksFilterGenre } from './slices/books'
-import { authSessionChanged } from './slices/user'
 import { createAppStore } from './store'
 
 let store: ReturnType<typeof createAppStore>
@@ -35,7 +35,7 @@ describe('session and profile state', () => {
   it('only marks a missing profile as loading when there is an authenticated session', () => {
     expect(userSelector(store.getState()).userIsLoading).toBe(false)
 
-    store.dispatch(authSessionChanged('access-token'))
+    store.dispatch(authSessionChangeCompleted('access-token'))
 
     expect(userSelector(store.getState()).userIsLoading).toBe(true)
   })

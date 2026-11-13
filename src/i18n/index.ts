@@ -56,7 +56,7 @@ i18n.on('languageChanged', (language: string) => {
   )
 })
 
-export function listenForLanguageChanges(hot?: ImportMeta['hot']) {
+export function listenForLanguageChanges() {
   let stopped = false
 
   const synchronize = async () => {
@@ -103,17 +103,13 @@ export function listenForLanguageChanges(hot?: ImportMeta['hot']) {
   window.addEventListener('pageshow', onForeground)
   document.addEventListener('visibilitychange', onForeground)
 
-  const stop = () => {
+  return () => {
     stopped = true
     window.removeEventListener('storage', onStorage)
     window.removeEventListener('focus', onForeground)
     window.removeEventListener('pageshow', onForeground)
     document.removeEventListener('visibilitychange', onForeground)
   }
-
-  hot?.dispose(stop)
-
-  return stop
 }
 
 void i18n.init<HttpBackendOptions>(
