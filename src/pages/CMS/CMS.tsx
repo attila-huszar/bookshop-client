@@ -19,6 +19,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ExtraSpace } from '@/components/Header'
 import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { getErrorMessage } from '@/helpers/errors'
 import type {
   Author,
   BookWithAuthorId,
@@ -222,9 +223,15 @@ export const CMS = () => {
         authors: [],
         users: [],
       })
-    } catch {
+    } catch (error) {
       toast.error(
-        t('cms.bulkError', { action: actionLabel.toLocaleLowerCase(), entity }),
+        getErrorMessage(
+          error,
+          t('cms.bulkError', {
+            action: actionLabel.toLocaleLowerCase(),
+            entity,
+          }),
+        ),
       )
     }
 

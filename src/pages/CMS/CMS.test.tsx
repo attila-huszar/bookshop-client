@@ -17,6 +17,7 @@ import {
   type CmsUser,
   UserRole,
 } from '@/types'
+import { UserErrorCode } from '@/types/ApiError'
 import { CMS } from './CMS'
 import { Orders } from './components/Orders/Orders'
 import { Users } from './components/Users/Users'
@@ -441,6 +442,48 @@ describe('CMS deletion controls', () => {
       )
       expect(restore).not.toHaveBeenCalled()
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    },
+  )
+
+  it.each(['en', 'hu'] as const)(
+    'explains why the last administrator cannot be removed in %s',
+    async (language) => {
+      await i18n.changeLanguage(language)
+      accounts = [{ ...account, role: UserRole.Admin }]
+      remove.mockImplementationOnce(() =>
+        ky.get('https://bookshop.test/mock', {
+          retry: 0,
+          fetch: () =>
+            Promise.resolve(
+              Response.json(
+                { code: UserErrorCode.LastAdminRequired },
+                { status: 400 },
+              ),
+            ),
+        }),
+      )
+      const user = userEvent.setup()
+      const selection = i18n.t('cms.selectRecord', {
+        entity: i18n.t('cms.user').toLocaleLowerCase(),
+        id: 1,
+      })
+      const removeLabel = i18n.t('common.actions.remove')
+      renderCMS('users')
+      await user.click(await screen.findByRole('checkbox', { name: selection }))
+      await user.click(screen.getByRole('button', { name: removeLabel }))
+      await user.click(
+        within(screen.getByRole('dialog')).getByRole('button', {
+          name: removeLabel,
+        }),
+      )
+
+      await waitFor(() =>
+        expect(toast.error).toHaveBeenCalledWith(
+          i18n.t('errors.lastAdminRequired'),
+        ),
+      )
+      expect(screen.getByRole('checkbox', { name: selection })).toBeChecked()
+      expect(toast.success).not.toHaveBeenCalled()
     },
   )
 

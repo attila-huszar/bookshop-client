@@ -162,12 +162,8 @@ export const Orders = () => {
                     </td>
                     <td>{order.email}</td>
                     <td>{order.total}</td>
-                    <td style={{ fontSize: '0.75rem' }}>
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td style={{ fontSize: '0.75rem' }}>
-                      {getPaidAtStatus(order)}
-                    </td>
+                    <td>{formatDate(order.createdAt)}</td>
+                    <td>{getPaidAtStatus(order)}</td>
                     <td className="actions">
                       <TableActions>
                         <IconButton
