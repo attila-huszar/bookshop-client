@@ -11,11 +11,11 @@ describe('Loading Component', () => {
     expect(screen.getByText(/please wait.../i)).toBeInTheDocument()
   })
 
-  it('uses white for full-screen loading', () => {
+  it('uses the on-primary color for full-screen loading', () => {
     render(<Loading fullScreen />)
 
-    expect(screen.getByText(/loading/i)).toHaveStyle({
-      color: 'var(--color-on-primary)',
-    })
+    expect(screen.getByText(/loading/i).style.color).toBe(
+      'var(--color-on-primary)',
+    )
   })
 })
