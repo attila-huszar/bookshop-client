@@ -33,6 +33,24 @@ export const postUserLogout = async () => {
   }
 }
 
+export const postGoogleNonce = (signal?: AbortSignal) =>
+  baseRequest
+    .post(PATH.users.googleNonce, { credentials: 'include', signal })
+    .json<{ nonce: string }>()
+
+export const postGoogleLogin = async (credential: string) => {
+  try {
+    return await baseRequest
+      .post(PATH.users.google, {
+        json: { credential },
+        credentials: 'include',
+      })
+      .json<LoginResponse>()
+  } catch (error) {
+    throw toAppError(error, i18n.t('auth.loginError'))
+  }
+}
+
 export const postVerifyEmail = sharePendingTokenRequest((token) =>
   baseRequest
     .post(PATH.users.verification, { json: { token } })

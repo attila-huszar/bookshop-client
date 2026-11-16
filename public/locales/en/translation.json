@@ -13,6 +13,7 @@
       "submit": "Submit",
       "reset": "Reset",
       "refresh": "Refresh",
+      "retry": "Try again",
       "reloadPage": "Reload Page",
       "clear": "Clear",
       "previous": "Previous",
@@ -81,6 +82,7 @@
     "error": "Something went wrong. Please try again later.",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "by": "by",
+    "or": "or",
     "selectAll": "Select all",
     "optional": "optional"
   },
@@ -173,6 +175,7 @@
     "welcome": "Welcome back, {{name}}!",
     "loggedOut": "{{email}} successfully logged out",
     "loginError": "Login failed, please try again later",
+    "googleUnavailable": "Google sign-in could not be loaded. Please refresh the page and try again.",
     "logoutError": "Logout failed, please try again later",
     "registered": "{{email}} registered successfully, please verify your email address",
     "registerError": "Registration failed, please try again later",

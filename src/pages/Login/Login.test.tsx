@@ -17,6 +17,19 @@ vi.mock('react-router', async (importOriginal) => ({
   useNavigate: vi.fn(),
 }))
 
+vi.mock('@/components/GoogleSignIn/GoogleSignIn', () => ({
+  GoogleSignIn: (props: {
+    disabled: boolean
+    onCredential: (credential: string) => Promise<void>
+  }) => (
+    <button
+      disabled={props.disabled}
+      onClick={() => void props.onCredential('google-credential')}>
+      Continue with Google
+    </button>
+  ),
+}))
+
 function deferred<T>() {
   let resolve!: (value: T) => void
   let reject!: (error: Error) => void
@@ -66,6 +79,36 @@ async function submitLogin() {
 }
 
 describe('Login', () => {
+  it('signs in with Google through the existing session and welcome flow', async () => {
+    const response = deferred<LoginResponse>()
+    vi.spyOn(usersTransport, 'postGoogleLogin').mockReturnValueOnce(
+      response.promise,
+    )
+    renderLogin()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+
+    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    ).toBeDisabled()
+    await act(async () => {
+      response.resolve(account)
+      await response.promise
+    })
+
+    expect(usersTransport.postGoogleLogin).toHaveBeenCalledExactlyOnceWith(
+      'google-credential',
+    )
+    expect(usersTransport.postUserLogin).not.toHaveBeenCalled()
+    expect(store.getState().auth.accessToken).toBe(account.accessToken)
+    expect(navigate).toHaveBeenCalledWith('/', { replace: true })
+    expect(toast.success).toHaveBeenCalledWith(
+      i18n.t('auth.welcome', { name: account.firstName }),
+    )
+  })
+
   it('locks labeled inputs during login and uses the current language on completion', async () => {
     const response = deferred<LoginResponse>()
     vi.mocked(usersTransport.postUserLogin).mockReturnValue(response.promise)

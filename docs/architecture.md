@@ -12,6 +12,8 @@ Ky owns token attachment, cookies, and single-flight refresh. Guest payment requ
 
 ## Sessions and routing
 
+Google sign-in uses Google's hosted Identity Services button through `@react-oauth/google` on the login page. The browser sends the opaque ID token to the backend, which verifies its signature, audience, issuer, expiry, and server-issued browser nonce before creating the same bookshop session used by password login, including cache clearing and cross-tab notifications. Frontend decoding never establishes authentication. Google credentials remain in memory and are never persisted. `VITE_GOOGLE_CLIENT_ID` enables the button; the backend must use the same client ID. Google account creation and linking rules belong to the [backend](../../bookshop-server/docs/architecture.md#authentication-and-account-lifecycle).
+
 The root loader restores the cookie session and validates saved cart intent before pages mount. Protected routes wait for the current profile and role before mounting private pages, and respond to expiry or role changes. Transient authorization failures remain retryable.
 
 Concurrent 401 responses share one refresh, with at most one authentication retry per request. Responses from an older session cannot refresh or expire a newer login. Logout completes its local transition after the server clears cookies; failure remains retryable.

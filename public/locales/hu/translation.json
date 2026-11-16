@@ -13,6 +13,7 @@
       "submit": "Küldés",
       "reset": "Alaphelyzet",
       "refresh": "Frissítés",
+      "retry": "Újrapróbálkozás",
       "reloadPage": "Oldal újratöltése",
       "clear": "Törlés",
       "previous": "Előző",
@@ -81,6 +82,7 @@
     "error": "Hiba történt. Kérjük, próbálja újra később.",
     "unexpectedError": "Váratlan hiba történt. Kérjük, próbálja újra.",
     "by": "Szerző:",
+    "or": "vagy",
     "selectAll": "Összes kijelölése",
     "optional": "nem kötelező"
   },
@@ -173,6 +175,7 @@
     "welcome": "Üdvözöljük újra, {{name}}!",
     "loggedOut": "Sikeres kijelentkezés: {{email}}",
     "loginError": "A bejelentkezés nem sikerült. Kérjük, próbálja újra később.",
+    "googleUnavailable": "A Google-bejelentkezés nem tölthető be. Kérjük, frissítse az oldalt, és próbálja újra.",
     "logoutError": "A kijelentkezés nem sikerült. Kérjük, próbálja újra később.",
     "registered": "Sikeres regisztráció: {{email}}. Kérjük, erősítse meg e-mail-címét.",
     "registerError": "A regisztráció nem sikerült. Kérjük, próbálja újra később.",

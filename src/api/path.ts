@@ -33,6 +33,8 @@ export const PATH = {
   users: {
     register: `${P.users}/register`,
     login: `${P.users}/login`,
+    google: `${P.users}/google`,
+    googleNonce: `${P.users}/google/nonce`,
     logout: `${P.users}/logout`,
     verification: `${P.users}/verification`,
     passwordResetRequest: `${P.users}/password-reset-request`,

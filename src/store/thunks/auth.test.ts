@@ -11,6 +11,7 @@ import { createAppStore } from '../store'
 import {
   bootstrapSession,
   fetchAuthTokens,
+  googleLogin,
   listenForSessionChanges,
   login,
   logout,
@@ -166,6 +167,37 @@ describe('session bootstrap', () => {
 
 describe('authentication workflows', () => {
   beforeEach(seedPrivateQueries)
+
+  it('uses the normal session transition and clears private data after Google login', async () => {
+    vi.spyOn(usersTransport, 'postGoogleLogin').mockResolvedValue({
+      accessToken: 'google-session',
+      firstName: 'Reader',
+    })
+
+    await store.dispatch(googleLogin('google-id-token')).unwrap()
+
+    expect(usersTransport.postGoogleLogin).toHaveBeenCalledExactlyOnceWith(
+      'google-id-token',
+    )
+    expect(store.getState().auth.accessToken).toBe('google-session')
+    expect(store.getState().bookshopApi.queries).toEqual({})
+  })
+
+  it('ignores Google login results superseded by another session', async () => {
+    const pending = deferred<{ accessToken: string; firstName: string }>()
+    vi.spyOn(usersTransport, 'postGoogleLogin').mockReturnValueOnce(
+      pending.promise,
+    )
+    vi.spyOn(usersTransport, 'retrieveAuthTokens').mockResolvedValue({
+      accessToken: 'current-session',
+    })
+    const result = store.dispatch(googleLogin('old-google-id-token'))
+    store.dispatch(authSessionChangeCompleted('current-session'))
+    pending.resolve({ accessToken: 'stale-session', firstName: 'Old' })
+    await result.unwrap()
+
+    expect(store.getState().auth.accessToken).toBe('current-session')
+  })
 
   it('sets the new login session and clears data from the previous account', async () => {
     vi.spyOn(usersTransport, 'postUserLogin').mockResolvedValue({
