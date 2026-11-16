@@ -44,6 +44,7 @@ Configure the client `.env`:
 - `VITE_SERVER_URL`: backend API, normally `http://localhost:5000/api`.
 - `VITE_STRIPE_PUBLIC_KEY`: Stripe publishable test key from the same account as the backend.
 - `VITE_GOOGLE_MAPS_KEY`: optional address autocomplete; leave blank to skip it.
+- `VITE_GOOGLE_CLIENT_ID`: optional Google sign-in on Login and Registration; use the same OAuth client ID as the backend's `GOOGLE_CLIENT_ID`.
 
 Vite environment values are public. Keep Stripe secret keys in the backend.
 

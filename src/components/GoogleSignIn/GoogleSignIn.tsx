@@ -22,6 +22,8 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
   const controllerRef = useRef<AbortController | null>(null)
   const [challenge, setChallenge] = useState<GoogleChallenge>()
 
+  const locale = i18n.resolvedLanguage ?? 'en'
+
   useEffect(() => {
     controllerRef.current = new AbortController()
 
@@ -87,7 +89,7 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
       </Divider>
       <GoogleOAuthProvider
         clientId={googleClientId}
-        locale={i18n.resolvedLanguage ?? 'en'}
+        locale={locale}
         onScriptLoadSuccess={() => void prepareChallenge()}
         onScriptLoadError={handleLoadError}>
         {challenge && (
@@ -96,7 +98,7 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
             nonce={challenge.nonce}
             theme="outline"
             size="large"
-            shape="rectangular"
+            shape="pill"
             text="continue_with"
             onSuccess={handleSuccess}
           />

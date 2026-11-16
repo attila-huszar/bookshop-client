@@ -83,9 +83,8 @@ it('initializes the provider with a fresh browser nonce in StrictMode', async ()
     expect.any(HTMLElement),
     expect.objectContaining({
       theme: 'outline',
-      shape: 'rectangular',
+      shape: 'pill',
       size: 'large',
-      width: undefined,
       locale: 'en',
     }),
   )
@@ -128,13 +127,15 @@ it('ignores callbacks while another login is pending and after unmount', async (
   expect(onCredential).not.toHaveBeenCalled()
 })
 
-it('reports a script loading failure without remounting the provider', () => {
+it('reports a script loading failure without remounting the provider', async () => {
   render(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   const script = providerScript()
   fireEvent.error(script)
 
-  expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-    i18n.t('auth.googleUnavailable'),
+  await waitFor(() =>
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+      i18n.t('auth.googleUnavailable'),
+    ),
   )
   expect(providerScript()).toBe(script)
   expect(usersTransport.postGoogleNonce).not.toHaveBeenCalled()

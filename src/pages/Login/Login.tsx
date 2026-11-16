@@ -40,7 +40,7 @@ export function Login() {
     }
   }, [])
 
-  const handleSubmit = async (values: LoginRequest | string) => {
+  const handleSubmit = async (values: LoginRequest) => {
     const lifecycle = lifecycleRef.current
 
     if (!lifecycle?.active || pendingLogin.current) {
@@ -51,11 +51,39 @@ export function Login() {
     setIsLoggingIn(true)
 
     try {
-      const response =
-        typeof values === 'string'
-          ? dispatch(googleLogin(values))
-          : dispatch(login(values))
-      const { firstName } = await response.unwrap()
+      const { firstName } = await dispatch(login(values)).unwrap()
+
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.success(i18n.t('auth.welcome', { name: firstName }))
+      void navigate(ROUTE.HOME, { replace: true })
+    } catch (error) {
+      if (lifecycle.active) {
+        toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
+      }
+    } finally {
+      pendingLogin.current = false
+
+      if (lifecycle.active) {
+        setIsLoggingIn(false)
+      }
+    }
+  }
+
+  const handleGoogleSignIn = async (credential: string) => {
+    const lifecycle = lifecycleRef.current
+
+    if (!lifecycle?.active || pendingLogin.current) {
+      return
+    }
+
+    pendingLogin.current = true
+    setIsLoggingIn(true)
+
+    try {
+      const { firstName } = await dispatch(googleLogin(credential)).unwrap()
 
       if (!lifecycle.active) {
         return
@@ -143,7 +171,7 @@ export function Login() {
           </ButtonWrapper>
         </Form>
       </Formik>
-      <GoogleSignIn disabled={isLoggingIn} onCredential={handleSubmit} />
+      <GoogleSignIn disabled={isLoggingIn} onCredential={handleGoogleSignIn} />
       <ForgotPassword ref={forgotPasswordDialog} />
     </AuthorizationMenu>
   )
