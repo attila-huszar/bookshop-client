@@ -18,6 +18,7 @@ import {
   MetadataBlock,
   Row,
   SectionHeader,
+  SignInMethods,
   UserRoleRow,
 } from '../../styles'
 
@@ -189,8 +190,12 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <UserRoleRow>
               <div>
-                <p>{t('common.fields.role')}</p>
-                <FormikField name="role" type="select">
+                <p>
+                  <label htmlFor="cms-user-role">
+                    {t('common.fields.role')}
+                  </label>
+                </p>
+                <FormikField id="cms-user-role" name="role" type="select">
                   {Object.values(UserRole).map((role) => (
                     <option key={role} value={role}>
                       {t(`cms.roles.${role}`)}
@@ -198,6 +203,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   ))}
                 </FormikField>
               </div>
+              {editedItem && (
+                <div className="sign-in-methods">
+                  <p>{t('cms.signInMethodsLabel')}</p>
+                  <SignInMethods aria-label={t('cms.signInMethodsLabel')}>
+                    {editedItem.signInMethods
+                      .map((method) => t(`cms.signInMethods.${method}`))
+                      .join(', ') || '—'}
+                  </SignInMethods>
+                </div>
+              )}
               <div className="centered-checkbox">
                 <p>{t('common.fields.verified')}</p>
                 <div style={{ display: 'flex', height: '100%' }}>

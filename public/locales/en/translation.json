@@ -341,6 +341,11 @@
     "metadata": "Read-Only Metadata",
     "countryRegistration": "Country at Registration",
     "userAvatar": "User avatar",
+    "signInMethodsLabel": "Sign-in methods",
+    "signInMethods": {
+      "password": "Password",
+      "google": "Google"
+    },
     "roles": {
       "user": "user",
       "admin": "admin"

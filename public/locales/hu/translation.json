@@ -341,6 +341,11 @@
     "metadata": "Csak olvasható metaadatok",
     "countryRegistration": "Regisztrációkor megadott ország",
     "userAvatar": "Felhasználó profilképe",
+    "signInMethodsLabel": "Bejelentkezési módok",
+    "signInMethods": {
+      "password": "Jelszó",
+      "google": "Google"
+    },
     "roles": {
       "user": "felhasználó",
       "admin": "adminisztrátor"

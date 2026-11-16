@@ -16,6 +16,7 @@ export type User = {
 export type CmsUser = User & {
   id: number
   verified: boolean
+  signInMethods: SignInMethod[]
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -24,6 +25,11 @@ export type CmsUser = User & {
 export enum UserRole {
   User = 'user',
   Admin = 'admin',
+}
+
+export const enum SignInMethod {
+  Password = 'password',
+  Google = 'google',
 }
 
 export type RegisterRequest = {

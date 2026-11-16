@@ -15,6 +15,7 @@ import {
   type CmsOrder,
   type CMSOutletContext,
   type CmsUser,
+  SignInMethod,
   UserRole,
 } from '@/types'
 import { UserErrorCode } from '@/types/ApiError'
@@ -50,6 +51,7 @@ const account: CmsUser = {
   address: null,
   avatar: null,
   verified: true,
+  signInMethods: [SignInMethod.Password],
   createdAt: '2026-10-08T10:00:00Z',
   updatedAt: '2026-10-08T10:00:00Z',
   deletedAt: null,
