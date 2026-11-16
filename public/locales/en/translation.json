@@ -467,7 +467,7 @@
     "emailAlreadyExists": "This email address is already registered.",
     "invalidToken": "This link is invalid or has expired. Please request a new one.",
     "currentPasswordIncorrect": "Your current password is incorrect.",
-    "lastAdminRequired": "At least one administrator must remain. You cannot delete the last administrator.",
+    "lastAdminRequired": "You cannot delete or demote the last administrator.",
     "termsChanged": "The terms and conditions have changed. Please review and accept them again.",
     "termsAlreadyAccepted": "This checkout accepted an earlier version of the terms. Please start a new checkout.",
     "termsNotRecorded": "Unable to record your acceptance of the terms. Please start a new checkout.",

@@ -467,7 +467,7 @@
     "emailAlreadyExists": "Ez az e-mail-cím már regisztrálva van.",
     "invalidToken": "A hivatkozás érvénytelen vagy lejárt. Kérjük, igényeljen újat.",
     "currentPasswordIncorrect": "A jelenlegi jelszó hibás.",
-    "lastAdminRequired": "Legalább egy adminisztrátornak maradnia kell. Az utolsó adminisztrátor nem törölhető.",
+    "lastAdminRequired": "Az utolsó adminisztrátor nem törölhető, és nem módosítható felhasználóvá.",
     "termsChanged": "Az általános szerződési feltételek megváltoztak. Kérjük, olvassa el és fogadja el őket újra.",
     "termsAlreadyAccepted": "Ehhez a fizetéshez a feltételek korábbi verzióját fogadta el. Kérjük, indítson új fizetést.",
     "termsNotRecorded": "A feltételek elfogadását nem sikerült rögzíteni. Kérjük, indítson új fizetést.",

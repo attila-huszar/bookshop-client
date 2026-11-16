@@ -1,7 +1,10 @@
+import { i18n } from '@/i18n'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAddUserMutation, useUpdateUserMutation } from '@/store/api/usersApi'
+import { toast } from '@/components/AppToaster'
 import { type CmsUser, SignInMethod, UserRole } from '@/types'
+import { UserErrorCode } from '@/types/ApiError'
 import { UserEditForm } from './UserEditForm'
 
 vi.mock('@/store/api/usersApi', async (importOriginal) => ({
@@ -91,3 +94,49 @@ it('does not show sign-in metadata while creating an account', () => {
 
   expect(screen.queryByLabelText('Sign-in methods')).not.toBeInTheDocument()
 })
+
+it.each(['en', 'hu'] as const)(
+  'explains a rejected last-admin demotion and keeps the form open in %s',
+  async (language) => {
+    await i18n.changeLanguage(language)
+    const showError = vi.spyOn(toast, 'error')
+    const showSuccess = vi.spyOn(toast, 'success')
+    updateUser.mockReturnValueOnce({
+      unwrap: () =>
+        Promise.reject(
+          Object.assign(new Error('Cannot demote the last administrator'), {
+            code: UserErrorCode.LastAdminRequired,
+          }),
+        ),
+    })
+    const onClose = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <UserEditForm
+        editedItem={{ ...account, role: UserRole.Admin }}
+        onClose={onClose}
+      />,
+    )
+
+    await user.selectOptions(
+      screen.getByRole('combobox', {
+        name: i18n.t('common.fields.role'),
+      }),
+      UserRole.User,
+    )
+    await user.click(
+      screen.getByRole('button', { name: i18n.t('common.actions.save') }),
+    )
+
+    await waitFor(() =>
+      expect(showError).toHaveBeenCalledWith(
+        i18n.t('errors.lastAdminRequired'),
+      ),
+    )
+    expect(onClose).not.toHaveBeenCalled()
+    expect(showSuccess).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole('combobox', { name: i18n.t('common.fields.role') }),
+    ).toHaveValue(UserRole.User)
+  },
+)
