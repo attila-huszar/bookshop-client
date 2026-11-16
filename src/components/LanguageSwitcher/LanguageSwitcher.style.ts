@@ -1,4 +1,5 @@
 import { css, styled } from 'styled-components'
+import { dropdownOptionStyles } from '@/styles/dropdown.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const Switcher = styled.div<{ $variant: 'menu' | 'icon' }>`
@@ -53,17 +54,14 @@ export const Switcher = styled.div<{ $variant: 'menu' | 'icon' }>`
 `
 
 export const MenuLanguageButton = styled.button`
+  ${dropdownOptionStyles}
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 0.75rem;
   border: 0;
-  background: transparent;
-  color: inherit;
   font: inherit;
   text-align: left;
-  cursor: pointer;
 
   &:disabled {
     opacity: 0.6;

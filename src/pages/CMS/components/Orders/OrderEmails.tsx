@@ -15,6 +15,7 @@ import {
   orderEmailTypes,
 } from '@/types'
 import { SpinnerIcon, XIcon } from '@/assets/svg'
+import { Select } from '@/styles/form.styles'
 import {
   OutboxContainer,
   OutboxControls,
@@ -81,7 +82,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
       <OutboxControls>
         <label>
           {t('common.fields.status')}
-          <select
+          <Select
             value={status}
             onChange={(event) => {
               setStatus(event.target.value as EmailOutboxStatus | '')
@@ -93,11 +94,11 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
                 {t(`cms.emails.status.${value}`)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label>
           {t('cms.emails.type')}
-          <select
+          <Select
             value={type}
             onChange={(event) => {
               setType(event.target.value as OrderEmailType | '')
@@ -109,7 +110,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
                 {t(`cms.emails.${value}`)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label>
           {t('cms.emails.recipient')}

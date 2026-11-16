@@ -49,15 +49,17 @@ export const FullRow = styled(DefaultRow)`
 export const UserRoleRow = styled(DefaultRow)`
   flex-wrap: wrap;
 
+  > div:first-child,
+  > div.sign-in-methods {
+    min-width: 0;
+  }
+
   > div:first-child {
-    flex: 0 1 12rem;
-    min-width: 10rem;
-    max-width: 100%;
+    flex: 1;
   }
 
   > div.sign-in-methods {
-    flex: 1 1 12rem;
-    min-width: 0;
+    flex: 2;
   }
 
   > div.centered-checkbox {

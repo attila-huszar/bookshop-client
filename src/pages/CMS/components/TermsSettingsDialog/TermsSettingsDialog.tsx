@@ -22,6 +22,7 @@ import {
   DialogCloseButton,
   DialogHeader,
 } from '@/styles/dialog.styles'
+import { Select } from '@/styles/form.styles'
 import { Dialog, LanguageTabs } from './TermsSettingsDialog.style'
 
 function TermsHeader({
@@ -174,7 +175,7 @@ function TermsEditor({
         {history.length > 0 && (
           <label>
             {t('termsEditor.history')}
-            <select
+            <Select
               value={selectedVersion}
               disabled={busy}
               onChange={(event) => {
@@ -192,7 +193,7 @@ function TermsEditor({
                     : ''}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
         {archive.isFetching && <p role="status">{t('terms.loading')}</p>}

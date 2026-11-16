@@ -1,9 +1,10 @@
 import { styled } from 'styled-components'
+import {
+  dropdownListStyles,
+  dropdownOptionStyles,
+  dropdownSurfaceStyles,
+} from '@/styles/dropdown.styles'
 import { baseInputStyles, FormTypes } from '@/styles/form.styles'
-
-interface OptionItemProps {
-  $selected?: boolean
-}
 
 export const SelectedOption = styled.div<FormTypes>`
   ${baseInputStyles}
@@ -33,18 +34,13 @@ export const SelectedOption = styled.div<FormTypes>`
 `
 
 export const DropdownList = styled.div`
+  ${dropdownSurfaceStyles}
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--color-surface-container-high);
-  border: 1px solid var(--color-outline);
-  border-radius: var(--border-radius);
   margin-top: 4px;
-  padding: 0;
   z-index: 10;
-  box-shadow: var(--shadow-popover);
-  overflow: hidden;
 `
 
 export const SearchInput = styled.input`
@@ -61,33 +57,19 @@ export const SearchInput = styled.input`
 `
 
 export const OptionsList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  ${dropdownListStyles}
   max-height: 200px;
   overflow-y: auto;
 `
 
-export const OptionItem = styled.li<OptionItemProps>`
-  padding: 0.75rem;
+export const OptionItem = styled.li`
+  ${dropdownOptionStyles}
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  background-color: ${({ $selected }) =>
-    $selected ? 'var(--color-secondary-container)' : 'transparent'};
-  font-weight: ${({ $selected }) => ($selected ? '600' : 'normal')};
-  color: ${({ $selected }) =>
-    $selected
-      ? 'var(--color-on-secondary-container)'
-      : 'var(--color-on-surface)'};
 
-  &:hover {
-    background-color: ${({ $selected }) =>
-      $selected
-        ? 'var(--color-secondary-container)'
-        : 'var(--color-surface-container-low)'};
+  &[aria-selected='true'] span {
+    font-weight: inherit;
   }
 `
 
