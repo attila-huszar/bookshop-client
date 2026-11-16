@@ -1,24 +1,22 @@
 import { Provider } from 'react-redux'
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { baseRequest } from '@/api/baseRequest'
+import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import type { Book } from '@/types'
 import { Recommended } from './Recommended'
 
-vi.unmock('@/hooks')
+vi.mock('@/components/Card', () => ({
+  Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
+}))
 
-vi.mock('@/components', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components')>()
-  return {
-    ...actual,
-    Card: ({ book }: { book: { title: string } }) => <div>{book.title}</div>,
-    SwiperComponent: ({ children }: { children: React.ReactNode }) => (
-      <div>{children}</div>
-    ),
-  }
-})
+vi.mock('@/components/SwiperComponent', () => ({
+  SwiperComponent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}))
 
 const book: Book = {
   id: 1,
@@ -51,12 +49,12 @@ beforeEach(() => {
     ),
   )
   vi.stubGlobal('fetch', fetchMock)
-  const client = baseRequest.extend({
+  const client = publicApi.baseRequest.extend({
     prefix: 'https://bookshop.test/api',
     retry: 0,
   })
 
-  vi.spyOn(baseRequest, 'get').mockImplementation(client.get)
+  vi.spyOn(publicApi, 'baseRequest').mockImplementation(client)
 })
 
 afterEach(() => {
@@ -77,7 +75,7 @@ const finishRequest = () =>
   act(async () => {
     await store
       .dispatch(
-        bookshopApi.endpoints.booksByProperty.initiate('recommended', {
+        booksApi.endpoints.booksByProperty.initiate('recommended', {
           subscribe: false,
         }),
       )
@@ -117,9 +115,8 @@ describe('recommended books cache', () => {
       await vi.advanceTimersByTimeAsync(6 * 60 * 1000)
     })
     expect(
-      bookshopApi.endpoints.booksByProperty.select('recommended')(
-        store.getState(),
-      ).data,
+      booksApi.endpoints.booksByProperty.select('recommended')(store.getState())
+        .data,
     ).toEqual(recommendations)
     recommendations = [{ ...book, id: 3, title: 'Fresh recommendation' }]
     const utils = renderRecommendations()

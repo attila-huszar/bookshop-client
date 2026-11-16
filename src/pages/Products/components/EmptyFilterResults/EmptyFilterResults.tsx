@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   applyBooksFilters,
   setBooksFilterDiscount,
@@ -5,13 +6,15 @@ import {
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { Button } from '@/components'
-import { useAppDispatch } from '@/hooks'
+} from '@/store/slices/books'
+import { Button } from '@/components/Button'
+import { useAppDispatch } from '@/hooks/redux'
 import { FilterCircleXmarkIcon } from '@/assets/svg'
 import { StyledEmptyFilterResults } from './EmptyFilterResults.style'
 
 export function EmptyFilterResults() {
+  const { t } = useTranslation()
+
   const dispatch = useAppDispatch()
 
   const handleFormReset = () => {
@@ -25,13 +28,13 @@ export function EmptyFilterResults() {
 
   return (
     <StyledEmptyFilterResults>
-      <div role="img" aria-label="no results">
+      <div role="img" aria-label={t('filters.noResults')}>
         <FilterCircleXmarkIcon color="var(--color-on-surface-variant)" />
       </div>
-      <p>Sorry, no results match your filter criteria.</p>
-      <p>Please try adjusting your filters or searching again.</p>
+      <p>{t('filters.empty')}</p>
+      <p>{t('filters.adjust')}</p>
       <Button onClick={handleFormReset} $shadow>
-        Reset Filters
+        {t('filters.reset')}
       </Button>
     </StyledEmptyFilterResults>
   )

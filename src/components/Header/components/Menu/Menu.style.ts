@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles'
+import { media } from '@/styles/media.breakpoints'
 
 export const StyledMenu = styled.div`
   position: relative;
@@ -53,6 +53,21 @@ export const MenuItem = styled.div`
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
+
+  &:is(button) {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
 
   > svg {
     height: 1.5rem;

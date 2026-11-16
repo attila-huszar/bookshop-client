@@ -3,17 +3,21 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 import { configureAuthRequest } from '@/api/authRequest'
 import { bookshopApi } from './api/bookshopApi'
 import { persistenceMiddleware } from './persistenceMiddleware'
+import { authReducer } from './slices/auth'
 import { booksReducer } from './slices/books'
 import { cartReducer } from './slices/cart'
+import { cmsReducer } from './slices/cms'
+import { ordersReducer } from './slices/orders'
 import { paymentReducer } from './slices/payment'
-import { userReducer } from './slices/user'
-import { expireAuthSession, fetchAuthTokens } from './thunks/user'
+import { expireAuthSession, fetchAuthTokens } from './thunks/auth'
 
 const reducer = {
   [bookshopApi.reducerPath]: bookshopApi.reducer,
   books: booksReducer,
-  user: userReducer,
+  auth: authReducer,
   cart: cartReducer,
+  cms: cmsReducer,
+  orders: ordersReducer,
   payment: paymentReducer,
 }
 
@@ -30,7 +34,8 @@ export const createAppStore = () =>
 export const store = createAppStore()
 setupListeners(store.dispatch)
 configureAuthRequest({
-  getAccessToken: () => store.getState().user.accessToken,
+  getAccessToken: () => store.getState().auth.accessToken,
+  getSessionVersion: () => store.getState().auth.sessionVersion,
   refresh: () => store.dispatch(fetchAuthTokens()).unwrap(),
   expire: (accessToken) => store.dispatch(expireAuthSession(accessToken)),
 })

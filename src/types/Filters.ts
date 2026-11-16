@@ -8,9 +8,14 @@ export type Filters = {
 
 type Rating = 0.5 | 1.5 | 2.5 | 3.5 | 4.5
 
-export type FilterActive = Omit<Filters, 'price' | 'publishYear'> & {
-  priceMin: number | null
-  priceMax: number | null
-  publishYearMin: number | null
-  publishYearMax: number | null
+/** Applied catalogue criteria use API parameter names and omit inactive filters. */
+export type BookCriteria = {
+  genre?: string[]
+  discountPrice_gte?: number
+  discountPrice_lte?: number
+  discount?: number
+  discount_gte?: number
+  publishYear_gte?: number
+  publishYear_lte?: number
+  rating_gte?: number
 }

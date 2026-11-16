@@ -1,0 +1,1 @@
+export { SwiperComponent } from './SwiperComponent'

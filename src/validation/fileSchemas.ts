@@ -1,34 +1,44 @@
 import * as Yup from 'yup'
+import { i18n } from '@/i18n'
+import './locale'
 
-const MAX_FILE_SIZE = 512000
-const validFileExtensions = ['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp']
+export const MAX_IMAGE_SIZE_BYTES = 1024 * 1024
+export const IMAGE_ACCEPT = 'image/*'
 
 export function validateImageFile(file: unknown): {
   valid: boolean
   error?: string
 } {
   if (!(file instanceof File)) {
-    return { valid: false, error: 'Invalid file selected' }
+    return { valid: false, error: i18n.t('validation.image') }
+  }
+  if (!file.size) {
+    return { valid: false, error: i18n.t('validation.imageRequired') }
   }
   if (!file.type.startsWith('image/')) {
-    return { valid: false, error: 'Please select an image file' }
+    return { valid: false, error: i18n.t('validation.imageFormat') }
   }
-  const ext = file.name.split('.').pop()?.toLowerCase()
-  if (!ext || !validFileExtensions.includes(ext)) {
-    return { valid: false, error: 'Unsupported image format' }
-  }
-  if (file.size > MAX_FILE_SIZE) {
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
     return {
       valid: false,
-      error: `Image must be smaller than ${MAX_FILE_SIZE / 1000}KB`,
+      error: i18n.t('validation.imageSize', {
+        size: MAX_IMAGE_SIZE_BYTES / (1024 * 1024),
+      }),
     }
   }
   return { valid: true }
 }
 
 export const imageSchema = Yup.mixed()
-  .test('is-valid-image', 'Invalid image file', (file) => {
-    if (!file) return true
-    return validateImageFile(file).valid
-  })
+  .test(
+    'is-valid-image',
+    () => i18n.t('validation.image'),
+    (file) => {
+      if (!file) {
+        return true
+      }
+
+      return validateImageFile(file).valid
+    },
+  )
   .nullable()

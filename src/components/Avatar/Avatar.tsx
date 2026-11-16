@@ -1,11 +1,14 @@
-import { useUpdateUserProfileMutation } from '@/store/api/bookshopApi'
-import { toast } from '@/components/AppToaster/toast'
-import { getErrorMessage } from '@/helpers'
+import { useTranslation } from 'react-i18next'
+import { useUpdateUserProfileMutation } from '@/store/api/usersApi'
+import { toast } from '@/components/AppToaster'
+import { getErrorMessage } from '@/helpers/errors'
 import { BinIcon, CameraIcon, SpinnerIcon, UserIcon } from '@/assets/svg'
 import { IconOverlay, RemoveAvatar, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 
 export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
+  const { t } = useTranslation()
+
   const [updateUserProfile, avatarRemoval] = useUpdateUserProfileMutation()
 
   const handleRemoveAvatar = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -13,7 +16,7 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
     try {
       await updateUserProfile({ avatar: null }).unwrap()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to remove avatar'))
+      toast.error(getErrorMessage(error, t('account.removeAvatarError')))
     }
   }
 
@@ -40,7 +43,7 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
               }}
               disabled={avatarRemoval.isLoading}
               aria-busy={avatarRemoval.isLoading}
-              title="Remove Avatar">
+              title={t('account.removeAvatar')}>
               {avatarRemoval.isLoading ? <SpinnerIcon /> : <BinIcon />}
             </RemoveAvatar>
           )}

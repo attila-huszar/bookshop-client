@@ -1,6 +1,8 @@
 import { FC, useEffect } from 'react'
-import { useClickOutside } from '@/hooks'
-import { SpinnerIcon } from '@/assets/svg'
+import { useTranslation } from 'react-i18next'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { SpinnerIcon, XIcon } from '@/assets/svg'
+import { DialogCloseButton } from '@/styles/dialog.styles'
 import { Button } from '../Button/Button'
 import type { ButtonColor } from '../Button/Button.types'
 import { StyledConfirmDialog } from './ConfirmDialog.style'
@@ -22,10 +24,12 @@ export const ConfirmDialog: FC<Props> = ({
   setIsDialogOpen,
   handleConfirm,
   message,
-  buttonText = 'OK',
+  buttonText,
   buttonColor = 'primary',
   isLoading = false,
 }) => {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (isDialogOpen) {
       ref.current?.showModal()
@@ -40,7 +44,9 @@ export const ConfirmDialog: FC<Props> = ({
     }
   })
 
-  if (!isDialogOpen) return null
+  if (!isDialogOpen) {
+    return null
+  }
 
   return (
     <StyledConfirmDialog
@@ -55,20 +61,28 @@ export const ConfirmDialog: FC<Props> = ({
 
         setIsDialogOpen(false)
       }}>
+      <DialogCloseButton
+        type="button"
+        aria-label={t('common.actions.close')}
+        title={t('common.actions.close')}
+        icon={<XIcon aria-hidden="true" />}
+        disabled={isLoading}
+        onClick={() => setIsDialogOpen(false)}
+      />
       <p>{message}</p>
       <div>
         <Button
           onClick={() => setIsDialogOpen(false)}
           $color="neutral"
           disabled={isLoading}>
-          Cancel
+          {t('common.actions.cancel')}
         </Button>
         <Button
           onClick={handleConfirm}
           $color={buttonColor}
           disabled={isLoading}>
           {isLoading && <SpinnerIcon height={22} aria-hidden="true" />}
-          {buttonText}
+          {buttonText ?? t('common.actions.ok')}
         </Button>
       </div>
     </StyledConfirmDialog>

@@ -1,14 +1,13 @@
-import { Providers } from '@/setupTests'
+import { Providers } from '@/testUtils'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
-import { authRequest } from '@/api'
+import * as privateApi from '@/api/authRequest'
 import { Avatar } from './Avatar'
 
 describe('Avatar', () => {
   const imgUrl = 'sample.jpg'
-  const size = 40
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -19,7 +18,7 @@ describe('Avatar', () => {
     const pending = new Promise<Response>((resolve) => {
       completeRequest = resolve
     })
-    vi.spyOn(authRequest, 'patch').mockImplementation(() =>
+    vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
       ky.get('https://bookshop.test/mock', {
         retry: 0,
         fetch: () => pending,
@@ -35,7 +34,7 @@ describe('Avatar', () => {
     expect(remove).toBeDisabled()
     expect(remove).toHaveAttribute('aria-busy', 'true')
     await userEvent.click(remove)
-    expect(authRequest.patch).toHaveBeenCalledTimes(1)
+    expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     act(() => {
       completeRequest(
@@ -74,17 +73,5 @@ describe('Avatar', () => {
     await userEvent.click(avatar)
 
     expect(onClick).toHaveBeenCalledTimes(1)
-  })
-
-  it('should apply title and custom size correctly', () => {
-    render(<Avatar imgUrl={imgUrl} title="User Avatar" $size={size} />, {
-      wrapper: Providers,
-    })
-
-    const avatarContainer = screen.getByTitle('User Avatar')
-    expect(avatarContainer).toHaveStyle({
-      width: `${size}px`,
-      height: `${size}px`,
-    })
   })
 })

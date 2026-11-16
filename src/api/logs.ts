@@ -1,7 +1,22 @@
-import { baseRequest } from './baseRequest'
 import { PATH } from './path'
+import { transport } from './transport'
 
-export const enum LogLevel {
+export const log = {
+  debug(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Debug, message, meta)
+  },
+  info(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Info, message, meta)
+  },
+  warn(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Warn, message, meta)
+  },
+  error(message: string, meta?: unknown): void {
+    sendLog(LogLevel.Error, message, meta)
+  },
+}
+
+const enum LogLevel {
   Debug = 'debug',
   Info = 'info',
   Warn = 'warn',
@@ -30,12 +45,8 @@ const serialize = (value: unknown): unknown => {
   return value
 }
 
-export function sendLog(
-  level: LogLevel,
-  message: string,
-  meta?: unknown,
-): void {
-  void baseRequest
+function sendLog(level: LogLevel, message: string, meta?: unknown): void {
+  void transport
     .post(PATH.logs, {
       json: {
         level,

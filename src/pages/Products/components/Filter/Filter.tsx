@@ -1,22 +1,27 @@
+import { useTranslation } from 'react-i18next'
+import { catalogueFilterDefaults } from '@/constants/catalogue'
 import 'rc-slider/assets/index.css'
 import { Field, Form, Formik } from 'formik'
 import Slider from 'rc-slider'
+import { useSearchOptionsQuery } from '@/store/api/booksApi'
 import {
   applyBooksFilters,
-  booksSelector,
   setBooksFilterDiscount,
   setBooksFilterGenre,
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { Accordion, AccordionItem, Alert, IconButton } from '@/components'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { enforceMinMax, generateFilterArray } from '@/helpers'
-import { discountOptions, filterInitialValues } from '@/constants'
+} from '@/store/slices/books'
+import { Accordion, AccordionItem } from '@/components/Accordion'
+import { Alert } from '@/components/Alert'
+import { IconButton } from '@/components/Button'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { enforceMinMax } from '@/helpers/enforceMinMax'
+import { discountOptions, filterInitialValues } from '@/constants/defaultValues'
+import { CacheTime } from '@/constants/time'
 import type { DiscountChangeEvent, Filters, InputEvent } from '@/types'
 import { StarIcon, StarOutlineIcon } from '@/assets/svg'
-import { sliderStyles } from '@/styles'
+import { sliderStyles } from '@/styles/slider.styles'
 import {
   ButtonWrapper,
   CustomButton,
@@ -34,23 +39,35 @@ type FilterProps = {
 }
 
 export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
-  const { booksFilters, booksFiltersLoading, booksFiltersError } =
-    useAppSelector(booksSelector)
+  const { t } = useTranslation()
+
+  const booksFilters = useAppSelector((state) => state.books.booksFilters)
+  const { isLoading: booksFiltersLoading, error: booksFiltersError } =
+    useSearchOptionsQuery(undefined, {
+      refetchOnMountOrArgChange: CacheTime.OneHour,
+    })
   const dispatch = useAppDispatch()
 
-  const [priceMinInitialFloat = 0, priceMaxInitialFloat = 500] =
-    booksFilters.initial.price
+  const [
+    priceMinInitialFloat = 0,
+    priceMaxInitialFloat = catalogueFilterDefaults.maxPrice,
+  ] = booksFilters.initial.price
   const priceMinInitial = Math.floor(priceMinInitialFloat)
   const priceMaxInitial = Math.ceil(priceMaxInitialFloat)
 
-  const [priceMinFloat = 0, priceMaxFloat = 500] = booksFilters.active.price
+  const [priceMinFloat = 0, priceMaxFloat = catalogueFilterDefaults.maxPrice] =
+    booksFilters.active.price
   const priceMin = Math.floor(priceMinFloat)
   const priceMax = Math.ceil(priceMaxFloat)
 
-  const [yearMinInitial = 1000, yearMaxInitial = new Date().getFullYear()] =
-    booksFilters.initial.publishYear
-  const [yearMin = 1000, yearMax = new Date().getFullYear()] =
-    booksFilters.active.publishYear
+  const [
+    yearMinInitial = catalogueFilterDefaults.minYear,
+    yearMaxInitial = new Date().getFullYear(),
+  ] = booksFilters.initial.publishYear
+  const [
+    yearMin = catalogueFilterDefaults.minYear,
+    yearMax = new Date().getFullYear(),
+  ] = booksFilters.active.publishYear
 
   const priceMarks = {
     [priceMinInitial]: `$ ${priceMinInitial}`,
@@ -65,21 +82,9 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   const handleFormSubmit = () => {
     dispatch(
       applyBooksFilters({
-        genre: booksFilters.active.genre,
-        price: generateFilterArray(
-          priceMin,
-          priceMax,
-          priceMinInitial,
-          priceMaxInitial,
-        ) as number[],
-        discount: booksFilters.active.discount,
-        publishYear: generateFilterArray(
-          yearMin,
-          yearMax,
-          yearMinInitial,
-          yearMaxInitial,
-        ) as number[],
-        rating: booksFilters.active.rating,
+        ...booksFilters.active,
+        price: [priceMin, priceMax],
+        publishYear: [yearMin, yearMax],
       }),
     )
     if (isMobileOpen) {
@@ -130,7 +135,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   return (
     <StyledFilter $mobileOpen={isMobileOpen}>
       {booksFiltersError ? (
-        <Alert message="Could not load filters" error={booksFiltersError} />
+        <Alert message={t('filters.error')} error={booksFiltersError} />
       ) : (
         <FilterOptions draggable="false">
           <Formik
@@ -139,7 +144,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
             onReset={handleFormReset}>
             <Form>
               <Accordion defaultOpenPanels={[0, 1]}>
-                <AccordionItem header="Genre">
+                <AccordionItem header={t('common.fields.genre')}>
                   <GenreCheckBoxes>
                     {booksFilters.initial.genre?.map((filter) => (
                       <div key={filter}>
@@ -156,11 +161,11 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                     ))}
                   </GenreCheckBoxes>
                   <button type="button" onClick={handleGenreClear}>
-                    Clear selection
+                    {t('filters.clear')}
                   </button>
                 </AccordionItem>
 
-                <AccordionItem header="Price">
+                <AccordionItem header={t('common.fields.price')}>
                   {booksFilters.active.price && (
                     <>
                       <Slider
@@ -222,7 +227,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                   )}
                 </AccordionItem>
 
-                <AccordionItem header="Discount">
+                <AccordionItem header={t('common.fields.discount')}>
                   {discountOptions.map((item) => (
                     <DiscountRadioButtons key={item.value}>
                       <Field
@@ -235,12 +240,12 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                         }
                         checked={item.value === booksFilters.active.discount}
                       />
-                      <label htmlFor={item.value}>{item.label}</label>
+                      <label htmlFor={item.value}>{t(item.label)}</label>
                     </DiscountRadioButtons>
                   ))}
                 </AccordionItem>
 
-                <AccordionItem header="Publication Year">
+                <AccordionItem header={t('common.fields.publishYear')}>
                   {booksFilters.active.publishYear && (
                     <>
                       <Slider
@@ -302,7 +307,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                   )}
                 </AccordionItem>
 
-                <AccordionItem header="Rating">
+                <AccordionItem header={t('common.fields.rating')}>
                   <Rating>
                     {Array.from({ length: 5 }, (_, idx) => {
                       const isFilled = idx < booksFilters.active.rating
@@ -316,7 +321,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                           onClick={() => {
                             handleRatingChange(rating)
                           }}
-                          aria-label="rating"
+                          aria-label={t('common.fields.rating')}
                         />
                       )
                     })}
@@ -325,9 +330,11 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
               </Accordion>
               <ButtonWrapper>
                 <CustomButton type="reset" $color="neutral" $inverted>
-                  Reset
+                  {t('common.actions.reset')}
                 </CustomButton>
-                <CustomButton type="submit">Submit</CustomButton>
+                <CustomButton type="submit">
+                  {t('common.actions.submit')}
+                </CustomButton>
               </ButtonWrapper>
             </Form>
           </Formik>

@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import { ROUTE } from '@/routes/route'
+import { getErrorMessage } from '@/helpers/errors'
 import { InfoIcon, WarningIcon } from '@/assets/svg'
 import { Button } from '../Button/Button'
 import { StyledAlert } from './Alert.style'
@@ -6,18 +9,20 @@ import { StyledAlert } from './Alert.style'
 type Props = {
   type?: 'info' | 'warning'
   message?: string
-  error?: string
+  error?: unknown
   fullScreen?: boolean
   backButton?: boolean
 }
 
 export function Alert({
   type = 'warning',
-  message = 'Something went wrong. Please try again later.',
+  message,
   error,
   fullScreen = false,
   backButton,
 }: Props) {
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
 
   const handleGoBack = () => {
@@ -25,7 +30,7 @@ export function Alert({
     if (hasPreviousPage) {
       void navigate(-1)
     } else {
-      void navigate('/')
+      void navigate(ROUTE.HOME)
     }
   }
 
@@ -33,12 +38,18 @@ export function Alert({
     <StyledAlert $fullScreen={fullScreen}>
       {type === 'warning' ? <WarningIcon /> : <InfoIcon />}
       <div>
-        <p>{message}</p>
-        {error && <p>{error}</p>}
+        <p>{message ?? t('common.error')}</p>
+        {Boolean(error) && (
+          <p>
+            {typeof error === 'string'
+              ? t(error, { defaultValue: error })
+              : getErrorMessage(error, t('common.error'))}
+          </p>
+        )}
       </div>
       {backButton && (
         <Button type="button" onClick={handleGoBack}>
-          Go Back
+          {t('common.actions.goBack')}
         </Button>
       )}
     </StyledAlert>

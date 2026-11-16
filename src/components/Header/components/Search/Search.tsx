@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type SubmitEvent, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { Form, Formik } from 'formik'
-import { ROUTE } from '@/routes'
-import { bookshopApi } from '@/store/api/bookshopApi'
-import { useAppDispatch, useClickOutside, useDebounce } from '@/hooks'
-import { searchSchema } from '@/validation'
+import { ROUTE } from '@/routes/route'
+import { booksApi } from '@/store/api/booksApi'
+import { useAppDispatch } from '@/hooks/redux'
+import { useClickOutside } from '@/hooks/useClickOutside'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { CacheTime } from '@/constants/time'
+import { validationLimits } from '@/constants/validation'
 import type { Book } from '@/types'
 import {
   imagePlaceholder,
@@ -26,239 +29,171 @@ import {
 } from './Search.style'
 
 export function Search() {
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchResults, setSearchResults] = useState<Book[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchError, setSearchError] = useState<string | null>(null)
-  const searchRequestId = useRef(0)
-  const pendingRequests = useRef<{ abort: () => void }[]>([])
-  const searchRef = useRef<HTMLDivElement>(null)
-  const dispatch = useAppDispatch()
+  const { t } = useTranslation()
   const navigate = useNavigate()
-  const debouncedSearchResults = useDebounce(getSearchResults)
+  const dispatch = useAppDispatch()
+  const prefetchBook = booksApi.usePrefetch('book', {
+    ifOlderThan: CacheTime.FiveMinutes,
+  })
+
+  const [searchValue, setSearchValue] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [response, setResponse] = useState<{
+    query: string
+    books: Book[]
+    hasError: boolean
+  } | null>(null)
+
+  const searchRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const pendingRequest = useRef<{ abort: () => void } | null>(null)
+
+  const query = searchValue.trim()
+  const hasQuery = query.length > 1
+
+  const currentResponse = response?.query === query ? response : null
+  const searchResults = currentResponse?.books ?? []
+  const isSearching = hasQuery && !currentResponse
+
+  const debouncedSearch = useDebouncedCallback(getSearchResults)
 
   useClickOutside(searchRef, () => setSearchOpen(false))
 
-  const cancelSearch = useCallback(() => {
-    searchRequestId.current += 1
+  async function getSearchResults(searchQuery: string) {
+    const request = dispatch(
+      booksApi.endpoints.bookSearch.initiate(searchQuery, { subscribe: false }),
+    )
+    pendingRequest.current = request
+    const result = await request
 
-    for (const request of pendingRequests.current) {
-      request.abort()
-    }
-
-    pendingRequests.current = []
-  }, [])
-
-  useEffect(() => cancelSearch, [cancelSearch])
-
-  async function getSearchResults(searchString: string, requestId: number) {
-    if (requestId !== searchRequestId.current) {
+    if (pendingRequest.current !== request) {
       return
     }
 
-    if (searchString.length > 1) {
-      const searchRequests = [
-        dispatch(
-          bookshopApi.endpoints.bookSearch.initiate(searchString, {
-            subscribe: false,
-          }),
-        ),
-        dispatch(
-          bookshopApi.endpoints.authorSearch.initiate(searchString, {
-            subscribe: false,
-          }),
-        ),
-      ] as const
-      pendingRequests.current = [...searchRequests]
+    pendingRequest.current = null
+    setResponse({
+      query: searchQuery,
+      books: result.error ? [] : (result.data ?? []),
+      hasError: Boolean(result.error),
+    })
+  }
 
-      const [booksSearchResponse, authorsSearchResponse] =
-        await Promise.all(searchRequests)
+  useEffect(() => {
+    if (!hasQuery) return
 
-      if (requestId !== searchRequestId.current) {
-        return
-      }
+    debouncedSearch(query)
 
-      if (booksSearchResponse.error || authorsSearchResponse.error) {
-        pendingRequests.current = []
-        setSearchError('Could not load search results. Please try again.')
-        setIsSearching(false)
-
-        return
-      }
-
-      const booksSearched: Book[] = [...(booksSearchResponse.data ?? [])]
-      const authorsSearched = authorsSearchResponse.data ?? []
-
-      if (authorsSearched.length) {
-        const authorRequests = authorsSearched.map((author) =>
-          dispatch(
-            bookshopApi.endpoints.booksByAuthor.initiate(author.id, {
-              subscribe: false,
-            }),
-          ),
-        )
-        pendingRequests.current = authorRequests
-
-        const authorsMatched = await Promise.allSettled(authorRequests)
-
-        authorsMatched.forEach((book) => {
-          if (book.status === 'fulfilled' && book.value.data) {
-            const newBooks = book.value.data
-
-            newBooks.forEach((newBook) => {
-              const exists = booksSearched.some(
-                (existingBook) => existingBook.id === newBook.id,
-              )
-
-              if (!exists) {
-                booksSearched.push(newBook)
-              }
-            })
-          }
-        })
-      }
-
-      if (requestId !== searchRequestId.current) {
-        return
-      }
-
-      pendingRequests.current = []
-      setSearchResults(booksSearched)
-      setIsSearching(false)
-      setSearchOpen(true)
-    } else {
-      setSearchResults([])
-      setSearchOpen(false)
+    return () => {
+      debouncedSearch.cancel()
+      pendingRequest.current?.abort()
+      pendingRequest.current = null
     }
-  }
+  }, [debouncedSearch, hasQuery, query])
 
-  const handleSearchChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  ) => {
-    handleChange(e)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    cancelSearch()
-    setSearchResults([])
-    setSearchError(null)
-    setIsSearching(value.length > 1)
-    setSearchOpen(value.length > 1)
-    debouncedSearchResults(value, searchRequestId.current)
-  }
+    const nextQuery = value.trim()
+    setSearchValue(value)
 
-  const handleClick = () => {
-    if (searchResults.length || isSearching || searchError) {
-      setSearchOpen(true)
+    if (nextQuery !== query) {
+      setResponse(null)
+      setSearchOpen(nextQuery.length > 1)
     }
   }
 
   const handleReset = () => {
-    cancelSearch()
+    setSearchValue('')
+    setResponse(null)
     setSearchOpen(false)
-    setSearchResults([])
-    setIsSearching(false)
-    setSearchError(null)
   }
 
-  const handleSubmit = () => {
-    if (searchResults.length) {
-      const firstBookId = searchResults[0]?.id ?? 1
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const firstBook = searchResults[0]
 
-      void navigate(`/${ROUTE.BOOK}?id=${firstBookId}`)
+    if (firstBook) {
+      void navigate(`/${ROUTE.BOOK}?id=${firstBook.id}`)
     }
   }
 
   return (
     <StyledForm ref={searchRef}>
-      <Formik
-        initialValues={{ search: '' }}
-        validationSchema={searchSchema}
-        onSubmit={handleSubmit}>
-        {({ values, handleChange, handleBlur, resetForm }) => (
-          <Form>
-            <SearchField
-              id="search-books"
-              type="text"
-              name="search"
-              aria-label="search"
-              aria-busy={isSearching}
-              placeholder="What are you looking for?"
-              autoComplete="off"
-              onChange={(e) => handleSearchChange(e, handleChange)}
-              onClick={handleClick}
-              onBlur={handleBlur}
-              value={values.search}
-            />
-            <Dropdown $show={searchOpen && !isSearching}>
-              {isSearching ? null : searchError ? (
-                <DropdownList>
-                  <NoResults role="alert">{searchError}</NoResults>
-                </DropdownList>
+      <form onSubmit={handleSubmit} onReset={handleReset}>
+        <SearchField
+          ref={inputRef}
+          id="search-books"
+          type="text"
+          name="search"
+          aria-label={t('catalogue.search')}
+          aria-busy={isSearching}
+          placeholder={t('catalogue.searchPlaceholder')}
+          autoComplete="off"
+          maxLength={validationLimits.search.maxLength}
+          onChange={handleSearchChange}
+          onClick={() => setSearchOpen(hasQuery)}
+          value={searchValue}
+        />
+        <Dropdown $show={searchOpen && !isSearching}>
+          {!isSearching && (
+            <DropdownList>
+              {currentResponse?.hasError ? (
+                <NoResults role="alert">{t('catalogue.searchError')}</NoResults>
               ) : searchResults.length ? (
-                <DropdownList>
-                  {searchResults.map((book) => (
-                    <li key={book.id}>
-                      <Link
-                        to={`/${ROUTE.BOOK}?id=${book.id}`}
-                        onClick={() => {
-                          resetForm()
-                          handleReset()
-                        }}>
-                        <MenuItem>
-                          <img
-                            src={book.imgUrl}
-                            onError={(e) =>
-                              ((e.target as HTMLImageElement).src =
-                                imagePlaceholder)
-                            }
-                            alt={book.title}
-                            width="24"
-                            height="24"
-                          />
-                          <div>
-                            <TextBold>{book.title}</TextBold>
-                            <p>
-                              <i>by </i>
-                              <span>{book.author}</span>
-                            </p>
-                          </div>
-                          <LinkIcon width="16" height="16" />
-                        </MenuItem>
-                      </Link>
-                    </li>
-                  ))}
-                </DropdownList>
+                searchResults.map((book) => (
+                  <li key={book.id}>
+                    <Link
+                      to={`/${ROUTE.BOOK}?id=${book.id}`}
+                      onMouseEnter={() => prefetchBook(book.id)}
+                      onFocus={() => prefetchBook(book.id)}
+                      onClick={handleReset}>
+                      <MenuItem>
+                        <img
+                          src={book.imgUrl}
+                          onError={(e) =>
+                            (e.currentTarget.src = imagePlaceholder)
+                          }
+                          alt={book.title}
+                          width="24"
+                          height="24"
+                        />
+                        <div>
+                          <TextBold>{book.title}</TextBold>
+                          <p>
+                            <i>{t('common.by')} </i>
+                            <span>{book.author}</span>
+                          </p>
+                        </div>
+                        <LinkIcon width="16" height="16" />
+                      </MenuItem>
+                    </Link>
+                  </li>
+                ))
               ) : (
-                <DropdownList>
-                  <NoResults>No search results...</NoResults>
-                </DropdownList>
+                <NoResults>{t('catalogue.noResults')}</NoResults>
               )}
-            </Dropdown>
-            <SearchButton
-              type="submit"
-              title="Search"
-              aria-label="Search"
-              aria-busy={isSearching}>
-              {isSearching ? (
-                <SpinnerIcon width={16} height={16} aria-hidden="true" />
-              ) : (
-                <SearchIcon color="var(--color-on-surface-variant)" />
-              )}
-            </SearchButton>
-            {values.search && (
-              <ClearButton
-                type="reset"
-                onClick={() => {
-                  handleReset()
-                  document.getElementById('search-books')?.focus()
-                }}
-                title="Clear">
-                <XMarkIcon color="var(--color-on-surface-variant)" />
-              </ClearButton>
-            )}
-          </Form>
+            </DropdownList>
+          )}
+        </Dropdown>
+        <SearchButton
+          type="submit"
+          title={t('catalogue.search')}
+          aria-label={t('catalogue.search')}
+          aria-busy={isSearching}>
+          {isSearching ? (
+            <SpinnerIcon width={16} height={16} aria-hidden="true" />
+          ) : (
+            <SearchIcon color="var(--color-on-surface-variant)" />
+          )}
+        </SearchButton>
+        {searchValue && (
+          <ClearButton
+            type="reset"
+            onClick={() => inputRef.current?.focus()}
+            title={t('common.actions.clear')}>
+            <XMarkIcon color="var(--color-on-surface-variant)" />
+          </ClearButton>
         )}
-      </Formik>
+      </form>
     </StyledForm>
   )
 }

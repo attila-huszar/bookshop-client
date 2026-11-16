@@ -2,18 +2,19 @@ import { act } from 'react'
 import { Provider } from 'react-redux'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import ky from 'ky'
 import { vi } from 'vitest'
+import * as publicApi from '@/api/baseRequest'
+import { booksApi } from '@/store/api/booksApi'
+import { bookshopApi } from '@/store/api/bookshopApi'
+import { booksQueryArgs } from '@/store/selectors'
 import {
   applyBooksFilters,
-  booksQueryArgs,
-  createAppStore,
   setBooksFilterPrice,
   setBooksFilterPublishYear,
   setBooksFilterRating,
-} from '@/store'
-import { bookshopApi } from '@/store/api/bookshopApi'
-import { useAppDispatch, useAppSelector } from '@/hooks'
-import { useAppSelector as realUseAppSelector } from '@/hooks/redux'
+} from '@/store/slices/books'
+import { createAppStore } from '@/store/store'
 import { Filter } from './Filter'
 
 describe('Filter', () => {
@@ -22,7 +23,7 @@ describe('Filter', () => {
   beforeEach(async () => {
     store = createAppStore()
     await store.dispatch(
-      bookshopApi.util.upsertQueryData('searchOptions', undefined, {
+      booksApi.util.upsertQueryData('searchOptions', undefined, {
         genre: ['Fiction', 'Non-Fiction'],
         price: [0, 100],
         publishYear: [1900, 2020],
@@ -31,14 +32,13 @@ describe('Filter', () => {
     store.dispatch(setBooksFilterPrice([10, 50]))
     store.dispatch(setBooksFilterPublishYear([1990, 2020]))
     store.dispatch(setBooksFilterRating(3.5))
-    vi.mocked(useAppDispatch).mockReturnValue(store.dispatch)
-    vi.mocked(useAppSelector).mockImplementation(realUseAppSelector)
   })
 
   afterEach(() => {
     act(() => {
       store.dispatch(bookshopApi.util.resetApiState())
     })
+    vi.restoreAllMocks()
   })
 
   const renderFilter = () =>
@@ -60,7 +60,17 @@ describe('Filter', () => {
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
   })
 
-  it('waits quietly instead of showing draft controls when filter options are unavailable', () => {
+  it('waits quietly for filter options and displays controls when they arrive', async () => {
+    let completeRequest!: (response: Response) => void
+    const response = new Promise<Response>((resolve) => {
+      completeRequest = resolve
+    })
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+      ky.get('https://bookshop.test/mock', {
+        retry: 0,
+        fetch: () => response,
+      }),
+    )
     store.dispatch(bookshopApi.util.resetApiState())
     renderFilter()
 
@@ -69,6 +79,21 @@ describe('Filter', () => {
       screen.queryByRole('button', { name: /submit/i }),
     ).not.toBeInTheDocument()
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
+
+    act(() => {
+      completeRequest(
+        Response.json({
+          genre: ['Fiction', 'Non-Fiction'],
+          price: [0, 100],
+          publishYear: [1900, 2020],
+        }),
+      )
+    })
+
+    expect(
+      await screen.findByRole('button', { name: /submit/i }),
+    ).toBeInTheDocument()
+    expect(publicApi.baseRequest).toHaveBeenCalledOnce()
   })
 
   it('keeps draft filters separate until submission updates the query arguments', async () => {
@@ -92,12 +117,10 @@ describe('Filter', () => {
         itemsPerPage: 8,
         criteria: {
           genre: ['Fiction'],
-          priceMin: 10,
-          priceMax: 50,
-          discount: 'allBooks',
-          publishYearMin: 1990,
-          publishYearMax: null,
-          rating: 2.5,
+          discountPrice_gte: 10,
+          discountPrice_lte: 50,
+          publishYear_gte: 1990,
+          rating_gte: 2.5,
         },
       })
     })

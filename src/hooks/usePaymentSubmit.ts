@@ -1,71 +1,157 @@
-import { SubmitEvent, useState } from 'react'
+import { type SubmitEvent, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
-import { ROUTE } from '@/routes'
-import { baseURL, checkoutQueryParams } from '@/constants'
-import { handleError } from '@/errors'
-import type { StripeErrorType } from '@/types/Stripe'
-import { useMessages } from './useMessages'
+import { ROUTE } from '@/routes/route'
+import {
+  useAcceptPaymentTermsMutation,
+  useLazyPaymentQuery,
+} from '@/store/api/paymentsApi'
+import { checkoutSuperseded } from '@/store/slices/payment'
+import { getCheckoutPaymentId } from '@/store/thunks/checkout'
+import {
+  checkoutQueryParams,
+  getStripePaymentErrorMessage,
+  isRetryableStripeError,
+  isSuccessPaymentIntentStatus,
+} from '@/helpers/checkout'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { baseURL } from '@/constants/envConfig'
+import type { ApiError, CheckoutTerms, ErrorCode, StripeError } from '@/types'
+import { HttpErrorCode, TermsErrorCode } from '@/types/ApiError'
+import { useAppDispatch } from './redux'
+import { useLanguage } from './useLanguage'
 
-type SubmitMessage = {
-  text: string | null
-  type: 'neutral' | 'error'
-}
-
-type UsePaymentSubmitReturn = {
-  handleSubmit: (event: SubmitEvent<HTMLFormElement>) => Promise<void>
-  retryPayment: () => Promise<void>
-  canRetry: boolean
-  message: SubmitMessage
-  setMessage: (message: SubmitMessage) => void
-  isLoading: boolean
-}
-
-const retryableStripeErrorTypes: StripeErrorType[] = [
-  'api_connection_error',
-  'api_error',
-  'rate_limit_error',
+const retryableApiCodes: readonly ErrorCode[] = [
+  HttpErrorCode.Internal,
+  HttpErrorCode.Timeout,
+  HttpErrorCode.RateLimited,
+  HttpErrorCode.UnknownResponse,
+  TermsErrorCode.Unavailable,
 ]
 
-const isRetryableStripeError = (errorType: StripeErrorType): boolean =>
-  retryableStripeErrorTypes.includes(errorType)
+type SubmissionError = {
+  message: string
+  apiError?: ApiError
+  retryable?: boolean
+}
 
-export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
+type PaymentSubmitInput = {
+  email: string
+  paymentId: string
+  terms: CheckoutTerms | null
+  termsAccepted: boolean
+}
+
+export function usePaymentSubmit(input: PaymentSubmitInput) {
+  const { t, language } = useLanguage()
   const stripe = useStripe()
   const elements = useElements()
   const navigate = useNavigate()
-  const { getCheckoutSubmitMessages, getStripePaymentErrorMessage } =
-    useMessages()
-  const [message, setMessage] = useState<SubmitMessage>({
-    text: null,
-    type: 'neutral',
-  })
-  const [canRetry, setCanRetry] = useState(false)
+  const dispatch = useAppDispatch()
+  const [submissionError, setSubmissionError] =
+    useState<SubmissionError | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const submitting = useRef(false)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
+  const [acceptTerms] = useAcceptPaymentTermsMutation()
+  const [retrievePayment] = useLazyPaymentQuery()
+  const { email, paymentId, terms, termsAccepted } = input
 
-  const submitText = getCheckoutSubmitMessages()
+  useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
 
-  const stopSubmitWithMessage = (text: string): void => {
-    setMessage({ text, type: 'error' })
-    setIsLoading(false)
+    return () => {
+      lifecycle.active = false
+    }
+  }, [])
+
+  const recoverPaymentStatus = async (error: StripeError) => {
+    if (
+      error.code !== 'payment_intent_unexpected_state' &&
+      !isRetryableStripeError(error.type)
+    ) {
+      return
+    }
+
+    // Another tab may have confirmed, or our response may have been lost.
+    // A failed lookup must preserve the original confirmation error.
+    const current = await retrievePayment(paymentId, false)
+      .unwrap()
+      .catch(() => undefined)
+
+    if (
+      isSuccessPaymentIntentStatus(current?.status) ||
+      current?.status === 'processing' ||
+      current?.status === 'canceled'
+    ) {
+      return current?.status
+    }
   }
 
   const submitPayment = async (): Promise<void> => {
-    setMessage({ text: null, type: 'neutral' })
-    setCanRetry(false)
-    setIsLoading(true)
+    const lifecycle = lifecycleRef.current
 
-    if (!stripe || !elements) {
-      stopSubmitWithMessage(submitText.notReady)
+    if (submitting.current || !lifecycle?.active) {
+      return
+    }
+
+    setSubmissionError(null)
+
+    if (!terms || !termsAccepted) {
+      setSubmissionError({ message: t('terms.required') })
+
+      return
+    }
+
+    if (paymentId && getCheckoutPaymentId() !== paymentId) {
+      dispatch(checkoutSuperseded())
+
+      return
+    }
+
+    if (!stripe || !elements || !paymentId) {
+      setSubmissionError({ message: t('checkout.notReady') })
+
       return
     }
 
     if (!email) {
-      stopSubmitWithMessage(submitText.missingEmail)
+      setSubmissionError({ message: t('checkout.missingEmail') })
+
       return
     }
 
+    submitting.current = true
+    setIsLoading(true)
+
+    const canContinue = () => {
+      if (!lifecycle.active) {
+        return false
+      }
+
+      if (getCheckoutPaymentId() !== paymentId) {
+        dispatch(checkoutSuperseded())
+
+        return false
+      }
+
+      return true
+    }
+
     try {
+      // Persist acceptance before Stripe can confirm or redirect the payment.
+      await acceptTerms({
+        paymentId,
+        version: terms.version,
+        language,
+        accepted: true,
+      }).unwrap()
+
+      if (!canContinue()) {
+        return
+      }
+
       const { paymentIntent, error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -78,53 +164,68 @@ export function usePaymentSubmit(email: string): UsePaymentSubmitReturn {
         redirect: 'if_required',
       })
 
-      if (error) {
-        setMessage({ text: getStripePaymentErrorMessage(error), type: 'error' })
-        setCanRetry(isRetryableStripeError(error.type))
+      if (!canContinue()) {
         return
       }
 
-      if (paymentIntent) {
-        const searchParams = new URLSearchParams()
-        searchParams.set(
-          checkoutQueryParams.redirectStatus,
-          paymentIntent.status,
-        )
+      let status = paymentIntent?.status
 
-        void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
-          replace: true,
-        })
+      if (error) {
+        status = await recoverPaymentStatus(error)
+
+        if (!canContinue()) {
+          return
+        }
       }
-    } catch (error) {
-      const formattedError = handleError({
-        error,
-        message: submitText.submitFailed,
+
+      if (!status) {
+        setSubmissionError({
+          message: error
+            ? getStripePaymentErrorMessage(error, t)
+            : t('checkout.submitFailed'),
+          retryable: error ? isRetryableStripeError(error.type) : false,
+        })
+
+        return
+      }
+
+      const searchParams = new URLSearchParams({
+        [checkoutQueryParams.redirectStatus]: status,
       })
-      setMessage({ text: formattedError.message, type: 'error' })
-      setCanRetry(true)
+
+      void navigate(`/${ROUTE.CHECKOUT}?${searchParams.toString()}`, {
+        replace: true,
+      })
+    } catch (error) {
+      if (!canContinue()) {
+        return
+      }
+
+      const apiError = getApiError(error)
+      setSubmissionError({
+        message: getErrorMessage(error, t('checkout.submitFailed')),
+        retryable: !apiError || retryableApiCodes.includes(apiError.code),
+        apiError,
+      })
     } finally {
+      submitting.current = false
       setIsLoading(false)
     }
   }
 
-  const handleSubmit = async (
-    event: SubmitEvent<HTMLFormElement>,
-  ): Promise<void> => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await submitPayment()
-  }
 
-  const retryPayment = async (): Promise<void> => {
-    if (isLoading) return
-    await submitPayment()
+    return submitPayment()
   }
 
   return {
     handleSubmit,
-    retryPayment,
-    canRetry,
-    message,
-    setMessage,
+    canRetry: submissionError?.retryable ?? false,
+    error: submissionError
+      ? getErrorMessage(submissionError.apiError, submissionError.message)
+      : null,
+    clearError: () => setSubmissionError(null),
     isLoading,
   }
 }

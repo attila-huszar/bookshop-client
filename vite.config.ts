@@ -90,6 +90,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     test: {
+      clearMocks: true,
       restoreMocks: true,
       globals: true,
       environment: 'jsdom',
@@ -112,7 +113,8 @@ export default defineConfig(({ mode }) => {
           'node_modules',
           'dist',
           'src/main.tsx',
-          'src/setupTests.ts',
+          'src/setupTests.tsx',
+          'src/testUtils.tsx',
           'src/**/*.test.{ts,tsx}',
           'src/**/*.styles.{ts,tsx}',
           'src/constants',

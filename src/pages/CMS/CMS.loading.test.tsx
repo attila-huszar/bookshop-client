@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { act, render, screen } from '@testing-library/react'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { authRequest } from '@/api'
+import * as privateApi from '@/api/authRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { CMS } from './CMS'
@@ -11,9 +11,6 @@ import { Authors } from './components/Authors/Authors'
 import { Books } from './components/Books/Books'
 import { Orders } from './components/Orders/Orders'
 import { Users } from './components/Users/Users'
-
-vi.unmock('@/hooks')
-vi.unmock('react-router')
 
 let store: ReturnType<typeof createAppStore>
 
@@ -41,7 +38,7 @@ describe('CMS list loading', () => {
       const response = new Promise<Response>((resolve) => {
         completeRequest = resolve
       })
-      vi.spyOn(authRequest, 'get').mockImplementation(() =>
+      vi.spyOn(privateApi, 'authRequest').mockImplementation(() =>
         ky.get('https://bookshop.test/mock', {
           retry: 0,
           fetch: () => response.then((value) => value.clone()),
@@ -73,6 +70,13 @@ describe('CMS list loading', () => {
 
       expect(await screen.findByText(`No ${tab} found`)).toBeInTheDocument()
       expect(screen.queryByText(`Loading ${tab}`)).not.toBeInTheDocument()
+      expect(privateApi.authRequest).toHaveBeenCalledTimes(
+        tab === 'books' ? 2 : 1,
+      )
+      expect(privateApi.authRequest).toHaveBeenCalledWith(
+        `cms/${tab}`,
+        expect.any(Object),
+      )
     },
   )
 })

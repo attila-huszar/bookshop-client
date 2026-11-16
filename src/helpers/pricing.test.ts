@@ -1,0 +1,40 @@
+import { describe, expect, it } from 'vitest'
+import { calculatePriceCents, formatAmount, toCents } from './pricing'
+
+describe('amount formatting', () => {
+  it('preserves locale and fractional digits across repeated mixed calls', () => {
+    for (let pass = 0; pass < 2; pass++) {
+      expect(formatAmount(1200, 'en')).toBe('1200')
+      expect(formatAmount(12.5, 'en')).toBe('12.50')
+      expect(formatAmount(1200, 'hu')).toBe('1200')
+      expect(formatAmount(12.5, 'hu')).toBe('12,50')
+      expect(formatAmount(0)).toBe('0')
+      expect(formatAmount(-12.5, 'hu')).toBe('-12,50')
+    }
+  })
+})
+
+describe('cent pricing', () => {
+  it.each([
+    [1.005, 101],
+    [10.075, 1008],
+    [9.99, 999],
+    [1e-7, 0],
+    [0, 0],
+  ])('rounds %s to %s cents', (amount, cents) => {
+    expect(toCents(amount)).toBe(cents)
+  })
+
+  it.each([
+    [9.99, 20, 100, 79900],
+    [9.99, 50, 3, 1500],
+    [0.05, 10, 100, 500],
+    [12.34, 0, 2, 2468],
+    [9.99, 100, 3, 0],
+  ])(
+    'prices %s at %s%% off, quantity %s, as %s cents',
+    (price, discount, quantity, cents) => {
+      expect(calculatePriceCents(price, discount, quantity)).toBe(cents)
+    },
+  )
+})

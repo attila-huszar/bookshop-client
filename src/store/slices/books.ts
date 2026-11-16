@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { BooksState, Filters } from '@/types'
-import { bookshopApi } from '../api/bookshopApi'
-import { getFilteredBooks } from '../utils/getFilteredBooks'
+import { booksApi } from '../api/booksApi'
+import { buildBookCriteria } from '../api/booksQuery'
 
 const initialState: BooksState = {
   booksAppliedFilters: undefined,
@@ -30,15 +30,11 @@ const booksSlice = createSlice({
   initialState,
   reducers: {
     applyBooksFilters: (state, action: PayloadAction<Filters | undefined>) => {
-      state.booksAppliedFilters =
-        getFilteredBooks(state.booksFilters, action.payload) ?? undefined
+      state.booksAppliedFilters = buildBookCriteria(
+        state.booksFilters.initial,
+        action.payload,
+      )
       state.booksCurrentPage = 1
-    },
-    incrementBooksCurrentPage: (state) => {
-      state.booksCurrentPage += 1
-    },
-    decrementBooksCurrentPage: (state) => {
-      state.booksCurrentPage -= 1
     },
     setBooksCurrentPage: (state, action: PayloadAction<number>) => {
       state.booksCurrentPage = action.payload
@@ -86,7 +82,7 @@ const booksSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(
-      bookshopApi.endpoints.searchOptions.matchFulfilled,
+      booksApi.endpoints.searchOptions.matchFulfilled,
       (state, action) => {
         const firstLoad = state.booksFilters.initial.price.length === 0
 
@@ -107,8 +103,6 @@ const booksSlice = createSlice({
 export const booksReducer = booksSlice.reducer
 export const {
   applyBooksFilters,
-  incrementBooksCurrentPage,
-  decrementBooksCurrentPage,
   setBooksCurrentPage,
   setBooksFilterGenre,
   setBooksFilterPrice,

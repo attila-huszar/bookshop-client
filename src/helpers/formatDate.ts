@@ -1,12 +1,15 @@
-import { defaultLocale } from '@/constants'
+import { i18n } from '@/i18n'
 import { Order } from '@/types'
 
 export const formatDate = (dateString: string | null): string => {
-  if (!dateString) return '✖️'
+  if (!dateString) {
+    return '✖️'
+  }
 
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString(defaultLocale, {
+
+    return date.toLocaleDateString(i18n.resolvedLanguage ?? 'en', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -19,6 +22,9 @@ export const formatDate = (dateString: string | null): string => {
 }
 
 export const getPaidAtStatus = ({ paidAt, paymentStatus }: Order) => {
-  if (paidAt) return formatDate(paidAt)
+  if (paidAt) {
+    return formatDate(paidAt)
+  }
+
   return paymentStatus === 'succeeded' ? '✏️' : '✖️'
 }

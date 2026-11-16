@@ -1,6 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Toaster, useToasterStore } from 'react-hot-toast'
+import { uiTiming } from '@/constants/time'
 import { registerToastHost, syncToastHost } from './toast'
 
 export function AppToaster() {
@@ -19,7 +20,7 @@ export function AppToaster() {
     <Toaster
       containerStyle={{ marginTop: '2rem' }}
       toastOptions={{
-        duration: 3000,
+        duration: uiTiming.toastDurationMs,
         style: {
           padding: '8px 10px',
           fontSize: '1.125rem',

@@ -10,7 +10,7 @@ export const StyledConfirmDialog = styled.dialog`
   align-items: center;
   justify-content: center;
   width: 25rem;
-  padding: 1rem;
+  padding: 3rem 1rem 1rem;
   border: none;
   border-radius: 10px;
   background: var(--color-surface-container-high);

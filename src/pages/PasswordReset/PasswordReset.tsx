@@ -1,107 +1,119 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
+import { i18n } from '@/i18n'
 import { Form, Formik } from 'formik'
-import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api'
-import { Button, FormikField, Loading, toast } from '@/components'
-import { resetPasswordSchema } from '@/validation'
-import { passwordResetInitialValues } from '@/constants'
-import { handleError } from '@/errors'
+import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api/users'
+import { ROUTE } from '@/routes/route'
+import { toast } from '@/components/AppToaster'
+import { Button } from '@/components/Button'
+import { FormikField } from '@/components/FormikField'
+import { Loading } from '@/components/Loading'
+import { getApiError, getErrorMessage } from '@/helpers/errors'
+import { resetPasswordSchema } from '@/validation/userSchemas'
+import { passwordResetInitialValues } from '@/constants/defaultValues'
+import { AuthErrorCode } from '@/types/ApiError'
 import { SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles'
+import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
-type PasswordResetVerification =
-  | { status: 'verifying' }
-  | { status: 'ready'; token: string }
-  | { status: 'invalid' }
-
 export function PasswordReset() {
-  const navigate = useNavigate()
   const { search } = useLocation()
-  const queryParams = new URLSearchParams(search)
-  const tokenParam = queryParams.get('token')
-  const [verification, setVerification] = useState<PasswordResetVerification>(
-    () => (tokenParam ? { status: 'verifying' } : { status: 'invalid' }),
-  )
+  const token = new URLSearchParams(search).get('token')
+
+  // Each email link starts with fresh form and verification state.
+  return <PasswordResetForm key={token} token={token} />
+}
+
+function PasswordResetForm({ token }: { token: string | null }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [isVerified, setIsVerified] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const hasVerified = useRef(false)
+  const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
   useEffect(() => {
-    if (!tokenParam) {
-      toast.error('Invalid or missing password reset token')
-      void navigate('/', { replace: true })
+    if (!token) {
+      toast.error(i18n.t('auth.invalidResetToken'), { id: 'password-reset' })
+      void navigate(ROUTE.HOME, { replace: true })
+
       return
     }
 
-    if (hasVerified.current) return
+    // Submission callbacks also need to know when this effect has been cleaned up.
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
 
-    hasVerified.current = true
+    void postVerifyPasswordReset(token).then(
+      () => {
+        if (!lifecycle.active) {
+          return
+        }
 
-    const verifyToken = async () => {
-      try {
-        const response = await postVerifyPasswordReset(tokenParam)
-        setVerification({ status: 'ready', token: response.token })
+        setIsVerified(true)
 
-        toast.success('Please enter your new password')
-      } catch (error) {
-        const formattedError = handleError({
-          error,
-          message: 'Password reset failed, please try again later',
-        })
+        toast.success(i18n.t('auth.enterNewPassword'))
+      },
+      (error: unknown) => {
+        if (!lifecycle.active) {
+          return
+        }
 
-        setVerification({ status: 'invalid' })
-        toast.error(formattedError.message)
+        toast.error(getErrorMessage(error, i18n.t('auth.resetError')))
 
-        void navigate('/', { replace: true })
-      }
+        void navigate(ROUTE.HOME, { replace: true })
+      },
+    )
+
+    return () => {
+      lifecycle.active = false
     }
+  }, [navigate, token])
 
-    void verifyToken()
-  }, [tokenParam, navigate])
+  const handleSubmit = async (values: typeof passwordResetInitialValues) => {
+    const lifecycle = lifecycleRef.current
 
-  const handleSubmit = async (values: {
-    newPassword: string
-    newPasswordConfirmation: string
-  }) => {
-    if (verification.status !== 'ready') {
-      toast.error('Invalid or expired token')
-      return
-    }
+    if (!token || !isVerified || !lifecycle?.active) {
+      toast.error(t('auth.expiredToken'))
 
-    if (values.newPassword !== values.newPasswordConfirmation) {
-      toast.error('Passwords do not match')
       return
     }
 
     try {
-      const response = await postPasswordResetSubmit(
-        verification.token,
-        values.newPassword,
-      )
-      toast.success(response.message)
+      await postPasswordResetSubmit(token, values.newPassword)
 
-      void navigate('/login', { replace: true })
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.success(i18n.t('auth.passwordChanged'))
+
+      void navigate(`/${ROUTE.LOGIN}`, { replace: true })
     } catch (error) {
-      const formattedError = handleError({
-        error,
-        message: 'Error changing password, please try again later',
-      })
-      toast.error(formattedError.message)
+      if (!lifecycle.active) {
+        return
+      }
+
+      toast.error(getErrorMessage(error, i18n.t('auth.passwordChangeError')))
+
+      if (getApiError(error)?.code === AuthErrorCode.InvalidToken) {
+        void navigate(`/${ROUTE.LOGIN}`, { replace: true })
+      }
     }
   }
 
-  if (verification.status === 'verifying') {
-    return <Loading message="Verifying" fullScreen />
+  if (!token) {
+    return null
   }
 
-  if (verification.status === 'invalid') {
-    return null
+  if (!isVerified) {
+    return <Loading message={t('auth.verifying')} fullScreen />
   }
 
   return (
     <StyledPasswordReset>
-      <h2>Password Reset</h2>
-      <p>Please enter your new password below.</p>
+      <h2>{t('auth.passwordReset')}</h2>
+      <p>{t('auth.passwordResetHelp')}</p>
       <Formik
         initialValues={passwordResetInitialValues}
         validationSchema={resetPasswordSchema}
@@ -109,27 +121,39 @@ export function PasswordReset() {
         onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form noValidate>
-            <p>New Password</p>
+            <p>
+              <label htmlFor="new-password">{t('auth.newPassword')}</label>
+            </p>
             <FormikField
+              id="new-password"
               name="newPassword"
-              placeholder="New Password"
+              placeholder={t('auth.newPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              disabled={isSubmitting}
+              autoFocus
             />
-            <p>Confirm New Password</p>
+            <p>
+              <label htmlFor="confirm-new-password">
+                {t('auth.confirmNewPassword')}
+              </label>
+            </p>
             <FormikField
+              id="confirm-new-password"
               name="newPasswordConfirmation"
-              placeholder="Confirm New Password"
+              placeholder={t('auth.confirmNewPassword')}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              disabled={isSubmitting}
             />
             <ButtonWrapper>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <SpinnerIcon height={28} />} Submit
+                {isSubmitting && <SpinnerIcon height={28} />}
+                {t('common.actions.submit')}
               </Button>
             </ButtonWrapper>
           </Form>
