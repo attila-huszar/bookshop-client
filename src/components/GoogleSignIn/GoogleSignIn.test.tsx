@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+import type { PropsWithChildren, ReactElement } from 'react'
 import { toast } from 'react-hot-toast'
 import { i18n } from '@/i18n'
 import type {
@@ -9,6 +10,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { MockInstance } from 'vitest'
 import * as usersTransport from '@/api/users'
 import { GoogleSignIn } from './GoogleSignIn'
+import { GoogleSignInProvider } from './GoogleSignInProvider'
 
 vi.mock('@/constants/envConfig', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/constants/envConfig')>()),
@@ -52,26 +54,42 @@ function providerScript() {
 
 function credentialCallback() {
   const callback = initialize.mock.lastCall?.[0].callback
+  const state = renderButton.mock.lastCall?.[1].state
 
   if (!callback) {
     throw new Error('Google sign-in was not initialized')
   }
 
-  return callback
+  return (response: { credential?: string }) => {
+    const responseWithState = { ...response, state }
+    callback(responseWithState)
+  }
+}
+
+function TestProvider({ children }: PropsWithChildren) {
+  return (
+    <StrictMode>
+      <GoogleSignInProvider>{children}</GoogleSignInProvider>
+    </StrictMode>
+  )
+}
+
+function renderSignIn(element: ReactElement) {
+  return render(element, { wrapper: TestProvider })
 }
 
 it('initializes the provider with a fresh browser nonce in StrictMode', async () => {
   vi.mocked(usersTransport.postGoogleNonce).mockResolvedValueOnce({
     nonce: 'first-challenge',
   })
-  render(
+  renderSignIn(
     <StrictMode>
       <GoogleSignIn disabled={false} onCredential={onCredential} />
     </StrictMode>,
   )
   expect(usersTransport.postGoogleNonce).not.toHaveBeenCalled()
   fireEvent.load(providerScript())
-  await waitFor(() => expect(initialize).toHaveBeenCalled())
+  await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
 
   expect(initialize).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -109,12 +127,15 @@ it('initializes the provider with a fresh browser nonce in StrictMode', async ()
       expect.objectContaining({ nonce: 'browser-challenge' }),
     ),
   )
+  expect(initialize).toHaveBeenCalledTimes(2)
   act(() => callback({ credential: 'stale-credential' }))
   expect(onCredential).toHaveBeenCalledOnce()
 })
 
 it('ignores callbacks while another login is pending and after unmount', async () => {
-  const view = render(<GoogleSignIn disabled onCredential={onCredential} />)
+  const view = renderSignIn(
+    <GoogleSignIn disabled onCredential={onCredential} />,
+  )
   fireEvent.load(providerScript())
   await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
   const callback = credentialCallback()
@@ -128,7 +149,7 @@ it('ignores callbacks while another login is pending and after unmount', async (
 })
 
 it('reports a script loading failure without remounting the provider', async () => {
-  render(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+  renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   const script = providerScript()
   fireEvent.error(script)
 
@@ -150,7 +171,7 @@ it('requires a successful nonce request before rendering sign-in', async () => {
   vi.mocked(usersTransport.postGoogleNonce).mockRejectedValueOnce(
     new Error('Offline'),
   )
-  render(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+  renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   fireEvent.load(providerScript())
   await act(async () => {
     await Promise.resolve()
@@ -165,7 +186,7 @@ it('requires a successful nonce request before rendering sign-in', async () => {
 })
 
 it('rejects a provider response without a credential', async () => {
-  render(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+  renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   fireEvent.load(providerScript())
   await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
   act(() => credentialCallback()({}))
@@ -180,7 +201,7 @@ it('cancels an unfinished nonce request when leaving the page', async () => {
     resolve = complete
   })
   vi.mocked(usersTransport.postGoogleNonce).mockReturnValueOnce(response)
-  const view = render(
+  const view = renderSignIn(
     <GoogleSignIn disabled={false} onCredential={onCredential} />,
   )
   fireEvent.load(providerScript())
@@ -206,7 +227,7 @@ it('does not renew the nonce when a pending login finishes after unmount', async
     finishLogin = resolve
   })
   onCredential.mockReturnValueOnce(response)
-  const view = render(
+  const view = renderSignIn(
     <GoogleSignIn disabled={false} onCredential={onCredential} />,
   )
   fireEvent.load(providerScript())
@@ -224,7 +245,7 @@ it('does not renew the nonce when a pending login finishes after unmount', async
 })
 
 it('ignores script load events after leaving the page', () => {
-  const view = render(
+  const view = renderSignIn(
     <GoogleSignIn disabled={false} onCredential={onCredential} />,
   )
   const script = providerScript()
@@ -238,7 +259,7 @@ it('ignores script load events after leaving the page', () => {
 })
 
 it('keeps the provider and nonce when the language changes', async () => {
-  render(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+  renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   fireEvent.load(providerScript())
   await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
   const script = providerScript()
@@ -248,4 +269,141 @@ it('keeps the provider and nonce when the language changes', async () => {
   expect(initialize).toHaveBeenCalledOnce()
   expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
   expect(screen.getByRole('separator', { name: 'vagy' })).toBeInTheDocument()
+  expect(renderButton).toHaveBeenLastCalledWith(
+    expect.any(HTMLElement),
+    expect.objectContaining({ locale: 'hu' }),
+  )
+
+  await act(() => i18n.changeLanguage('en'))
+
+  expect(renderButton).toHaveBeenLastCalledWith(
+    expect.any(HTMLElement),
+    expect.objectContaining({ locale: 'en' }),
+  )
+  expect(initialize).toHaveBeenCalledOnce()
+})
+
+it('keeps one script and initialization across Login and Registration mounts', async () => {
+  const registrationCredential = vi.fn<(credential: string) => Promise<void>>()
+  registrationCredential.mockResolvedValue(undefined)
+  const view = renderSignIn(
+    <GoogleSignIn key="login" disabled={false} onCredential={onCredential} />,
+  )
+  fireEvent.load(providerScript())
+  await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
+  const script = providerScript()
+  const oldCallback = credentialCallback()
+
+  view.rerender(
+    <GoogleSignIn
+      key="registration"
+      disabled={false}
+      onCredential={registrationCredential}
+    />,
+  )
+
+  expect(script.isConnected).toBe(true)
+  expect(providerScript()).toBe(script)
+  expect(initialize).toHaveBeenCalledOnce()
+  expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
+  act(() => oldCallback({ credential: 'late-login-popup' }))
+  expect(onCredential).not.toHaveBeenCalled()
+  expect(registrationCredential).not.toHaveBeenCalled()
+
+  const currentCallback = credentialCallback()
+  await act(async () => {
+    currentCallback({ credential: 'registration-credential' })
+    await Promise.resolve()
+  })
+
+  expect(registrationCredential).toHaveBeenCalledExactlyOnceWith(
+    'registration-credential',
+  )
+  expect(providerScript()).toBe(script)
+})
+
+it('shares an unfinished challenge request across auth page switches', async () => {
+  let resolve!: (value: { nonce: string }) => void
+  vi.mocked(usersTransport.postGoogleNonce).mockReturnValueOnce(
+    new Promise((complete) => {
+      resolve = complete
+    }),
+  )
+  const view = renderSignIn(
+    <GoogleSignIn key="login" disabled={false} onCredential={onCredential} />,
+  )
+  fireEvent.load(providerScript())
+  await waitFor(() =>
+    expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce(),
+  )
+  const signal = vi.mocked(usersTransport.postGoogleNonce).mock.lastCall?.[0]
+  view.rerender(
+    <GoogleSignIn
+      key="registration"
+      disabled={false}
+      onCredential={onCredential}
+    />,
+  )
+
+  expect(signal?.aborted).toBe(false)
+  expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
+  await act(async () => {
+    resolve({ nonce: 'shared-challenge' })
+    await Promise.resolve()
+  })
+  expect(initialize).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ nonce: 'shared-challenge' }),
+  )
+})
+
+it('uses a fresh challenge when returning after an attempt finished on another page', async () => {
+  let finishLogin!: () => void
+  const login = new Promise<void>((resolve) => {
+    finishLogin = resolve
+  })
+  onCredential.mockReturnValueOnce(login)
+  const view = renderSignIn(
+    <GoogleSignIn disabled={false} onCredential={onCredential} />,
+  )
+  fireEvent.load(providerScript())
+  await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
+  const signal = vi.mocked(usersTransport.postGoogleNonce).mock.lastCall?.[0]
+  act(() => credentialCallback()({ credential: 'google-credential' }))
+  expect(signal?.aborted).toBe(true)
+  view.rerender(<></>)
+
+  await act(async () => {
+    finishLogin()
+    await login
+  })
+  expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
+
+  view.rerender(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+  await waitFor(() => expect(initialize).toHaveBeenCalledTimes(2))
+  expect(usersTransport.postGoogleNonce).toHaveBeenCalledTimes(2)
+})
+
+it('uses current disabled and callback props without reinitializing Google', async () => {
+  const replacement = vi.fn<(credential: string) => Promise<void>>()
+  replacement.mockResolvedValue(undefined)
+  const view = renderSignIn(
+    <GoogleSignIn disabled={false} onCredential={onCredential} />,
+  )
+  fireEvent.load(providerScript())
+  await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
+  const callback = credentialCallback()
+
+  view.rerender(<GoogleSignIn disabled onCredential={replacement} />)
+  act(() => callback({ credential: 'ignored' }))
+  expect(replacement).not.toHaveBeenCalled()
+
+  view.rerender(<GoogleSignIn disabled={false} onCredential={replacement} />)
+  expect(initialize).toHaveBeenCalledOnce()
+  await act(async () => {
+    callback({ credential: 'current-handler' })
+    await Promise.resolve()
+  })
+
+  expect(replacement).toHaveBeenCalledExactlyOnceWith('current-handler')
+  expect(onCredential).not.toHaveBeenCalled()
 })

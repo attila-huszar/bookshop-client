@@ -1,81 +1,74 @@
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import { i18n as appI18n } from '@/i18n'
 import type { CredentialResponse } from '@react-oauth/google'
-import { postGoogleNonce } from '@/api/users'
 import { toast } from '@/components/AppToaster'
 import { googleClientId } from '@/constants/envConfig'
+import { GoogleSignInContext } from './GoogleSignIn.context'
 import { Divider, GoogleSignInWrapper } from './GoogleSignIn.style'
+import { GoogleSignInButton } from './GoogleSignInButton'
 
 type GoogleSignInProps = {
   disabled: boolean
   onCredential: (credential: string) => Promise<void>
 }
 
-type GoogleChallenge = {
-  nonce: string
-  signal: AbortSignal
-}
-
 export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
   const { t, i18n } = useTranslation()
-  const controllerRef = useRef<AbortController | null>(null)
-  const [challenge, setChallenge] = useState<GoogleChallenge>()
-
-  const locale = i18n.resolvedLanguage ?? 'en'
+  const context = useContext(GoogleSignInContext)
+  const controllerRef = useRef<AbortController>(null)
+  const pendingRef = useRef(false)
+  const errorShownRef = useRef(false)
+  const scriptStatus = context?.scriptStatus
+  const ensureChallenge = context?.ensureChallenge
+  const hasError = scriptStatus === 'error' || context?.nonceFailed === true
 
   useEffect(() => {
-    controllerRef.current = new AbortController()
-
-    return () => controllerRef.current?.abort()
-  }, [])
-
-  const handleLoadError = () => {
-    const controller = controllerRef.current
-
-    if (controller && !controller.signal.aborted) {
-      toast.error(t('auth.googleUnavailable'))
-    }
-  }
-
-  const prepareChallenge = async () => {
-    const previousController = controllerRef.current
-
-    if (!previousController || previousController.signal.aborted) {
-      return
-    }
-
-    previousController.abort()
-
     const controller = new AbortController()
     controllerRef.current = controller
-    const { signal } = controller
 
-    setChallenge(undefined)
+    return () => controller.abort()
+  }, [])
 
-    try {
-      const { nonce } = await postGoogleNonce(signal)
-
-      if (!signal.aborted) {
-        setChallenge({ nonce, signal })
-      }
-    } catch {
-      if (!signal.aborted) {
-        handleLoadError()
-      }
+  useEffect(() => {
+    if (scriptStatus === 'ready') {
+      ensureChallenge?.()
     }
-  }
+  }, [scriptStatus, ensureChallenge])
+
+  useEffect(() => {
+    if (hasError && !errorShownRef.current) {
+      toast.error(appI18n.t('auth.googleUnavailable'))
+    }
+
+    errorShownRef.current = hasError
+  }, [hasError])
 
   const handleSuccess = ({ credential }: CredentialResponse) => {
-    if (!challenge || challenge.signal.aborted || disabled || !credential) {
+    const signal = controllerRef.current?.signal
+
+    if (
+      !signal ||
+      signal.aborted ||
+      disabled ||
+      pendingRef.current ||
+      !credential
+    ) {
       return
     }
 
-    void onCredential(credential).finally(() => {
-      if (!challenge.signal.aborted) {
-        void prepareChallenge()
+    pendingRef.current = true
+    context?.invalidateChallenge()
+
+    const finishAttempt = () => {
+      pendingRef.current = false
+
+      if (!signal.aborted) {
+        context?.renewChallenge()
       }
-    })
+    }
+
+    void onCredential(credential).then(finishAttempt, finishAttempt)
   }
 
   if (!googleClientId) {
@@ -87,23 +80,12 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
       <Divider role="separator" aria-label={t('common.or')}>
         {t('common.or')}
       </Divider>
-      <GoogleOAuthProvider
-        clientId={googleClientId}
-        locale={locale}
-        onScriptLoadSuccess={() => void prepareChallenge()}
-        onScriptLoadError={handleLoadError}>
-        {challenge && (
-          <GoogleLogin
-            key={challenge.nonce}
-            nonce={challenge.nonce}
-            theme="outline"
-            size="large"
-            shape="pill"
-            text="continue_with"
-            onSuccess={handleSuccess}
-          />
-        )}
-      </GoogleOAuthProvider>
+      {context?.challenge && (
+        <GoogleSignInButton
+          locale={i18n.resolvedLanguage ?? 'en'}
+          onSuccess={handleSuccess}
+        />
+      )}
     </GoogleSignInWrapper>
   )
 }
