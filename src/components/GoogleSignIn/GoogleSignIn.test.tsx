@@ -1,16 +1,18 @@
 import { StrictMode } from 'react'
 import type { PropsWithChildren, ReactElement } from 'react'
 import { toast } from 'react-hot-toast'
+import { Link, MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { i18n } from '@/i18n'
 import type {
   GsiButtonConfiguration,
   IdConfiguration,
 } from '@react-oauth/google'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import type { MockInstance } from 'vitest'
 import * as usersTransport from '@/api/users'
 import { GoogleSignIn } from './GoogleSignIn'
-import { GoogleSignInProvider } from './GoogleSignInProvider'
 
 vi.mock('@/constants/envConfig', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/constants/envConfig')>()),
@@ -54,28 +56,50 @@ function providerScript() {
 
 function credentialCallback() {
   const callback = initialize.mock.lastCall?.[0].callback
-  const state = renderButton.mock.lastCall?.[1].state
 
   if (!callback) {
     throw new Error('Google sign-in was not initialized')
   }
 
-  return (response: { credential?: string }) => {
-    const responseWithState = { ...response, state }
-    callback(responseWithState)
-  }
+  return callback
 }
 
 function TestProvider({ children }: PropsWithChildren) {
   return (
     <StrictMode>
-      <GoogleSignInProvider>{children}</GoogleSignInProvider>
+      <GoogleOAuthProvider
+        clientId="bookshop.apps.googleusercontent.com"
+        onScriptLoadError={() => toast.error(i18n.t('auth.googleUnavailable'))}>
+        {children}
+      </GoogleOAuthProvider>
     </StrictMode>
   )
 }
 
 function renderSignIn(element: ReactElement) {
   return render(element, { wrapper: TestProvider })
+}
+
+function SharedAuthLayout() {
+  return (
+    <>
+      <Outlet />
+      <GoogleSignIn disabled={false} onCredential={onCredential} />
+    </>
+  )
+}
+
+function renderAuthPages() {
+  return renderSignIn(
+    <MemoryRouter initialEntries={['/login']}>
+      <Routes>
+        <Route element={<SharedAuthLayout />}>
+          <Route path="/login" element={<Link to="/register">Register</Link>} />
+          <Route path="/register" element={<Link to="/login">Login</Link>} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  )
 }
 
 it('initializes the provider with a fresh browser nonce in StrictMode', async () => {
@@ -251,7 +275,6 @@ it('ignores script load events after leaving the page', () => {
   const script = providerScript()
   view.unmount()
   fireEvent.load(script)
-  fireEvent.error(script)
 
   expect(usersTransport.postGoogleNonce).not.toHaveBeenCalled()
   expect(onCredential).not.toHaveBeenCalled()
@@ -283,42 +306,30 @@ it('keeps the provider and nonce when the language changes', async () => {
   expect(initialize).toHaveBeenCalledOnce()
 })
 
-it('keeps one script and initialization across Login and Registration mounts', async () => {
-  const registrationCredential = vi.fn<(credential: string) => Promise<void>>()
-  registrationCredential.mockResolvedValue(undefined)
-  const view = renderSignIn(
-    <GoogleSignIn key="login" disabled={false} onCredential={onCredential} />,
-  )
+it('keeps one button, script, and initialization while switching auth forms', async () => {
+  renderAuthPages()
   fireEvent.load(providerScript())
   await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
   const script = providerScript()
-  const oldCallback = credentialCallback()
+  const callback = credentialCallback()
+  const buttonContainer = renderButton.mock.lastCall?.[0]
 
-  view.rerender(
-    <GoogleSignIn
-      key="registration"
-      disabled={false}
-      onCredential={registrationCredential}
-    />,
-  )
+  await userEvent.click(screen.getByRole('link', { name: 'Register' }))
+  expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument()
 
   expect(script.isConnected).toBe(true)
   expect(providerScript()).toBe(script)
   expect(initialize).toHaveBeenCalledOnce()
   expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
-  act(() => oldCallback({ credential: 'late-login-popup' }))
-  expect(onCredential).not.toHaveBeenCalled()
-  expect(registrationCredential).not.toHaveBeenCalled()
+  expect(renderButton.mock.lastCall?.[0]).toBe(buttonContainer)
+  expect(buttonContainer?.isConnected).toBe(true)
 
-  const currentCallback = credentialCallback()
   await act(async () => {
-    currentCallback({ credential: 'registration-credential' })
+    callback({ credential: 'shared-credential' })
     await Promise.resolve()
   })
 
-  expect(registrationCredential).toHaveBeenCalledExactlyOnceWith(
-    'registration-credential',
-  )
+  expect(onCredential).toHaveBeenCalledExactlyOnceWith('shared-credential')
   expect(providerScript()).toBe(script)
 })
 
@@ -329,21 +340,13 @@ it('shares an unfinished challenge request across auth page switches', async () 
       resolve = complete
     }),
   )
-  const view = renderSignIn(
-    <GoogleSignIn key="login" disabled={false} onCredential={onCredential} />,
-  )
+  renderAuthPages()
   fireEvent.load(providerScript())
   await waitFor(() =>
     expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce(),
   )
   const signal = vi.mocked(usersTransport.postGoogleNonce).mock.lastCall?.[0]
-  view.rerender(
-    <GoogleSignIn
-      key="registration"
-      disabled={false}
-      onCredential={onCredential}
-    />,
-  )
+  await userEvent.click(screen.getByRole('link', { name: 'Register' }))
 
   expect(signal?.aborted).toBe(false)
   expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()

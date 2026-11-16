@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useNavigate, useOutletContext } from 'react-router'
 import { Form, Formik } from 'formik'
 import { ROUTE } from '@/routes/route'
-import { googleLogin, login } from '@/store/thunks/auth'
+import { login } from '@/store/thunks/auth'
 import { toast } from '@/components/AppToaster'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu'
+import type { AuthSubmission } from '@/components/AuthorizationMenu/AuthorizationMenu.types'
 import { Button, IconButton } from '@/components/Button'
 import { ForgotPassword } from '@/components/ForgotPassword'
 import { FormikField } from '@/components/FormikField'
-import { GoogleSignIn } from '@/components/GoogleSignIn/GoogleSignIn'
 import { useAppDispatch } from '@/hooks/redux'
 import { getErrorMessage } from '@/helpers/errors'
 import { scrollToTop } from '@/helpers/scrollToTop'
@@ -25,8 +24,8 @@ export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
-  const pendingLogin = useRef(false)
+  const { isSubmitting, startSubmission, finishSubmission } =
+    useOutletContext<AuthSubmission>()
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
   const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
@@ -43,12 +42,9 @@ export function Login() {
   const handleSubmit = async (values: LoginRequest) => {
     const lifecycle = lifecycleRef.current
 
-    if (!lifecycle?.active || pendingLogin.current) {
+    if (!lifecycle?.active || !startSubmission()) {
       return
     }
-
-    pendingLogin.current = true
-    setIsLoggingIn(true)
 
     try {
       const { firstName } = await dispatch(login(values)).unwrap()
@@ -64,43 +60,7 @@ export function Login() {
         toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
       }
     } finally {
-      pendingLogin.current = false
-
-      if (lifecycle.active) {
-        setIsLoggingIn(false)
-      }
-    }
-  }
-
-  const handleGoogleSignIn = async (credential: string) => {
-    const lifecycle = lifecycleRef.current
-
-    if (!lifecycle?.active || pendingLogin.current) {
-      return
-    }
-
-    pendingLogin.current = true
-    setIsLoggingIn(true)
-
-    try {
-      const { firstName } = await dispatch(googleLogin(credential)).unwrap()
-
-      if (!lifecycle.active) {
-        return
-      }
-
-      toast.success(i18n.t('auth.welcome', { name: firstName }))
-      void navigate(ROUTE.HOME, { replace: true })
-    } catch (error) {
-      if (lifecycle.active) {
-        toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
-      }
-    } finally {
-      pendingLogin.current = false
-
-      if (lifecycle.active) {
-        setIsLoggingIn(false)
-      }
+      finishSubmission()
     }
   }
 
@@ -109,7 +69,7 @@ export function Login() {
   }
 
   return (
-    <AuthorizationMenu>
+    <>
       <Formik<LoginRequest>
         initialValues={loginInitialValues}
         validationSchema={loginSchema}
@@ -126,7 +86,7 @@ export function Login() {
             type="email"
             inputMode="email"
             autoComplete="username"
-            disabled={isLoggingIn}
+            disabled={isSubmitting}
             autoFocus
           />
           <p>
@@ -141,7 +101,7 @@ export function Login() {
             type={showPassword ? 'text' : 'password'}
             inputMode="text"
             autoComplete="current-password"
-            disabled={isLoggingIn}
+            disabled={isSubmitting}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
           />
@@ -152,11 +112,11 @@ export function Login() {
               $color="var(--color-outline)"
               type="button"
               title={t('common.actions.back')}
-              disabled={isLoggingIn}
+              disabled={isSubmitting}
               onClick={() => void navigate(ROUTE.HOME)}
             />
-            <Button type="submit" disabled={isLoggingIn}>
-              {isLoggingIn && <SpinnerIcon height={28} />}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <SpinnerIcon height={28} />}
               {t('auth.login')}
             </Button>
             <IconButton
@@ -165,14 +125,13 @@ export function Login() {
               $color="var(--color-outline)"
               type="button"
               title={t('auth.forgotPassword')}
-              disabled={isLoggingIn}
+              disabled={isSubmitting}
               onClick={handleDialogOpen}
             />
           </ButtonWrapper>
         </Form>
       </Formik>
-      <GoogleSignIn disabled={isLoggingIn} onCredential={handleGoogleSignIn} />
       <ForgotPassword ref={forgotPasswordDialog} />
-    </AuthorizationMenu>
+    </>
   )
 }

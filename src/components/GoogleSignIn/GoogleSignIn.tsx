@@ -1,10 +1,11 @@
-import { useContext, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { i18n as appI18n } from '@/i18n'
+import { useGoogleOAuth } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
+import { postGoogleNonce } from '@/api/users'
 import { toast } from '@/components/AppToaster'
 import { googleClientId } from '@/constants/envConfig'
-import { GoogleSignInContext } from './GoogleSignIn.context'
 import { Divider, GoogleSignInWrapper } from './GoogleSignIn.style'
 import { GoogleSignInButton } from './GoogleSignInButton'
 
@@ -13,43 +14,90 @@ type GoogleSignInProps = {
   onCredential: (credential: string) => Promise<void>
 }
 
-export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
+type GoogleChallenge = {
+  nonce: string
+  signal: AbortSignal
+}
+
+export function GoogleSignIn(props: GoogleSignInProps) {
+  if (!googleClientId) {
+    return null
+  }
+
+  return <ConfiguredGoogleSignIn {...props} />
+}
+
+function ConfiguredGoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
   const { t, i18n } = useTranslation()
-  const context = useContext(GoogleSignInContext)
+  const { scriptLoadedSuccessfully } = useGoogleOAuth()
+  const [challenge, setChallenge] = useState<GoogleChallenge>()
   const controllerRef = useRef<AbortController>(null)
+  const lifecycleRef = useRef<{ active: boolean }>(null)
   const pendingRef = useRef(false)
-  const errorShownRef = useRef(false)
-  const scriptStatus = context?.scriptStatus
-  const ensureChallenge = context?.ensureChallenge
-  const hasError = scriptStatus === 'error' || context?.nonceFailed === true
 
   useEffect(() => {
+    const lifecycle = { active: true }
+    lifecycleRef.current = lifecycle
+
+    return () => {
+      lifecycle.active = false
+    }
+  }, [])
+
+  const prepareChallenge = useCallback(() => {
+    if (!lifecycleRef.current?.active) {
+      return
+    }
+
+    controllerRef.current?.abort()
+
     const controller = new AbortController()
     controllerRef.current = controller
+    const { signal } = controller
 
-    return () => controller.abort()
+    setChallenge(undefined)
+
+    void postGoogleNonce(signal).then(
+      ({ nonce }) => {
+        if (!signal.aborted) {
+          setChallenge({ nonce, signal })
+        }
+      },
+      () => {
+        if (!signal.aborted) {
+          toast.error(appI18n.t('auth.googleUnavailable'))
+        }
+      },
+    )
   }, [])
 
   useEffect(() => {
-    if (scriptStatus === 'ready') {
-      ensureChallenge?.()
-    }
-  }, [scriptStatus, ensureChallenge])
-
-  useEffect(() => {
-    if (hasError && !errorShownRef.current) {
-      toast.error(appI18n.t('auth.googleUnavailable'))
+    if (!scriptLoadedSuccessfully) {
+      return
     }
 
-    errorShownRef.current = hasError
-  }, [hasError])
+    let active = true
+
+    // Let Strict Mode finish its effect replay before requesting a challenge.
+    queueMicrotask(() => {
+      if (active) {
+        prepareChallenge()
+      }
+    })
+
+    return () => {
+      active = false
+      controllerRef.current?.abort()
+    }
+  }, [scriptLoadedSuccessfully, prepareChallenge])
 
   const handleSuccess = ({ credential }: CredentialResponse) => {
-    const signal = controllerRef.current?.signal
+    const lifecycle = lifecycleRef.current
 
     if (
-      !signal ||
-      signal.aborted ||
+      !lifecycle?.active ||
+      !challenge ||
+      challenge.signal.aborted ||
       disabled ||
       pendingRef.current ||
       !credential
@@ -58,21 +106,18 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
     }
 
     pendingRef.current = true
-    context?.invalidateChallenge()
+    controllerRef.current?.abort()
+    setChallenge(undefined)
 
     const finishAttempt = () => {
       pendingRef.current = false
 
-      if (!signal.aborted) {
-        context?.renewChallenge()
+      if (lifecycle.active) {
+        prepareChallenge()
       }
     }
 
     void onCredential(credential).then(finishAttempt, finishAttempt)
-  }
-
-  if (!googleClientId) {
-    return null
   }
 
   return (
@@ -80,8 +125,10 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
       <Divider role="separator" aria-label={t('common.or')}>
         {t('common.or')}
       </Divider>
-      {context?.challenge && (
+      {challenge && (
         <GoogleSignInButton
+          nonce={challenge.nonce}
+          signal={challenge.signal}
           locale={i18n.resolvedLanguage ?? 'en'}
           onSuccess={handleSuccess}
         />

@@ -1,6 +1,6 @@
 import { toast } from 'react-hot-toast'
 import { Provider } from 'react-redux'
-import { MemoryRouter, useNavigate } from 'react-router'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
@@ -11,6 +11,7 @@ import * as usersTransport from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
 import type { LoginResponse } from '@/types'
 import { AuthErrorCode, UserErrorCode } from '@/types/ApiError'
 import { Registration } from './Registration'
@@ -114,8 +115,12 @@ describe('Registration', () => {
   const renderRegistration = () =>
     render(
       <Provider store={store}>
-        <MemoryRouter>
-          <Registration />
+        <MemoryRouter initialEntries={['/register']}>
+          <Routes>
+            <Route element={<AuthorizationMenu />}>
+              <Route path="/register" element={<Registration />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </Provider>,
     )

@@ -1,13 +1,14 @@
 import { StrictMode } from 'react'
 import { toast } from 'react-hot-toast'
 import { Provider } from 'react-redux'
-import { MemoryRouter, useNavigate } from 'react-router'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import * as usersTransport from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
 import type { LoginResponse } from '@/types'
 import { AuthErrorCode } from '@/types/ApiError'
 import { Login } from './Login'
@@ -63,8 +64,12 @@ function renderLogin() {
   return render(
     <StrictMode>
       <Provider store={store}>
-        <MemoryRouter>
-          <Login />
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route element={<AuthorizationMenu />}>
+              <Route path="/login" element={<Login />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </Provider>
     </StrictMode>,

@@ -9,6 +9,7 @@ import {
 import { Home } from '@/pages/Home/Home'
 import { Layout } from '@/pages/Layout/Layout'
 import { Alert } from '@/components/Alert'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
 import { Loading } from '@/components/Loading'
 import { appLoader, cartLoader, checkoutLoader } from './loaders'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
@@ -117,12 +118,17 @@ const routes: RouteObject[] = [
         element: <PublicRoute />,
         children: [
           {
-            path: ROUTE.REGISTER,
-            element: <Registration />,
-          },
-          {
-            path: ROUTE.LOGIN,
-            element: <Login />,
+            element: <AuthorizationMenu />,
+            children: [
+              {
+                path: ROUTE.REGISTER,
+                element: <Registration />,
+              },
+              {
+                path: ROUTE.LOGIN,
+                element: <Login />,
+              },
+            ],
           },
         ],
       },
