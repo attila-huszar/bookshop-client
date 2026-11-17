@@ -26,7 +26,7 @@ type PasswordDialogHandle = {
 type Props = { email: string; ref: React.Ref<PasswordDialogHandle> }
 
 export function PasswordDialog({ email, ref }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -59,11 +59,12 @@ export function PasswordDialog({ email, ref }: Props) {
         }).unwrap()
         handleClose()
         actions.resetForm()
-        toast.success(t('auth.passwordChanged'))
+        toast.success(i18n.t('auth.passwordChanged'))
       } catch (error) {
-        toast.error(getErrorMessage(error, t('auth.passwordChangeError')), {
-          id: 'password-change-fail',
-        })
+        toast.error(
+          getErrorMessage(error, i18n.t('auth.passwordChangeError')),
+          { id: 'password-change-fail' },
+        )
       }
     } else {
       toast.error(t('auth.passwordDifferent'), {

@@ -271,10 +271,14 @@ function validationMessage(issue: ApiValidationIssue): string {
 /**
  * Resolve display text using the current i18n language and normalized API details.
  * API/server messages are ignored. Unknown codes and runtime transport/JSON errors
- * use the caller's fallback; nonempty messages on other errors/objects are preserved.
+ * use the caller's fallback, defaulting to the translated unexpected-error message;
+ * nonempty messages on other errors/objects are preserved.
  * Call again at display time to reflect a language change; this does not subscribe to it.
  */
-export function getErrorMessage(error: unknown, fallback: string): string {
+export function getErrorMessage(
+  error: unknown,
+  fallback = i18n.t('common.unexpectedError'),
+): string {
   const apiError = getApiError(error)
 
   if (apiError) {
@@ -311,7 +315,7 @@ export function getErrorMessage(error: unknown, fallback: string): string {
  */
 export function toAppError(
   error: unknown,
-  fallback = i18n.t('common.unexpectedError'),
+  fallback?: string,
 ): Error & Partial<ApiError> {
   return Object.assign(
     new Error(getErrorMessage(error, fallback), { cause: error }),

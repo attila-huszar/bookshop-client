@@ -39,7 +39,9 @@ export function CheckoutForm() {
   const { userData } = useAppSelector(userSelector)
   const payment = useAppSelector((state) => state.payment.payment)
   const [linkEmail, setLinkEmail] = useState('')
-  const [cancelError, setCancelError] = useState<string | ApiError | null>(null)
+  const [cancelError, setCancelError] = useState<
+    ApiError | { message: string } | null
+  >(null)
   const [isCanceling, setIsCanceling] = useState(false)
   const [acceptedTermsKey, setAcceptedTermsKey] = useState<string | null>(null)
   const {
@@ -122,9 +124,9 @@ export function CheckoutForm() {
         return
       }
 
-      const errorMessage = getErrorMessage(error, t('checkout.cancelError'))
-
-      setCancelError(getApiError(error) ?? errorMessage)
+      setCancelError(
+        getApiError(error) ?? { message: getErrorMessage(error, '') },
+      )
     } finally {
       if (lifecycle.active) {
         setIsCanceling(false)
@@ -270,9 +272,7 @@ export function CheckoutForm() {
       </button>
       {cancelError && (
         <div id="cancel-message" role="alert" style={{ marginTop: '1rem' }}>
-          {typeof cancelError === 'string'
-            ? cancelError
-            : getErrorMessage(cancelError, t('checkout.cancelError'))}
+          {getErrorMessage(cancelError, t('checkout.cancelError'))}
         </div>
       )}
       {error && (

@@ -30,7 +30,7 @@ import {
 } from './AccountMenu.style'
 
 export function AccountMenu() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
@@ -68,12 +68,13 @@ export function AccountMenu() {
     try {
       await dispatch(logout()).unwrap()
       setMenuOpen(false)
-      toast.success(t('auth.loggedOut', { email: userData?.email ?? '' }), {
-        id: 'logout-success',
-      })
+      toast.success(
+        i18n.t('auth.loggedOut', { email: userData?.email ?? '' }),
+        { id: 'logout-success' },
+      )
       void navigate(ROUTE.HOME, { replace: true })
     } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.logoutError')), {
+      toast.error(getErrorMessage(error, i18n.t('auth.logoutError')), {
         id: 'logout-error',
       })
     } finally {

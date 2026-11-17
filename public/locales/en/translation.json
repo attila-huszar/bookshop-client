@@ -318,8 +318,16 @@
     }
   },
   "cms": {
-    "authors": "Authors",
-    "users": "Users",
+    "entities": {
+      "order_one": "Order",
+      "order_other": "Orders",
+      "book_one": "Book",
+      "book_other": "Books",
+      "author_one": "Author",
+      "author_other": "Authors",
+      "user_one": "User",
+      "user_other": "Users"
+    },
     "user": "User",
     "authorsLoading": "Loading authors",
     "authorsError": "Error loading authors",

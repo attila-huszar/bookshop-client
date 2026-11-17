@@ -1,6 +1,7 @@
 import { type SubmitEvent, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
+import type { ParseKeys } from 'i18next'
 import { ROUTE } from '@/routes/route'
 import {
   useAcceptPaymentTermsMutation,
@@ -30,8 +31,10 @@ const retryableApiCodes: readonly ErrorCode[] = [
 ]
 
 type SubmissionError = {
-  message: string
+  messageKey?: ParseKeys
+  message?: string
   apiError?: ApiError
+  stripeError?: Pick<StripeError, 'type' | 'message'>
   retryable?: boolean
 }
 
@@ -99,7 +102,7 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
     setSubmissionError(null)
 
     if (!terms || !termsAccepted) {
-      setSubmissionError({ message: t('terms.required') })
+      setSubmissionError({ messageKey: 'terms.required' })
 
       return
     }
@@ -111,13 +114,13 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
     }
 
     if (!stripe || !elements || !paymentId) {
-      setSubmissionError({ message: t('checkout.notReady') })
+      setSubmissionError({ messageKey: 'checkout.notReady' })
 
       return
     }
 
     if (!email) {
-      setSubmissionError({ message: t('checkout.missingEmail') })
+      setSubmissionError({ messageKey: 'checkout.missingEmail' })
 
       return
     }
@@ -180,9 +183,9 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
 
       if (!status) {
         setSubmissionError({
-          message: error
-            ? getStripePaymentErrorMessage(error, t)
-            : t('checkout.submitFailed'),
+          stripeError: error
+            ? { type: error.type, message: error.message }
+            : undefined,
           retryable: error ? isRetryableStripeError(error.type) : false,
         })
 
@@ -203,7 +206,7 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
 
       const apiError = getApiError(error)
       setSubmissionError({
-        message: getErrorMessage(error, t('checkout.submitFailed')),
+        message: apiError ? undefined : getErrorMessage(error, '') || undefined,
         retryable: !apiError || retryableApiCodes.includes(apiError.code),
         apiError,
       })
@@ -219,12 +222,22 @@ export function usePaymentSubmit(input: PaymentSubmitInput) {
     return submitPayment()
   }
 
+  let error: string | null = null
+
+  if (submissionError) {
+    const fallback = submissionError.stripeError
+      ? getStripePaymentErrorMessage(submissionError.stripeError, t)
+      : t(submissionError.messageKey ?? 'checkout.submitFailed')
+    error = getErrorMessage(
+      submissionError.apiError,
+      submissionError.message ?? fallback,
+    )
+  }
+
   return {
     handleSubmit,
     canRetry: submissionError?.retryable ?? false,
-    error: submissionError
-      ? getErrorMessage(submissionError.apiError, submissionError.message)
-      : null,
+    error,
     clearError: () => setSubmissionError(null),
     isLoading,
   }

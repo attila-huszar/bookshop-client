@@ -33,7 +33,7 @@ import {
 } from './Account.style'
 
 export function Account() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const { userData, userIsLoading, userError } = useAppSelector(userSelector)
   const [updateUserProfile, profileUpdate] = useUpdateUserProfileMutation()
@@ -59,7 +59,7 @@ export function Account() {
       await updateUserProfile(values).unwrap()
       setEditingUserInfo(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, t('account.updateError')))
+      toast.error(getErrorMessage(error, i18n.t('account.updateError')))
     }
   }
 
@@ -68,7 +68,7 @@ export function Account() {
       await updateUserProfile({ address: values }).unwrap()
       setEditingAddress(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, t('account.addressError')))
+      toast.error(getErrorMessage(error, i18n.t('account.addressError')))
     }
   }
 
@@ -103,9 +103,9 @@ export function Account() {
 
     try {
       await updateAvatar(formData).unwrap()
-      toast.success(t('account.avatarUpdated'), { id: 'avatar-upload' })
+      toast.success(i18n.t('account.avatarUpdated'), { id: 'avatar-upload' })
     } catch (error) {
-      toast.error(getErrorMessage(error, t('account.avatarError')), {
+      toast.error(getErrorMessage(error, i18n.t('account.avatarError')), {
         id: 'avatar-upload',
       })
     }

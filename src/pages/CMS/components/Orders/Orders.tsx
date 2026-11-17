@@ -9,7 +9,7 @@ import { Pagination } from '@/components/Pagination'
 import { useCmsPagination } from '@/hooks/useCmsPagination'
 import { formatPaymentStatus } from '@/helpers/checkout'
 import { formatDate, getPaidAtStatus } from '@/helpers/formatDate'
-import { CMSOutletContext } from '@/types'
+import { type CMSOutletContext, CmsTab } from '@/types'
 import { EditIcon, EnvelopeIcon } from '@/assets/svg'
 import { LoadingContainer, TableActions } from '../../styles/CMS.style'
 import { OrderEmails } from './OrderEmails'
@@ -36,7 +36,7 @@ export const Orders = () => {
     (order) => Boolean(order.deletedAt) === showDeletedOrders,
   )
   const { currentPage, itemsPerPage, pageStart, onPageChange } =
-    useCmsPagination('orders', orders.length)
+    useCmsPagination(CmsTab.Orders, orders.length)
 
   if (ordersLoading) {
     return (

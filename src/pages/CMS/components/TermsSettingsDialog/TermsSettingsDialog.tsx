@@ -58,7 +58,7 @@ function TermsEditor({
   versions: TermsDocumentSummary[]
   onClose: () => void
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [selectedVersion, setSelectedVersion] = useState(
     document?.version ?? versions[0]?.version ?? '',
   )
@@ -128,12 +128,12 @@ function TermsEditor({
 
     try {
       await publishTerms({ content }).unwrap()
-      toast.success(t('termsEditor.saved'))
+      toast.success(i18n.t('termsEditor.saved'))
       onClose()
     } catch (publishError) {
       setError(
         getApiError(publishError) ??
-          getErrorMessage(publishError, t('termsEditor.saveError')),
+          (getErrorMessage(publishError, '') || 'termsEditor.saveError'),
       )
     } finally {
       saving.current = false
@@ -150,12 +150,12 @@ function TermsEditor({
 
     try {
       await deleteVersion(selectedVersion).unwrap()
-      toast.success(t('termsEditor.deleted'))
+      toast.success(i18n.t('termsEditor.deleted'))
       onClose()
     } catch (deleteError) {
       setError(
         getApiError(deleteError) ??
-          getErrorMessage(deleteError, t('termsEditor.deleteError')),
+          (getErrorMessage(deleteError, '') || 'termsEditor.deleteError'),
       )
     } finally {
       saving.current = false

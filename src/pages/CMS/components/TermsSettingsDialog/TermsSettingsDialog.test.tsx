@@ -1,4 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { toast } from 'react-hot-toast'
+import { i18n } from '@/i18n'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -75,6 +77,77 @@ beforeEach(() => {
 })
 
 describe('Terms settings modal', () => {
+  it.each(['publish', 'delete'] as const)(
+    'uses the current language when a pending %s finishes',
+    async (action) => {
+      let finish!: () => void
+      const pending = new Promise<null>((resolve) => {
+        finish = () => resolve(null)
+      })
+
+      if (action === 'publish') {
+        unwrap.mockReturnValueOnce(pending)
+      } else {
+        deleteUnwrap.mockReturnValueOnce(pending)
+      }
+
+      render(<TermsSettingsDialog onClose={onClose} />)
+      await userEvent.click(
+        screen.getByRole('button', {
+          name:
+            action === 'publish'
+              ? 'Save and publish'
+              : 'Delete selected publication',
+        }),
+      )
+      await act(() => i18n.changeLanguage('hu'))
+      await act(async () => {
+        finish()
+        await pending
+      })
+
+      expect(toast.success).toHaveBeenCalledExactlyOnceWith(
+        i18n.t(
+          action === 'publish' ? 'termsEditor.saved' : 'termsEditor.deleted',
+        ),
+      )
+      expect(onClose).toHaveBeenCalledOnce()
+    },
+  )
+
+  it.each(['publish', 'delete'] as const)(
+    'retranslates a %s fallback without repeating the request',
+    async (action) => {
+      if (action === 'publish') {
+        unwrap.mockRejectedValueOnce(new TypeError('Offline'))
+      } else {
+        deleteUnwrap.mockRejectedValueOnce(new TypeError('Offline'))
+      }
+
+      render(<TermsSettingsDialog onClose={onClose} />)
+      await userEvent.click(
+        screen.getByRole('button', {
+          name:
+            action === 'publish'
+              ? 'Save and publish'
+              : 'Delete selected publication',
+        }),
+      )
+      const key =
+        action === 'publish'
+          ? 'termsEditor.saveError'
+          : 'termsEditor.deleteError'
+      expect(await screen.findByRole('alert')).toHaveTextContent(i18n.t(key))
+      await act(() => i18n.changeLanguage('hu'))
+
+      expect(screen.getByRole('alert')).toHaveTextContent(i18n.t(key))
+      expect(
+        action === 'publish' ? publish : deleteVersion,
+      ).toHaveBeenCalledOnce()
+      expect(onClose).not.toHaveBeenCalled()
+    },
+  )
+
   it('deletes the selected unused version and closes without publishing', async () => {
     const user = userEvent.setup()
     render(<TermsSettingsDialog onClose={onClose} />)

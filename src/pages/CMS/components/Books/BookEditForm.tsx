@@ -59,7 +59,7 @@ export const BookEditForm: FC<Props> = ({
   onClose,
   readOnly = false,
 }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [addBook] = useAddBookMutation()
   const [updateBook] = useUpdateBookMutation()
@@ -160,11 +160,11 @@ export const BookEditForm: FC<Props> = ({
       }
 
       await setFieldValue('imgUrl', result.url)
-      toast.success(t('cms.imageUploaded'), {
+      toast.success(i18n.t('cms.imageUploaded'), {
         id: uploadToastId,
       })
     } catch (error) {
-      toast.error(getErrorMessage(error, t('cms.imageError')), {
+      toast.error(getErrorMessage(error, i18n.t('cms.imageError')), {
         id: uploadToastId,
       })
     } finally {
@@ -204,10 +204,10 @@ export const BookEditForm: FC<Props> = ({
       }
 
       actions.resetForm()
-      toast.success(t('cms.saved', { entity: t('catalogue.book') }))
+      toast.success(i18n.t('cms.saved', { entity: i18n.t('catalogue.book') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, t('common.unexpectedError')))
+      toast.error(getErrorMessage(error))
     }
   }
 

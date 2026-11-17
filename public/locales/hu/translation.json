@@ -318,8 +318,16 @@
     }
   },
   "cms": {
-    "authors": "Szerzők",
-    "users": "Felhasználók",
+    "entities": {
+      "order_one": "Rendelés",
+      "order_other": "Rendelések",
+      "book_one": "Könyv",
+      "book_other": "Könyvek",
+      "author_one": "Szerző",
+      "author_other": "Szerzők",
+      "user_one": "Felhasználó",
+      "user_other": "Felhasználók"
+    },
     "user": "Felhasználó",
     "authorsLoading": "Szerzők betöltése",
     "authorsError": "A szerzők betöltése nem sikerült.",

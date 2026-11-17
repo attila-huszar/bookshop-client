@@ -1,5 +1,6 @@
 import { type ComponentRef, createRef } from 'react'
 import { toast } from 'react-hot-toast'
+import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
@@ -64,6 +65,51 @@ describe('PasswordDialog', () => {
     expect(mockDispatch).toHaveBeenCalledTimes(1)
     expect(dialog.open).toBe(false)
   })
+
+  it.each(['success', 'failure'] as const)(
+    'uses the current language when a pending password update ends in %s',
+    async (outcome) => {
+      let finish!: () => void
+      const pending = new Promise<void>((resolve, reject) => {
+        finish = () => {
+          if (outcome === 'success') {
+            resolve()
+          } else {
+            reject(new TypeError('Network request failed'))
+          }
+        }
+      })
+      mockDispatch.mockReturnValueOnce({ unwrap: () => pending })
+      renderPasswordDialog(email)
+
+      await userEvent.type(
+        screen.getByPlaceholderText('Current Password'),
+        'OldPass123!',
+      )
+      await userEvent.type(
+        screen.getByPlaceholderText('New Password'),
+        'NewPass456!',
+      )
+      await userEvent.type(
+        screen.getByPlaceholderText('Confirm New Password'),
+        'NewPass456!',
+      )
+      await userEvent.click(screen.getByRole('button', { name: /submit/i }))
+      await waitFor(() => expect(mockDispatch).toHaveBeenCalledOnce())
+      await act(() => i18n.changeLanguage('hu'))
+      await act(async () => {
+        finish()
+        await pending.catch(() => undefined)
+      })
+
+      const notification = outcome === 'success' ? toast.success : toast.error
+      const args =
+        outcome === 'success'
+          ? [i18n.t('auth.passwordChanged')]
+          : [i18n.t('auth.passwordChangeError'), { id: 'password-change-fail' }]
+      expect(notification).toHaveBeenCalledExactlyOnceWith(...args)
+    },
+  )
 
   it.each([
     {

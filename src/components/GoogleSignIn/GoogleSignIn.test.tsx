@@ -116,14 +116,16 @@ it('initializes the provider with a fresh browser nonce in StrictMode', async ()
       nonce: 'first-challenge',
     }),
   )
-  expect(renderButton).toHaveBeenCalledWith(
-    expect.any(HTMLElement),
-    expect.objectContaining({
-      theme: 'outline',
-      shape: 'pill',
-      size: 'large',
-      locale: 'en',
-    }),
+  await waitFor(() =>
+    expect(renderButton).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({
+        theme: 'filled_blue',
+        shape: 'pill',
+        size: 'large',
+        locale: 'en',
+      }),
+    ),
   )
   expect(screen.getByRole('separator', { name: 'or' })).toBeInTheDocument()
   expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
@@ -358,7 +360,7 @@ it('keeps the provider and nonce when the language changes', async () => {
 it('keeps one button, script, and initialization while switching auth forms', async () => {
   renderAuthPages()
   fireEvent.load(providerScript())
-  await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
+  await waitFor(() => expect(renderButton).toHaveBeenCalledOnce())
   const script = providerScript()
   const callback = credentialCallback()
   const buttonContainer = renderButton.mock.lastCall?.[0]

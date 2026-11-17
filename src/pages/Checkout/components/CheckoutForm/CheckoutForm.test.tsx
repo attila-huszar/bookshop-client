@@ -194,6 +194,25 @@ describe('Checkout form', () => {
     expect(errorToast).not.toHaveBeenCalled()
   })
 
+  it('retranslates a cancellation fallback without another cancellation', async () => {
+    const dispatch = vi.fn().mockRejectedValue(new TypeError('Offline'))
+    vi.mocked(useAppDispatch).mockReturnValue(dispatch)
+    render(<CheckoutForm />, { wrapper: MemoryRouter })
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Cancel Checkout' }),
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      i18n.t('checkout.cancelError'),
+    )
+
+    await act(() => i18n.changeLanguage('hu'))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      i18n.t('checkout.cancelError'),
+    )
+    expect(dispatch).toHaveBeenCalledOnce()
+  })
+
   it('uses translated checkbox wording and links in both languages', async () => {
     render(<CheckoutForm />, { wrapper: MemoryRouter })
 

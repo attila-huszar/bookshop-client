@@ -1,7 +1,8 @@
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router'
+import { i18n } from '@/i18n'
 import { Providers } from '@/testUtils'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -143,6 +144,42 @@ describe('AccountMenu component', () => {
       { id: 'logout-success' },
     )
   })
+
+  it.each(['success', 'failure'] as const)(
+    'uses the current language when a pending logout ends in %s',
+    async (outcome) => {
+      let finish!: () => void
+      const pending = new Promise<void>((resolve, reject) => {
+        finish = () => {
+          if (outcome === 'success') {
+            resolve()
+          } else {
+            reject(new TypeError('Network request failed'))
+          }
+        }
+      })
+      mockDispatch.mockReturnValueOnce({ unwrap: () => pending })
+      render(<AccountMenu />, { wrapper: Providers })
+      await userEvent.click(screen.getByTitle('July'))
+      await userEvent.click(screen.getByRole('button', { name: 'Logout' }))
+      await act(() => i18n.changeLanguage('hu'))
+      await act(async () => {
+        finish()
+        await pending.catch(() => undefined)
+      })
+
+      const notification = outcome === 'success' ? toast.success : toast.error
+      const message =
+        outcome === 'success'
+          ? i18n.t('auth.loggedOut', { email: 'july@test.com' })
+          : i18n.t('auth.logoutError')
+      expect(notification).toHaveBeenCalledWith(message, {
+        id: outcome === 'success' ? 'logout-success' : 'logout-error',
+      })
+
+      expect(mockDispatch).toHaveBeenCalledOnce()
+    },
+  )
 
   it('keeps the menu open and translates logout failures without navigating away', async () => {
     mockDispatch.mockReturnValueOnce({

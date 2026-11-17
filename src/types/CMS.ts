@@ -4,6 +4,13 @@ import type { BookWithAuthorId } from './Book'
 import type { CmsOrder } from './Order'
 import type { CmsUser } from './User'
 
+export const enum CmsTab {
+  Orders = 'orders',
+  Books = 'books',
+  Authors = 'authors',
+  Users = 'users',
+}
+
 export type CmsEditedItem = BookWithAuthorId | Author | CmsOrder | CmsUser
 
 export type CMSOutletContext = {
@@ -16,9 +23,4 @@ export type CMSOutletContext = {
   setEditedItem: Dispatch<SetStateAction<CmsEditedItem | null>>
 }
 
-export type SelectContext = {
-  books: number[]
-  authors: number[]
-  orders: number[]
-  users: number[]
-}
+export type SelectContext = Record<CmsTab, number[]>
