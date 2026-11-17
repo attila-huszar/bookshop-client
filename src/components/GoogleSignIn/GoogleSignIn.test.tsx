@@ -14,11 +14,6 @@ import type { MockInstance } from 'vitest'
 import * as usersTransport from '@/api/users'
 import { GoogleSignIn } from './GoogleSignIn'
 
-vi.mock('@/constants/envConfig', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/constants/envConfig')>()),
-  googleClientId: 'bookshop.apps.googleusercontent.com',
-}))
-
 const initialize = vi.fn<(options: IdConfiguration) => void>()
 const renderButton =
   vi.fn<(element: HTMLElement, options: GsiButtonConfiguration) => void>()
@@ -171,6 +166,60 @@ it('ignores callbacks while another login is pending and after unmount', async (
   act(() => callback({ credential: 'ignored-after-leaving' }))
   expect(onCredential).not.toHaveBeenCalled()
 })
+
+it.each(['success', 'failure'] as const)(
+  'ignores duplicate credentials while pending and renews the challenge after %s',
+  async (outcome) => {
+    let finishLogin!: () => void
+    onCredential.mockReturnValueOnce(
+      new Promise<void>((resolve, reject) => {
+        finishLogin = () => {
+          if (outcome === 'success') {
+            resolve()
+          } else {
+            reject(new Error('Login failed'))
+          }
+        }
+      }),
+    )
+    renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
+    fireEvent.load(providerScript())
+    await waitFor(() => expect(initialize).toHaveBeenCalledOnce())
+    const callback = credentialCallback()
+
+    act(() => {
+      callback({ credential: 'first-credential' })
+      callback({ credential: 'duplicate-credential' })
+    })
+    expect(onCredential).toHaveBeenCalledExactlyOnceWith('first-credential')
+    expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
+
+    await act(() => i18n.changeLanguage('hu'))
+    expect(initialize).toHaveBeenCalledOnce()
+    expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
+
+    await act(async () => {
+      finishLogin()
+      await Promise.resolve()
+    })
+    await waitFor(() => expect(initialize).toHaveBeenCalledTimes(2))
+    expect(usersTransport.postGoogleNonce).toHaveBeenCalledTimes(2)
+    expect(renderButton).toHaveBeenLastCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({ locale: 'hu' }),
+    )
+    act(() => callback({ credential: 'stale-credential' }))
+    expect(onCredential).toHaveBeenCalledOnce()
+
+    await act(async () => {
+      credentialCallback()({ credential: 'retry-credential' })
+      await Promise.resolve()
+    })
+    expect(onCredential).toHaveBeenCalledTimes(2)
+    expect(onCredential).toHaveBeenLastCalledWith('retry-credential')
+    await act(() => i18n.changeLanguage('en'))
+  },
+)
 
 it('reports a script loading failure without remounting the provider', async () => {
   renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)

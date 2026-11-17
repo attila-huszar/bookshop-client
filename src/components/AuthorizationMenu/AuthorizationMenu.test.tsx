@@ -15,6 +15,17 @@ import { Registration } from '@/pages/Registration/Registration'
 import type { LoginResponse } from '@/types'
 import { AuthorizationMenu } from './AuthorizationMenu'
 
+const googleConfig = vi.hoisted<{ clientId: string | null }>(() => ({
+  clientId: 'google-client-id',
+}))
+
+vi.mock('@/constants/envConfig', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/constants/envConfig')>()),
+  get googleClientId() {
+    return googleConfig.clientId
+  },
+}))
+
 vi.mock('@/components/GoogleSignIn/GoogleSignIn', () => ({
   GoogleSignIn: (props: {
     disabled: boolean
@@ -44,6 +55,7 @@ let store: ReturnType<typeof createAppStore>
 const account = { accessToken: 'google-access-token', firstName: 'Jane' }
 
 beforeEach(async () => {
+  googleConfig.clientId = 'google-client-id'
   store = createAppStore()
   await store.dispatch(
     usersApi.util.upsertQueryData('countryCodes', undefined, {
@@ -84,6 +96,16 @@ function renderAuth(registration: ReactNode = <Registration />) {
     </StrictMode>,
   )
 }
+
+it('omits Google sign-in when it is not configured', () => {
+  googleConfig.clientId = null
+  renderAuth()
+
+  expect(screen.getByLabelText('Email')).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Continue with Google' }),
+  ).not.toBeInTheDocument()
+})
 
 it('keeps the Google button mounted while switching between the auth forms', async () => {
   renderAuth()

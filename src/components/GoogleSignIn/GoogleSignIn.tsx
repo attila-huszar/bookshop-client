@@ -1,138 +1,126 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { i18n as appI18n } from '@/i18n'
 import { useGoogleOAuth } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
 import { postGoogleNonce } from '@/api/users'
 import { toast } from '@/components/AppToaster'
-import { googleClientId } from '@/constants/envConfig'
 import { Divider, GoogleSignInWrapper } from './GoogleSignIn.style'
-import { GoogleSignInButton } from './GoogleSignInButton'
 
 type GoogleSignInProps = {
   disabled: boolean
   onCredential: (credential: string) => Promise<void>
 }
 
-type GoogleChallenge = {
-  nonce: string
-  signal: AbortSignal
-}
-
-export function GoogleSignIn(props: GoogleSignInProps) {
-  if (!googleClientId) {
-    return null
-  }
-
-  return <ConfiguredGoogleSignIn {...props} />
-}
-
-function ConfiguredGoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
+export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
   const { t, i18n } = useTranslation()
-  const { scriptLoadedSuccessfully } = useGoogleOAuth()
-  const [challenge, setChallenge] = useState<GoogleChallenge>()
-  const controllerRef = useRef<AbortController>(null)
-  const lifecycleRef = useRef<{ active: boolean }>(null)
-  const pendingRef = useRef(false)
+  const { clientId, scriptLoadedSuccessfully } = useGoogleOAuth()
+  const [buttonSignal, setButtonSignal] = useState<AbortSignal>()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const locale = i18n.resolvedLanguage ?? 'en'
+
+  const reportUnavailable = useEffectEvent(() => {
+    toast.error(t('auth.googleUnavailable'))
+  })
+
+  const handleCredential = useEffectEvent(
+    ({ credential }: CredentialResponse, controller: AbortController) => {
+      if (disabled || !credential) {
+        return
+      }
+
+      // Consume this challenge immediately so duplicate callbacks are ignored.
+      controller.abort()
+      setButtonSignal(undefined)
+
+      return onCredential(credential)
+    },
+  )
 
   useEffect(() => {
-    const lifecycle = { active: true }
-    lifecycleRef.current = lifecycle
+    const google = window.google?.accounts.id
 
-    return () => {
-      lifecycle.active = false
-    }
-  }, [])
-
-  const prepareChallenge = useCallback(() => {
-    if (!lifecycleRef.current?.active) {
-      return
-    }
-
-    controllerRef.current?.abort()
-
-    const controller = new AbortController()
-    controllerRef.current = controller
-    const { signal } = controller
-
-    setChallenge(undefined)
-
-    void postGoogleNonce(signal).then(
-      ({ nonce }) => {
-        if (!signal.aborted) {
-          setChallenge({ nonce, signal })
-        }
-      },
-      () => {
-        if (!signal.aborted) {
-          toast.error(appI18n.t('auth.googleUnavailable'))
-        }
-      },
-    )
-  }, [])
-
-  useEffect(() => {
-    if (!scriptLoadedSuccessfully) {
+    if (!scriptLoadedSuccessfully || !google) {
       return
     }
 
     let active = true
+    let controller: AbortController | undefined
+
+    const prepareChallenge = async () => {
+      if (!active) {
+        return
+      }
+
+      const challengeController = new AbortController()
+      controller = challengeController
+      const { signal } = challengeController
+
+      try {
+        const { nonce } = await postGoogleNonce(signal)
+
+        if (signal.aborted) {
+          return
+        }
+
+        google.initialize({
+          client_id: clientId,
+          nonce,
+          callback: (response) => {
+            if (!active || signal.aborted) {
+              return
+            }
+
+            const submission = handleCredential(response, challengeController)
+
+            if (submission) {
+              void submission.catch(() => undefined).finally(prepareChallenge)
+            }
+          },
+        })
+        setButtonSignal(signal)
+      } catch {
+        if (!signal.aborted) {
+          reportUnavailable()
+        }
+      }
+    }
 
     // Let Strict Mode finish its effect replay before requesting a challenge.
     queueMicrotask(() => {
-      if (active) {
-        prepareChallenge()
-      }
+      void prepareChallenge()
     })
 
     return () => {
       active = false
-      controllerRef.current?.abort()
+      controller?.abort()
     }
-  }, [scriptLoadedSuccessfully, prepareChallenge])
+  }, [clientId, scriptLoadedSuccessfully])
 
-  const handleSuccess = ({ credential }: CredentialResponse) => {
-    const lifecycle = lifecycleRef.current
+  useEffect(() => {
+    const container = containerRef.current
+    const google = window.google?.accounts.id
 
-    if (
-      !lifecycle?.active ||
-      !challenge ||
-      challenge.signal.aborted ||
-      disabled ||
-      pendingRef.current ||
-      !credential
-    ) {
+    if (!container || !google || !buttonSignal || buttonSignal.aborted) {
       return
     }
 
-    pendingRef.current = true
-    controllerRef.current?.abort()
-    setChallenge(undefined)
+    google.renderButton(container, {
+      theme: 'filled_blue',
+      size: 'large',
+      shape: 'pill',
+      text: 'continue_with',
+      locale,
+    })
 
-    const finishAttempt = () => {
-      pendingRef.current = false
-
-      if (lifecycle.active) {
-        prepareChallenge()
-      }
-    }
-
-    void onCredential(credential).then(finishAttempt, finishAttempt)
-  }
+    return () => container.replaceChildren()
+  }, [buttonSignal, locale])
 
   return (
     <GoogleSignInWrapper disabled={disabled}>
       <Divider role="separator" aria-label={t('common.or')}>
         {t('common.or')}
       </Divider>
-      {challenge && (
-        <GoogleSignInButton
-          nonce={challenge.nonce}
-          signal={challenge.signal}
-          locale={i18n.resolvedLanguage ?? 'en'}
-          onSuccess={handleSuccess}
-        />
-      )}
+      {buttonSignal && <div ref={containerRef} style={{ height: 40 }} />}
     </GoogleSignInWrapper>
   )
 }

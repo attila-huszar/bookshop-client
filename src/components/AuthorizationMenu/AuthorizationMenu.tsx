@@ -5,9 +5,9 @@ import { ROUTE } from '@/routes/route'
 import { googleLogin } from '@/store/thunks/auth'
 import { toast } from '@/components/AppToaster'
 import { GoogleSignIn } from '@/components/GoogleSignIn/GoogleSignIn'
-import { Loading } from '@/components/Loading'
 import { useAppDispatch } from '@/hooks/redux'
 import { getErrorMessage } from '@/helpers/errors'
+import { googleClientId } from '@/constants/envConfig'
 import {
   FormChangeLinks,
   StyledAuthorizationMenu,
@@ -81,7 +81,7 @@ export function AuthorizationMenu() {
         <NavLink to={`/${ROUTE.LOGIN}`}>{t('auth.login')}</NavLink>
         <NavLink to={`/${ROUTE.REGISTER}`}>{t('auth.register')}</NavLink>
       </FormChangeLinks>
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={null}>
         <Outlet
           context={
             {
@@ -93,7 +93,12 @@ export function AuthorizationMenu() {
           }
         />
       </Suspense>
-      <GoogleSignIn disabled={isSubmitting} onCredential={handleGoogleSignIn} />
+      {googleClientId && (
+        <GoogleSignIn
+          disabled={isSubmitting}
+          onCredential={handleGoogleSignIn}
+        />
+      )}
     </StyledAuthorizationMenu>
   )
 }

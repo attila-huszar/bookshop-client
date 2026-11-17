@@ -16,6 +16,11 @@ import type { LoginResponse } from '@/types'
 import { AuthErrorCode, UserErrorCode } from '@/types/ApiError'
 import { Registration } from './Registration'
 
+vi.mock('@/constants/envConfig', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/constants/envConfig')>()),
+  googleClientId: 'google-client-id',
+}))
+
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),
   useNavigate: vi.fn(),
