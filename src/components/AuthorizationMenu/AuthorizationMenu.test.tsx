@@ -97,6 +97,28 @@ function renderAuth(registration: ReactNode = <Registration />) {
   )
 }
 
+it.each([
+  ['en', 'This account is unavailable.'],
+  ['hu', 'Ez a fiók nem érhető el.'],
+] as const)(
+  'shows the unavailable-account toast in %s',
+  async (language, message) => {
+    await i18n.changeLanguage(language)
+    vi.mocked(usersTransport.postGoogleLogin).mockRejectedValueOnce(
+      Object.assign(new Error('Sign-in failed'), {
+        code: 'ACCOUNT_UNAVAILABLE',
+      }),
+    )
+    renderAuth()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message))
+  },
+)
+
 it('omits Google sign-in when it is not configured', () => {
   googleConfig.clientId = null
   renderAuth()

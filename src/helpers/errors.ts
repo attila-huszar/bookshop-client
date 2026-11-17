@@ -33,6 +33,7 @@ const apiErrorKeys = {
   [HttpErrorCode.RateLimited]: 'errors.rateLimited',
   [HttpErrorCode.Timeout]: 'errors.timeout',
   [AuthErrorCode.InvalidCredentials]: 'errors.invalidCredentials',
+  [AuthErrorCode.AccountUnavailable]: 'errors.accountUnavailable',
   [AuthErrorCode.EmailUnverified]: 'errors.emailUnverified',
   [UserErrorCode.EmailAlreadyExists]: 'errors.emailAlreadyExists',
   [AuthErrorCode.InvalidToken]: 'errors.invalidToken',

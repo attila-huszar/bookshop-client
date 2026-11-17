@@ -471,6 +471,7 @@
     "rateLimited": "Túl sok kérés érkezett. Kérjük, várjon, majd próbálja újra.",
     "timeout": "A kérés időtúllépés miatt megszakadt. Kérjük, próbálja újra.",
     "invalidCredentials": "Hibás e-mail-cím vagy jelszó. Kérjük, próbálja újra.",
+    "accountUnavailable": "Ez a fiók nem érhető el.",
     "emailUnverified": "Bejelentkezés előtt kérjük, erősítse meg az e-mail-címét.",
     "emailAlreadyExists": "Ez az e-mail-cím már regisztrálva van.",
     "invalidToken": "A hivatkozás érvénytelen vagy lejárt. Kérjük, igényeljen újat.",
