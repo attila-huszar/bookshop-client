@@ -64,7 +64,7 @@ function getConfirmationMessage({
 }
 
 export function useCMS() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
 
@@ -72,7 +72,7 @@ export function useCMS() {
   const routeTab = pathname.split('/').pop()
   const tab = TABS.find((item) => item.value === routeTab) ?? TABS[0]
   const activeTab = tab.value
-  const { add: canAdd, delete: canDelete } = tab.actions
+  const { delete: canDelete } = tab.actions
 
   // Mutations
   const [hardDeleteAuthors, authorDeletion] = useHardDeleteAuthorsMutation()
@@ -110,9 +110,12 @@ export function useCMS() {
   const showDeletedOrders = Boolean(showDeletedByTab[CmsTab.Orders])
   const showDeletedUsers = Boolean(showDeletedByTab[CmsTab.Users])
   const showDeleted = Boolean(showDeletedByTab[activeTab])
+  const canAdd = tab.actions.add && !showDeleted
 
   // Derived labels & messages
-  const entity = t(tab.entity, { count: 2 }).toLocaleLowerCase()
+  const translateEntity = (translate: TFunction) =>
+    translate(tab.entity, { count: 2 }).toLocaleLowerCase()
+  const entity = translateEntity(t)
   const action = getBulkAction(showDeleted, canDelete)
   const actionLabel = t(action.label)
   const visibilityLabel = t(
@@ -187,9 +190,9 @@ export function useCMS() {
       await mutations[activeTab](currentSelection).unwrap()
 
       toast.success(
-        t('cms.bulkSuccess', {
-          action: t(action.success),
-          entity,
+        i18n.t('cms.bulkSuccess', {
+          action: i18n.t(action.success),
+          entity: translateEntity(i18n.t),
         }),
       )
       setSelectedItems(EMPTY_SELECTION)
@@ -197,9 +200,9 @@ export function useCMS() {
       toast.error(
         getErrorMessage(
           error,
-          t('cms.bulkError', {
-            action: actionLabel.toLocaleLowerCase(),
-            entity,
+          i18n.t('cms.bulkError', {
+            action: i18n.t(action.label).toLocaleLowerCase(),
+            entity: translateEntity(i18n.t),
           }),
         ),
       )

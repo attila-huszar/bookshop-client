@@ -427,7 +427,7 @@ describe('CMS deletion controls', () => {
     expect(toast.success).toHaveBeenCalledExactlyOnceWith(
       i18n.t('cms.bulkSuccess', {
         action: i18n.t('cms.actions.removed'),
-        entity: i18n.t('navigation.orders').toLocaleLowerCase(),
+        entity: i18n.t('cms.entities.order', { count: 2 }).toLocaleLowerCase(),
       }),
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
