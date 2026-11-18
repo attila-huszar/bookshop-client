@@ -2,7 +2,7 @@ import { StrictMode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { useElements, useStripe } from '@stripe/react-stripe-js'
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLazyPaymentQuery } from '@/store/api/paymentsApi'
 import { useAcceptPaymentTermsMutation } from '@/store/api/paymentsApi'
@@ -92,6 +92,73 @@ afterEach(() => {
 })
 
 describe('Payment terms submission', () => {
+  it.each([
+    { props: { ...input, termsAccepted: false }, key: 'terms.required' },
+    { props: { ...input, paymentId: '' }, key: 'checkout.notReady' },
+    { props: { ...input, email: '' }, key: 'checkout.missingEmail' },
+  ] as const)(
+    'retranslates $key without submitting again',
+    async ({ props, key }) => {
+      const { result } = renderHook(() => usePaymentSubmit(props))
+      await act(() => result.current.handleSubmit(submitEvent()))
+      expect(result.current.error).toBe(i18n.t(key))
+
+      await act(() => i18n.changeLanguage('hu'))
+
+      expect(result.current.error).toBe(i18n.t(key))
+      expect(acceptTerms).not.toHaveBeenCalled()
+      expect(confirmPayment).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each(['Stripe response', 'confirmation exception'] as const)(
+    'uses the current language for a pending %s and later language changes',
+    async (failure) => {
+      let finish!: () => void
+      confirmPayment.mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          finish = () => {
+            if (failure === 'Stripe response') {
+              resolve({ error: { type: 'api_connection_error' } })
+            } else {
+              reject(new TypeError('Network request failed'))
+            }
+          }
+        }),
+      )
+      const { result } = renderHook(() => usePaymentSubmit(input))
+      let submitting!: Promise<void>
+
+      act(() => {
+        submitting = result.current.handleSubmit(submitEvent())
+      })
+      await waitFor(() => expect(confirmPayment).toHaveBeenCalledOnce())
+      await act(() => i18n.changeLanguage('hu'))
+      await act(async () => {
+        finish()
+        await submitting
+      })
+
+      const key =
+        failure === 'Stripe response'
+          ? 'payment.errors.api_connection_error'
+          : 'checkout.submitFailed'
+      expect(result.current.error).toBe(i18n.t(key))
+      expect(result.current.canRetry).toBe(true)
+
+      await act(() => i18n.changeLanguage('en'))
+
+      expect(result.current.error).toBe(i18n.t(key))
+      expect(confirmPayment).toHaveBeenCalledOnce()
+      expect(acceptTerms).toHaveBeenCalledExactlyOnceWith({
+        paymentId: input.paymentId,
+        version: terms.version,
+        accepted: true,
+        language: 'en',
+      })
+    },
+  )
+
   it.each(['succeeded', 'processing', 'requires_capture', 'canceled'])(
     'opens current %s status after a competing confirmation',
     async (status) => {
@@ -384,6 +451,7 @@ describe('Payment terms submission', () => {
     { code: 'CHECKOUT_ENDED', status: 410, retry: false },
     { code: 'UNAUTHORIZED', status: 401, retry: false },
     { code: 'INTERNAL_ERROR', status: 500, retry: true },
+    { code: 'DATABASE_BUSY', status: 503, retry: true },
     { code: 'REQUEST_TIMEOUT', status: 408, retry: true },
     { code: 'RATE_LIMITED', status: 429, retry: true },
     { code: 'TERMS_UNAVAILABLE', status: 503, retry: true },

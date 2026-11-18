@@ -47,8 +47,19 @@ export const FullRow = styled(DefaultRow)`
 `
 
 export const UserRoleRow = styled(DefaultRow)`
+  flex-wrap: wrap;
+
+  > div:first-child,
+  > div.sign-in-methods {
+    min-width: 0;
+  }
+
   > div:first-child {
     flex: 1;
+  }
+
+  > div.sign-in-methods {
+    flex: 2;
   }
 
   > div.centered-checkbox {
@@ -56,6 +67,17 @@ export const UserRoleRow = styled(DefaultRow)`
     flex-direction: column;
     align-items: center;
   }
+`
+
+export const SignInMethods = styled.output`
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--border-radius);
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface);
 `
 
 export const OrderItemRow = styled(DefaultRow)`
@@ -139,20 +161,6 @@ export const MetadataBlock = styled.div`
 export const BookTitleRow = styled(DefaultRow)`
   > div:not(:nth-child(3)) {
     flex-grow: 1;
-  }
-
-  select[name='authorId'] {
-    padding-right: 2.25rem;
-    appearance: none;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" fill="dimgray"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 1rem;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--color-on-surface);
   }
 
   input[name='publishYear'] {

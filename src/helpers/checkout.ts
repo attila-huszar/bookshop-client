@@ -68,7 +68,7 @@ export const isRetryableStripeError = (errorType: StripeErrorType): boolean =>
  * known service/configuration errors use the shop's translated wording.
  */
 export function getStripePaymentErrorMessage(
-  error: StripeError,
+  error: Pick<StripeError, 'type' | 'message'>,
   t: TFunction,
 ): string {
   switch (error.type) {

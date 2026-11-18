@@ -1,4 +1,6 @@
 import { css, styled } from 'styled-components'
+import chevronDown from '@/assets/svg/chevron-down.svg?no-inline'
+import { dropdownOptionStyles } from './dropdown.styles'
 import { media } from './media.breakpoints'
 
 export const InputWrapper = styled.div`
@@ -78,9 +80,26 @@ export const Select = styled.select<FormTypes>`
   ${baseInputStyles}
   height: 3rem;
   padding-right: 3rem;
+  appearance: none;
+  background-image: url('${chevronDown}');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:disabled {
     color: var(--color-on-surface);
+  }
+
+  option {
+    ${dropdownOptionStyles}
+
+    &:not(:checked, :hover, :focus-visible) {
+      background-color: var(--color-surface-container-high);
+    }
   }
 `
 

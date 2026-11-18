@@ -34,7 +34,7 @@ type Props = {
 }
 
 export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [updateOrder] = useUpdateOrderMutation()
 
@@ -69,10 +69,12 @@ export const OrderEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       }
       await updateOrder(payload).unwrap()
       actions.resetForm()
-      toast.success(t('cms.saved', { entity: t('common.fields.order') }))
+      toast.success(
+        i18n.t('cms.saved', { entity: i18n.t('common.fields.order') }),
+      )
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, t('common.unexpectedError')))
+      toast.error(getErrorMessage(error))
     }
   }
 

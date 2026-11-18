@@ -105,12 +105,12 @@ describe('startup cart restoration', () => {
     expect(bootstrapSession).toHaveBeenCalledTimes(1)
   })
 
-  it('restores an empty cart when any saved item is invalid', async () => {
+  it('restores an empty cart when any saved item is invalid', () => {
     localStorageAdapter.set(cartKey, [
       { id: 7, quantity: 2 },
       { id: 8, quantity: 0 },
     ])
-    await appLoader()
+    appLoader()
 
     expect(store.getState().cart.cartItems).toEqual([])
   })
@@ -128,14 +128,14 @@ describe('startup cart restoration', () => {
       name: 'unexpected fields',
       saved: [{ id: 7, quantity: 2, title: 'Old book details' }],
     },
-  ])('does not repair saved carts containing $name', async ({ saved }) => {
+  ])('does not repair saved carts containing $name', ({ saved }) => {
     localStorageAdapter.set(cartKey, saved)
-    await appLoader()
+    appLoader()
 
     expect(store.getState().cart.cartItems).toEqual([])
   })
 
-  it('mounts page queries after bootstrap, while cart restoration itself makes no requests', async () => {
+  it('shows the basket and starts page queries while the session is still restoring', async () => {
     let finish!: () => void
     vi.mocked(bootstrapSession).mockReturnValue(
       () =>
@@ -154,13 +154,10 @@ describe('startup cart restoration', () => {
       return <BasketButton />
     }
     renderRoute('/book?id=7', <BookPage />)
-    expect(request).not.toHaveBeenCalled()
-    await act(async () => {
-      finish()
-      await Promise.resolve()
-    })
 
     expect(await screen.findByText('2')).toBeInTheDocument()
     expect(request).toHaveBeenCalledTimes(1)
+
+    finish()
   })
 })

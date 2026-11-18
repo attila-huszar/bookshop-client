@@ -24,8 +24,7 @@ export const OutboxControls = styled.div`
     font-size: 0.875rem;
   }
 
-  input,
-  select {
+  input {
     padding: 0.5rem;
     border: 1px solid var(--color-outline);
     border-radius: 5px;

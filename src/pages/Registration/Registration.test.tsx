@@ -1,6 +1,6 @@
 import { toast } from 'react-hot-toast'
 import { Provider } from 'react-redux'
-import { MemoryRouter, useNavigate } from 'react-router'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
@@ -11,13 +11,45 @@ import * as usersTransport from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
 import { createAppStore } from '@/store/store'
-import { UserErrorCode } from '@/types/ApiError'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
+import type { LoginResponse } from '@/types'
+import { AuthErrorCode, UserErrorCode } from '@/types/ApiError'
 import { Registration } from './Registration'
+
+vi.mock('@/constants/envConfig', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/constants/envConfig')>()),
+  googleClientId: 'google-client-id',
+}))
 
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),
   useNavigate: vi.fn(),
 }))
+
+vi.mock('@/components/GoogleSignIn/GoogleSignIn', () => ({
+  GoogleSignIn: (props: {
+    disabled: boolean
+    onCredential: (credential: string) => Promise<void>
+  }) => (
+    <button
+      type="button"
+      disabled={props.disabled}
+      onClick={() => void props.onCredential('google-credential')}>
+      Continue with Google
+    </button>
+  ),
+}))
+
+function deferredGoogleLogin() {
+  let resolve!: (value: LoginResponse) => void
+  let reject!: (reason: Error) => void
+  const promise = new Promise<LoginResponse>((complete, fail) => {
+    resolve = complete
+    reject = fail
+  })
+
+  return { promise, resolve, reject }
+}
 
 function deferredResponse() {
   let resolve!: (value: Response) => void
@@ -34,20 +66,25 @@ describe('Registration', () => {
   let countryResponse: ReturnType<typeof usersTransport.getUserCountry>
   let sendRegistration: ReturnType<typeof vi.fn<typeof fetch>>
   const navigate = vi.fn()
+  const countryCodes = {
+    hu: 'Hungary',
+    us: 'United States',
+    gb: 'United Kingdom',
+  }
 
   beforeEach(async () => {
     store = createAppStore()
     await store.dispatch(
-      usersApi.util.upsertQueryData('countryCodes', undefined, {
-        hu: 'Hungary',
-        us: 'United States',
-        gb: 'United Kingdom',
-      }),
+      usersApi.util.upsertQueryData('countryCodes', undefined, countryCodes),
     )
     countryResponse = new Promise((resolve) => {
       detectCountry = resolve
     })
     vi.spyOn(usersTransport, 'getUserCountry').mockReturnValue(countryResponse)
+    vi.spyOn(usersTransport, 'postGoogleLogin').mockResolvedValue({
+      accessToken: 'google-access-token',
+      firstName: 'Jane',
+    })
     vi.mocked(useNavigate).mockReturnValue(navigate)
     sendRegistration = vi
       .fn<typeof fetch>()
@@ -59,6 +96,10 @@ describe('Registration', () => {
         prefix: 'https://bookshop.test/api',
         retry: 0,
         fetch: async (request, options) => {
+          if (new URL(request.url).pathname.endsWith('/users/country-codes')) {
+            return Response.json(countryCodes)
+          }
+
           // Finish the multipart upload before Ky cleans up request streams.
           await request.arrayBuffer()
 
@@ -79,8 +120,12 @@ describe('Registration', () => {
   const renderRegistration = () =>
     render(
       <Provider store={store}>
-        <MemoryRouter>
-          <Registration />
+        <MemoryRouter initialEntries={['/register']}>
+          <Routes>
+            <Route element={<AuthorizationMenu />}>
+              <Route path="/register" element={<Registration />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </Provider>,
     )
@@ -111,6 +156,10 @@ describe('Registration', () => {
     expect(screen.getByLabelText('Password')).toBeDisabled()
     expect(screen.getByLabelText('Confirm Password')).toBeDisabled()
     expect(screen.getByLabelText(/upload/i)).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    ).toBeDisabled()
+    expect(usersTransport.postGoogleLogin).not.toHaveBeenCalled()
     await userEvent.click(screen.getByText('Hungary'))
     expect(screen.queryByText('United States')).not.toBeInTheDocument()
     const englishMessage = i18n.t('auth.registered', {
@@ -132,6 +181,110 @@ describe('Registration', () => {
     )
     expect(navigate).toHaveBeenCalledExactlyOnceWith('/', { replace: true })
   })
+
+  it('continues with Google without submitting or validating the registration fields', async () => {
+    const response = deferredGoogleLogin()
+    vi.mocked(usersTransport.postGoogleLogin).mockReturnValueOnce(
+      response.promise,
+    )
+    renderRegistration()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+
+    expect(usersTransport.postGoogleLogin).toHaveBeenCalledExactlyOnceWith(
+      'google-credential',
+    )
+    expect(sendRegistration).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('First Name')).toBeDisabled()
+    expect(screen.getByLabelText('Password')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Register' })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    ).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: 'Register' }))
+    expect(sendRegistration).not.toHaveBeenCalled()
+
+    await act(() => i18n.changeLanguage('hu'))
+    await act(async () => {
+      response.resolve({
+        accessToken: 'google-access-token',
+        firstName: 'Jane',
+      })
+      await response.promise
+    })
+
+    expect(store.getState().auth.accessToken).toBe('google-access-token')
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/', { replace: true })
+    expect(toast.success).toHaveBeenCalledExactlyOnceWith(
+      i18n.t('auth.welcome', { name: 'Jane' }),
+    )
+  })
+
+  it('preserves entered fields after Google sign-in is rejected and allows retry', async () => {
+    vi.mocked(usersTransport.postGoogleLogin).mockRejectedValueOnce(
+      Object.assign(new Error('Google identity rejected'), {
+        code: AuthErrorCode.InvalidCredentials,
+      }),
+    )
+    renderRegistration()
+    await userEvent.type(screen.getByLabelText('First Name'), 'Reader')
+    await userEvent.type(screen.getByLabelText('Email'), 'reader@example.com')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Continue with Google' }),
+      ).toBeEnabled(),
+    )
+
+    expect(toast.error).toHaveBeenCalledWith(
+      i18n.t('errors.invalidCredentials'),
+    )
+    expect(screen.getByLabelText('First Name')).toHaveValue('Reader')
+    expect(screen.getByLabelText('Email')).toHaveValue('reader@example.com')
+    expect(navigate).not.toHaveBeenCalled()
+    expect(sendRegistration).not.toHaveBeenCalled()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith('/', { replace: true }),
+    )
+    expect(usersTransport.postGoogleLogin).toHaveBeenCalledTimes(2)
+  })
+
+  it.each(['success', 'failure'] as const)(
+    'ignores Google sign-in %s after leaving Registration',
+    async (outcome) => {
+      const response = deferredGoogleLogin()
+      vi.mocked(usersTransport.postGoogleLogin).mockReturnValueOnce(
+        response.promise,
+      )
+      const view = renderRegistration()
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Continue with Google' }),
+      )
+      view.unmount()
+      await act(async () => {
+        if (outcome === 'success') {
+          response.resolve({
+            accessToken: 'google-access-token',
+            firstName: 'Jane',
+          })
+        } else {
+          response.reject(new Error('Offline'))
+        }
+
+        await response.promise.catch(() => undefined)
+      })
+
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(toast.error).not.toHaveBeenCalled()
+      expect(navigate).not.toHaveBeenCalled()
+    },
+  )
 
   it('keeps form values and permits retry after registration fails', async () => {
     sendRegistration.mockResolvedValueOnce(

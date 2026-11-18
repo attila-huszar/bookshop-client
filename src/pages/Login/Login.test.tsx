@@ -1,20 +1,39 @@
 import { StrictMode } from 'react'
 import { toast } from 'react-hot-toast'
 import { Provider } from 'react-redux'
-import { MemoryRouter, useNavigate } from 'react-router'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router'
 import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import * as usersTransport from '@/api/users'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
+import { AuthorizationMenu } from '@/components/AuthorizationMenu'
 import type { LoginResponse } from '@/types'
 import { AuthErrorCode } from '@/types/ApiError'
 import { Login } from './Login'
 
+vi.mock('@/constants/envConfig', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/constants/envConfig')>()),
+  googleClientId: 'google-client-id',
+}))
+
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),
   useNavigate: vi.fn(),
+}))
+
+vi.mock('@/components/GoogleSignIn/GoogleSignIn', () => ({
+  GoogleSignIn: (props: {
+    disabled: boolean
+    onCredential: (credential: string) => Promise<void>
+  }) => (
+    <button
+      disabled={props.disabled}
+      onClick={() => void props.onCredential('google-credential')}>
+      Continue with Google
+    </button>
+  ),
 }))
 
 function deferred<T>() {
@@ -50,8 +69,12 @@ function renderLogin() {
   return render(
     <StrictMode>
       <Provider store={store}>
-        <MemoryRouter>
-          <Login />
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route element={<AuthorizationMenu />}>
+              <Route path="/login" element={<Login />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </Provider>
     </StrictMode>,
@@ -66,6 +89,36 @@ async function submitLogin() {
 }
 
 describe('Login', () => {
+  it('signs in with Google through the existing session and welcome flow', async () => {
+    const response = deferred<LoginResponse>()
+    vi.spyOn(usersTransport, 'postGoogleLogin').mockReturnValueOnce(
+      response.promise,
+    )
+    renderLogin()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    )
+
+    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Continue with Google' }),
+    ).toBeDisabled()
+    await act(async () => {
+      response.resolve(account)
+      await response.promise
+    })
+
+    expect(usersTransport.postGoogleLogin).toHaveBeenCalledExactlyOnceWith(
+      'google-credential',
+    )
+    expect(usersTransport.postUserLogin).not.toHaveBeenCalled()
+    expect(store.getState().auth.accessToken).toBe(account.accessToken)
+    expect(navigate).toHaveBeenCalledWith('/', { replace: true })
+    expect(toast.success).toHaveBeenCalledWith(
+      i18n.t('auth.welcome', { name: account.firstName }),
+    )
+  })
+
   it('locks labeled inputs during login and uses the current language on completion', async () => {
     const response = deferred<LoginResponse>()
     vi.mocked(usersTransport.postUserLogin).mockReturnValue(response.promise)

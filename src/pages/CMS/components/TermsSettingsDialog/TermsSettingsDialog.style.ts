@@ -59,8 +59,10 @@ export const Dialog = styled.dialog`
   form {
     gap: 1.25rem;
   }
-  textarea,
   select {
+    min-width: 0;
+  }
+  textarea {
     width: 100%;
     min-width: 0;
     padding: 0.75rem;
@@ -69,8 +71,6 @@ export const Dialog = styled.dialog`
     background: var(--color-surface-container-lowest);
     color: inherit;
     font: inherit;
-  }
-  textarea {
     resize: vertical;
   }
   .actions {

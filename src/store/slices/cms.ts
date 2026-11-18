@@ -1,10 +1,15 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { paginationDefaults } from '@/constants/pagination'
-import type { SelectContext } from '@/types'
+import { CmsTab } from '@/types'
 import { bookshopApi } from '../api/bookshopApi'
 
 const initialState = {
-  currentPages: { orders: 1, books: 1, authors: 1, users: 1 },
+  currentPages: {
+    [CmsTab.Orders]: 1,
+    [CmsTab.Books]: 1,
+    [CmsTab.Authors]: 1,
+    [CmsTab.Users]: 1,
+  },
   itemsPerPage: paginationDefaults.cmsItemsPerPage,
 }
 
@@ -14,7 +19,7 @@ const cmsSlice = createSlice({
   reducers: {
     setCmsCurrentPage: (
       state,
-      action: PayloadAction<{ tab: keyof SelectContext; page: number }>,
+      action: PayloadAction<{ tab: CmsTab; page: number }>,
     ) => {
       state.currentPages[action.payload.tab] = action.payload.page
     },

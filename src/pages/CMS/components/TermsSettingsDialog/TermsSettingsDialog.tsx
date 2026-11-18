@@ -22,6 +22,7 @@ import {
   DialogCloseButton,
   DialogHeader,
 } from '@/styles/dialog.styles'
+import { Select } from '@/styles/form.styles'
 import { Dialog, LanguageTabs } from './TermsSettingsDialog.style'
 
 function TermsHeader({
@@ -57,7 +58,7 @@ function TermsEditor({
   versions: TermsDocumentSummary[]
   onClose: () => void
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [selectedVersion, setSelectedVersion] = useState(
     document?.version ?? versions[0]?.version ?? '',
   )
@@ -127,12 +128,12 @@ function TermsEditor({
 
     try {
       await publishTerms({ content }).unwrap()
-      toast.success(t('termsEditor.saved'))
+      toast.success(i18n.t('termsEditor.saved'))
       onClose()
     } catch (publishError) {
       setError(
         getApiError(publishError) ??
-          getErrorMessage(publishError, t('termsEditor.saveError')),
+          (getErrorMessage(publishError, '') || 'termsEditor.saveError'),
       )
     } finally {
       saving.current = false
@@ -149,12 +150,12 @@ function TermsEditor({
 
     try {
       await deleteVersion(selectedVersion).unwrap()
-      toast.success(t('termsEditor.deleted'))
+      toast.success(i18n.t('termsEditor.deleted'))
       onClose()
     } catch (deleteError) {
       setError(
         getApiError(deleteError) ??
-          getErrorMessage(deleteError, t('termsEditor.deleteError')),
+          (getErrorMessage(deleteError, '') || 'termsEditor.deleteError'),
       )
     } finally {
       saving.current = false
@@ -174,7 +175,7 @@ function TermsEditor({
         {history.length > 0 && (
           <label>
             {t('termsEditor.history')}
-            <select
+            <Select
               value={selectedVersion}
               disabled={busy}
               onChange={(event) => {
@@ -192,7 +193,7 @@ function TermsEditor({
                     : ''}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
         {archive.isFetching && <p role="status">{t('terms.loading')}</p>}

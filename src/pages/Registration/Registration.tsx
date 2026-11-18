@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useNavigate, useOutletContext } from 'react-router'
 import { Form, Formik, type FormikProps } from 'formik'
 import { getUserCountry } from '@/api/users'
 import { ROUTE } from '@/routes/route'
 import { useRegisterMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
-import { AuthorizationMenu } from '@/components/AuthorizationMenu'
+import type { AuthSubmission } from '@/components/AuthorizationMenu/AuthorizationMenu.types'
 import { Button, IconButton } from '@/components/Button'
 import { CountrySelect } from '@/components/CountrySelect'
 import { FormikField } from '@/components/FormikField'
@@ -24,6 +24,12 @@ export function Registration() {
   const { t, i18n } = useTranslation()
 
   const [register] = useRegisterMutation()
+  const {
+    isSubmitting: isAuthSubmitting,
+    isSubmissionPending,
+    startSubmission,
+    finishSubmission,
+  } = useOutletContext<AuthSubmission>()
   const formikRef = useRef<FormikProps<RegistrationValues>>(null)
   const lifecycleRef = useRef<{ active: boolean } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -41,6 +47,7 @@ export function Registration() {
         lifecycle.active &&
         form &&
         !form.touched.country &&
+        !isSubmissionPending() &&
         !form.isSubmitting
       ) {
         void form.setFieldValue('country', country, false)
@@ -50,12 +57,12 @@ export function Registration() {
     return () => {
       lifecycle.active = false
     }
-  }, [])
+  }, [isSubmissionPending])
 
   const handleSubmit = async (values: RegistrationValues) => {
     const lifecycle = lifecycleRef.current
 
-    if (!lifecycle?.active) {
+    if (!lifecycle?.active || !startSubmission()) {
       return
     }
 
@@ -72,18 +79,22 @@ export function Registration() {
       if (lifecycle.active) {
         toast.error(getErrorMessage(error, i18n.t('auth.registerError')))
       }
+    } finally {
+      finishSubmission()
     }
   }
 
   return (
-    <AuthorizationMenu>
-      <Formik<RegistrationValues>
-        innerRef={formikRef}
-        initialValues={registrationInitialValues}
-        validationSchema={registrationSchema}
-        validateOnBlur={false}
-        onSubmit={handleSubmit}>
-        {({ isSubmitting }) => (
+    <Formik<RegistrationValues>
+      innerRef={formikRef}
+      initialValues={registrationInitialValues}
+      validationSchema={registrationSchema}
+      validateOnBlur={false}
+      onSubmit={handleSubmit}>
+      {({ isSubmitting: isFormSubmitting }) => {
+        const isSubmitting = isFormSubmitting || isAuthSubmitting
+
+        return (
           <Form noValidate>
             <p>
               <label htmlFor="register-first-name">
@@ -181,8 +192,8 @@ export function Registration() {
               <div style={{ width: '3rem' }} />
             </ButtonWrapper>
           </Form>
-        )}
-      </Formik>
-    </AuthorizationMenu>
+        )
+      }}
+    </Formik>
   )
 }

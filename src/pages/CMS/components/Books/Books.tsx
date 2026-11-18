@@ -7,7 +7,7 @@ import { IconButton } from '@/components/Button'
 import { Loading } from '@/components/Loading'
 import { Pagination } from '@/components/Pagination'
 import { useCmsPagination } from '@/hooks/useCmsPagination'
-import { CMSOutletContext } from '@/types'
+import { type CMSOutletContext, CmsTab } from '@/types'
 import { EditIcon, imagePlaceholder } from '@/assets/svg'
 import {
   LoadingContainer,
@@ -34,7 +34,7 @@ export const Books = () => {
     setEditedItem,
   } = useOutletContext<CMSOutletContext>()
   const { currentPage, itemsPerPage, pageStart, onPageChange } =
-    useCmsPagination('books', books.length)
+    useCmsPagination(CmsTab.Books, books.length)
 
   if (booksLoading) {
     return (

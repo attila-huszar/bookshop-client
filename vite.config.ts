@@ -103,6 +103,7 @@ export default defineConfig(({ mode }) => {
         VITE_BASE_URL: 'http://localhost:5173',
         VITE_SERVER_URL: 'http://localhost:5000',
         VITE_STRIPE_PUBLIC_KEY: 'pk_test_mock_stripe_key',
+        VITE_LOCIZE_PROJECT_ID: '',
       },
       coverage: {
         provider: 'istanbul',

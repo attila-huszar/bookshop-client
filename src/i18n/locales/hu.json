@@ -13,6 +13,7 @@
       "submit": "Küldés",
       "reset": "Alaphelyzet",
       "refresh": "Frissítés",
+      "retry": "Újrapróbálkozás",
       "reloadPage": "Oldal újratöltése",
       "clear": "Törlés",
       "previous": "Előző",
@@ -81,6 +82,7 @@
     "error": "Hiba történt. Kérjük, próbálja újra később.",
     "unexpectedError": "Váratlan hiba történt. Kérjük, próbálja újra.",
     "by": "Szerző:",
+    "or": "vagy",
     "selectAll": "Összes kijelölése",
     "optional": "nem kötelező"
   },
@@ -173,6 +175,7 @@
     "welcome": "Üdvözöljük újra, {{name}}!",
     "loggedOut": "Sikeres kijelentkezés: {{email}}",
     "loginError": "A bejelentkezés nem sikerült. Kérjük, próbálja újra később.",
+    "googleUnavailable": "A Google-bejelentkezés nem tölthető be. Kérjük, frissítse az oldalt, és próbálja újra.",
     "logoutError": "A kijelentkezés nem sikerült. Kérjük, próbálja újra később.",
     "registered": "Sikeres regisztráció: {{email}}. Kérjük, erősítse meg e-mail-címét.",
     "registerError": "A regisztráció nem sikerült. Kérjük, próbálja újra később.",
@@ -315,8 +318,16 @@
     }
   },
   "cms": {
-    "authors": "Szerzők",
-    "users": "Felhasználók",
+    "entities": {
+      "order_one": "Rendelés",
+      "order_other": "Rendelések",
+      "book_one": "Könyv",
+      "book_other": "Könyvek",
+      "author_one": "Szerző",
+      "author_other": "Szerzők",
+      "user_one": "Felhasználó",
+      "user_other": "Felhasználók"
+    },
     "user": "Felhasználó",
     "authorsLoading": "Szerzők betöltése",
     "authorsError": "A szerzők betöltése nem sikerült.",
@@ -338,6 +349,11 @@
     "metadata": "Csak olvasható metaadatok",
     "countryRegistration": "Regisztrációkor megadott ország",
     "userAvatar": "Felhasználó profilképe",
+    "signInMethodsLabel": "Bejelentkezési módok",
+    "signInMethods": {
+      "password": "Jelszó",
+      "google": "Google"
+    },
     "roles": {
       "user": "felhasználó",
       "admin": "adminisztrátor"
@@ -453,13 +469,15 @@
     "invalidJson": "A kérés nem olvasható. Kérjük, próbálja újra.",
     "payloadTooLarge": "A beküldött adatok vagy a fájl mérete túl nagy.",
     "rateLimited": "Túl sok kérés érkezett. Kérjük, várjon, majd próbálja újra.",
+    "databaseBusy": "Az adatbázis foglalt. Kérjük, várjon egy kicsit, majd próbálja újra.",
     "timeout": "A kérés időtúllépés miatt megszakadt. Kérjük, próbálja újra.",
     "invalidCredentials": "Hibás e-mail-cím vagy jelszó. Kérjük, próbálja újra.",
+    "accountUnavailable": "Ez a fiók nem érhető el.",
     "emailUnverified": "Bejelentkezés előtt kérjük, erősítse meg az e-mail-címét.",
     "emailAlreadyExists": "Ez az e-mail-cím már regisztrálva van.",
     "invalidToken": "A hivatkozás érvénytelen vagy lejárt. Kérjük, igényeljen újat.",
     "currentPasswordIncorrect": "A jelenlegi jelszó hibás.",
-    "lastAdminRequired": "Legalább egy adminisztrátornak maradnia kell. Az utolsó adminisztrátor nem törölhető.",
+    "lastAdminRequired": "Az utolsó adminisztrátor nem törölhető, és nem módosítható felhasználóvá.",
     "termsChanged": "Az általános szerződési feltételek megváltoztak. Kérjük, olvassa el és fogadja el őket újra.",
     "termsAlreadyAccepted": "Ehhez a fizetéshez a feltételek korábbi verzióját fogadta el. Kérjük, indítson új fizetést.",
     "termsNotRecorded": "A feltételek elfogadását nem sikerült rögzíteni. Kérjük, indítson új fizetést.",

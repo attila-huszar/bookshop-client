@@ -15,6 +15,7 @@ import {
   type CmsOrder,
   type CMSOutletContext,
   type CmsUser,
+  SignInMethod,
   UserRole,
 } from '@/types'
 import { UserErrorCode } from '@/types/ApiError'
@@ -50,6 +51,7 @@ const account: CmsUser = {
   address: null,
   avatar: null,
   verified: true,
+  signInMethods: [SignInMethod.Password],
   createdAt: '2026-10-08T10:00:00Z',
   updatedAt: '2026-10-08T10:00:00Z',
   deletedAt: null,
@@ -174,6 +176,64 @@ function renderCMS(tab = 'orders') {
 }
 
 describe('CMS menu', () => {
+  it.each([
+    {
+      tab: 'orders',
+      singular: 'Order',
+      plural: 'Orders',
+      huSingular: 'Rendelés',
+      huPlural: 'Rendelések',
+    },
+    {
+      tab: 'books',
+      singular: 'Book',
+      plural: 'Books',
+      huSingular: 'Könyv',
+      huPlural: 'Könyvek',
+    },
+    {
+      tab: 'authors',
+      singular: 'Author',
+      plural: 'Authors',
+      huSingular: 'Szerző',
+      huPlural: 'Szerzők',
+    },
+    {
+      tab: 'users',
+      singular: 'User',
+      plural: 'Users',
+      huSingular: 'Felhasználó',
+      huPlural: 'Felhasználók',
+    },
+  ])(
+    'uses plural labels and singular editor headings for $tab in both languages',
+    async ({ tab, singular, plural, huSingular, huPlural }) => {
+      await store.dispatch(
+        usersApi.util.upsertQueryData('countryCodes', undefined, {
+          hu: 'Hungary',
+        }),
+      )
+      renderCMS(tab)
+      expect(screen.getByRole('link', { name: plural })).toBeInTheDocument()
+
+      if (tab === 'orders') {
+        await userEvent.click(await screen.findByText('reader@example.com'))
+      } else {
+        await userEvent.click(screen.getByRole('button', { name: 'Add' }))
+      }
+
+      expect(
+        screen.getByRole('dialog', { name: `${singular} Information` }),
+      ).toBeInTheDocument()
+      await act(() => i18n.changeLanguage('hu'))
+
+      expect(screen.getByRole('link', { name: huPlural })).toBeInTheDocument()
+      expect(
+        screen.getByRole('dialog', { name: `${huSingular} adatai` }),
+      ).toBeInTheDocument()
+    },
+  )
+
   it.each([390, 1024])(
     'opens the terms editor from the menu at %ipx',
     async (width) => {
@@ -261,6 +321,38 @@ describe('CMS menu', () => {
 })
 
 describe('CMS deletion controls', () => {
+  it('keeps order creation disabled in active and removed views', async () => {
+    renderCMS('orders')
+    const add = screen.getByRole('button', { name: 'Add' })
+    expect(add).toBeDisabled()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Show removed orders' }),
+    )
+    expect(add).toBeDisabled()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Show active orders' }),
+    )
+    expect(add).toBeDisabled()
+  })
+
+  it('allows user creation only in the active view', async () => {
+    renderCMS('users')
+    const add = screen.getByRole('button', { name: 'Add' })
+    expect(add).toBeEnabled()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Show removed users' }),
+    )
+    expect(add).toBeDisabled()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Show active users' }),
+    )
+    expect(add).toBeEnabled()
+  })
+
   it('translates controls and confirmations after a language change without changing request values', async () => {
     renderCMS()
     const selectOrder = await screen.findByRole('checkbox', {
@@ -319,6 +411,7 @@ describe('CMS deletion controls', () => {
     await userEvent.click(confirm)
     expect(remove).toHaveBeenCalledTimes(1)
 
+    await act(() => i18n.changeLanguage('hu'))
     orders = [{ ...order, deletedAt: '2026-10-10T12:00:00Z' }]
     act(() => {
       completeRequest(
@@ -328,7 +421,15 @@ describe('CMS deletion controls', () => {
       )
     })
 
-    expect(await screen.findByText('No orders found')).toBeInTheDocument()
+    expect(
+      await screen.findByText(i18n.t('cms.ordersEmpty')),
+    ).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledExactlyOnceWith(
+      i18n.t('cms.bulkSuccess', {
+        action: i18n.t('cms.actions.removed'),
+        entity: i18n.t('cms.entities.order', { count: 2 }).toLocaleLowerCase(),
+      }),
+    )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 

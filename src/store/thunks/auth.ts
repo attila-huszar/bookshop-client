@@ -1,5 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { postUserLogin, postUserLogout, retrieveAuthTokens } from '@/api/users'
+import {
+  postGoogleLogin,
+  postUserLogin,
+  postUserLogout,
+  retrieveAuthTokens,
+} from '@/api/users'
 import { resetCheckout } from '@/store/thunks/checkout'
 import { sessionRetryPolicy } from '@/constants/time'
 import type { LoginRequest, LoginResponse } from '@/types'
@@ -87,7 +92,7 @@ export const bootstrapSession =
   (options?: { force: boolean }) =>
   async (dispatch: AppDispatch, getState: () => RootState) => {
     const force = options?.force ?? false
-    const { accessToken, sessionVersion } = getState().auth
+    const { accessToken, isRestoring, sessionVersion } = getState().auth
 
     if (accessToken && !force) {
       resetTokenRetry()
@@ -110,12 +115,18 @@ export const bootstrapSession =
       return
     }
 
+    if (!accessToken && !isRestoring) {
+      dispatch(authSessionRestorationStarted())
+    }
+
+    const restoreVersion = getState().auth.sessionVersion
+
     // Guest navigation continues even when session restoration is rejected.
     const pending = dispatch(
       fetchAuthTokens(force ? 'session-check' : 'refresh'),
     )
       .then(() => {
-        if (getState().auth.sessionVersion !== sessionVersion) {
+        if (getState().auth.sessionVersion !== restoreVersion) {
           return
         }
 
@@ -136,7 +147,7 @@ export const bootstrapSession =
       })
 
     pendingBootstrap = {
-      version: sessionVersion,
+      version: restoreVersion,
       forced: force,
       promise: pending,
     }
@@ -209,12 +220,28 @@ export const login = createAsyncThunk<
   LoginResponse,
   LoginRequest,
   { state: RootState; dispatch: AppDispatch }
->('auth/login', async (credentials, { dispatch, getState }) => {
+>('auth/login', (credentials, { dispatch, getState }) =>
+  completeLogin(() => postUserLogin(credentials), dispatch, getState),
+)
+
+export const googleLogin = createAsyncThunk<
+  LoginResponse,
+  string,
+  { state: RootState; dispatch: AppDispatch }
+>('auth/googleLogin', (credential, { dispatch, getState }) =>
+  completeLogin(() => postGoogleLogin(credential), dispatch, getState),
+)
+
+async function completeLogin(
+  send: () => Promise<LoginResponse>,
+  dispatch: AppDispatch,
+  getState: () => RootState,
+): Promise<LoginResponse> {
   dispatch(authSessionChangeStarted())
   const version = getState().auth.sessionVersion
 
   try {
-    const response = await postUserLogin(credentials)
+    const response = await send()
 
     if (getState().auth.sessionVersion === version) {
       dispatch(bookshopApi.util.resetApiState())
@@ -234,7 +261,7 @@ export const login = createAsyncThunk<
 
     throw error
   }
-})
+}
 
 export const logout = createAsyncThunk<
   { success: boolean },

@@ -7,7 +7,7 @@ import { IconOverlay, RemoveAvatar, StyledAvatar } from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 
 export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [updateUserProfile, avatarRemoval] = useUpdateUserProfileMutation()
 
@@ -16,7 +16,7 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
     try {
       await updateUserProfile({ avatar: null }).unwrap()
     } catch (error) {
-      toast.error(getErrorMessage(error, t('account.removeAvatarError')))
+      toast.error(getErrorMessage(error, i18n.t('account.removeAvatarError')))
     }
   }
 

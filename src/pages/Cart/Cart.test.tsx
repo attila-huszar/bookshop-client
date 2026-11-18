@@ -3,6 +3,10 @@ import { MemoryRouter, useNavigate } from 'react-router'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { bookshopApi } from '@/store/api/bookshopApi'
+import {
+  authSessionRefreshed,
+  authSessionRestorationStarted,
+} from '@/store/slices/auth'
 import { cartRestored } from '@/store/slices/cart'
 import { checkoutReady } from '@/store/slices/payment'
 import { createAppStore } from '@/store/store'
@@ -133,6 +137,20 @@ describe('Cart', () => {
       items: [{ id: 1, quantity: 2 }],
       expectedTotal: 36,
     })
+  })
+
+  it('shows the cart while waiting for the session before enabling checkout', () => {
+    store.dispatch(authSessionRestorationStarted())
+    renderCart()
+
+    expect(screen.getByText('Book 1')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Checkout' })).toBeDisabled()
+
+    act(() => {
+      store.dispatch(authSessionRefreshed(null))
+    })
+
+    expect(screen.getByRole('button', { name: 'Checkout' })).toBeEnabled()
   })
 
   it('disables checkout while prices are refreshing', () => {

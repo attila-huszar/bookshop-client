@@ -1,4 +1,6 @@
 import { i18n } from '@/i18n'
+import en from '@/i18n/locales/en.json'
+import hu from '@/i18n/locales/hu.json'
 import ky, { NetworkError, TimeoutError } from 'ky'
 import { describe, expect, it, vi } from 'vitest'
 import { log } from '@/api/logs'
@@ -9,18 +11,16 @@ import {
   TermsErrorCode,
   UserErrorCode,
 } from '@/types/ApiError'
-import en from '../../public/locales/en/translation.json'
-import hu from '../../public/locales/hu/translation.json'
 import { getApiError, getErrorMessage, toAppError } from './errors'
 
-async function requestFailure(body: unknown) {
+async function requestFailure(body: unknown, status = 400) {
   try {
     await ky.get('https://bookshop.test/api', {
       retry: 0,
       fetch: () =>
         Promise.resolve(
           new Response(JSON.stringify(body), {
-            status: 400,
+            status,
             headers: { 'content-type': 'application/json' },
           }),
         ),
@@ -33,6 +33,21 @@ async function requestFailure(body: unknown) {
 }
 
 describe('toAppError', () => {
+  it.each([
+    ['en', en],
+    ['hu', hu],
+  ] as const)(
+    'translates database contention in %s',
+    async (language, translations) => {
+      await i18n.changeLanguage(language)
+      const failure = await requestFailure({ code: 'DATABASE_BUSY' }, 503)
+
+      expect(getErrorMessage(failure, 'Fallback')).toBe(
+        translations.errors.databaseBusy,
+      )
+    },
+  )
+
   it.each([
     ['en', en],
     ['hu', hu],
@@ -86,7 +101,7 @@ describe('toAppError', () => {
       cause: new TypeError('Failed to fetch'),
     })
     const timeout = new TimeoutError(request)
-    const wrapped = toAppError(network, en.common.unexpectedError)
+    const wrapped = toAppError(network)
 
     expect(wrapped.cause).toBe(network)
     expect(wrapped.message).toBe(en.common.unexpectedError)
@@ -95,12 +110,9 @@ describe('toAppError', () => {
 
     await i18n.changeLanguage('hu')
 
-    expect(
-      getErrorMessage(
-        JSON.parse(JSON.stringify(wrapped)),
-        hu.common.unexpectedError,
-      ),
-    ).toBe(hu.common.unexpectedError)
+    expect(getErrorMessage(JSON.parse(JSON.stringify(wrapped)))).toBe(
+      hu.common.unexpectedError,
+    )
     expect(getErrorMessage(toAppError(timeout), 'Fallback')).toBe(
       hu.errors.timeout,
     )
@@ -226,12 +238,24 @@ describe('getErrorMessage', () => {
   it.each([
     new TypeError('Failed to fetch'),
     new SyntaxError('Unexpected token in JSON'),
-  ])('uses the translated fallback for runtime failures: %j', async (error) => {
-    await i18n.changeLanguage('hu')
+  ])(
+    'uses the current language for the default fallback: %j',
+    async (error) => {
+      expect(getErrorMessage(error)).toBe(en.common.unexpectedError)
 
-    expect(getErrorMessage(error, i18n.t('common.unexpectedError'))).toBe(
-      hu.common.unexpectedError,
-    )
+      await i18n.changeLanguage('hu')
+
+      expect(getErrorMessage(error)).toBe(hu.common.unexpectedError)
+      expect(getErrorMessage(error, undefined)).toBe(hu.common.unexpectedError)
+    },
+  )
+
+  it('preserves an explicit empty fallback for unknown failures', () => {
+    expect(getErrorMessage(new TypeError('Offline'), '')).toBe('')
+    expect(
+      getErrorMessage({ code: 'FUTURE_ERROR', message: 'Private details' }, ''),
+    ).toBe('')
+    expect(toAppError(undefined, '').message).toBe('')
   })
 
   it.each([
@@ -310,15 +334,11 @@ describe('getErrorMessage', () => {
 
   it('translates stable API codes again after changing language', async () => {
     const error = { code: 'EMAIL_ALREADY_EXISTS', message: 'Technical details' }
-    expect(getErrorMessage(error, 'Fallback')).toBe(
-      en.errors.emailAlreadyExists,
-    )
+    expect(getErrorMessage(error)).toBe(en.errors.emailAlreadyExists)
 
     await i18n.changeLanguage('hu')
 
-    expect(getErrorMessage(error, 'Fallback')).toBe(
-      hu.errors.emailAlreadyExists,
-    )
+    expect(getErrorMessage(error)).toBe(hu.errors.emailAlreadyExists)
     expect(error.message).toBe('Technical details')
   })
 
@@ -406,6 +426,7 @@ describe('getErrorMessage', () => {
     { message: '   ' },
     new Error(),
   ])('uses the supplied fallback for an unusable message: %j', (error) => {
+    expect(getErrorMessage(error)).toBe(en.common.unexpectedError)
     expect(getErrorMessage(error, 'Please try again')).toBe('Please try again')
   })
 })

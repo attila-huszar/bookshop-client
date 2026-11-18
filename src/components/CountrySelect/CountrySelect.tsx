@@ -190,7 +190,6 @@ export function CountrySelect({
                 <OptionItem
                   key={code}
                   onClick={() => onSelect(code)}
-                  $selected={code === selectedCountry}
                   aria-selected={code === selectedCountry}>
                   <CountryFlag
                     src={getFlagUrl(code)}

@@ -18,6 +18,7 @@ import {
   MetadataBlock,
   Row,
   SectionHeader,
+  SignInMethods,
   UserRoleRow,
 } from '../../styles'
 
@@ -48,7 +49,7 @@ type Props = {
 }
 
 export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [addUser] = useAddUserMutation()
   const [updateUser] = useUpdateUserMutation()
@@ -82,10 +83,10 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
       }
 
       actions.resetForm()
-      toast.success(t('cms.saved', { entity: t('cms.user') }))
+      toast.success(i18n.t('cms.saved', { entity: i18n.t('cms.user') }))
       onClose()
     } catch (error) {
-      toast.error(getErrorMessage(error, t('common.unexpectedError')))
+      toast.error(getErrorMessage(error))
     }
   }
 
@@ -189,8 +190,12 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <UserRoleRow>
               <div>
-                <p>{t('common.fields.role')}</p>
-                <FormikField name="role" type="select">
+                <p>
+                  <label htmlFor="cms-user-role">
+                    {t('common.fields.role')}
+                  </label>
+                </p>
+                <FormikField id="cms-user-role" name="role" type="select">
                   {Object.values(UserRole).map((role) => (
                     <option key={role} value={role}>
                       {t(`cms.roles.${role}`)}
@@ -198,6 +203,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                   ))}
                 </FormikField>
               </div>
+              {editedItem && (
+                <div className="sign-in-methods">
+                  <p>{t('cms.signInMethodsLabel')}</p>
+                  <SignInMethods aria-label={t('cms.signInMethodsLabel')}>
+                    {editedItem.signInMethods
+                      .map((method) => t(`cms.signInMethods.${method}`))
+                      .join(', ') || '—'}
+                  </SignInMethods>
+                </div>
+              )}
               <div className="centered-checkbox">
                 <p>{t('common.fields.verified')}</p>
                 <div style={{ display: 'flex', height: '100%' }}>

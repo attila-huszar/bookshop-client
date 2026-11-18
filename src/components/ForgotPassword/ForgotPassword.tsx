@@ -25,7 +25,7 @@ type PasswordDialogHandle = {
 type Props = { ref: React.Ref<PasswordDialogHandle> }
 
 export function ForgotPassword({ ref }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const forgotPassRef = useRef<HTMLDialogElement>(null)
 
@@ -49,14 +49,14 @@ export function ForgotPassword({ ref }: Props) {
     try {
       await postPasswordReset(values.email)
 
-      toast.success(t('auth.resetSent'), {
+      toast.success(i18n.t('auth.resetSent'), {
         id: 'passwordReset',
       })
 
       handleClose()
       actions.resetForm()
     } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.resetError')), {
+      toast.error(getErrorMessage(error, i18n.t('auth.resetError')), {
         id: 'passwordReset',
       })
     }

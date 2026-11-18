@@ -13,6 +13,7 @@
       "submit": "Submit",
       "reset": "Reset",
       "refresh": "Refresh",
+      "retry": "Try again",
       "reloadPage": "Reload Page",
       "clear": "Clear",
       "previous": "Previous",
@@ -81,6 +82,7 @@
     "error": "Something went wrong. Please try again later.",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "by": "by",
+    "or": "or",
     "selectAll": "Select all",
     "optional": "optional"
   },
@@ -173,6 +175,7 @@
     "welcome": "Welcome back, {{name}}!",
     "loggedOut": "{{email}} successfully logged out",
     "loginError": "Login failed, please try again later",
+    "googleUnavailable": "Google sign-in could not be loaded. Please refresh the page and try again.",
     "logoutError": "Logout failed, please try again later",
     "registered": "{{email}} registered successfully, please verify your email address",
     "registerError": "Registration failed, please try again later",
@@ -315,8 +318,16 @@
     }
   },
   "cms": {
-    "authors": "Authors",
-    "users": "Users",
+    "entities": {
+      "order_one": "Order",
+      "order_other": "Orders",
+      "book_one": "Book",
+      "book_other": "Books",
+      "author_one": "Author",
+      "author_other": "Authors",
+      "user_one": "User",
+      "user_other": "Users"
+    },
     "user": "User",
     "authorsLoading": "Loading authors",
     "authorsError": "Error loading authors",
@@ -338,6 +349,11 @@
     "metadata": "Read-Only Metadata",
     "countryRegistration": "Country at Registration",
     "userAvatar": "User avatar",
+    "signInMethodsLabel": "Sign-in methods",
+    "signInMethods": {
+      "password": "Password",
+      "google": "Google"
+    },
     "roles": {
       "user": "user",
       "admin": "admin"
@@ -453,13 +469,15 @@
     "invalidJson": "The request could not be read. Please try again.",
     "payloadTooLarge": "The submitted data or file is too large.",
     "rateLimited": "Too many requests. Please wait before trying again.",
+    "databaseBusy": "The database is busy. Please try again in a moment.",
     "timeout": "The request timed out. Please try again.",
     "invalidCredentials": "Invalid email or password. Please try again.",
+    "accountUnavailable": "This account is unavailable.",
     "emailUnverified": "Please verify your email address before signing in.",
     "emailAlreadyExists": "This email address is already registered.",
     "invalidToken": "This link is invalid or has expired. Please request a new one.",
     "currentPasswordIncorrect": "Your current password is incorrect.",
-    "lastAdminRequired": "At least one administrator must remain. You cannot delete the last administrator.",
+    "lastAdminRequired": "You cannot delete or demote the last administrator.",
     "termsChanged": "The terms and conditions have changed. Please review and accept them again.",
     "termsAlreadyAccepted": "This checkout accepted an earlier version of the terms. Please start a new checkout.",
     "termsNotRecorded": "Unable to record your acceptance of the terms. Please start a new checkout.",

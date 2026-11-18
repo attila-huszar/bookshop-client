@@ -14,6 +14,7 @@ import {
   type BookWithAuthorId,
   type CmsOrder,
   type CmsUser,
+  SignInMethod,
   UserRole,
 } from '@/types'
 import { CMS } from './CMS'
@@ -54,6 +55,7 @@ const users: CmsUser[] = records.map((record) => ({
   address: null,
   avatar: null,
   verified: true,
+  signInMethods: [SignInMethod.Password],
   updatedAt: record.createdAt,
   deletedAt: null,
 }))

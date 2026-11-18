@@ -1,4 +1,8 @@
 import { styled } from 'styled-components'
+import {
+  dropdownListStyles,
+  dropdownOptionStyles,
+} from '@/styles/dropdown.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledMenu = styled.div`
@@ -6,41 +10,15 @@ export const StyledMenu = styled.div`
 `
 
 export const MenuList = styled.ul`
-  margin: 0;
-  padding: 0;
-  font-size: 1.25rem;
-  list-style: none;
-  background-color: var(--color-surface-container-high);
-  border-radius: var(--border-radius);
-  z-index: 10;
+  ${dropdownListStyles}
+  min-height: 0;
   overflow: hidden;
-
-  li:first-child {
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-  }
-
-  li:last-child {
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-  }
 
   ${media.down('sm')`
     height: 100%;
-    border-radius: 0;
     padding-top: 4rem;
     background-color: var(--color-surface-container-lowest);
-
-    li:first-child {
-      border-radius: 0;
-    }
-
-    li:last-child {
-      border-radius: 0;
-    }
   `}
-
-  li:hover {
-    background-color: lightgray;
-  }
 
   & a {
     display: block;
@@ -49,16 +27,14 @@ export const MenuList = styled.ul`
 `
 
 export const MenuItem = styled.div`
+  ${dropdownOptionStyles}
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem;
 
   &:is(button) {
     width: 100%;
     border: 0;
-    background: transparent;
-    color: inherit;
     font: inherit;
     text-align: left;
     cursor: pointer;
