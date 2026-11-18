@@ -67,9 +67,11 @@ export function Cart() {
   } = useCart()
   const payment = useAppSelector((state) => state.payment.payment)
   const phase = useAppSelector((state) => state.payment.phase)
+  const isRestoringSession = useAppSelector((state) => state.auth.isRestoring)
   const paymentIsLoading = phase === 'creating'
   const isCheckoutBusy =
     paymentIsLoading || phase === 'restoring' || phase === 'canceling'
+  const checkoutDisabled = isCheckoutBusy || isFetching || isRestoringSession
   const dialogRef = useRef<HTMLDialogElement>(null)
   const lifecycleRef = useRef<{ active: boolean } | null>(null)
 
@@ -123,7 +125,7 @@ export function Cart() {
   const handleCheckout = () => {
     const lifecycle = lifecycleRef.current
 
-    if (isCheckoutBusy || isFetching || !lifecycle?.active) {
+    if (checkoutDisabled || !lifecycle?.active) {
       return
     }
 
@@ -300,7 +302,7 @@ export function Cart() {
           />
           <Button
             onClick={handleCheckout}
-            disabled={isCheckoutBusy || isFetching}
+            disabled={checkoutDisabled}
             $icon={isCheckoutBusy ? <SpinnerIcon /> : <CartIcon />}
             $shadow>
             {isCheckoutBusy ? t('cart.checkingOut') : t('checkout.title')}

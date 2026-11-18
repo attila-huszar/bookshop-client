@@ -4,22 +4,12 @@ import { Provider } from 'react-redux'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { log } from '@/api/logs'
 import { Links } from '@/components/Footer/components/Links/Links'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import en from '../../public/locales/en/translation.json'
-import hu from '../../public/locales/hu/translation.json'
+import en from './locales/en.json'
+import hu from './locales/hu.json'
 
 let translations: typeof import('./index')
-const fetchTranslations =
-  vi.fn<(url: string, options: RequestInit) => Promise<Response>>()
-
-function jsonResponse(language: 'en' | 'hu'): Response {
-  return new Response(JSON.stringify(language === 'en' ? en : hu), {
-    headers: { 'content-type': 'application/json' },
-  })
-}
-
 function TermsTitle() {
   const { t } = useTranslation('translation', { i18n: translations.i18n })
 
@@ -28,7 +18,7 @@ function TermsTitle() {
 
 async function importTranslations(): Promise<void> {
   translations = await import('./index')
-  await waitFor(() => expect(translations.i18n.isInitialized).toBe(true))
+  expect(translations.i18n.isInitialized).toBe(true)
 }
 
 beforeEach(() => {
@@ -37,42 +27,12 @@ beforeEach(() => {
   localStorage.removeItem('language')
   vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US'])
   vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
-  fetchTranslations
-    .mockReset()
-    .mockImplementation((url) =>
-      Promise.resolve(jsonResponse(url.includes('/hu/') ? 'hu' : 'en')),
-    )
-  vi.doMock('i18next-http-backend', async () => {
-    const actual = await vi.importActual<typeof import('i18next-http-backend')>(
-      'i18next-http-backend',
-    )
-
-    class MockFetchBackend extends actual.default {
-      constructor() {
-        super(undefined, {
-          alternateFetch: (url, options) => fetchTranslations(url, options),
-          reloadInterval: false,
-        })
-      }
-    }
-
-    return { ...actual, default: MockFetchBackend }
-  })
 })
 
-describe('HTTP translation loading', () => {
-  it('waits for translations before showing the app, including pages with their own loading boundary', async () => {
+describe('bundled translations', () => {
+  it('renders the app in the browser language on the first render', async () => {
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['hu-HU'])
-    const pendingLoads: (() => void)[] = []
-    fetchTranslations.mockImplementation(
-      (url) =>
-        new Promise<Response>((resolve) => {
-          pendingLoads.push(() =>
-            resolve(jsonResponse(url.includes('/hu/') ? 'hu' : 'en')),
-          )
-        }),
-    )
-    translations = await import('./index')
+    await importTranslations()
     vi.doMock('@/routes/Routes', () => ({
       Routes: () =>
         createElement(
@@ -89,35 +49,19 @@ describe('HTTP translation loading', () => {
     }))
     const { default: App } = await import('../App')
     const { createAppStore } = await import('../store/store')
-    const { container } = render(
+    render(
       createElement(
         I18nextProvider,
         { i18n: translations.i18n },
         createElement(
           Provider,
           { store: createAppStore(), children: null },
-          createElement(Suspense, { fallback: null }, createElement(App)),
+          createElement(App),
         ),
       ),
     )
 
-    expect(container).toBeEmptyDOMElement()
-    await waitFor(() => expect(fetchTranslations).toHaveBeenCalledTimes(2))
-    await act(async () => {
-      const initialized = new Promise<void>((resolve) => {
-        translations.i18n.on('initialized', () => resolve())
-      })
-
-      for (const completeLoad of pendingLoads) {
-        completeLoad()
-      }
-
-      await initialized
-    })
-
-    expect(
-      await screen.findByRole('group', { name: hu.language.label }),
-    ).toBeVisible()
+    expect(screen.getByRole('group', { name: hu.language.label })).toBeVisible()
     expect(screen.getByRole('link', { name: hu.terms.title })).toHaveAttribute(
       'href',
       '/terms',
@@ -134,68 +78,29 @@ describe('HTTP translation loading', () => {
     ).toBeVisible()
   })
 
-  it('uses Suspense while startup translations load and then renders translated content', async () => {
-    let completeLoad: () => void = vi.fn()
-    fetchTranslations.mockImplementation((url) =>
-      url.includes('/hu/')
-        ? Promise.resolve(jsonResponse('hu'))
-        : new Promise<Response>((resolve) => {
-            completeLoad = () => resolve(jsonResponse('en'))
-          }),
-    )
-    translations = await import('./index')
-    render(
-      createElement(
-        Suspense,
-        { fallback: createElement('p', null, 'Loading') },
-        createElement(TermsTitle),
-      ),
-    )
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
-    expect(screen.queryByText('terms.title')).not.toBeInTheDocument()
-    await waitFor(() => expect(fetchTranslations).toHaveBeenCalledTimes(2))
-    await act(async () => {
-      const initialized = new Promise<void>((resolve) => {
-        translations.i18n.on('initialized', () => resolve())
-      })
-      completeLoad()
-      await initialized
-    })
-
-    expect(await screen.findByText(en.terms.title)).toBeInTheDocument()
-    expect(screen.queryByText('Loading')).not.toBeInTheDocument()
-  })
-
-  it('preloads both languages at startup and switches without fetching again', async () => {
+  it('switches between both languages without fetching', async () => {
+    const request = vi.spyOn(globalThis, 'fetch')
     await importTranslations()
-    expect((await import('./index')).i18n).toBe(translations.i18n)
 
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
-    expect(fetchTranslations).toHaveBeenCalledWith(
-      '/locales/en/translation.json',
-      expect.objectContaining({ cache: 'no-cache' }),
-    )
     expect(translations.i18n.t('terms.title')).toBe(en.terms.title)
-    expect(translations.i18n.hasResourceBundle('hu', 'translation')).toBe(true)
-    expect(localStorage.getItem('language')).toBeNull()
 
     await translations.i18n.changeLanguage('hu')
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
+
     expect(translations.i18n.t('terms.title')).toBe(hu.terms.title)
     expect(document.documentElement.lang).toBe('hu')
     expect(localStorage.getItem('language')).toBeNull()
 
     await translations.i18n.changeLanguage('en')
-    await translations.i18n.changeLanguage('hu')
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
+
+    expect(translations.i18n.t('terms.title')).toBe(en.terms.title)
+    expect(document.documentElement.lang).toBe('en')
+    expect(request).not.toHaveBeenCalled()
   })
 
   it('loads the saved Hungarian preference and English fallback at startup', async () => {
     localStorage.setItem('language', 'hu')
     await importTranslations()
 
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
     expect(translations.i18n.resolvedLanguage).toBe('hu')
     expect(
       translations.i18n.t('terms.orderButton', {
@@ -211,7 +116,6 @@ describe('HTTP translation loading', () => {
     await importTranslations()
 
     expect(translations.i18n.resolvedLanguage).toBe('en')
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
     expect(localStorage.getItem('language')).toBe('en')
   })
 
@@ -280,69 +184,6 @@ describe('HTTP translation loading', () => {
     expect(translations.i18n.resolvedLanguage).toBe('en')
     expect(document.documentElement.lang).toBe('en')
   })
-
-  it('falls back to English if saved Hungarian cannot be loaded', async () => {
-    localStorage.setItem('language', 'hu')
-    fetchTranslations.mockImplementation((url) =>
-      Promise.resolve(
-        url.includes('/hu/')
-          ? new Response('Unavailable', { status: 503 })
-          : jsonResponse('en'),
-      ),
-    )
-    await importTranslations()
-
-    expect(translations.i18n.resolvedLanguage).toBe('en')
-    expect(translations.i18n.t('terms.title')).toBe(en.terms.title)
-    expect(document.documentElement.lang).toBe('en')
-    expect(localStorage.getItem('language')).toBe('hu')
-  })
-
-  it('logs startup failures when English is unavailable', async () => {
-    const logError = vi.spyOn(log, 'error')
-    fetchTranslations.mockResolvedValue(
-      new Response('Missing', { status: 404 }),
-    )
-
-    await importTranslations()
-
-    expect(translations.i18n.hasResourceBundle('en', 'translation')).toBe(false)
-    expect(logError).toHaveBeenCalledWith(
-      'Unable to initialize translations',
-      expect.anything(),
-    )
-  })
-
-  it.each([404, 503])(
-    'uses the English fallback after HTTP %s without saving the unavailable language',
-    async (status) => {
-      fetchTranslations.mockImplementation((url) =>
-        Promise.resolve(
-          url.includes('/hu/')
-            ? new Response('Unavailable', { status })
-            : jsonResponse(url.includes('/hu/') ? 'hu' : 'en'),
-        ),
-      )
-      await importTranslations()
-
-      render(
-        createElement(
-          I18nextProvider,
-          { i18n: translations.i18n },
-          createElement(LanguageSwitcher),
-        ),
-      )
-      await userEvent.click(
-        screen.getByRole('button', { name: 'Switch to Magyar' }),
-      )
-
-      expect(await screen.findByRole('alert')).toHaveTextContent(
-        en.language.loadError,
-      )
-      expect(translations.i18n.resolvedLanguage).toBe('en')
-      expect(localStorage.getItem('language')).toBeNull()
-    },
-  )
 })
 
 describe('cross-tab language preferences', () => {
@@ -383,7 +224,6 @@ describe('cross-tab language preferences', () => {
     expect(await screen.findByText(hu.terms.title)).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('hu')
     expect(save).not.toHaveBeenCalled()
-    expect(fetchTranslations).toHaveBeenCalledTimes(2)
   })
 
   it('ignores unrelated storage events and invalid saved languages', async () => {
@@ -414,57 +254,88 @@ describe('cross-tab language preferences', () => {
     await waitFor(() => expect(translations.i18n.resolvedLanguage).toBe('hu'))
   })
 
-  it('keeps the active language when the other language cannot be loaded', async () => {
-    fetchTranslations.mockImplementation((url) =>
-      Promise.resolve(
-        url.includes('/hu/')
-          ? new Response('Missing', { status: 404 })
-          : jsonResponse('en'),
-      ),
-    )
+  it('stops updating the language after cleanup', async () => {
     await importTranslations()
     stop = translations.listenForLanguageChanges()
-    localStorage.setItem('language', 'hu')
-    const loaded = vi.spyOn(translations.i18n, 'loadLanguages')
-    notifyLanguageChange()
-    await loaded.mock.results[0]?.value
-
-    expect(translations.i18n.resolvedLanguage).toBe('en')
-    expect(document.documentElement.lang).toBe('en')
-    expect(localStorage.getItem('language')).toBe('hu')
-  })
-
-  it('ignores an obsolete preference while loading and stops pending synchronization on cleanup', async () => {
-    await importTranslations()
-    let finish!: () => void
-    const pending = new Promise<void>((resolve) => {
-      finish = resolve
-    })
-    const load = vi
-      .spyOn(translations.i18n, 'loadLanguages')
-      .mockReturnValue(pending)
-    const change = vi.spyOn(translations.i18n, 'changeLanguage')
-    stop = translations.listenForLanguageChanges()
-    localStorage.setItem('language', 'hu')
-    notifyLanguageChange()
-    localStorage.setItem('language', 'en')
-    finish()
-    await pending
-
-    expect(change).not.toHaveBeenCalled()
-
-    const next = new Promise<void>((resolve) => {
-      finish = resolve
-    })
-    load.mockReturnValue(next)
-    localStorage.setItem('language', 'hu')
-    notifyLanguageChange()
     stop()
-    stop = undefined
-    finish()
-    await next
+
+    localStorage.setItem('language', 'hu')
+    notifyLanguageChange()
     window.dispatchEvent(new Event('focus'))
 
-    expect(change).not.toHaveBeenCalled()
+    expect(translations.i18n.resolvedLanguage).toBe('en')
+  })
+})
+
+describe('Locize translations', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_LOCIZE_PROJECT_ID', 'bookshop-test')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('renders bundled text first and applies published updates to the active language', async () => {
+    let respond!: (response: Response) => void
+    const request = vi.spyOn(globalThis, 'fetch').mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve
+        }),
+    )
+    request.mockResolvedValue(Response.json({}))
+    await importTranslations()
+    render(createElement(TermsTitle))
+
+    expect(screen.getByText(en.terms.title)).toBeVisible()
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(1))
+    expect(request).toHaveBeenCalledWith(
+      'https://api.lite.locize.app/bookshop-test/latest/en/translation',
+      expect.objectContaining({ method: 'GET' }),
+    )
+
+    respond(Response.json({ terms: { title: 'Published terms' } }))
+
+    expect(await screen.findByText('Published terms')).toBeVisible()
+    expect(
+      translations.i18n.t('terms.orderButton', {
+        amount: '10',
+        currency: 'EUR',
+      }),
+    ).toContain('10')
+
+    await act(async () => {
+      await translations.i18n.changeLanguage('hu')
+    })
+
+    expect(screen.getByText(hu.terms.title)).toBeVisible()
+    expect(request).toHaveBeenCalledWith(
+      'https://api.lite.locize.app/bookshop-test/latest/hu/translation',
+      expect.objectContaining({ method: 'GET' }),
+    )
+
+    await act(async () => {
+      await translations.i18n.changeLanguage('en')
+    })
+
+    expect(screen.getByText('Published terms')).toBeVisible()
+    expect(request).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps bundled text when the CDN request fails', async () => {
+    const request = vi
+      .spyOn(globalThis, 'fetch')
+      .mockRejectedValue(new TypeError('Failed to fetch'))
+    await importTranslations()
+    render(createElement(TermsTitle))
+
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        'https://api.lite.locize.app/bookshop-test/latest/en/translation',
+        expect.objectContaining({ method: 'GET' }),
+      ),
+    )
+    expect(screen.getByText(en.terms.title)).toBeVisible()
   })
 })

@@ -1,7 +1,7 @@
 import { createInstance } from 'i18next'
 import { describe, expect, it } from 'vitest'
-import en from '../../public/locales/en/translation.json'
-import hu from '../../public/locales/hu/translation.json'
+import en from './locales/en.json'
+import hu from './locales/hu.json'
 
 function flatten(
   resource: Record<string, unknown>,

@@ -1,8 +1,8 @@
 import { MemoryRouter } from 'react-router'
 import { i18n } from '@/i18n'
+import en from '@/i18n/locales/en.json'
+import hu from '@/i18n/locales/hu.json'
 import { act, render, screen } from '@testing-library/react'
-import en from '../../../public/locales/en/translation.json'
-import hu from '../../../public/locales/hu/translation.json'
 import { Alert } from './Alert'
 
 describe('Error Component', () => {

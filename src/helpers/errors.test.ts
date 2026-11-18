@@ -1,4 +1,6 @@
 import { i18n } from '@/i18n'
+import en from '@/i18n/locales/en.json'
+import hu from '@/i18n/locales/hu.json'
 import ky, { NetworkError, TimeoutError } from 'ky'
 import { describe, expect, it, vi } from 'vitest'
 import { log } from '@/api/logs'
@@ -9,8 +11,6 @@ import {
   TermsErrorCode,
   UserErrorCode,
 } from '@/types/ApiError'
-import en from '../../public/locales/en/translation.json'
-import hu from '../../public/locales/hu/translation.json'
 import { getApiError, getErrorMessage, toAppError } from './errors'
 
 async function requestFailure(body: unknown, status = 400) {

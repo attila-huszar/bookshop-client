@@ -92,7 +92,7 @@ export const bootstrapSession =
   (options?: { force: boolean }) =>
   async (dispatch: AppDispatch, getState: () => RootState) => {
     const force = options?.force ?? false
-    const { accessToken, sessionVersion } = getState().auth
+    const { accessToken, isRestoring, sessionVersion } = getState().auth
 
     if (accessToken && !force) {
       resetTokenRetry()
@@ -115,12 +115,18 @@ export const bootstrapSession =
       return
     }
 
+    if (!accessToken && !isRestoring) {
+      dispatch(authSessionRestorationStarted())
+    }
+
+    const restoreVersion = getState().auth.sessionVersion
+
     // Guest navigation continues even when session restoration is rejected.
     const pending = dispatch(
       fetchAuthTokens(force ? 'session-check' : 'refresh'),
     )
       .then(() => {
-        if (getState().auth.sessionVersion !== sessionVersion) {
+        if (getState().auth.sessionVersion !== restoreVersion) {
           return
         }
 
@@ -141,7 +147,7 @@ export const bootstrapSession =
       })
 
     pendingBootstrap = {
-      version: sessionVersion,
+      version: restoreVersion,
       forced: force,
       promise: pending,
     }

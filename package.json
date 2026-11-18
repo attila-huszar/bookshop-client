@@ -25,7 +25,7 @@
     "@stripe/stripe-js": "^10.3.0",
     "formik": "^2.4.9",
     "i18next": "^27.1.5",
-    "i18next-http-backend": "^4.0.10",
+    "i18next-locize-backend": "^10.0.6",
     "ky": "^2.2.0",
     "lottie-react": "^3.1.2",
     "rc-slider": "^11.1.9",

@@ -12,7 +12,7 @@ Ky owns token attachment, cookies, and single-flight refresh, including guest pa
 
 ## Sessions and routing
 
-The root loader restores the cookie session and validates saved cart intent. Protected routes wait for the current profile and role; transient authorization failures remain retryable.
+The root loader validates saved cart intent and starts cookie session restoration in the background. Protected routes wait for restoration and the current profile and role. Checkout waits for the session before creating or restoring payment. Transient authorization failures remain retryable.
 
 The app root loads Google Identity Services once through `@react-oauth/google`. A shared auth layout keeps one Google button and handler mounted while Login and Registration forms switch, coordinating all submissions. The Google component owns the browser challenge and invalidates callbacks when leaving auth. Opaque ID tokens go to the backend for verification and use the same session contract as password login. Account creation and linking rules belong to the [backend](../../bookshop-server/docs/architecture.md#authentication-and-account-lifecycle).
 
@@ -42,7 +42,9 @@ CMS order creation is disabled. Only customer/shipping corrections are editable;
 
 ## Localization and API contracts
 
-i18next serves English and Hungarian with English fallback. Saved preferences override browser detection; document language, dates, amounts, and Stripe Elements follow the active language. Tabs adopt saved preferences after resources load without writing them back to storage.
+i18next bundles English and Hungarian with the app and uses English as a fallback. Saved preferences override browser detection. Document language, dates, amounts, and Stripe Elements follow the active language. Tabs adopt saved preferences without writing them back to storage.
+
+When configured, Locize refreshes each selected language in the background once per page load. The app renders from bundled translations immediately and overlays published strings as they arrive. Translation publishes follow the CDN's cache policy and take effect independently of app deploys.
 
 API codes, roles, statuses, and filters retain their wire representations. Types describe public responses and commands. Errors are translated at display time from stable codes and sanitized validation metadata. See [backend response contracts](../../bookshop-server/docs/architecture.md#api-response-and-error-contracts).
 

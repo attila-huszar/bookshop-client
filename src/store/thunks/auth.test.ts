@@ -93,6 +93,7 @@ describe('session bootstrap', () => {
     const first = store.dispatch(bootstrapSession())
     const second = store.dispatch(bootstrapSession())
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
+    expect(store.getState().auth.isRestoring).toBe(true)
 
     pending.resolve({ accessToken: 'restored-token' })
     await Promise.all([first, second])
@@ -100,6 +101,7 @@ describe('session bootstrap', () => {
 
     expect(usersTransport.retrieveAuthTokens).toHaveBeenCalledTimes(1)
     expect(store.getState().auth.accessToken).toBe('restored-token')
+    expect(store.getState().auth.isRestoring).toBe(false)
   })
 
   it('counts concurrent guest attempts once and backs off subsequent refreshes', async () => {

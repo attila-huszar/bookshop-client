@@ -45,6 +45,7 @@ Configure the client `.env`:
 - `VITE_STRIPE_PUBLIC_KEY`: Stripe publishable test key from the same account as the backend.
 - `VITE_GOOGLE_MAPS_KEY`: optional address autocomplete; leave blank to skip it.
 - `VITE_GOOGLE_CLIENT_ID`: optional Google sign-in on Login and Registration; use the same OAuth client ID as the backend's `GOOGLE_CLIENT_ID`.
+- `VITE_LOCIZE_PROJECT_ID`: optional public Locize project ID. Publish the English and Hungarian `translation` namespace in `latest` to the Standard CDN.
 
 Vite environment values are public. Keep Stripe secret keys in the backend.
 
@@ -70,7 +71,7 @@ npm run dev
 
 Use `npm run dev` for subsequent starts too. It launches local Vite and the backend Docker services. Ctrl+C stops the session and preserves stored data.
 
-Open the shop at http://localhost:5173. Keep the client URLs and the backend's `CLIENT_BASE_URL` aligned if you change ports.
+Open the shop at <http://localhost:5173>. Keep the client URLs and the backend's `CLIENT_BASE_URL` aligned if you change ports.
 
 Use `npm run dev:client` for Vite with an already running backend. To build and preview the frontend, run `npm run build`, then `npm run preview`.
 
