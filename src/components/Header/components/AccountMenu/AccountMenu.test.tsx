@@ -92,13 +92,14 @@ describe('AccountMenu component', () => {
   )
 
   it.each([390, 1280])(
-    'uses a single flag icon and retains login navigation for guests at %ipx',
+    'uses a single flag icon and retains login navigation during session restoration at %ipx',
     async (width) => {
       vi.stubGlobal('innerWidth', width)
       localStorage.removeItem('language')
       vi.mocked(useAppSelector).mockReturnValue({
         accessToken: null,
         userData: null,
+        userIsLoading: true,
       })
       render(<AccountMenu />, { wrapper: Providers })
 

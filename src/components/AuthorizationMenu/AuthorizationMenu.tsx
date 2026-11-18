@@ -2,10 +2,11 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
+import { userSelector } from '@/store/selectors'
 import { googleLogin } from '@/store/thunks/auth'
 import { toast } from '@/components/AppToaster'
 import { GoogleSignIn } from '@/components/GoogleSignIn/GoogleSignIn'
-import { useAppDispatch } from '@/hooks/redux'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { getErrorMessage } from '@/helpers/errors'
 import { googleClientId } from '@/constants/envConfig'
 import {
@@ -17,9 +18,13 @@ import type { AuthSubmission } from './AuthorizationMenu.types'
 export function AuthorizationMenu() {
   const { t, i18n } = useTranslation()
   const dispatch = useAppDispatch()
+  const isSessionLoading = useAppSelector(
+    (state) => userSelector(state).userIsLoading,
+  )
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const pendingRef = useRef(false)
+  const submitDisabled = isSessionLoading || isSubmitting
+  const submissionLockRef = useRef(false)
   const lifecycleRef = useRef<{ active: boolean }>(null)
 
   useEffect(() => {
@@ -31,48 +36,56 @@ export function AuthorizationMenu() {
     }
   }, [])
 
-  const isSubmissionPending = useCallback(() => pendingRef.current, [])
+  const hasActiveSubmission = useCallback(() => submissionLockRef.current, [])
 
-  const startSubmission = useCallback(() => {
-    if (!lifecycleRef.current?.active || pendingRef.current) {
-      return false
+  const runSubmission: AuthSubmission['runSubmission'] = async (submit) => {
+    const canSubmit =
+      lifecycleRef.current?.active &&
+      !isSessionLoading &&
+      !submissionLockRef.current
+
+    if (!canSubmit) {
+      return
     }
 
-    pendingRef.current = true
+    submissionLockRef.current = true
     setIsSubmitting(true)
 
-    return true
-  }, [])
+    try {
+      await submit()
+    } finally {
+      submissionLockRef.current = false
 
-  const finishSubmission = useCallback(() => {
-    pendingRef.current = false
-
-    if (lifecycleRef.current?.active) {
-      setIsSubmitting(false)
+      if (lifecycleRef.current?.active) {
+        setIsSubmitting(false)
+      }
     }
-  }, [])
+  }
 
   const handleGoogleSignIn = async (credential: string) => {
     const lifecycle = lifecycleRef.current
 
-    if (!lifecycle?.active || !startSubmission()) {
-      return
-    }
+    await runSubmission(async () => {
+      try {
+        const { firstName } = await dispatch(googleLogin(credential)).unwrap()
 
-    try {
-      const { firstName } = await dispatch(googleLogin(credential)).unwrap()
+        if (lifecycle?.active) {
+          toast.success(i18n.t('auth.welcome', { name: firstName }))
+          void navigate(ROUTE.HOME, { replace: true })
+        }
+      } catch (error) {
+        if (lifecycle?.active) {
+          toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
+        }
+      }
+    })
+  }
 
-      if (lifecycle.active) {
-        toast.success(i18n.t('auth.welcome', { name: firstName }))
-        void navigate(ROUTE.HOME, { replace: true })
-      }
-    } catch (error) {
-      if (lifecycle.active) {
-        toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
-      }
-    } finally {
-      finishSubmission()
-    }
+  const authSubmission: AuthSubmission = {
+    isSubmitting,
+    isSessionLoading,
+    hasActiveSubmission,
+    runSubmission,
   }
 
   return (
@@ -82,20 +95,11 @@ export function AuthorizationMenu() {
         <NavLink to={`/${ROUTE.REGISTER}`}>{t('auth.register')}</NavLink>
       </FormChangeLinks>
       <Suspense fallback={null}>
-        <Outlet
-          context={
-            {
-              isSubmitting,
-              isSubmissionPending,
-              startSubmission,
-              finishSubmission,
-            } satisfies AuthSubmission
-          }
-        />
+        <Outlet context={authSubmission} />
       </Suspense>
       {googleClientId && (
         <GoogleSignIn
-          disabled={isSubmitting}
+          disabled={submitDisabled}
           onCredential={handleGoogleSignIn}
         />
       )}

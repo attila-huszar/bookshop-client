@@ -26,9 +26,9 @@ export function Registration() {
   const [register] = useRegisterMutation()
   const {
     isSubmitting: isAuthSubmitting,
-    isSubmissionPending,
-    startSubmission,
-    finishSubmission,
+    isSessionLoading,
+    hasActiveSubmission,
+    runSubmission,
   } = useOutletContext<AuthSubmission>()
   const formikRef = useRef<FormikProps<RegistrationValues>>(null)
   const lifecycleRef = useRef<{ active: boolean } | null>(null)
@@ -47,7 +47,7 @@ export function Registration() {
         lifecycle.active &&
         form &&
         !form.touched.country &&
-        !isSubmissionPending() &&
+        !hasActiveSubmission() &&
         !form.isSubmitting
       ) {
         void form.setFieldValue('country', country, false)
@@ -57,31 +57,31 @@ export function Registration() {
     return () => {
       lifecycle.active = false
     }
-  }, [isSubmissionPending])
+  }, [hasActiveSubmission])
 
   const handleSubmit = async (values: RegistrationValues) => {
     const lifecycle = lifecycleRef.current
 
-    if (!lifecycle?.active || !startSubmission()) {
+    if (!lifecycle?.active) {
       return
     }
 
-    try {
-      const { email } = await register(values).unwrap()
+    await runSubmission(async () => {
+      try {
+        const { email } = await register(values).unwrap()
 
-      if (!lifecycle.active) {
-        return
-      }
+        if (!lifecycle.active) {
+          return
+        }
 
-      toast.success(i18n.t('auth.registered', { email }))
-      void navigate(ROUTE.HOME, { replace: true })
-    } catch (error) {
-      if (lifecycle.active) {
-        toast.error(getErrorMessage(error, i18n.t('auth.registerError')))
+        toast.success(i18n.t('auth.registered', { email }))
+        void navigate(ROUTE.HOME, { replace: true })
+      } catch (error) {
+        if (lifecycle.active) {
+          toast.error(getErrorMessage(error, i18n.t('auth.registerError')))
+        }
       }
-    } finally {
-      finishSubmission()
-    }
+    })
   }
 
   return (
@@ -93,6 +93,7 @@ export function Registration() {
       onSubmit={handleSubmit}>
       {({ isSubmitting: isFormSubmitting }) => {
         const isSubmitting = isFormSubmitting || isAuthSubmitting
+        const submitDisabled = isSessionLoading || isSubmitting
 
         return (
           <Form noValidate>
@@ -185,7 +186,7 @@ export function Registration() {
                 disabled={isSubmitting}
                 onClick={() => void navigate(ROUTE.HOME)}
               />
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={submitDisabled}>
                 {isSubmitting && <SpinnerIcon height={28} />}
                 {t('auth.register')}
               </Button>

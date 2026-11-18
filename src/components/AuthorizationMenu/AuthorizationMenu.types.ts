@@ -1,6 +1,6 @@
 export type AuthSubmission = {
   isSubmitting: boolean
-  isSubmissionPending: () => boolean
-  startSubmission: () => boolean
-  finishSubmission: () => void
+  isSessionLoading: boolean
+  hasActiveSubmission: () => boolean
+  runSubmission: (submit: () => Promise<void>) => Promise<void>
 }

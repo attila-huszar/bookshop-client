@@ -37,7 +37,7 @@ export function AccountMenu() {
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const { accessToken, userData, userIsLoading } = useAppSelector(userSelector)
+  const { accessToken, userData } = useAppSelector(userSelector)
   const menuRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
@@ -86,14 +86,12 @@ export function AccountMenu() {
     const loginButton = isMobile ? (
       <IconButton
         onClick={handleLoginClick}
-        disabled={userIsLoading}
         icon={<UserOutlineIcon />}
         title={t('auth.loginRegister')}
       />
     ) : (
       <Button
         onClick={handleLoginClick}
-        disabled={userIsLoading}
         title={t('auth.loginRegister')}
         $icon={<UserOutlineIcon />}
         $size="smMd"

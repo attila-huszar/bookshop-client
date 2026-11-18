@@ -7,8 +7,13 @@ import { i18n } from '@/i18n'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import * as usersTransport from '@/api/users'
+import { PublicRoute } from '@/routes/PublicRoute/PublicRoute'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { usersApi } from '@/store/api/usersApi'
+import {
+  authSessionRefreshed,
+  authSessionRestorationStarted,
+} from '@/store/slices/auth'
 import { createAppStore } from '@/store/store'
 import { Login } from '@/pages/Login/Login'
 import { Registration } from '@/pages/Registration/Registration'
@@ -85,9 +90,11 @@ function renderAuth(registration: ReactNode = <Registration />) {
         <MemoryRouter initialEntries={['/login']}>
           <Link to="/">Home</Link>
           <Routes>
-            <Route element={<AuthorizationMenu />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={registration} />
+            <Route element={<PublicRoute />}>
+              <Route element={<AuthorizationMenu />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={registration} />
+              </Route>
             </Route>
             <Route path="/" element={<p>Home page</p>} />
           </Routes>
@@ -96,6 +103,31 @@ function renderAuth(registration: ReactNode = <Registration />) {
     </StrictMode>,
   )
 }
+
+it('keeps auth fields editable and blocks submissions while the session loads', async () => {
+  store.dispatch(authSessionRestorationStarted())
+  renderAuth()
+
+  expect(screen.getByLabelText('Email')).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Login' })).toBeDisabled()
+  expect(
+    screen.getByRole('button', { name: 'Continue with Google' }),
+  ).toBeDisabled()
+
+  await userEvent.click(screen.getByRole('link', { name: 'Register' }))
+
+  expect(screen.getByLabelText('First Name')).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Register' })).toBeDisabled()
+
+  act(() => {
+    store.dispatch(authSessionRefreshed(null))
+  })
+
+  expect(screen.getByRole('button', { name: 'Register' })).toBeEnabled()
+  expect(
+    screen.getByRole('button', { name: 'Continue with Google' }),
+  ).toBeEnabled()
+})
 
 it.each([
   ['en', 'This account is unavailable.'],

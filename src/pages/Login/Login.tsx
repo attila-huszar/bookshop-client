@@ -24,10 +24,11 @@ export function Login() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
-  const { isSubmitting, startSubmission, finishSubmission } =
+  const { isSubmitting, isSessionLoading, runSubmission } =
     useOutletContext<AuthSubmission>()
   const forgotPasswordDialog = useRef<HTMLDialogElement>(null)
   const lifecycleRef = useRef<{ active: boolean } | null>(null)
+  const submitDisabled = isSessionLoading || isSubmitting
 
   useEffect(() => {
     const lifecycle = { active: true }
@@ -42,26 +43,26 @@ export function Login() {
   const handleSubmit = async (values: LoginRequest) => {
     const lifecycle = lifecycleRef.current
 
-    if (!lifecycle?.active || !startSubmission()) {
+    if (!lifecycle?.active) {
       return
     }
 
-    try {
-      const { firstName } = await dispatch(login(values)).unwrap()
+    await runSubmission(async () => {
+      try {
+        const { firstName } = await dispatch(login(values)).unwrap()
 
-      if (!lifecycle.active) {
-        return
-      }
+        if (!lifecycle.active) {
+          return
+        }
 
-      toast.success(i18n.t('auth.welcome', { name: firstName }))
-      void navigate(ROUTE.HOME, { replace: true })
-    } catch (error) {
-      if (lifecycle.active) {
-        toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
+        toast.success(i18n.t('auth.welcome', { name: firstName }))
+        void navigate(ROUTE.HOME, { replace: true })
+      } catch (error) {
+        if (lifecycle.active) {
+          toast.error(getErrorMessage(error, i18n.t('auth.loginError')))
+        }
       }
-    } finally {
-      finishSubmission()
-    }
+    })
   }
 
   const handleDialogOpen = () => {
@@ -115,7 +116,7 @@ export function Login() {
               disabled={isSubmitting}
               onClick={() => void navigate(ROUTE.HOME)}
             />
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={submitDisabled}>
               {isSubmitting && <SpinnerIcon height={28} />}
               {t('auth.login')}
             </Button>
