@@ -24,6 +24,7 @@ import { useLanguage } from './useLanguage'
 
 const retryableApiCodes: readonly ErrorCode[] = [
   HttpErrorCode.Internal,
+  HttpErrorCode.DatabaseBusy,
   HttpErrorCode.Timeout,
   HttpErrorCode.RateLimited,
   HttpErrorCode.UnknownResponse,

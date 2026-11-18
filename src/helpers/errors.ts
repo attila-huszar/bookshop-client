@@ -28,6 +28,7 @@ const apiErrorKeys = {
   [HttpErrorCode.Forbidden]: 'errors.forbidden',
   [HttpErrorCode.NotFound]: 'errors.notFound',
   [HttpErrorCode.Internal]: 'common.error',
+  [HttpErrorCode.DatabaseBusy]: 'errors.databaseBusy',
   [HttpErrorCode.InvalidJson]: 'errors.invalidJson',
   [HttpErrorCode.PayloadTooLarge]: 'errors.payloadTooLarge',
   [HttpErrorCode.RateLimited]: 'errors.rateLimited',

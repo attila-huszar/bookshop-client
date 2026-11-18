@@ -451,6 +451,7 @@ describe('Payment terms submission', () => {
     { code: 'CHECKOUT_ENDED', status: 410, retry: false },
     { code: 'UNAUTHORIZED', status: 401, retry: false },
     { code: 'INTERNAL_ERROR', status: 500, retry: true },
+    { code: 'DATABASE_BUSY', status: 503, retry: true },
     { code: 'REQUEST_TIMEOUT', status: 408, retry: true },
     { code: 'RATE_LIMITED', status: 429, retry: true },
     { code: 'TERMS_UNAVAILABLE', status: 503, retry: true },

@@ -469,6 +469,7 @@
     "invalidJson": "A kérés nem olvasható. Kérjük, próbálja újra.",
     "payloadTooLarge": "A beküldött adatok vagy a fájl mérete túl nagy.",
     "rateLimited": "Túl sok kérés érkezett. Kérjük, várjon, majd próbálja újra.",
+    "databaseBusy": "Az adatbázis foglalt. Kérjük, várjon egy kicsit, majd próbálja újra.",
     "timeout": "A kérés időtúllépés miatt megszakadt. Kérjük, próbálja újra.",
     "invalidCredentials": "Hibás e-mail-cím vagy jelszó. Kérjük, próbálja újra.",
     "accountUnavailable": "Ez a fiók nem érhető el.",

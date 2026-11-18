@@ -13,14 +13,14 @@ import en from '../../public/locales/en/translation.json'
 import hu from '../../public/locales/hu/translation.json'
 import { getApiError, getErrorMessage, toAppError } from './errors'
 
-async function requestFailure(body: unknown) {
+async function requestFailure(body: unknown, status = 400) {
   try {
     await ky.get('https://bookshop.test/api', {
       retry: 0,
       fetch: () =>
         Promise.resolve(
           new Response(JSON.stringify(body), {
-            status: 400,
+            status,
             headers: { 'content-type': 'application/json' },
           }),
         ),
@@ -33,6 +33,21 @@ async function requestFailure(body: unknown) {
 }
 
 describe('toAppError', () => {
+  it.each([
+    ['en', en],
+    ['hu', hu],
+  ] as const)(
+    'translates database contention in %s',
+    async (language, translations) => {
+      await i18n.changeLanguage(language)
+      const failure = await requestFailure({ code: 'DATABASE_BUSY' }, 503)
+
+      expect(getErrorMessage(failure, 'Fallback')).toBe(
+        translations.errors.databaseBusy,
+      )
+    },
+  )
+
   it.each([
     ['en', en],
     ['hu', hu],
