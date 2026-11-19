@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { booksApi } from '@/store/api/booksApi'
@@ -31,14 +31,16 @@ export function Menu() {
 
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuId = useId()
   const menuRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const drawerRef = useRef<HTMLDivElement>(null)
 
-  useClickOutside(
-    isMobile ? [menuRef, drawerRef] : [menuRef, dropdownRef],
-    () => setMenuOpen(false),
-  )
+  const closeMenu = () => setMenuOpen(false)
+
+  useClickOutside(menuRef, () => {
+    if (!isMobile) {
+      closeMenu()
+    }
+  })
 
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState)
@@ -50,7 +52,7 @@ export function Menu() {
         <li key={link.key}>
           <Link
             to={link.path}
-            onClick={() => setMenuOpen(false)}
+            onClick={closeMenu}
             onMouseEnter={link.key === 'shop' ? prefetchShop : undefined}
             onFocus={link.key === 'shop' ? prefetchShop : undefined}>
             <MenuItem>
@@ -66,16 +68,20 @@ export function Menu() {
   return (
     <StyledMenu ref={menuRef}>
       <IconButton
+        type="button"
+        aria-controls={menuId}
+        aria-expanded={menuOpen}
+        aria-haspopup={isMobile ? 'dialog' : undefined}
         onClick={toggleMenu}
         icon={<MenuIcon />}
         title={t('navigation.menu')}
       />
       {isMobile ? (
-        <MenuDrawer show={menuOpen} onClose={toggleMenu} drawerRef={drawerRef}>
+        <MenuDrawer id={menuId} show={menuOpen} onClose={closeMenu}>
           {menuList}
         </MenuDrawer>
       ) : (
-        <MenuDropdown show={menuOpen} dropdownRef={dropdownRef}>
+        <MenuDropdown id={menuId} show={menuOpen}>
           {menuList}
         </MenuDropdown>
       )}

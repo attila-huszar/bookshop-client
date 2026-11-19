@@ -342,12 +342,17 @@ export function TermsSettingsDialog({ onClose }: { onClose: () => void }) {
     (history.isFetching && history.data === undefined)
   const failed = isError || history.isError
 
+  const closeDialog = () => {
+    dialogRef.current?.close()
+    onClose()
+  }
+
   return (
     <Dialog
       ref={dialogRef}
       aria-labelledby="terms-settings-title"
-      onCancel={onClose}>
-      {(loading || failed) && <TermsHeader onClose={onClose} />}
+      onCancel={closeDialog}>
+      {(loading || failed) && <TermsHeader onClose={closeDialog} />}
       {loading ? (
         <DialogBody>
           <p role="status">{t('terms.loading')}</p>
@@ -356,7 +361,7 @@ export function TermsSettingsDialog({ onClose }: { onClose: () => void }) {
         <DialogBody>
           <p role="alert">{t('terms.loadError')}</p>
           <div className="actions">
-            <Button type="button" $inverted onClick={onClose}>
+            <Button type="button" $inverted onClick={closeDialog}>
               {t('common.actions.cancel')}
             </Button>
             <Button
@@ -373,7 +378,7 @@ export function TermsSettingsDialog({ onClose }: { onClose: () => void }) {
         <TermsEditor
           document={data ?? null}
           versions={history.data ?? []}
-          onClose={onClose}
+          onClose={closeDialog}
         />
       )}
     </Dialog>

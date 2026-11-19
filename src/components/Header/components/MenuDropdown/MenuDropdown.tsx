@@ -1,15 +1,11 @@
-import { FC, ReactNode, RefObject } from 'react'
+import type { ReactNode } from 'react'
 import { StyledMenuDropdown } from './MenuDropdown.styles'
 
-type Props = {
-  show: boolean
-  dropdownRef: RefObject<HTMLDivElement | null>
-  children: ReactNode
-}
+type Props = { id: string; show: boolean; children: ReactNode }
 
-export const MenuDropdown: FC<Props> = ({ show, children, dropdownRef }) => {
+export function MenuDropdown({ id, show, children }: Props) {
   return (
-    <StyledMenuDropdown $show={show} ref={dropdownRef}>
+    <StyledMenuDropdown id={id} $show={show}>
       {children}
     </StyledMenuDropdown>
   )

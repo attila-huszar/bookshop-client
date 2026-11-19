@@ -1,4 +1,5 @@
 export type FormikInput = {
+  label?: string
   showPassword?: boolean
   setShowPassword?: React.Dispatch<React.SetStateAction<boolean>>
 } & React.PropsWithChildren &

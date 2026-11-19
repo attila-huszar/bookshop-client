@@ -111,24 +111,24 @@ export const AuthorEditForm: FC<Props> = ({
             )}
             <Row>
               <div>
-                <p>{t('common.fields.name')}</p>
                 <FormikField
+                  label={t('common.fields.name')}
                   name="name"
                   placeholder={t('common.fields.name')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.fullName')}</p>
                 <FormikField
+                  label={t('common.fields.fullName')}
                   name="fullName"
                   placeholder={t('common.fields.fullName')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.homeland')}</p>
                 <FormikField
+                  label={t('common.fields.homeland')}
                   name="homeland"
                   placeholder={t('common.fields.homeland')}
                   type="text"
@@ -137,16 +137,16 @@ export const AuthorEditForm: FC<Props> = ({
             </Row>
             <Row>
               <div>
-                <p>{t('common.fields.birth')}</p>
                 <FormikField
+                  label={t('common.fields.birth')}
                   name="birthYear"
                   placeholder={t('common.fields.birth')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.death')}</p>
                 <FormikField
+                  label={t('common.fields.death')}
                   name="deathYear"
                   placeholder={t('common.fields.death')}
                   type="text"
@@ -155,8 +155,8 @@ export const AuthorEditForm: FC<Props> = ({
             </Row>
             <FullRow>
               <div>
-                <p>{t('common.fields.biography')}</p>
                 <FormikField
+                  label={t('common.fields.biography')}
                   name="biography"
                   placeholder={t('common.fields.biography')}
                   type="textarea"

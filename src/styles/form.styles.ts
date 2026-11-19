@@ -7,7 +7,9 @@ export const InputWrapper = styled.div`
   position: relative;
 `
 
-export const baseInputStyles = css<FormTypes>`
+export const baseInputStyles = css<
+  Pick<FormTypes, '$valid' | '$error' | 'disabled' | 'readOnly'>
+>`
   width: 100%;
   padding-inline: 0.75rem;
   font-size: 1rem;

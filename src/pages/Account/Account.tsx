@@ -330,7 +330,6 @@ export function Account() {
                     </AddressLine>
                     <AddressLine>
                       <div>
-                        <p>{t('common.fields.country')}</p>
                         <CountrySelect readOnly={!editingAddress} />
                       </div>
                     </AddressLine>

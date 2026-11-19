@@ -35,6 +35,7 @@ afterEach(() => {
   })
   vi.useRealTimers()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 const renderMenu = (path = '/') =>
@@ -51,6 +52,34 @@ const renderMenu = (path = '/') =>
   )
 
 describe('Menu', () => {
+  it('keeps the closed mobile menu hidden and follows the native dialog close event', async () => {
+    vi.stubGlobal('innerWidth', 390)
+    renderMenu()
+    const user = userEvent.setup()
+    const trigger = screen.getByRole('button', { name: 'Menu' })
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('link', { name: 'Shop' })).not.toBeInTheDocument()
+    await user.tab()
+    expect(trigger).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    const dialog = screen.getByRole('dialog', { name: 'Menu' })
+    expect(dialog).toHaveAttribute('open')
+    expect(trigger).toHaveAttribute('aria-controls', dialog.id)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+
+    // jsdom needs the native close event to be dispatched explicitly.
+    dialog.removeAttribute('open')
+    fireEvent(dialog, new Event('close'))
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(trigger)
+    await user.click(screen.getByRole('button', { name: 'Close menu' }))
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('renders the menu without prefetching catalogue data', () => {
     renderMenu()
     expect(screen.getByTitle('Menu')).toBeInTheDocument()

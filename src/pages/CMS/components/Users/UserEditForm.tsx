@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useAddUserMutation, useUpdateUserMutation } from '@/store/api/usersApi'
@@ -50,6 +50,7 @@ type Props = {
 
 export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
   const { t, i18n } = useTranslation()
+  const verifiedId = useId()
 
   const [addUser] = useAddUserMutation()
   const [updateUser] = useUpdateUserMutation()
@@ -127,16 +128,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <Row>
               <div>
-                <p>{t('common.fields.firstName')}</p>
                 <FormikField
+                  label={t('common.fields.firstName')}
                   name="firstName"
                   placeholder={t('common.fields.firstName')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.lastName')}</p>
                 <FormikField
+                  label={t('common.fields.lastName')}
                   name="lastName"
                   placeholder={t('common.fields.lastName')}
                   type="text"
@@ -145,16 +146,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             </Row>
             <Row>
               <div>
-                <p>{t('common.fields.email')}</p>
                 <FormikField
+                  label={t('common.fields.email')}
                   name="email"
                   placeholder={t('common.fields.email')}
                   type="email"
                 />
               </div>
               <div>
-                <p>{t('common.fields.phone')}</p>
                 <FormikField
+                  label={t('common.fields.phone')}
                   name="phone"
                   placeholder={t('common.fields.phone')}
                   type="text"
@@ -163,12 +164,15 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             </Row>
             <Row>
               <div>
-                <p>{t('cms.countryRegistration')}</p>
-                <CountrySelect fieldName="country" readOnly={readOnly} />
+                <CountrySelect
+                  label={t('cms.countryRegistration')}
+                  fieldName="country"
+                  readOnly={readOnly}
+                />
               </div>
               <div>
-                <p>{t('common.fields.avatarUrl')}</p>
                 <FormikField
+                  label={t('common.fields.avatarUrl')}
                   name="avatar"
                   placeholder={t('common.fields.avatarUrl')}
                   type="text"
@@ -178,8 +182,8 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             {!editedItem && (
               <FullRow>
                 <div>
-                  <p>{t('common.fields.password')}</p>
                   <FormikField
+                    label={t('common.fields.password')}
                     name="password"
                     placeholder={t('common.fields.password')}
                     type="password"
@@ -190,12 +194,10 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
             )}
             <UserRoleRow>
               <div>
-                <p>
-                  <label htmlFor="cms-user-role">
-                    {t('common.fields.role')}
-                  </label>
-                </p>
-                <FormikField id="cms-user-role" name="role" type="select">
+                <FormikField
+                  label={t('common.fields.role')}
+                  name="role"
+                  type="select">
                   {Object.values(UserRole).map((role) => (
                     <option key={role} value={role}>
                       {t(`cms.roles.${role}`)}
@@ -214,9 +216,17 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
                 </div>
               )}
               <div className="centered-checkbox">
-                <p>{t('common.fields.verified')}</p>
+                <p>
+                  <label htmlFor={verifiedId}>
+                    {t('common.fields.verified')}
+                  </label>
+                </p>
                 <div style={{ display: 'flex', height: '100%' }}>
-                  <FormikField name="verified" type="checkbox" />
+                  <FormikField
+                    id={verifiedId}
+                    name="verified"
+                    type="checkbox"
+                  />
                 </div>
               </div>
             </UserRoleRow>
@@ -224,16 +234,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               <p>{t('common.fields.address')}</p>
               <Row>
                 <div>
-                  <p>{t('common.fields.line1')}</p>
                   <FormikField
+                    label={t('common.fields.line1')}
                     name="address.line1"
                     placeholder={t('common.fields.line1')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>{t('common.fields.line2')}</p>
                   <FormikField
+                    label={t('common.fields.line2')}
                     name="address.line2"
                     placeholder={t('common.fields.line2')}
                     type="text"
@@ -242,16 +252,16 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               </Row>
               <Row>
                 <div>
-                  <p>{t('common.fields.city')}</p>
                   <FormikField
+                    label={t('common.fields.city')}
                     name="address.city"
                     placeholder={t('common.fields.city')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>{t('common.fields.state')}</p>
                   <FormikField
+                    label={t('common.fields.state')}
                     name="address.state"
                     placeholder={t('common.fields.state')}
                     type="text"
@@ -260,15 +270,14 @@ export const UserEditForm: FC<Props> = ({ editedItem, onClose, readOnly }) => {
               </Row>
               <Row>
                 <div>
-                  <p>{t('common.fields.postalCode')}</p>
                   <FormikField
+                    label={t('common.fields.postalCode')}
                     name="address.postal_code"
                     placeholder={t('common.fields.postalCode')}
                     type="text"
                   />
                 </div>
                 <div>
-                  <p>{t('common.fields.country')}</p>
                   <CountrySelect
                     fieldName="address.country"
                     readOnly={readOnly}

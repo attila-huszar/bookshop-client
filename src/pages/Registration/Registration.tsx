@@ -164,7 +164,6 @@ export function Registration() {
               autoComplete="new-password"
               disabled={isSubmitting}
             />
-            <p>{t('common.fields.country')}</p>
             <CountrySelect readOnly={isSubmitting} />
             <p>
               <label htmlFor="register-avatar">{t('auth.uploadAvatar')}</label>

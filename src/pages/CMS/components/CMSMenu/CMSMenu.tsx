@@ -22,26 +22,40 @@ export function CMSMenu({ onOpenTerms }: Props) {
   const [open, setOpen] = useState(false)
   const menuId = useId()
   const menuRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const drawerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  useClickOutside([menuRef, drawerRef], () => setOpen(false))
+  const closeMenu = () => setOpen(false)
 
-  const closeMenu = () => {
-    setOpen(false)
+  useClickOutside(menuRef, () => {
+    if (!isMobile) {
+      closeMenu()
+    }
+  })
+
+  const closeDropdown = () => {
+    closeMenu()
     buttonRef.current?.focus()
   }
 
   const actions = (
-    <ActionList id={menuId} aria-label={t('navigation.cms')}>
+    <ActionList aria-label={t('navigation.cms')}>
       <li>
         <MenuItem
           as="button"
           type="button"
-          autoFocus
-          onClick={() => {
-            closeMenu()
+          autoFocus={!isMobile}
+          ref={(button) => {
+            button?.toggleAttribute('autofocus', isMobile)
+          }}
+          onClick={(event) => {
+            if (isMobile) {
+              // Restore focus before opening the terms dialog.
+              event.currentTarget.closest('dialog')?.close()
+              closeMenu()
+            } else {
+              closeDropdown()
+            }
+
             onOpenTerms()
           }}>
           <SlidersIcon aria-hidden="true" />
@@ -52,7 +66,7 @@ export function CMSMenu({ onOpenTerms }: Props) {
         <LanguageSwitcher variant="menu" />
       </li>
       <li>
-        <Link to={ROUTE.HOME} onClick={() => setOpen(false)}>
+        <Link to={ROUTE.HOME} onClick={closeMenu}>
           <MenuItem>
             <LogoutIcon aria-hidden="true" />
             <span>{t('navigation.home')}</span>
@@ -66,9 +80,9 @@ export function CMSMenu({ onOpenTerms }: Props) {
     <StyledCMSMenu
       ref={menuRef}
       onKeyDown={(event) => {
-        if (open && event.key === 'Escape') {
+        if (!isMobile && open && event.key === 'Escape') {
           event.preventDefault()
-          closeMenu()
+          closeDropdown()
         }
       }}>
       <IconButton
@@ -77,20 +91,26 @@ export function CMSMenu({ onOpenTerms }: Props) {
         title={t('navigation.menu')}
         aria-label={t('navigation.menu')}
         aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
+        aria-controls={isMobile || open ? menuId : undefined}
+        aria-haspopup={isMobile ? 'dialog' : undefined}
         icon={<MenuIcon aria-hidden="true" />}
         onClick={() => setOpen((previous) => !previous)}
       />
-      {open &&
-        (isMobile ? (
-          <MenuDrawer show onClose={closeMenu} drawerRef={drawerRef}>
-            {actions}
-          </MenuDrawer>
-        ) : (
-          <MenuDropdown show dropdownRef={dropdownRef}>
+      {isMobile ? (
+        <MenuDrawer
+          id={menuId}
+          label={t('navigation.cms')}
+          show={open}
+          onClose={closeMenu}>
+          {actions}
+        </MenuDrawer>
+      ) : (
+        open && (
+          <MenuDropdown id={menuId} show>
             {actions}
           </MenuDropdown>
-        ))}
+        )
+      )}
     </StyledCMSMenu>
   )
 }
