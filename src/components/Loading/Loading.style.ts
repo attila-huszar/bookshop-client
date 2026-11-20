@@ -6,6 +6,7 @@ export const StyledLoading = styled.div<{ $fullScreen?: boolean }>`
   justify-content: center;
   align-items: center;
   gap: 2rem;
+  color: var(--color-on-surface);
 
   ${({ $fullScreen }) =>
     $fullScreen &&
@@ -13,6 +14,7 @@ export const StyledLoading = styled.div<{ $fullScreen?: boolean }>`
       flex: 1;
       width: 100%;
       min-height: var(--page-loading-height, 100dvh);
+      color: var(--page-loading-color, var(--color-on-primary));
     `}
 
   svg {

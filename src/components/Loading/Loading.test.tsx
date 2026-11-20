@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { StyledLayout } from '@/pages/Layout/Layout.style'
 import { Loading } from './Loading'
 
 describe('Loading Component', () => {
@@ -11,11 +12,22 @@ describe('Loading Component', () => {
     expect(screen.getByText(/please wait.../i)).toBeInTheDocument()
   })
 
-  it('uses the on-primary color for full-screen loading', () => {
-    render(<Loading fullScreen />)
-
-    expect(screen.getByText(/loading/i).style.color).toBe(
-      'var(--color-on-primary)',
+  it('uses a contrasting foreground on the page frame and storefront', () => {
+    render(
+      <>
+        <style>{`:root { --color-on-primary: #fff; --color-on-surface: #211a14; }`}</style>
+        <Loading fullScreen message="Loading checkout" />
+        <StyledLayout>
+          <Loading fullScreen message="Loading books" />
+        </StyledLayout>
+      </>,
     )
+
+    expect(screen.getByText('Loading checkout')).toHaveStyle({
+      color: 'rgb(255, 255, 255)',
+    })
+    expect(screen.getByText('Loading books')).toHaveStyle({
+      color: 'rgb(33, 26, 20)',
+    })
   })
 })

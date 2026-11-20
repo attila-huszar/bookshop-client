@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
@@ -16,6 +17,7 @@ import {
 
 export const Authors = () => {
   const { t } = useTranslation()
+  const captionId = useId()
 
   const {
     data: authors = [],
@@ -65,11 +67,14 @@ export const Authors = () => {
 
   return (
     <>
-      <StyledTable>
+      <StyledTable aria-labelledby={captionId}>
         <table>
+          <caption id={captionId}>
+            {t('cms.entities.author', { count: 2 })}
+          </caption>
           <thead>
             <tr>
-              <th>
+              <th scope="col">
                 <input
                   type="checkbox"
                   aria-label={t('common.selectAll')}
@@ -87,13 +92,15 @@ export const Authors = () => {
                   }
                 />
               </th>
-              <th>{t('common.fields.id')}</th>
-              <th>{t('common.fields.name')}</th>
-              <th>{t('common.fields.birth')}</th>
-              <th>{t('common.fields.death')}</th>
-              <th>{t('common.fields.homeland')}</th>
-              <th>{t('common.fields.biography')}</th>
-              <th className="actions">{t('common.fields.actions')}</th>
+              <th scope="col">{t('common.fields.id')}</th>
+              <th scope="col">{t('common.fields.name')}</th>
+              <th scope="col">{t('common.fields.birth')}</th>
+              <th scope="col">{t('common.fields.death')}</th>
+              <th scope="col">{t('common.fields.homeland')}</th>
+              <th scope="col">{t('common.fields.biography')}</th>
+              <th scope="col" className="actions">
+                {t('common.fields.actions')}
+              </th>
             </tr>
           </thead>
           <tbody>

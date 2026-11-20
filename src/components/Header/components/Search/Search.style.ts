@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { visuallyHidden } from '@/styles/accessibility.styles'
 import { media } from '@/styles/media.breakpoints'
 import { SearchTypes } from './Search.types'
 
@@ -15,14 +16,17 @@ export const StyledForm = styled.div`
   }
 `
 
-export const SearchField = styled.input`
+export const SearchField = styled.input<{ $showResults: boolean }>`
   height: 36px;
   width: 100%;
   padding: 0 40px;
   border: none;
-  border-radius: 10px;
-  outline: none;
+  border-radius: ${({ $showResults }) => ($showResults ? '10px 10px 0 0' : '10px')};
   background-color: var(--color-surface-container-high);
+
+  &:focus-visible {
+    outline: none;
+  }
 
   &::-webkit-input-placeholder {
     white-space: nowrap;
@@ -37,13 +41,17 @@ export const SearchField = styled.input`
   }
 `
 
+export const SearchStatus = styled.span`
+  ${visuallyHidden}
+`
+
 export const Dropdown = styled.div<SearchTypes>`
   position: absolute;
-  top: 1.75rem;
+  top: 100%;
   left: 0;
   display: none;
   width: 100%;
-  padding: 0.125rem 0.5rem 0.5rem;
+  padding: 0 0.5rem 0.5rem;
   border-radius: 0 0 10px 10px;
   background-color: var(--color-surface-container-high);
 
@@ -52,20 +60,34 @@ export const Dropdown = styled.div<SearchTypes>`
 
 export const SearchButton = styled.button`
   position: absolute;
-  left: 0.875rem;
+  left: 0.625rem;
   top: 50%;
   transform: translateY(-50%);
-  height: 1rem;
-  width: 1rem;
+  display: grid;
+  place-items: center;
+  height: 1.5rem;
+  width: 1.5rem;
   padding: 0;
   background-color: transparent;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 50%;
+  color: var(--color-on-surface-variant);
   cursor: pointer;
   transition: background-color 0.2s ease-out;
 
-  &:hover:not(:disabled) {
-    background-color: var(--color-surface-container-high);
+  &:hover {
+    background-color: var(--color-surface-container-highest);
+  }
+
+  input:focus-visible ~ & {
+    background-color: var(--color-outline);
+    color: var(--color-surface-container-lowest);
+
+    @media (forced-colors: active) {
+      forced-color-adjust: none;
+      background-color: Highlight;
+      color: HighlightText;
+    }
   }
 `
 
@@ -95,7 +117,7 @@ export const DropdownList = styled.ul`
   container-type: inline-size;
   container-name: search-results;
   max-height: 14rem;
-  margin-top: 6px;
+  margin: 0;
   padding: 0;
   font-size: 0.775rem;
   list-style: none;
@@ -122,6 +144,13 @@ export const DropdownList = styled.ul`
 
   & a {
     display: block;
+    border-radius: inherit;
+
+    &:focus-visible {
+      outline: 1px solid var(--color-outline);
+      outline-offset: -1px;
+      background-color: var(--color-surface-container-low);
+    }
   }
 `
 

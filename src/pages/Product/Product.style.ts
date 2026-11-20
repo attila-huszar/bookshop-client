@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledProduct = styled.main`
+export const StyledProduct = styled.div`
   --page-loading-height: calc(100dvh - 9.375rem);
 
   padding: 0 6.25rem;

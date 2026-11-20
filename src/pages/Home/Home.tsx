@@ -19,7 +19,7 @@ export function Home() {
   }, [booksError])
 
   return (
-    <main>
+    <>
       <Releases />
       <TopSellers />
       <Recommended />
@@ -31,6 +31,6 @@ export function Home() {
         reloadButton
         dismissible
       />
-    </main>
+    </>
   )
 }

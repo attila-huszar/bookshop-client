@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledProducts = styled.main`
+export const StyledProducts = styled.div`
   padding: 0 5rem 4rem;
   display: flex;
   justify-content: space-between;

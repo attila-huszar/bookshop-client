@@ -95,6 +95,7 @@
     "loadError": "Unable to load this language."
   },
   "navigation": {
+    "skipToContent": "Skip to main content",
     "home": "Home",
     "shop": "Shop",
     "about": "About",
@@ -137,6 +138,8 @@
     "search": "Search",
     "searchPlaceholder": "What are you looking for?",
     "searchError": "Could not load search results. Please try again.",
+    "searchResultsCount_one": "{{count}} search result",
+    "searchResultsCount_other": "{{count}} search results",
     "noResults": "No search results..."
   },
   "filters": {
@@ -247,6 +250,7 @@
     "loading": "Loading your checkout",
     "error": "Failed to load checkout, please try again later.",
     "statusLoading": "Loading payment status",
+    "submittingPayment": "Submitting payment…",
     "changedInAnotherTab": "This checkout was updated in another tab. Returning to the home page...",
     "unavailable": "Checkout is no longer available. Returning to the home page...",
     "cancel": "Cancel Checkout",

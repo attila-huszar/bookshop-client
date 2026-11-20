@@ -108,7 +108,7 @@ it('keeps auth fields editable and blocks submissions while the session loads', 
   store.dispatch(authSessionRestorationStarted())
   renderAuth()
 
-  expect(screen.getByLabelText('Email')).toBeEnabled()
+  expect(screen.getByRole('textbox', { name: 'Email' })).toBeEnabled()
   expect(screen.getByRole('button', { name: 'Login' })).toBeDisabled()
   expect(
     screen.getByRole('button', { name: 'Continue with Google' }),
@@ -155,7 +155,7 @@ it('omits Google sign-in when it is not configured', () => {
   googleConfig.clientId = null
   renderAuth()
 
-  expect(screen.getByLabelText('Email')).toBeInTheDocument()
+  expect(screen.getByRole('textbox', { name: 'Email' })).toBeInTheDocument()
   expect(
     screen.queryByRole('button', { name: 'Continue with Google' }),
   ).not.toBeInTheDocument()
@@ -174,7 +174,7 @@ it('keeps the Google button mounted while switching between the auth forms', asy
   )
 
   await userEvent.click(screen.getByRole('link', { name: 'Login' }))
-  expect(screen.getByLabelText('Email')).toBeInTheDocument()
+  expect(screen.getByRole('textbox', { name: 'Email' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continue with Google' })).toBe(
     googleButton,
   )
@@ -213,7 +213,7 @@ it('keeps one Google attempt and disables either form across tab switches', asyn
   await userEvent.click(
     screen.getByRole('button', { name: 'Continue with Google' }),
   )
-  expect(screen.getByLabelText('Email')).toBeDisabled()
+  expect(screen.getByRole('textbox', { name: 'Email' })).toBeDisabled()
 
   await userEvent.click(screen.getByRole('link', { name: 'Register' }))
   expect(screen.getByLabelText('First Name')).toBeDisabled()
@@ -246,7 +246,10 @@ it('keeps the shared lock until a password request from the previous form settle
   const response = deferred<LoginResponse>()
   vi.mocked(usersTransport.postUserLogin).mockReturnValueOnce(response.promise)
   renderAuth()
-  await userEvent.type(screen.getByLabelText('Email'), 'jane@example.com')
+  await userEvent.type(
+    screen.getByRole('textbox', { name: 'Email' }),
+    'jane@example.com',
+  )
   await userEvent.type(screen.getByLabelText('Password'), 'old')
   await userEvent.click(screen.getByRole('button', { name: 'Login' }))
   await waitFor(() =>

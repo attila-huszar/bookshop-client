@@ -84,15 +84,21 @@ const NotFound = lazy(() =>
   import('@/pages/NotFound/NotFound').then((m) => ({ default: m.NotFound })),
 )
 
+const routeError = (
+  <main>
+    <Alert fullScreen />
+  </main>
+)
+
 const routes: RouteObject[] = [
   {
     path: ROUTE.HOME,
     element: (
-      <ErrorBoundary fallback={<Alert fullScreen />}>
+      <ErrorBoundary fallback={routeError}>
         <Layout />
       </ErrorBoundary>
     ),
-    errorElement: <Alert fullScreen />,
+    errorElement: routeError,
     children: [
       {
         index: true,
@@ -154,14 +160,20 @@ const routes: RouteObject[] = [
   {
     path: ROUTE.CHECKOUT,
     element: (
-      <Suspense fallback={<Loading fullScreen />}>
-        <Checkout />
-      </Suspense>
+      <main>
+        <Suspense fallback={<Loading fullScreen />}>
+          <Checkout />
+        </Suspense>
+      </main>
     ),
     loader: checkoutLoader,
   },
   {
-    element: <ProtectedRoute adminRequired />,
+    element: (
+      <main>
+        <ProtectedRoute adminRequired />
+      </main>
+    ),
     children: [
       {
         path: `${ROUTE.CMS}/*`,
@@ -201,7 +213,7 @@ const router = createBrowserRouter([
   {
     loader: appLoader,
     shouldRevalidate: () => false,
-    errorElement: <Alert fullScreen />,
+    errorElement: routeError,
     hydrateFallbackElement: <></>,
     children: routes,
   },

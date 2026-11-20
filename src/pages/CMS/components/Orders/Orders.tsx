@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import { useCmsOrdersQuery } from '@/store/api/ordersApi'
@@ -17,6 +17,7 @@ import { OrdersTable } from './Orders.style'
 
 export const Orders = () => {
   const { t } = useTranslation()
+  const captionId = useId()
 
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
   const {
@@ -73,11 +74,14 @@ export const Orders = () => {
 
   return (
     <>
-      <OrdersTable>
+      <OrdersTable aria-labelledby={captionId}>
         <table>
+          <caption id={captionId}>
+            {t('cms.entities.order', { count: 2 })}
+          </caption>
           <thead>
             <tr>
-              <th>
+              <th scope="col">
                 <input
                   type="checkbox"
                   aria-label={t('common.selectAll')}
@@ -95,15 +99,17 @@ export const Orders = () => {
                   }
                 />
               </th>
-              <th>{t('common.fields.id')}</th>
-              <th>{t('common.fields.paymentId')}</th>
-              <th>{t('common.fields.status')}</th>
-              <th>{t('common.fields.name')}</th>
-              <th>{t('common.fields.email')}</th>
-              <th>{t('common.fields.total')}</th>
-              <th>{t('common.fields.createdAt')}</th>
-              <th>{t('common.fields.paidAt')}</th>
-              <th className="actions">{t('common.fields.actions')}</th>
+              <th scope="col">{t('common.fields.id')}</th>
+              <th scope="col">{t('common.fields.paymentId')}</th>
+              <th scope="col">{t('common.fields.status')}</th>
+              <th scope="col">{t('common.fields.name')}</th>
+              <th scope="col">{t('common.fields.email')}</th>
+              <th scope="col">{t('common.fields.total')}</th>
+              <th scope="col">{t('common.fields.createdAt')}</th>
+              <th scope="col">{t('common.fields.paidAt')}</th>
+              <th scope="col" className="actions">
+                {t('common.fields.actions')}
+              </th>
             </tr>
           </thead>
           <tbody>

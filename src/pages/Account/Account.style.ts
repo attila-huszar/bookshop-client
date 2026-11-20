@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledAccount = styled.main`
+export const StyledAccount = styled.div`
   padding: 0 6.25rem 4rem;
 
   ${media.down('sm')`

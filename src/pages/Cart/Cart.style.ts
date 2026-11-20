@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledCart = styled.main`
+export const StyledCart = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;

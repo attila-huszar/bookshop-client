@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import { useCmsUsersQuery } from '@/store/api/usersApi'
@@ -16,6 +17,7 @@ import {
 
 export const Users = () => {
   const { t } = useTranslation()
+  const captionId = useId()
 
   const {
     data: allUsers = [],
@@ -72,11 +74,14 @@ export const Users = () => {
 
   return (
     <>
-      <StyledTable>
+      <StyledTable aria-labelledby={captionId}>
         <table>
+          <caption id={captionId}>
+            {t('cms.entities.user', { count: 2 })}
+          </caption>
           <thead>
             <tr>
-              <th>
+              <th scope="col">
                 <input
                   type="checkbox"
                   aria-label={t('common.selectAll')}
@@ -94,17 +99,19 @@ export const Users = () => {
                   }
                 />
               </th>
-              <th>{t('common.fields.id')}</th>
-              <th>{t('common.fields.firstName')}</th>
-              <th>{t('common.fields.lastName')}</th>
-              <th>{t('common.fields.email')}</th>
-              <th>{t('common.fields.role')}</th>
-              <th>{t('common.fields.address')}</th>
-              <th>{t('common.fields.avatar')}</th>
-              <th>{t('common.fields.verified')}</th>
-              <th>{t('common.fields.createdAt')}</th>
-              <th>{t('common.fields.updatedAt')}</th>
-              <th className="actions">{t('common.fields.actions')}</th>
+              <th scope="col">{t('common.fields.id')}</th>
+              <th scope="col">{t('common.fields.firstName')}</th>
+              <th scope="col">{t('common.fields.lastName')}</th>
+              <th scope="col">{t('common.fields.email')}</th>
+              <th scope="col">{t('common.fields.role')}</th>
+              <th scope="col">{t('common.fields.address')}</th>
+              <th scope="col">{t('common.fields.avatar')}</th>
+              <th scope="col">{t('common.fields.verified')}</th>
+              <th scope="col">{t('common.fields.createdAt')}</th>
+              <th scope="col">{t('common.fields.updatedAt')}</th>
+              <th scope="col" className="actions">
+                {t('common.fields.actions')}
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledOrders = styled.main`
+export const StyledOrders = styled.div`
   padding-inline: 6.25rem;
 
   > h2 {

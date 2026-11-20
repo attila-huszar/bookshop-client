@@ -132,6 +132,46 @@ describe('Search', () => {
     })
   })
 
+  it('announces the result count and supports Tab, arrow keys and Escape', async () => {
+    vi.spyOn(publicApi, 'baseRequest').mockImplementation(() =>
+      httpResponse([
+        { id: 1, title: 'First Book', author: 'Author', imgUrl: 'test.jpg' },
+        { id: 2, title: 'Second Book', author: 'Author', imgUrl: 'test.jpg' },
+      ]),
+    )
+    const user = userEvent.setup()
+    render(<Search />, { wrapper: Providers })
+
+    const input = screen.getByRole('textbox', { name: 'Search' })
+    await user.tab()
+    await user.keyboard('Book')
+    const firstResult = await screen.findByRole('link', { name: /First Book/ })
+    const secondResult = screen.getByRole('link', { name: /Second Book/ })
+    const status = screen.getByText('2 search results')
+    expect(status).toHaveAttribute('aria-live', 'polite')
+    expect(status).toHaveAttribute('aria-atomic', 'true')
+
+    await user.tab()
+    expect(firstResult).toHaveFocus()
+    await user.keyboard('{ArrowDown}')
+    expect(secondResult).toHaveFocus()
+    await user.keyboard('{ArrowUp}')
+    expect(firstResult).toHaveFocus()
+    await user.keyboard('{ArrowUp}')
+    expect(input).toHaveFocus()
+    await user.keyboard('{ArrowDown}')
+    expect(firstResult).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(input).toHaveFocus()
+    expect(input).toHaveValue('Book')
+    expect(firstResult).not.toBeVisible()
+    expect(status).toBeEmptyDOMElement()
+
+    await user.keyboard('{ArrowUp}')
+    expect(secondResult).toHaveFocus()
+    expect(status).toHaveTextContent('2 search results')
+  })
+
   it('shows pending search state and ignores results after the search is cleared', async () => {
     let completeRequest!: () => void
     const pending = new Promise<void>((resolve) => {
@@ -158,7 +198,7 @@ describe('Search', () => {
       'aria-busy',
       'true',
     )
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText(/^\d+ search results?$/)).not.toBeInTheDocument()
     expect(screen.queryByText('No search results...')).not.toBeInTheDocument()
     await waitFor(() => expect(get).toHaveBeenCalledTimes(1))
 
@@ -173,7 +213,7 @@ describe('Search', () => {
     expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('')
     expect(screen.getByRole('textbox', { name: 'Search' })).toHaveFocus()
     expect(screen.getByText('No search results...')).not.toBeVisible()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText(/^\d+ search results?$/)).not.toBeInTheDocument()
   })
 
   it('shows a failed search instead of reporting no results', async () => {
@@ -188,7 +228,7 @@ describe('Search', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Could not load search results. Please try again.',
     )
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText(/^\d+ search results?$/)).not.toBeInTheDocument()
     expect(screen.queryByText('No search results...')).not.toBeInTheDocument()
   })
 
@@ -294,7 +334,7 @@ describe('Search', () => {
       await existingRequest
     })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText(/^\d+ search results?$/)).not.toBeInTheDocument()
   })
 
   it('keeps the dropdown dismissed when a pending response arrives and can reopen empty results', async () => {

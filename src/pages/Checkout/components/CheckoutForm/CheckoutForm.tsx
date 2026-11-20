@@ -246,16 +246,16 @@ export function CheckoutForm() {
         type="submit"
         disabled={isPaymentDisabled}
         aria-busy={isLoading}
-        aria-label={orderButtonLabel}
         lang={language}
         id="submit">
-        <span>
-          {isLoading ? (
-            <div className="spinner" id="spinner" aria-hidden="true"></div>
-          ) : (
-            orderButtonLabel
-          )}
-        </span>
+        {isLoading ? (
+          <span className="payment-submit-status">
+            <span className="spinner" aria-hidden="true" />
+            {t('checkout.submittingPayment')}
+          </span>
+        ) : (
+          orderButtonLabel
+        )}
       </button>
       <button
         type="button"

@@ -95,6 +95,7 @@
     "loadError": "A nyelv nem tölthető be."
   },
   "navigation": {
+    "skipToContent": "Ugrás a fő tartalomra",
     "home": "Főoldal",
     "shop": "Bolt",
     "about": "Rólunk",
@@ -137,6 +138,8 @@
     "search": "Keresés",
     "searchPlaceholder": "Könyv keresése…",
     "searchError": "A keresési találatok betöltése nem sikerült. Kérjük, próbálja újra.",
+    "searchResultsCount_one": "{{count}} találat",
+    "searchResultsCount_other": "{{count}} találat",
     "noResults": "Nincs találat..."
   },
   "filters": {
@@ -247,6 +250,7 @@
     "loading": "Fizetés betöltése",
     "error": "A fizetés betöltése nem sikerült. Kérjük, próbálja újra később.",
     "statusLoading": "Fizetési állapot betöltése",
+    "submittingPayment": "Fizetés elküldése…",
     "changedInAnotherTab": "A fizetés állapota megváltozott egy másik lapon. Átirányítás a főoldalra...",
     "unavailable": "Ez a fizetés már nem érhető el. Átirányítás a főoldalra...",
     "cancel": "Fizetés megszakítása",

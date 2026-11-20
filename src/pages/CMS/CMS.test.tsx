@@ -385,9 +385,16 @@ describe('CMS deletion controls', () => {
     })
 
     expect(screen.getByRole('link', { name: 'Rendelések' })).toBeInTheDocument()
+    const orderRegion = screen.getByRole('region', { name: 'Rendelések' })
+    expect(orderRegion).toHaveAttribute('tabindex', '0')
+    expect(
+      within(orderRegion).getByRole('table', { name: 'Rendelések' }),
+    ).toBeInTheDocument()
     await userEvent.click(selectOrder)
     await userEvent.click(screen.getByRole('button', { name: 'Eltávolítás' }))
-    const dialog = screen.getByRole('dialog')
+    const dialog = screen.getByRole('dialog', {
+      name: /eltávolítja a kijelölt tételeket/i,
+    })
     expect(
       within(dialog).getByText(/eltávolítja a kijelölt tételeket/i),
     ).toBeInTheDocument()
