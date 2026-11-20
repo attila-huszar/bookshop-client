@@ -84,7 +84,7 @@ export const ImageWrapper = styled.div`
   `}
 `
 
-export const BookTitle = styled.p`
+export const BookTitle = styled.h1`
   grid-column: 2 / 3;
   grid-row: 1 / 2;
   font-size: 2rem;

@@ -56,6 +56,10 @@ describe('Filter', () => {
     expect(screen.getByText(/^discount$/i)).toBeInTheDocument()
     expect(screen.getByText(/publication year/i)).toBeInTheDocument()
     expect(screen.getByText(/rating/i)).toBeInTheDocument()
+    expect(screen.getByRole('slider', { name: 'Minimum price' })).toBeVisible()
+    expect(
+      screen.getByRole('spinbutton', { name: 'Maximum price' }),
+    ).toBeVisible()
     expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
   })
@@ -100,13 +104,15 @@ describe('Filter', () => {
     renderFilter()
 
     await userEvent.click(screen.getByLabelText(/^fiction$/i))
-    const starButton = screen.getAllByRole('button', { name: /rating/i })[2]
-
-    if (!starButton) {
-      throw new Error('Star button not found')
-    }
-
+    const rating = screen.getByRole('button', { name: 'Rating' })
+    expect(rating).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(rating)
+    expect(rating).toHaveAttribute('aria-expanded', 'true')
+    const starButton = screen.getByRole('button', {
+      name: 'Minimum rating 2.5',
+    })
     await userEvent.click(starButton)
+    expect(starButton).toHaveAttribute('aria-pressed', 'true')
     expect(booksQueryArgs(store.getState()).criteria).toBeUndefined()
 
     await userEvent.click(screen.getByRole('button', { name: /submit/i }))

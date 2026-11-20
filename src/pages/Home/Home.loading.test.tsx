@@ -97,9 +97,13 @@ describe('home section loading', () => {
         )
       })
 
-      await waitFor(() => {
-        expect(screen.getAllByAltText(data[0]!.title).length).toBeGreaterThan(0)
-      })
+      const title = data[0]!.title
+      const loadedContent =
+        Component === TopSellers || Component === Recommended
+          ? await screen.findByRole('link', { name: title })
+          : (await screen.findAllByAltText(title))[0]
+
+      expect(loadedContent).toBeInTheDocument()
       expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
     },

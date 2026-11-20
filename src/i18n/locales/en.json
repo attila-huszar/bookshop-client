@@ -140,11 +140,19 @@
     "searchError": "Could not load search results. Please try again.",
     "searchResultsCount_one": "{{count}} search result",
     "searchResultsCount_other": "{{count}} search results",
+    "matchingBooks_one": "{{count}} matching book",
+    "matchingBooks_other": "{{count}} matching books",
     "noResults": "No search results..."
   },
   "filters": {
+    "title": "Filters",
     "open": "Open filters",
     "close": "Close filters",
+    "minimumPrice": "Minimum price",
+    "maximumPrice": "Maximum price",
+    "earliestYear": "Earliest publication year",
+    "latestYear": "Latest publication year",
+    "minimumRating": "Minimum rating {{rating, number}}",
     "error": "Could not load filters",
     "clear": "Clear selection",
     "allBooks": "All Books",
@@ -205,11 +213,13 @@
     "expiredToken": "Invalid or expired token",
     "passwordMismatch": "Passwords do not match",
     "verifying": "Verifying",
+    "verifyEmail": "Email verification",
     "verified": "{{email}} successfully verified, you can now log in.",
     "verifyError": "Verification failed, please try again later.",
     "resetSent": "If an account exists for this email, a password reset link has been sent."
   },
   "account": {
+    "title": "My account",
     "loading": "Loading your account",
     "error": "Could not load your account",
     "hello": "Hello, <name>{{name}}</name>!",
@@ -462,6 +472,7 @@
     "required": "Enter the terms in both English and Hungarian."
   },
   "notFound": {
+    "pageTitle": "Page not found",
     "title": "Looks like you've got lost...",
     "description": "The page you're looking for doesn't exist or has been moved."
   },

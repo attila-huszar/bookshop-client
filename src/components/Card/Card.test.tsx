@@ -1,6 +1,6 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, useNavigate } from 'react-router'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
@@ -68,7 +68,9 @@ describe('Card', () => {
   it('renders book details and the add-to-basket action', () => {
     renderCard()
 
-    expect(screen.getByText('Test Book')).toBeInTheDocument()
+    const bookLink = screen.getByRole('link', { name: 'Test Book' })
+    expect(bookLink).toHaveAttribute('href', '/book?id=1')
+    expect(within(bookLink).queryByRole('button')).not.toBeInTheDocument()
     expect(screen.getByText('Test Description')).toBeInTheDocument()
     expect(screen.getByText('Add to Basket')).toBeInTheDocument()
   })

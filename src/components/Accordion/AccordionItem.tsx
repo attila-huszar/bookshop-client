@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { ChevronDownIcon } from '@/assets/svg'
 import { Content, Header, Item } from './AccordionItem.style'
 
@@ -16,13 +17,22 @@ export function AccordionItem({
   header,
   children,
 }: AccordionItemProps) {
+  const panelId = useId()
+
   return (
     <>
-      <Header $isOpen={isOpen} onClick={() => setIsOpen(panelKey)}>
-        <p>{header}</p>
-        <ChevronDownIcon color="var(--color-on-surface-variant)" />
-      </Header>
-      <Item $isOpen={isOpen}>
+      <h3>
+        <Header
+          type="button"
+          $isOpen={isOpen}
+          aria-expanded={isOpen}
+          aria-controls={panelId}
+          onClick={() => setIsOpen(panelKey)}>
+          <span>{header}</span>
+          <ChevronDownIcon aria-hidden="true" />
+        </Header>
+      </h3>
+      <Item id={panelId} $isOpen={isOpen} inert={!isOpen}>
         <Content>{children}</Content>
       </Item>
     </>

@@ -1,9 +1,13 @@
+import { Link } from 'react-router'
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledCard = styled.div`
+  position: relative;
+  display: flex;
   height: 17.5rem;
   width: 30rem;
+  padding: 1rem;
   border-radius: 10px;
   background-color: var(--color-surface-container-low);
   border: 1px solid var(--color-outline-variant);
@@ -14,21 +18,11 @@ export const StyledCard = styled.div`
     background-color: var(--color-surface-container);
   }
 
-  a {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    padding: 1rem;
-  }
-
   ${media.down('sm')`
     width: 100%;
     height: auto;
-
-    a {
-      flex-direction: column;
-      padding: 0.75rem;
-    }
+    flex-direction: column;
+    padding: 0.75rem;
   `}
 `
 
@@ -38,6 +32,11 @@ export const Details = styled.div`
   justify-content: space-between;
   padding: 4rem 0 0 2rem;
   min-width: 0;
+
+  > button {
+    position: relative;
+    z-index: 1;
+  }
 
   ${media.down('sm')`
     padding: 1rem 0 0;
@@ -58,8 +57,20 @@ export const Image = styled.img`
   `}
 `
 
-export const Title = styled.p`
+export const Title = styled(Link)`
   font-size: 1.125rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+  }
+
+  &:focus-visible::after {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
 `
 
 export const Description = styled.p`

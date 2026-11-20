@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { booksApi, useBooksQuery } from '@/store/api/booksApi'
 import { booksQueryArgs } from '@/store/selectors'
@@ -8,18 +7,21 @@ import { Card } from '@/components/Card'
 import { Loading } from '@/components/Loading'
 import { Pagination } from '@/components/Pagination'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { CacheTime } from '@/constants/time'
-import { SlidersIcon } from '@/assets/svg'
 import { EmptyFilterResults, Filter } from './components'
+import { StyledFilter } from './components/Filter/Filter.style'
+import { MobileFilters } from './components/Filter/MobileFilters'
 import {
-  FilterBackdrop,
-  FilterFloatingButton,
   ProductsGrid,
+  ResultsStatus,
+  ShopHeading,
   StyledProducts,
 } from './Products.style'
 
 export function Products() {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
   const queryArgs = useAppSelector(booksQueryArgs)
   const prefetchBooks = booksApi.usePrefetch('books', {
@@ -32,8 +34,6 @@ export function Products() {
   } = useBooksQuery(queryArgs, {
     refetchOnMountOrArgChange: CacheTime.FiveMinutes,
   })
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-
   const books = page?.books ?? []
 
   const renderBooks = () => {
@@ -69,21 +69,25 @@ export function Products() {
 
   return (
     <StyledProducts>
-      <section>{renderBooks()}</section>
-      <Filter
-        isMobileOpen={isFilterOpen}
-        onMobileClose={() => setIsFilterOpen(false)}
-      />
-      <FilterFloatingButton
-        type="button"
-        onClick={() => setIsFilterOpen((prev) => !prev)}
-        aria-label={isFilterOpen ? t('filters.close') : t('filters.open')}>
-        <SlidersIcon />
-      </FilterFloatingButton>
-      <FilterBackdrop
-        $visible={isFilterOpen}
-        onClick={() => setIsFilterOpen(false)}
-      />
+      <section>
+        <ShopHeading>{t('navigation.shop')}</ShopHeading>
+        <ResultsStatus aria-live="polite" aria-atomic="true">
+          {page && !booksError
+            ? t('catalogue.matchingBooks', { count: page.total })
+            : null}
+        </ResultsStatus>
+        {renderBooks()}
+      </section>
+      {isMobile ? (
+        <MobileFilters />
+      ) : (
+        <StyledFilter aria-labelledby="shop-filters-title">
+          <ShopHeading as="h2" id="shop-filters-title">
+            {t('filters.title')}
+          </ShopHeading>
+          <Filter />
+        </StyledFilter>
+      )}
     </StyledProducts>
   )
 }

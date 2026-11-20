@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { visuallyHidden } from '@/styles/accessibility.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledProducts = styled.div`
@@ -58,14 +59,10 @@ export const FilterFloatingButton = styled.button`
   `}
 `
 
-export const FilterBackdrop = styled.div<{ $visible: boolean }>`
-  display: none;
+export const ResultsStatus = styled.p`
+  ${visuallyHidden}
+`
 
-  ${({ $visible }) => media.down('sm')`
-    display: ${$visible ? 'block' : 'none'};
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    background: var(--color-backdrop);
-  `}
+export const ShopHeading = styled.h1`
+  ${visuallyHidden}
 `

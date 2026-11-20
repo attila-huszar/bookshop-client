@@ -30,15 +30,13 @@ import {
   GenreCheckBoxes,
   InputFields,
   Rating,
-  StyledFilter,
 } from './Filter.style'
 
 type FilterProps = {
-  isMobileOpen?: boolean
   onMobileClose?: () => void
 }
 
-export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
+export function Filter({ onMobileClose }: FilterProps) {
   const { t } = useTranslation()
 
   const booksFilters = useAppSelector((state) => state.books.booksFilters)
@@ -87,9 +85,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
         publishYear: [yearMin, yearMax],
       }),
     )
-    if (isMobileOpen) {
-      onMobileClose?.()
-    }
+    onMobileClose?.()
   }
 
   const handleFormReset = () => {
@@ -99,9 +95,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
     dispatch(setBooksFilterDiscount('allBooks'))
     dispatch(setBooksFilterPublishYear([]))
     dispatch(setBooksFilterRating(0.5))
-    if (isMobileOpen) {
-      onMobileClose?.()
-    }
+    onMobileClose?.()
   }
 
   const handleGenreChange = (e: InputEvent) => {
@@ -133,7 +127,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
   }
 
   return (
-    <StyledFilter $mobileOpen={isMobileOpen}>
+    <>
       {booksFiltersError ? (
         <Alert message={t('filters.error')} error={booksFiltersError} />
       ) : (
@@ -177,6 +171,10 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                         step={1}
                         marks={priceMarks}
                         styles={sliderStyles}
+                        ariaLabelForHandle={[
+                          t('filters.minimumPrice'),
+                          t('filters.maximumPrice'),
+                        ]}
                         onChange={(value) =>
                           handlePriceChange(value as number[])
                         }
@@ -185,6 +183,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                       <InputFields>
                         <Field
                           type="number"
+                          aria-label={t('filters.minimumPrice')}
                           inputMode="numeric"
                           value={priceMin}
                           onChange={(e: InputEvent) =>
@@ -205,6 +204,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                         -
                         <Field
                           type="number"
+                          aria-label={t('filters.maximumPrice')}
                           inputMode="numeric"
                           value={priceMax}
                           onChange={(e: InputEvent) =>
@@ -257,6 +257,10 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                         step={25}
                         marks={yearMarks}
                         styles={sliderStyles}
+                        ariaLabelForHandle={[
+                          t('filters.earliestYear'),
+                          t('filters.latestYear'),
+                        ]}
                         onChange={(value) =>
                           handlePublishYearChange(value as number[])
                         }
@@ -265,6 +269,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                       <InputFields>
                         <Field
                           type="number"
+                          aria-label={t('filters.earliestYear')}
                           inputMode="numeric"
                           value={yearMin}
                           onChange={(e: InputEvent) =>
@@ -285,6 +290,7 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                         -
                         <Field
                           type="number"
+                          aria-label={t('filters.latestYear')}
                           inputMode="numeric"
                           value={yearMax}
                           onChange={(e: InputEvent) =>
@@ -321,7 +327,8 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
                           onClick={() => {
                             handleRatingChange(rating)
                           }}
-                          aria-label={t('common.fields.rating')}
+                          aria-label={t('filters.minimumRating', { rating })}
+                          aria-pressed={booksFilters.active.rating === rating}
                         />
                       )
                     })}
@@ -340,6 +347,6 @@ export function Filter({ isMobileOpen = false, onMobileClose }: FilterProps) {
           </Formik>
         </FilterOptions>
       )}
-    </StyledFilter>
+    </>
   )
 }

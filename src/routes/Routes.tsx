@@ -14,7 +14,8 @@ import { Loading } from '@/components/Loading'
 import { appLoader, cartLoader, checkoutLoader } from './loaders'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
 import { PublicRoute } from './PublicRoute/PublicRoute'
-import { ROUTE } from './route'
+import { pageTitle, ROUTE } from './route'
+import { RouteAccessibility } from './RouteAccessibility'
 
 const Products = lazy(() =>
   import('@/pages/Products/Products').then((m) => ({ default: m.Products })),
@@ -85,7 +86,7 @@ const NotFound = lazy(() =>
 )
 
 const routeError = (
-  <main>
+  <main tabIndex={-1}>
     <Alert fullScreen />
   </main>
 )
@@ -107,19 +108,35 @@ const routes: RouteObject[] = [
       {
         path: ROUTE.BOOKS,
         element: <Products />,
+        handle: pageTitle('navigation.shop'),
       },
       {
         path: ROUTE.BOOK,
+        id: ROUTE.BOOK,
         element: <Product />,
+        handle: pageTitle('catalogue.details'),
       },
       {
         path: ROUTE.CART,
         element: <Cart />,
         loader: cartLoader,
+        handle: pageTitle('cart.title'),
       },
-      { path: ROUTE.VERIFICATION, element: <VerifyEmail /> },
-      { path: ROUTE.PASSWORD_RESET, element: <PasswordReset /> },
-      { path: `${ROUTE.TERMS}/:version?`, element: <Terms /> },
+      {
+        path: ROUTE.VERIFICATION,
+        element: <VerifyEmail />,
+        handle: pageTitle('auth.verifyEmail'),
+      },
+      {
+        path: ROUTE.PASSWORD_RESET,
+        element: <PasswordReset />,
+        handle: pageTitle('auth.passwordReset'),
+      },
+      {
+        path: `${ROUTE.TERMS}/:version?`,
+        element: <Terms />,
+        handle: pageTitle('terms.title'),
+      },
       {
         element: <PublicRoute />,
         children: [
@@ -129,10 +146,12 @@ const routes: RouteObject[] = [
               {
                 path: ROUTE.REGISTER,
                 element: <Registration />,
+                handle: pageTitle('auth.register'),
               },
               {
                 path: ROUTE.LOGIN,
                 element: <Login />,
+                handle: pageTitle('auth.login'),
               },
             ],
           },
@@ -144,39 +163,44 @@ const routes: RouteObject[] = [
           {
             path: ROUTE.ACCOUNT,
             element: <Account />,
+            handle: pageTitle('account.title'),
           },
           {
             path: ROUTE.ORDERS,
             element: <Orders />,
+            handle: pageTitle('orders.title'),
           },
         ],
       },
       {
         path: '*',
         element: <NotFound />,
+        handle: pageTitle('notFound.pageTitle'),
       },
     ],
   },
   {
     path: ROUTE.CHECKOUT,
     element: (
-      <main>
+      <main tabIndex={-1}>
         <Suspense fallback={<Loading fullScreen />}>
           <Checkout />
         </Suspense>
       </main>
     ),
     loader: checkoutLoader,
+    handle: pageTitle('checkout.title'),
   },
   {
     element: (
-      <main>
+      <main tabIndex={-1}>
         <ProtectedRoute adminRequired />
       </main>
     ),
     children: [
       {
         path: `${ROUTE.CMS}/*`,
+        handle: pageTitle('navigation.cms'),
         element: (
           <Suspense fallback={<Loading fullScreen />}>
             <CMS />
@@ -186,18 +210,22 @@ const routes: RouteObject[] = [
           {
             path: ROUTE.ORDERS,
             element: <CMSOrders />,
+            handle: pageTitle('cms.entities.order', 2),
           },
           {
             path: ROUTE.BOOKS,
             element: <CMSBooks />,
+            handle: pageTitle('cms.entities.book', 2),
           },
           {
             path: 'authors',
             element: <CMSAuthors />,
+            handle: pageTitle('cms.entities.author', 2),
           },
           {
             path: 'users',
             element: <CMSUsers />,
+            handle: pageTitle('cms.entities.user', 2),
           },
           {
             path: '*',
@@ -212,6 +240,7 @@ const routes: RouteObject[] = [
 const router = createBrowserRouter([
   {
     loader: appLoader,
+    element: <RouteAccessibility />,
     shouldRevalidate: () => false,
     errorElement: routeError,
     hydrateFallbackElement: <></>,

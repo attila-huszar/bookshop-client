@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { booksApi } from '@/store/api/booksApi'
 import { cartAdd } from '@/store/slices/cart'
@@ -33,32 +33,29 @@ export function Card({ book }: { book: Book }) {
 
   return (
     <StyledCard>
-      <Link
-        to={`/${ROUTE.BOOK}?id=${book.id}`}
-        onMouseEnter={() => prefetchBook(book.id)}
-        onFocus={() => prefetchBook(book.id)}>
-        <Image
-          src={book.imgUrl}
-          onError={(e) =>
-            ((e.target as HTMLImageElement).src = imagePlaceholder)
-          }
-          alt={book.title}></Image>
-        <Details>
-          <Title>{book.title}</Title>
-          <Description>{book.description}</Description>
-          <Price component="card" price={book.price} discount={book.discount} />
-          <Button
-            onClick={(e) => {
-              e.preventDefault()
-              handleCartAction()
-            }}
-            $icon={!isBookInCart && <CartAddIcon />}>
-            {isBookInCart
-              ? t('catalogue.viewBasket')
-              : t('catalogue.addToBasket')}
-          </Button>
-        </Details>
-      </Link>
+      <Image
+        src={book.imgUrl}
+        onError={(event) => (event.currentTarget.src = imagePlaceholder)}
+        alt=""
+      />
+      <Details>
+        <Title
+          to={`/${ROUTE.BOOK}?id=${book.id}`}
+          onMouseEnter={() => prefetchBook(book.id)}
+          onFocus={() => prefetchBook(book.id)}>
+          {book.title}
+        </Title>
+        <Description>{book.description}</Description>
+        <Price component="card" price={book.price} discount={book.discount} />
+        <Button
+          type="button"
+          onClick={handleCartAction}
+          $icon={!isBookInCart && <CartAddIcon aria-hidden="true" />}>
+          {isBookInCart
+            ? t('catalogue.viewBasket')
+            : t('catalogue.addToBasket')}
+        </Button>
+      </Details>
     </StyledCard>
   )
 }

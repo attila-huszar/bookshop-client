@@ -140,11 +140,19 @@
     "searchError": "A keresési találatok betöltése nem sikerült. Kérjük, próbálja újra.",
     "searchResultsCount_one": "{{count}} találat",
     "searchResultsCount_other": "{{count}} találat",
+    "matchingBooks_one": "{{count}} találat",
+    "matchingBooks_other": "{{count}} találat",
     "noResults": "Nincs találat..."
   },
   "filters": {
+    "title": "Szűrők",
     "open": "Szűrők megnyitása",
     "close": "Szűrők bezárása",
+    "minimumPrice": "Legalacsonyabb ár",
+    "maximumPrice": "Legmagasabb ár",
+    "earliestYear": "Legkorábbi kiadási év",
+    "latestYear": "Legkésőbbi kiadási év",
+    "minimumRating": "Minimumértékelés {{rating, number}}",
     "error": "A szűrők betöltése nem sikerült.",
     "clear": "Kijelölés törlése",
     "allBooks": "Minden könyv",
@@ -205,11 +213,13 @@
     "expiredToken": "Érvénytelen vagy lejárt hivatkozás.",
     "passwordMismatch": "A jelszavak nem egyeznek.",
     "verifying": "Ellenőrzés",
+    "verifyEmail": "E-mail-cím ellenőrzése",
     "verified": "Az e-mail-cím megerősítése sikerült: {{email}}. Most már bejelentkezhet.",
     "verifyError": "Az ellenőrzés nem sikerült. Kérjük, próbálja újra később.",
     "resetSent": "Ha az e-mail-címhez tartozik fiók, elküldtük a jelszó visszaállításához szükséges hivatkozást."
   },
   "account": {
+    "title": "Fiókom",
     "loading": "Fiók betöltése",
     "error": "A fiók betöltése nem sikerült.",
     "hello": "Üdvözöljük, <name>{{name}}</name>!",
@@ -462,6 +472,7 @@
     "required": "Adja meg a feltételeket angol és magyar nyelven is."
   },
   "notFound": {
+    "pageTitle": "Az oldal nem található",
     "title": "Úgy tűnik, eltévedt...",
     "description": "A keresett oldal nem létezik, vagy más címre költözött."
   },
