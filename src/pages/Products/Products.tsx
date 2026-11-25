@@ -19,7 +19,7 @@ import {
   StyledProducts,
 } from './Products.style'
 
-export function Products() {
+function Products() {
   const { t } = useTranslation()
   const { isMobile } = useBreakpoints()
   const dispatch = useAppDispatch()
@@ -91,3 +91,5 @@ export function Products() {
     </StyledProducts>
   )
 }
+
+export { Products as Component }

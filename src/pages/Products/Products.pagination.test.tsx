@@ -12,7 +12,7 @@ import { createAppStore } from '@/store/store'
 import { useAppSelector } from '@/hooks/redux'
 import { CacheTime, uiTiming } from '@/constants/time'
 import type { Book } from '@/types'
-import { Products } from './Products'
+import { Component as Products } from './Products'
 
 vi.mock('@/components/Card', () => ({
   Card: ({ book }: { book: Book }) => <p>{book.title}</p>,

@@ -120,7 +120,11 @@ describe('country reference data', () => {
     fetchMock.mockImplementation(() => response)
     renderCountries()
 
-    await userEvent.click(screen.getByText('HU'))
+    const trigger = screen.getByRole('button', {
+      name: 'Country Loading countries…',
+    })
+    expect(trigger).toHaveAttribute('aria-busy', 'true')
+    await userEvent.click(trigger)
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading countries…')
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
@@ -138,6 +142,7 @@ describe('country reference data', () => {
       await screen.findByText('Hungary', { selector: 'li span' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(trigger).toHaveAttribute('aria-busy', 'false')
   })
 
   it('shares one request across Strict Mode effects, dropdowns, remounts, and focus/reconnect', async () => {

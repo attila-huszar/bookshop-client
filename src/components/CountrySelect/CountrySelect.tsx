@@ -90,7 +90,9 @@ export function CountrySelect({
         : name,
     ]),
   )
-  const countryName = localizedCountries[selectedCountry]
+  const countryName =
+    localizedCountries[selectedCountry] ??
+    (hasSelection ? selectedCountry.toUpperCase() : t('country.select'))
 
   const fieldLabel = label ?? t('common.fields.country')
   const labelId = `${controlId}-label`
@@ -226,7 +228,7 @@ export function CountrySelect({
             }
           }}>
           <span>
-            {hasSelection && (
+            {hasSelection && !isLoading && (
               <CountryFlag
                 src={getFlagUrl(selectedCountry)}
                 alt=""
@@ -234,10 +236,7 @@ export function CountrySelect({
               />
             )}
             <CountryName id={valueId}>
-              {countryName ??
-                (hasSelection
-                  ? selectedCountry.toUpperCase()
-                  : t('country.select'))}
+              {isLoading ? t('country.loading') : countryName}
             </CountryName>
           </span>
           <ChevronDownIcon aria-hidden="true" />

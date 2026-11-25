@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   createBrowserRouter,
-  Navigate,
   type RouteObject,
   RouterProvider,
 } from 'react-router'
@@ -11,26 +10,15 @@ import { Layout } from '@/pages/Layout/Layout'
 import { Alert } from '@/components/Alert'
 import { AuthorizationMenu } from '@/components/AuthorizationMenu'
 import { Loading } from '@/components/Loading'
+import { cmsRoute } from './cmsRoutes'
 import { appLoader, cartLoader, checkoutLoader } from './loaders'
 import { ProtectedRoute } from './ProtectedRoute/ProtectedRoute'
 import { PublicRoute } from './PublicRoute/PublicRoute'
 import { pageTitle, ROUTE } from './route'
 import { RouteAccessibility } from './RouteAccessibility'
 
-const Products = lazy(() =>
-  import('@/pages/Products/Products').then((m) => ({ default: m.Products })),
-)
-const Product = lazy(() =>
-  import('@/pages/Product/Product').then((m) => ({ default: m.Product })),
-)
-const Registration = lazy(() =>
-  import('@/pages/Registration/Registration').then((m) => ({
-    default: m.Registration,
-  })),
-)
-const Login = lazy(() =>
-  import('@/pages/Login/Login').then((m) => ({ default: m.Login })),
-)
+const loadAuthForms = () => import('./authForms')
+
 const Cart = lazy(() =>
   import('@/pages/Cart/Cart').then((m) => ({ default: m.Cart })),
 )
@@ -40,49 +28,8 @@ const Account = lazy(() =>
 const Orders = lazy(() =>
   import('@/pages/Orders/Orders').then((m) => ({ default: m.Orders })),
 )
-const VerifyEmail = lazy(() =>
-  import('@/pages/VerifyEmail/VerifyEmail').then((m) => ({
-    default: m.VerifyEmail,
-  })),
-)
-const PasswordReset = lazy(() =>
-  import('@/pages/PasswordReset/PasswordReset').then((m) => ({
-    default: m.PasswordReset,
-  })),
-)
 const Checkout = lazy(() =>
   import('@/pages/Checkout/Checkout').then((m) => ({ default: m.Checkout })),
-)
-const Terms = lazy(() =>
-  import('@/pages/Terms/Terms').then((module) => ({ default: module.Terms })),
-)
-
-const CMS = lazy(() =>
-  import('@/pages/CMS/CMS').then((m) => ({ default: m.CMS })),
-)
-const CMSOrders = lazy(() =>
-  import('@/pages/CMS/components/Orders/Orders').then((m) => ({
-    default: m.Orders,
-  })),
-)
-const CMSBooks = lazy(() =>
-  import('@/pages/CMS/components/Books/Books').then((m) => ({
-    default: m.Books,
-  })),
-)
-const CMSAuthors = lazy(() =>
-  import('@/pages/CMS/components/Authors/Authors').then((m) => ({
-    default: m.Authors,
-  })),
-)
-const CMSUsers = lazy(() =>
-  import('@/pages/CMS/components/Users/Users').then((m) => ({
-    default: m.Users,
-  })),
-)
-
-const NotFound = lazy(() =>
-  import('@/pages/NotFound/NotFound').then((m) => ({ default: m.NotFound })),
 )
 
 const routeError = (
@@ -103,54 +50,54 @@ const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Home />,
+        Component: Home,
       },
       {
         path: ROUTE.BOOKS,
-        element: <Products />,
+        lazy: () => import('@/pages/Products/Products'),
         handle: pageTitle('navigation.shop'),
       },
       {
         path: ROUTE.BOOK,
         id: ROUTE.BOOK,
-        element: <Product />,
+        lazy: () => import('@/pages/Product/Product'),
         handle: pageTitle('catalogue.details'),
       },
       {
         path: ROUTE.CART,
-        element: <Cart />,
+        Component: Cart,
         loader: cartLoader,
         handle: pageTitle('cart.title'),
       },
       {
         path: ROUTE.VERIFICATION,
-        element: <VerifyEmail />,
+        lazy: () => import('@/pages/VerifyEmail/VerifyEmail'),
         handle: pageTitle('auth.verifyEmail'),
       },
       {
         path: ROUTE.PASSWORD_RESET,
-        element: <PasswordReset />,
+        lazy: () => import('@/pages/PasswordReset/PasswordReset'),
         handle: pageTitle('auth.passwordReset'),
       },
       {
         path: `${ROUTE.TERMS}/:version?`,
-        element: <Terms />,
+        lazy: () => import('@/pages/Terms/Terms'),
         handle: pageTitle('terms.title'),
       },
       {
-        element: <PublicRoute />,
+        Component: PublicRoute,
         children: [
           {
-            element: <AuthorizationMenu />,
+            Component: AuthorizationMenu,
             children: [
               {
                 path: ROUTE.REGISTER,
-                element: <Registration />,
+                lazy: async () => (await loadAuthForms()).registerRoute,
                 handle: pageTitle('auth.register'),
               },
               {
                 path: ROUTE.LOGIN,
-                element: <Login />,
+                lazy: async () => (await loadAuthForms()).loginRoute,
                 handle: pageTitle('auth.login'),
               },
             ],
@@ -158,23 +105,23 @@ const routes: RouteObject[] = [
         ],
       },
       {
-        element: <ProtectedRoute />,
+        Component: ProtectedRoute,
         children: [
           {
             path: ROUTE.ACCOUNT,
-            element: <Account />,
+            Component: Account,
             handle: pageTitle('account.title'),
           },
           {
             path: ROUTE.ORDERS,
-            element: <Orders />,
+            Component: Orders,
             handle: pageTitle('orders.title'),
           },
         ],
       },
       {
         path: '*',
-        element: <NotFound />,
+        lazy: () => import('@/pages/NotFound/NotFound'),
         handle: pageTitle('notFound.pageTitle'),
       },
     ],
@@ -191,59 +138,16 @@ const routes: RouteObject[] = [
     loader: checkoutLoader,
     handle: pageTitle('checkout.title'),
   },
-  {
-    element: (
-      <main tabIndex={-1}>
-        <ProtectedRoute adminRequired />
-      </main>
-    ),
-    children: [
-      {
-        path: `${ROUTE.CMS}/*`,
-        handle: pageTitle('navigation.cms'),
-        element: (
-          <Suspense fallback={<Loading fullScreen />}>
-            <CMS />
-          </Suspense>
-        ),
-        children: [
-          {
-            path: ROUTE.ORDERS,
-            element: <CMSOrders />,
-            handle: pageTitle('cms.entities.order', 2),
-          },
-          {
-            path: ROUTE.BOOKS,
-            element: <CMSBooks />,
-            handle: pageTitle('cms.entities.book', 2),
-          },
-          {
-            path: 'authors',
-            element: <CMSAuthors />,
-            handle: pageTitle('cms.entities.author', 2),
-          },
-          {
-            path: 'users',
-            element: <CMSUsers />,
-            handle: pageTitle('cms.entities.user', 2),
-          },
-          {
-            path: '*',
-            element: <Navigate to={`/${ROUTE.CMS}/${ROUTE.ORDERS}`} replace />,
-          },
-        ],
-      },
-    ],
-  },
+  cmsRoute,
 ]
 
 const router = createBrowserRouter([
   {
     loader: appLoader,
-    element: <RouteAccessibility />,
+    Component: RouteAccessibility,
     shouldRevalidate: () => false,
     errorElement: routeError,
-    hydrateFallbackElement: <></>,
+    hydrateFallbackElement: <Loading fullScreen />,
     children: routes,
   },
 ])

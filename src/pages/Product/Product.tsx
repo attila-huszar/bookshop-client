@@ -27,7 +27,7 @@ import {
   StyledProduct,
 } from './Product.style'
 
-export function Product() {
+function Product() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
@@ -120,3 +120,5 @@ export function Product() {
     </>
   )
 }
+
+export { Product as Component }

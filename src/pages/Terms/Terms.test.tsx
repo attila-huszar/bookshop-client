@@ -4,7 +4,7 @@ import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTermsDocumentQuery } from '@/store/api/termsApi'
 import { timeZone } from '@/constants/time'
-import { Terms } from './Terms'
+import { Component as Terms } from './Terms'
 
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),

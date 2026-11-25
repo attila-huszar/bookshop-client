@@ -17,7 +17,7 @@ import { SpinnerIcon } from '@/assets/svg'
 import { ButtonWrapper } from '@/styles/form.styles'
 import { StyledPasswordReset } from './PasswordReset.style'
 
-export function PasswordReset() {
+function PasswordReset() {
   const { search } = useLocation()
   const token = new URLSearchParams(search).get('token')
 
@@ -162,3 +162,5 @@ function PasswordResetForm({ token }: { token: string | null }) {
     </StyledPasswordReset>
   )
 }
+
+export { PasswordReset as Component }

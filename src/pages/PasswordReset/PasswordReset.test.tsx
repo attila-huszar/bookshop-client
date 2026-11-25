@@ -7,7 +7,7 @@ import { userEvent } from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { postPasswordResetSubmit, postVerifyPasswordReset } from '@/api/users'
 import { AuthErrorCode } from '@/types/ApiError'
-import { PasswordReset } from './PasswordReset'
+import { Component as PasswordReset } from './PasswordReset'
 
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),

@@ -9,7 +9,7 @@ import {
   StyledNotFound,
 } from './NotFound.style'
 
-export function NotFound() {
+function NotFound() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
@@ -39,3 +39,5 @@ export function NotFound() {
     </StyledNotFound>
   )
 }
+
+export { NotFound as Component }
