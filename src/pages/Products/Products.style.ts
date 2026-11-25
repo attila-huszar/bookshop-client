@@ -1,16 +1,20 @@
 import { styled } from 'styled-components'
+import { visuallyHidden } from '@/styles/accessibility.styles'
+import { buttonInteractionStyles } from '@/styles/button.styles'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledProducts = styled.main`
+export const StyledProducts = styled.div`
   padding: 0 5rem 4rem;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
 
-  > section {
-    width: 100%;
-  }
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
 
   ${media.down('sm')`
+    grid-template-columns: minmax(0, 1fr);
     padding: 0 1rem 2rem;
   `}
 `
@@ -20,17 +24,13 @@ export const ProductsGrid = styled.div`
   flex-wrap: wrap;
   column-gap: 0.5rem;
   row-gap: 2rem;
-  min-width: 31.5rem;
-
-  ${media.down('sm')`
-    min-width: auto;
-  `}
 `
 
 export const FilterFloatingButton = styled.button`
   display: none;
 
   ${media.down('sm')`
+    ${buttonInteractionStyles}
     position: fixed;
     right: 1.5rem;
     bottom: 1.5rem;
@@ -44,11 +44,16 @@ export const FilterFloatingButton = styled.button`
     border-radius: 50%;
     background: var(--color-primary);
     color: var(--color-on-primary);
-    box-shadow: var(--shadow-raised);
-    transition: background-color 0.2s ease-out;
+    box-shadow: var(--shadow);
 
-    &:hover:not(:disabled) {
-      background-color: var(--color-primary-hover);
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background-color: var(--color-primary-hover);
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: color-mix(in srgb, var(--color-primary-hover), black 6%);
     }
 
     > svg {
@@ -58,14 +63,10 @@ export const FilterFloatingButton = styled.button`
   `}
 `
 
-export const FilterBackdrop = styled.div<{ $visible: boolean }>`
-  display: none;
+export const ResultsStatus = styled.p`
+  ${visuallyHidden}
+`
 
-  ${({ $visible }) => media.down('sm')`
-    display: ${$visible ? 'block' : 'none'};
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    background: var(--color-backdrop);
-  `}
+export const ShopHeading = styled.h1`
+  ${visuallyHidden}
 `

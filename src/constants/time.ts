@@ -23,6 +23,7 @@ export const timeZone = 'Europe/Budapest'
 export const uiTiming = {
   toastDurationMs: TimeMs.ThreeSeconds,
   defaultDebounceMs: TimeMs.ThreeHundredMilliseconds,
+  prefetchDelayMs: TimeMs.TwoHundredMilliseconds,
   countrySearchResetMs: TimeMs.TwoHundredMilliseconds,
   checkoutRedirectMs: TimeMs.TwoSeconds,
 } as const

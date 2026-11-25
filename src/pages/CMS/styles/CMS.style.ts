@@ -1,18 +1,13 @@
 import { styled } from 'styled-components'
+import { visuallyHidden } from '@/styles/accessibility.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledCMS = styled.section`
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  min-width: var(--min-width);
   max-width: var(--max-width);
   margin: 0 auto;
-
-  ${media.down('sm')`
-    min-width: 100%;
-    max-width: 100%;
-  `}
 `
 
 export const MainContainer = styled.div`
@@ -83,14 +78,24 @@ export const TableActions = styled.div`
   gap: 0.25rem;
 `
 
-export const StyledTable = styled.div`
-  max-width: var(--max-width);
+export const StyledTable = styled.div.attrs({ role: 'region', tabIndex: 0 })`
+  max-width: 100%;
+  overflow-x: auto;
   background: var(--color-surface-container);
   box-shadow: var(--shadow);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 
   table {
     width: 100%;
     border-collapse: collapse;
+
+    > caption {
+      ${visuallyHidden}
+    }
 
     tr {
       height: 3rem;

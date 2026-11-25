@@ -1,11 +1,15 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledCart = styled.main`
+export const StyledCart = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;
   padding-inline: 6.25rem;
+
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
 
   ${media.down('sm')`
     padding-inline: 1.25rem;
@@ -15,15 +19,11 @@ export const StyledCart = styled.main`
 export const CartGrid = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: 8fr 2fr 2fr 2fr 1fr;
+  grid-template-columns: minmax(0, 8fr) 2fr 2fr 2fr 1fr;
   align-items: center;
   column-gap: 0.5rem;
   row-gap: 1rem;
   min-width: 0;
-
-  ${media.up('sm')`
-    min-width: 38rem;
-  `}
 
   ${media.down('sm')`
     grid-template-columns: auto auto auto auto;
@@ -57,6 +57,7 @@ export const Book = styled.div<{ $hasSeparator: boolean }>`
     margin-top: ${({ $hasSeparator }) => ($hasSeparator ? '1rem' : '0')};
     margin-right: clamp(0.125rem, 2vw, 5rem);
     font-size: 1.125rem;
+    overflow-wrap: anywhere;
 
     &:hover {
       border-radius: var(--border-radius);
@@ -73,12 +74,17 @@ export const Book = styled.div<{ $hasSeparator: boolean }>`
     background-color: var(--color-surface-container-high);
   }
 
+  ${media.down('md')`
+    a {
+      gap: 1rem;
+    }
+  `}
+
   ${media.down('sm')`
     grid-column: 1 / -1;
 
     a {
       margin-right: 0;
-      gap: 1rem;
       font-size: 1rem;
     }
   `}
@@ -197,10 +203,6 @@ export const TotalPrice = styled.div`
     font-size: 1.25rem;
     font-weight: 700;
   }
-
-  ${media.up('sm')`
-    min-width: 38rem;
-  `}
 
   ${media.down('sm')`
     padding: 1rem;

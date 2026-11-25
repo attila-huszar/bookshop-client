@@ -50,7 +50,7 @@ export const RecipientSearch = styled.span`
 `
 
 export const OutboxTable = styled(StyledTable)`
-  overflow-x: auto;
+  contain: inline-size;
 
   table {
     min-width: 1000px;

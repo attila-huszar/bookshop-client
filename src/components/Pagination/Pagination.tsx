@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/Button'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { scrollToTop } from '@/helpers/scrollToTop'
+import { uiTiming } from '@/constants/time'
 import { CaretLeftEndIcon, CaretLeftIcon, EllipsisIcon } from '@/assets/svg'
 import { PageSelectButton, StyledPagination } from './Pagination.style'
 
@@ -22,25 +24,32 @@ export function Pagination({
   const { t } = useTranslation()
   const totalPages = Math.ceil(total / itemsPerPage)
 
-  const changePage = (page: number) => {
-    if (page < 1 || page > totalPages || page === currentPage) {
-      return
-    }
-
-    onPageChange(page)
-    scrollToTop()
-  }
-
   const prefetchPage = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       onPagePrefetch?.(page)
     }
   }
 
+  const schedulePagePrefetch = useDebouncedCallback(
+    prefetchPage,
+    uiTiming.prefetchDelayMs,
+  )
+  const prefetchPageOnHover = onPagePrefetch ? schedulePagePrefetch : undefined
+
+  const changePage = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) {
+      return
+    }
+
+    schedulePagePrefetch.cancel()
+    onPageChange(page)
+    scrollToTop()
+  }
+
   const getPageNumbers = () => {
     const delta = 2
     const range = []
-    const rangeWithDots = []
+    const rangeWithDots: (number | 'ellipsis')[] = []
 
     range.push(1)
 
@@ -84,7 +93,8 @@ export function Pagination({
         onClick={() => changePage(1)}
         icon={<CaretLeftEndIcon />}
         title={t('pagination.first')}
-        onMouseEnter={() => prefetchPage(1)}
+        onMouseEnter={() => prefetchPageOnHover?.(1)}
+        onMouseLeave={prefetchPageOnHover?.cancel}
         onFocus={() => prefetchPage(1)}
         $size="sm"
         disabled={currentPage === 1}
@@ -94,23 +104,23 @@ export function Pagination({
         onClick={() => changePage(currentPage - 1)}
         icon={<CaretLeftIcon />}
         title={t('pagination.previous')}
-        onMouseEnter={() => prefetchPage(currentPage - 1)}
+        onMouseEnter={() => prefetchPageOnHover?.(currentPage - 1)}
+        onMouseLeave={prefetchPageOnHover?.cancel}
         onFocus={() => prefetchPage(currentPage - 1)}
         $size="sm"
         disabled={currentPage === 1}
       />
-      {pageNumbers.map((pageNumber, idx) => {
-        if (pageNumber === 'ellipsis') {
+      {pageNumbers.map((page, idx) => {
+        if (page === 'ellipsis') {
           return <EllipsisIcon key={`ellipsis-${idx}`} width={14} />
         }
-
-        const page = pageNumber as number
 
         return (
           <PageSelectButton
             type="button"
             key={`pageSelectBtn-${page}`}
-            onMouseEnter={() => prefetchPage(page)}
+            onMouseEnter={() => prefetchPageOnHover?.(page)}
+            onMouseLeave={prefetchPageOnHover?.cancel}
             onFocus={() => prefetchPage(page)}
             onClick={() => changePage(page)}
             disabled={currentPage === page}
@@ -125,7 +135,8 @@ export function Pagination({
         onClick={() => changePage(currentPage + 1)}
         icon={<CaretLeftIcon />}
         title={t('pagination.next')}
-        onMouseEnter={() => prefetchPage(currentPage + 1)}
+        onMouseEnter={() => prefetchPageOnHover?.(currentPage + 1)}
+        onMouseLeave={prefetchPageOnHover?.cancel}
         onFocus={() => prefetchPage(currentPage + 1)}
         $size="sm"
         $flipH
@@ -136,7 +147,8 @@ export function Pagination({
         onClick={() => changePage(totalPages)}
         icon={<CaretLeftEndIcon />}
         title={t('pagination.last')}
-        onMouseEnter={() => prefetchPage(totalPages)}
+        onMouseEnter={() => prefetchPageOnHover?.(totalPages)}
+        onMouseLeave={prefetchPageOnHover?.cancel}
         onFocus={() => prefetchPage(totalPages)}
         $size="sm"
         $flipH

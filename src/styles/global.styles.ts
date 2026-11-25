@@ -14,7 +14,6 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   :root {
-    --min-width: 54rem;
     --max-width: 90rem;
     --color-page-frame: #5a6547;
     --color-surface-container-lowest: #ffffff;
@@ -63,15 +62,15 @@ export const GlobalStyle = createGlobalStyle`
     --color-mask-opaque: #000000;
 
     --border-radius: 6px;
+    --button-radius: 12px;
     --corner-cut: 1.25rem;
     --shadow: 0 10px 18px -6px var(--color-shadow-medium), 0 3px 6px -2px var(--color-shadow-light);
     --shadow-page: 0 8px 18px -6px var(--color-shadow-medium), 0 2px 6px -2px var(--color-shadow-light);
     --shadow-popover: 0 4px 10px -3px var(--color-shadow-medium);
     --shadow-raised: 0 8px 20px -4px var(--color-shadow-strong);
     --shadow-book: 0 5px 10px var(--color-shadow-medium), 0 2px 4px var(--color-shadow-light);
-    --shadow-button: 0 3px 6px -2px var(--color-shadow-medium), 0 1px 2px var(--color-shadow-light);
-    --shadow-button-hover: 0 5px 10px -3px var(--color-shadow-medium), 0 2px 3px var(--color-shadow-light);
-    --shadow-button-pressed: inset 0 2px 4px var(--color-shadow-medium);
+    --shadow-button: 0 2px 4px var(--color-shadow-light);
+    --shadow-button-hover: 0 4px 8px var(--color-shadow-light);
   }
 
   #root {

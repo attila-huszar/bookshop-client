@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { buttonInteractionStyles } from '@/styles/button.styles'
 
 export const StyledPagination = styled.nav`
   display: flex;
@@ -10,23 +11,30 @@ export const StyledPagination = styled.nav`
 `
 
 export const PageSelectButton = styled.button`
-  height: 1.75rem;
-  width: 1.75rem;
+  ${buttonInteractionStyles}
+  height: 2rem;
+  min-width: 2rem;
+  padding-inline: 0.25rem;
   font-size: 0.875rem;
+  font-weight: 650;
   color: var(--color-on-surface-variant);
-  background: none;
-  border: 2px solid var(--color-on-surface-variant);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color 0.2s ease-out;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--button-radius);
 
-  &:hover:not(:disabled) {
-    background-color: var(--color-surface-container-high);
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface-container);
+    }
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--color-surface-container-highest);
   }
 
   &:disabled {
     color: var(--color-on-primary);
     background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    cursor: default;
   }
 `

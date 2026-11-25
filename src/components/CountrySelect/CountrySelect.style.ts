@@ -6,15 +6,23 @@ import {
 } from '@/styles/dropdown.styles'
 import { baseInputStyles, FormTypes } from '@/styles/form.styles'
 
-export const SelectedOption = styled.div<FormTypes>`
+export const SelectedOption = styled.button<
+  Pick<FormTypes, '$valid' | '$error'>
+>`
   ${baseInputStyles}
   display: flex;
   align-items: center;
   gap: 0.5rem;
   height: 3rem;
   cursor: pointer;
+  text-align: start;
 
-  & > div {
+  &:disabled {
+    background-color: var(--color-surface-container-low);
+    cursor: default;
+  }
+
+  & > span {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -60,6 +68,11 @@ export const OptionsList = styled.ul`
   ${dropdownListStyles}
   max-height: 200px;
   overflow-y: auto;
+`
+
+export const DropdownStatus = styled.p`
+  margin: 0;
+  padding: 0.75rem;
 `
 
 export const OptionItem = styled.li`

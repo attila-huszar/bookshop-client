@@ -253,16 +253,16 @@ export const BookEditForm: FC<Props> = ({
             )}
             <BookTitleRow>
               <div>
-                <p>{t('common.fields.title')}</p>
                 <FormikField
+                  label={t('common.fields.title')}
                   name="title"
                   placeholder={t('common.fields.title')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.author')}</p>
                 <FormikField
+                  label={t('common.fields.author')}
                   name="authorId"
                   type="select"
                   disabled={authorsLoading}
@@ -278,8 +278,8 @@ export const BookEditForm: FC<Props> = ({
                 </FormikField>
               </div>
               <div>
-                <p>{t('common.fields.published')}</p>
                 <FormikField
+                  label={t('common.fields.published')}
                   name="publishYear"
                   placeholder={t('common.fields.published')}
                   type="number"
@@ -288,8 +288,8 @@ export const BookEditForm: FC<Props> = ({
             </BookTitleRow>
             <FullRow>
               <div>
-                <p>{t('common.fields.description')}</p>
                 <FormikField
+                  label={t('common.fields.description')}
                   name="description"
                   placeholder={t('common.fields.description')}
                   type="textarea"
@@ -299,16 +299,16 @@ export const BookEditForm: FC<Props> = ({
             </FullRow>
             <BookGenreRow>
               <div>
-                <p>{t('common.fields.genre')}</p>
                 <FormikField
+                  label={t('common.fields.genre')}
                   name="genre"
                   placeholder={t('common.fields.genre')}
                   type="text"
                 />
               </div>
               <div>
-                <p>{t('common.fields.rating')}</p>
                 <FormikField
+                  label={t('common.fields.rating')}
                   name="rating"
                   placeholder={t('common.fields.rating')}
                   type="number"
@@ -317,24 +317,24 @@ export const BookEditForm: FC<Props> = ({
             </BookGenreRow>
             <Row>
               <div>
-                <p>{t('common.fields.price')}</p>
                 <FormikField
+                  label={t('common.fields.price')}
                   name="price"
                   placeholder={t('common.fields.price')}
                   type="number"
                 />
               </div>
               <div>
-                <p>{t('common.fields.discountPercent')}</p>
                 <FormikField
+                  label={t('common.fields.discountPercent')}
                   name="discount"
                   placeholder={t('common.fields.discount')}
                   type="number"
                 />
               </div>
               <div>
-                <p>{t('common.fields.discountPrice')}</p>
                 <FormikField
+                  label={t('common.fields.discountPrice')}
                   value={(
                     calculatePriceCents(
                       Number(values.price) || 0,
@@ -350,8 +350,8 @@ export const BookEditForm: FC<Props> = ({
             </Row>
             <BookSettingsRow>
               <div style={{ position: 'relative' }}>
-                <p>{t('common.fields.imageUrl')}</p>
                 <FormikField
+                  label={t('common.fields.imageUrl')}
                   name="imgUrl"
                   placeholder={t('common.fields.imageUrl')}
                   type="text"
@@ -399,12 +399,18 @@ export const BookEditForm: FC<Props> = ({
                 />
               </div>
               <div>
-                <p>{t('common.fields.topSellers')}</p>
-                <FormikField name="topSellers" type="checkbox" />
+                <FormikField
+                  label={t('common.fields.topSellers')}
+                  name="topSellers"
+                  type="checkbox"
+                />
               </div>
               <div>
-                <p>{t('common.fields.newRelease')}</p>
-                <FormikField name="newRelease" type="checkbox" />
+                <FormikField
+                  label={t('common.fields.newRelease')}
+                  name="newRelease"
+                  type="checkbox"
+                />
               </div>
             </BookSettingsRow>
           </fieldset>

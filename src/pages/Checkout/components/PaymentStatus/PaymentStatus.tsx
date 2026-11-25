@@ -6,6 +6,7 @@ import { ROUTE } from '@/routes/route'
 import { cartClear } from '@/store/slices/cart'
 import { resetCheckout } from '@/store/thunks/checkout'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePaymentStatus } from '@/hooks/usePaymentStatus'
 import {
   isSuccessPaymentIntentStatus,
@@ -15,12 +16,14 @@ import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 import logo from '@/assets/image/logo.png'
-import { Logo, LottieWrapper, StyledPaymentStatus } from './PaymentStatus.style'
+import { CheckoutButton } from '../../Checkout.style'
+import { Logo, StatusGraphic, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const canAnimate = useMediaQuery('(prefers-reduced-motion: no-preference)')
 
   const payment = useAppSelector((state) => state.payment.payment)
   const paymentId = payment?.paymentId
@@ -81,35 +84,45 @@ export function PaymentStatus() {
         <img src={logo} alt="Bookshop" />
         <h1>Bookshop</h1>
       </Logo>
-      <LottieWrapper>
-        <LottieLight src={animation} autoplay loop={isPending} />
-      </LottieWrapper>
+      <StatusGraphic aria-hidden="true">
+        {canAnimate ? (
+          <LottieLight src={animation} autoplay loop={isPending} />
+        ) : (
+          paymentStatusEmoji[type]
+        )}
+      </StatusGraphic>
       <p>
-        <span aria-hidden="true">{paymentStatusEmoji[type]}</span> {primaryLine}
+        {canAnimate && (
+          <span aria-hidden="true">{paymentStatusEmoji[type]} </span>
+        )}
+        {primaryLine}
       </p>
       {canRetryStatus && (
-        <button onClick={retry} type="button">
+        <CheckoutButton onClick={retry} type="button">
           {t('payment.actions.checkAgain')}
-        </button>
+        </CheckoutButton>
       )}
       {canReturnToCheckout && (
-        <button
+        <CheckoutButton
           onClick={() => void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })}
           type="button">
           {t('payment.actions.returnToCheckout')}
-        </button>
+        </CheckoutButton>
       )}
       {canReturnToCart && (
-        <button
+        <CheckoutButton
           onClick={() => leaveCheckout(`/${ROUTE.CART}`, { replace: true })}
           type="button">
           {t('common.actions.backToCart')}
-        </button>
+        </CheckoutButton>
       )}
       {(canReturnToCart || isStripeSuccess) && (
-        <button onClick={() => leaveCheckout('/')} type="button">
+        <CheckoutButton
+          onClick={() => leaveCheckout('/')}
+          type="button"
+          $inverted={canReturnToCart}>
           {t('common.actions.backToShop')}
-        </button>
+        </CheckoutButton>
       )}
     </StyledPaymentStatus>
   )

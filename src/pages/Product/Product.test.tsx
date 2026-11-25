@@ -7,7 +7,7 @@ import { vi } from 'vitest'
 import { useBookQuery } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
-import { Product } from './Product'
+import { Component as Product } from './Product'
 
 let router: ReturnType<typeof createMemoryRouter> | undefined
 let store: ReturnType<typeof createAppStore>

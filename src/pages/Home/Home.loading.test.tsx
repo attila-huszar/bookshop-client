@@ -4,11 +4,13 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import ky from 'ky'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as publicApi from '@/api/baseRequest'
+import * as usersApi from '@/api/users'
 import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { newsApi } from '@/store/api/newsApi'
 import { booksQueryArgs } from '@/store/selectors'
 import { createAppStore } from '@/store/store'
+import { bootstrapSession } from '@/store/thunks/auth'
 import { Recommended } from '@/components/Recommended'
 import type { Book } from '@/types'
 import { News } from './components/News/News'
@@ -97,16 +99,20 @@ describe('home section loading', () => {
         )
       })
 
-      await waitFor(() => {
-        expect(screen.getAllByAltText(data[0]!.title).length).toBeGreaterThan(0)
-      })
+      const title = data[0]!.title
+      const loadedContent =
+        Component === TopSellers || Component === Recommended
+          ? await screen.findByRole('link', { name: title })
+          : (await screen.findAllByAltText(title))[0]
+
+      expect(loadedContent).toBeInTheDocument()
       expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
     },
   )
 })
 
-describe('homepage book errors', () => {
+describe('homepage requests', () => {
   const renderHome = () =>
     render(
       <Provider store={store}>
@@ -115,6 +121,45 @@ describe('homepage book errors', () => {
         </MemoryRouter>
       </Provider>,
     )
+
+  it.each([
+    { session: 'signed-in', accessToken: 'restored-token' },
+    { session: 'guest', accessToken: null },
+  ])(
+    'fetches each section once after restoring a $session session',
+    async ({ accessToken }) => {
+      const refresh = Promise.withResolvers<{ accessToken: string | null }>()
+      vi.spyOn(usersApi, 'retrieveAuthTokens').mockReturnValue(refresh.promise)
+      const request = vi
+        .spyOn(publicApi, 'baseRequest')
+        .mockImplementation(() =>
+          ky.get('https://bookshop.test/mock', {
+            retry: 0,
+            fetch: () => Promise.resolve(Response.json([])),
+          }),
+        )
+      const restored = store.dispatch(bootstrapSession())
+
+      renderHome()
+
+      expect(
+        screen.getByRole('heading', { name: 'New Releases This Week' }),
+      ).toBeInTheDocument()
+      expect(request).not.toHaveBeenCalled()
+
+      await act(async () => {
+        refresh.resolve({ accessToken })
+        await restored
+      })
+
+      await waitFor(() => {
+        expect(
+          newsApi.endpoints.news.select()(store.getState()).isSuccess,
+        ).toBe(true)
+      })
+      expect(request).toHaveBeenCalledTimes(4)
+    },
+  )
 
   it('ignores cached catalogue failures', async () => {
     vi.spyOn(publicApi, 'baseRequest')

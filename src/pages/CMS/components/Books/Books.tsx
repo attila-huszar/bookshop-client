@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import { useCmsAuthorsQuery } from '@/store/api/authorsApi'
@@ -17,6 +18,7 @@ import {
 
 export const Books = () => {
   const { t } = useTranslation()
+  const captionId = useId()
 
   const {
     data: books = [],
@@ -66,11 +68,14 @@ export const Books = () => {
 
   return (
     <>
-      <StyledTable>
+      <StyledTable aria-labelledby={captionId}>
         <table>
+          <caption id={captionId}>
+            {t('cms.entities.book', { count: 2 })}
+          </caption>
           <thead>
             <tr>
-              <th>
+              <th scope="col">
                 <input
                   type="checkbox"
                   aria-label={t('common.selectAll')}
@@ -88,15 +93,19 @@ export const Books = () => {
                   }
                 />
               </th>
-              <th>{t('common.fields.id')}</th>
-              <th>{t('common.fields.cover')}</th>
-              <th>{t('common.fields.author')}</th>
-              <th>{t('common.fields.title')}</th>
-              <th>{t('common.fields.genre')}</th>
-              <th>{t('common.fields.price')}</th>
-              <th>-%</th>
-              <th>{t('common.fields.total')}</th>
-              <th className="actions">{t('common.fields.actions')}</th>
+              <th scope="col">{t('common.fields.id')}</th>
+              <th scope="col">{t('common.fields.cover')}</th>
+              <th scope="col">{t('common.fields.author')}</th>
+              <th scope="col">{t('common.fields.title')}</th>
+              <th scope="col">{t('common.fields.genre')}</th>
+              <th scope="col">{t('common.fields.price')}</th>
+              <th scope="col" aria-label={t('common.fields.discount')}>
+                -%
+              </th>
+              <th scope="col">{t('common.fields.total')}</th>
+              <th scope="col" className="actions">
+                {t('common.fields.actions')}
+              </th>
             </tr>
           </thead>
           <tbody>

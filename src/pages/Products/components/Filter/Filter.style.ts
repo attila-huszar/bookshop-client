@@ -1,33 +1,48 @@
-import { styled } from 'styled-components'
+import { css, styled } from 'styled-components'
 import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledFilter = styled.aside<{ $mobileOpen: boolean }>`
-  position: sticky;
-  top: 7.5rem;
-  bottom: 0;
-  height: fit-content;
-  width: auto;
+const filterSurface = css`
   padding: 0.375rem;
   border-radius: 10px;
   background-color: var(--color-surface-container-high);
+`
 
-  ${({ $mobileOpen }) => media.down('sm')`
-    position: fixed;
-    right: 1rem;
-    bottom: 5rem;
-    top: auto;
-    z-index: 40;
-    width: 20rem;
-    max-height: 70vh;
-    overflow-y: auto;
-    transform: translateY(${$mobileOpen ? '0' : '1rem'});
-    opacity: ${$mobileOpen ? 1 : 0};
-    visibility: ${$mobileOpen ? 'visible' : 'hidden'};
-    pointer-events: ${$mobileOpen ? 'auto' : 'none'};
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: var(--shadow-raised);
-  `}
+export const StyledFilter = styled.aside`
+  ${filterSurface}
+  position: sticky;
+  top: 7.5rem;
+  align-self: start;
+`
+
+export const FilterDialog = styled.dialog`
+  ${filterSurface}
+  position: fixed;
+  inset: auto 1rem 5rem auto;
+  width: min(20rem, calc(100% - 2rem));
+  max-height: 70dvh;
+  margin: 0;
+  border: 0;
+  color: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow-raised);
+
+  &::backdrop {
+    background-color: var(--color-backdrop);
+  }
+`
+
+export const FilterDialogHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.5rem;
+
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
 `
 
 export const FilterOptions = styled.div`
@@ -133,6 +148,9 @@ export const CustomButton = styled(StyledButton)`
   padding-block: 0.125em;
   width: auto;
   font-size: 0.75rem;
-  border-radius: var(--border-radius);
-  border-width: 1px;
+`
+
+export const ClearSelectionButton = styled(CustomButton)`
+  width: fit-content;
+  margin: 0.5rem auto 0.375rem;
 `

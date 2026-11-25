@@ -137,6 +137,7 @@ export function Account() {
                   imgUrl={avatar ?? undefined}
                   onClick={handleAvatarClick}
                   title={t('account.changeAvatar')}
+                  disabled={userIsUpdating}
                   $size={160}
                   $hoverControls
                 />
@@ -148,17 +149,7 @@ export function Account() {
                   disabled={userIsUpdating}
                   accept={IMAGE_ACCEPT}
                   ref={inputFile}
-                  style={{
-                    position: 'absolute',
-                    width: 1,
-                    height: 1,
-                    padding: 0,
-                    margin: -1,
-                    overflow: 'hidden',
-                    clip: 'rect(0, 0, 0, 0)',
-                    whiteSpace: 'nowrap',
-                    border: 0,
-                  }}
+                  hidden
                 />
                 <Button
                   onClick={handlePasswordDialogOpen}
@@ -330,7 +321,6 @@ export function Account() {
                     </AddressLine>
                     <AddressLine>
                       <div>
-                        <p>{t('common.fields.country')}</p>
                         <CountrySelect readOnly={!editingAddress} />
                       </div>
                     </AddressLine>

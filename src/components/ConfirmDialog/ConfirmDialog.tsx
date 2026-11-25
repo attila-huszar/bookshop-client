@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { SpinnerIcon, XIcon } from '@/assets/svg'
@@ -29,6 +29,7 @@ export const ConfirmDialog: FC<Props> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation()
+  const messageId = useId()
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -51,6 +52,7 @@ export const ConfirmDialog: FC<Props> = ({
   return (
     <StyledConfirmDialog
       ref={ref}
+      aria-labelledby={messageId}
       aria-busy={isLoading}
       onCancel={(event) => {
         if (isLoading) {
@@ -69,7 +71,7 @@ export const ConfirmDialog: FC<Props> = ({
         disabled={isLoading}
         onClick={() => setIsDialogOpen(false)}
       />
-      <p>{message}</p>
+      <p id={messageId}>{message}</p>
       <div>
         <Button
           onClick={() => setIsDialogOpen(false)}

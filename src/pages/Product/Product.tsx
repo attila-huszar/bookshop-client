@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { ROUTE } from '@/routes/route'
+import { parseBookId, ROUTE } from '@/routes/route'
 import { useBookQuery } from '@/store/api/booksApi'
 import { cartAdd } from '@/store/slices/cart'
 import { Alert } from '@/components/Alert'
@@ -27,15 +27,13 @@ import {
   StyledProduct,
 } from './Product.style'
 
-export function Product() {
+function Product() {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const [searchParams] = useSearchParams()
-  const rawId = searchParams.get('id') ?? ''
-  const parsedId = /^\d+$/.test(rawId) ? Number(rawId) : NaN
-  const id = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : null
+  const id = parseBookId(searchParams.get('id'))
   const { isMobile } = useBreakpoints()
 
   const {
@@ -122,3 +120,5 @@ export function Product() {
     </>
   )
 }
+
+export { Product as Component }

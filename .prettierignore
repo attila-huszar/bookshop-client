@@ -1,2 +1,5 @@
 # Exported Lottie animation data
 src/assets/animations/*.json
+
+# Installed agent skills
+/.agents/skills/

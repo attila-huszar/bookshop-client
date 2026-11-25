@@ -6,7 +6,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import { postVerifyEmail } from '@/api/users'
 import { AuthErrorCode } from '@/types/ApiError'
-import { VerifyEmail } from './VerifyEmail'
+import { Component as VerifyEmail } from './VerifyEmail'
 
 vi.mock('react-router', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-router')>()),

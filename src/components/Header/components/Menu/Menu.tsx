@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { booksApi } from '@/store/api/booksApi'
@@ -7,8 +7,9 @@ import { IconButton } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { menuLinks } from '@/constants/links'
-import { CacheTime } from '@/constants/time'
+import { CacheTime, uiTiming } from '@/constants/time'
 import { MenuIcon } from '@/assets/svg'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
@@ -29,53 +30,73 @@ export function Menu() {
     prefetchOptions(undefined)
   }
 
-  const { isMobile } = useBreakpoints()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const drawerRef = useRef<HTMLDivElement>(null)
-
-  useClickOutside(
-    isMobile ? [menuRef, drawerRef] : [menuRef, dropdownRef],
-    () => setMenuOpen(false),
+  const prefetchShopOnHover = useDebouncedCallback(
+    prefetchShop,
+    uiTiming.prefetchDelayMs,
   )
 
+  const { isMobile } = useBreakpoints()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuId = useId()
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  const closeMenu = () => {
+    prefetchShopOnHover.cancel()
+    setMenuOpen(false)
+  }
+
+  useClickOutside(menuRef, () => {
+    if (!isMobile) {
+      closeMenu()
+    }
+  })
+
   const toggleMenu = () => {
+    prefetchShopOnHover.cancel()
     setMenuOpen((prevState) => !prevState)
   }
 
   const menuList = (
     <MenuList>
-      {menuLinks.map((link) => (
-        <li key={link.key}>
-          <Link
-            to={link.path}
-            onClick={() => setMenuOpen(false)}
-            onMouseEnter={link.key === 'shop' ? prefetchShop : undefined}
-            onFocus={link.key === 'shop' ? prefetchShop : undefined}>
-            <MenuItem>
-              <link.Icon />
-              <span>{t(link.name)}</span>
-            </MenuItem>
-          </Link>
-        </li>
-      ))}
+      {menuLinks.map((link) => {
+        const isShopLink = link.key === 'shop'
+
+        return (
+          <li key={link.key}>
+            <Link
+              to={link.path}
+              onClick={closeMenu}
+              onMouseEnter={isShopLink ? prefetchShopOnHover : undefined}
+              onMouseLeave={isShopLink ? prefetchShopOnHover.cancel : undefined}
+              onFocus={isShopLink ? prefetchShop : undefined}>
+              <MenuItem>
+                <link.Icon />
+                <span>{t(link.name)}</span>
+              </MenuItem>
+            </Link>
+          </li>
+        )
+      })}
     </MenuList>
   )
 
   return (
     <StyledMenu ref={menuRef}>
       <IconButton
+        type="button"
+        aria-controls={menuId}
+        aria-expanded={menuOpen}
+        aria-haspopup={isMobile ? 'dialog' : undefined}
         onClick={toggleMenu}
         icon={<MenuIcon />}
         title={t('navigation.menu')}
       />
       {isMobile ? (
-        <MenuDrawer show={menuOpen} onClose={toggleMenu} drawerRef={drawerRef}>
+        <MenuDrawer id={menuId} show={menuOpen} onClose={closeMenu}>
           {menuList}
         </MenuDrawer>
       ) : (
-        <MenuDropdown show={menuOpen} dropdownRef={dropdownRef}>
+        <MenuDropdown id={menuId} show={menuOpen}>
           {menuList}
         </MenuDropdown>
       )}

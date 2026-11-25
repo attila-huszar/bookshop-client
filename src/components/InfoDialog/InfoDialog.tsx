@@ -1,4 +1,4 @@
-import { RefObject } from 'react'
+import { RefObject, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '@/components/Alert'
 import { Button } from '@/components/Button'
@@ -25,9 +25,10 @@ export function InfoDialog({
   dismissible = false,
 }: InfoDialogProps) {
   const { t } = useTranslation()
+  const messageId = useId()
 
   return (
-    <StyledInfoDialog ref={dialogRef}>
+    <StyledInfoDialog ref={dialogRef} aria-labelledby={messageId}>
       {dismissible && Boolean(error) && (
         <DialogCloseButton
           type="button"
@@ -38,9 +39,9 @@ export function InfoDialog({
         />
       )}
       {error ? (
-        <Alert message={message} error={error} />
+        <Alert message={message} messageId={messageId} error={error} />
       ) : (
-        <Loading message={message} />
+        <Loading message={message} messageId={messageId} />
       )}
       {reloadButton && (
         <Button onClick={() => window.location.reload()}>

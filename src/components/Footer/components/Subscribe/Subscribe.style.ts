@@ -1,5 +1,4 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles/media.breakpoints'
 
 export const Text = styled.p`
   margin: 1.25rem 0;
@@ -10,8 +9,8 @@ export const Text = styled.p`
 export const SubscribeForm = styled.form`
   display: flex;
   width: min(100%, 32rem);
-  border: 2px solid var(--color-page-frame);
-  border-radius: 10px;
+  border: 1px solid var(--color-page-frame);
+  border-radius: var(--button-radius);
   overflow: hidden;
 
   input {
@@ -25,7 +24,8 @@ export const SubscribeForm = styled.form`
     background-color: var(--color-surface-container-lowest);
 
     &:focus-visible {
-      outline: none;
+      outline: 2px solid var(--color-page-frame);
+      outline-offset: -2px;
     }
   }
 
@@ -34,17 +34,24 @@ export const SubscribeForm = styled.form`
     padding: 0.5rem 2rem;
     border: none;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 650;
     color: var(--color-on-tertiary);
     background-color: var(--color-page-frame);
     cursor: pointer;
-    transition:
-      color 0.2s ease-out,
-      background-color 0.2s ease-out;
+    transition: background-color 150ms ease-out;
 
-    &:hover:not(:disabled) {
-      color: var(--color-page-frame);
-      background-color: var(--color-surface-container-lowest);
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background-color: color-mix(
+          in srgb,
+          var(--color-page-frame),
+          black 10%
+        );
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: color-mix(in srgb, var(--color-page-frame), black 18%);
     }
 
     &:disabled {
@@ -53,21 +60,30 @@ export const SubscribeForm = styled.form`
     }
 
     &:focus-visible {
-      outline-color: var(--color-page-frame);
-      outline-offset: -3px;
+      outline-color: var(--color-on-tertiary);
+      outline-offset: -4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
     }
   }
 
-  ${media.down('sm')`
+  @container footer-subscribe (inline-size < 27rem) {
     flex-direction: column;
 
     input {
-      width: 100%;
+      padding-inline: 0.5rem;
     }
 
     button {
-      width: 100%;
-      padding: 0.5rem;
+      padding-inline: 1rem;
     }
-  `}
+  }
+
+  @container footer-subscribe (inline-size < 15.5rem) {
+    input::placeholder {
+      font-size: 0.8125rem;
+    }
+  }
 `

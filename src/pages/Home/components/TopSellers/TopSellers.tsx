@@ -5,10 +5,11 @@ import { SwiperComponent } from '@/components/SwiperComponent'
 import { CacheTime } from '@/constants/time'
 import { StyledTopSellers } from './TopSellers.style'
 
-export function TopSellers() {
+export function TopSellers({ skipQuery = false }: { skipQuery?: boolean }) {
   const { t } = useTranslation()
 
   const { data: booksTopSellers = [] } = useBooksByPropertyQuery('topSellers', {
+    skip: skipQuery,
     refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
 
@@ -21,7 +22,7 @@ export function TopSellers() {
       <h2>{t('common.fields.topSellers')}</h2>
       <SwiperComponent>
         {booksTopSellers.map((book) => (
-          <Card key={book.id} book={book} />
+          <Card key={book.id} book={book} imageLoading="lazy" />
         ))}
       </SwiperComponent>
     </StyledTopSellers>

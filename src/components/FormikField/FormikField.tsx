@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from 'react'
+import { useContext, useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Field,
@@ -19,12 +19,12 @@ import {
   Textarea,
 } from '@/styles/form.styles'
 
-export function FormikField({
-  children,
-  showPassword,
-  setShowPassword,
-  ...props
-}: FormikInput) {
+export function FormikField(input: FormikInput) {
+  const { children, label, showPassword, setShowPassword, ...props } = input
+  const generatedId = useId()
+  const id = props.id ?? generatedId
+  const errorId = `${id}-error`
+
   const { t, i18n } = useTranslation()
   const formik = useContext(FormikContext) as
     FormikContextType<unknown> | undefined
@@ -46,78 +46,121 @@ export function FormikField({
     }
   }, [formik, i18n.resolvedLanguage, props.name])
 
-  if (props.type === 'file' && props.name) {
-    return <FileField {...props} name={props.name} />
+  const renderControl = () => {
+    if (props.type === 'file' && props.name) {
+      return (
+        <FileField
+          {...props}
+          id={id}
+          name={props.name}
+          aria-label={
+            props['aria-label'] ??
+            (label || props.id || props['aria-labelledby']
+              ? undefined
+              : props.name)
+          }
+        />
+      )
+    }
+
+    if (props.type === 'select' || props.type === 'textarea') {
+      const Control = props.type === 'select' ? Select : Textarea
+
+      return (
+        <Field {...props}>
+          {({ field, form, meta }: FieldProps<string>) => {
+            const shouldShowError = meta.touched && form.submitCount > 0
+            const error = shouldShowError ? meta.error : undefined
+
+            return (
+              <InputWrapper>
+                <Control
+                  {...field}
+                  {...props}
+                  id={id}
+                  {...describeError(error, errorId, props['aria-describedby'])}
+                  $valid={shouldShowError && !error}
+                  $error={error}>
+                  {children}
+                </Control>
+                {error && <ErrorMessage id={errorId}>{error}</ErrorMessage>}
+              </InputWrapper>
+            )
+          }}
+        </Field>
+      )
+    }
+
+    if (props.type === 'checkbox') {
+      return <Field type="checkbox" {...props} id={id} />
+    }
+
+    const renderInput = (fieldProps?: FieldProps<string>) => {
+      const shouldShowError =
+        fieldProps?.meta.touched && fieldProps.form.submitCount > 0
+      const error = shouldShowError ? fieldProps?.meta.error : undefined
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <InputWrapper>
+            <Input
+              {...fieldProps?.field}
+              {...props}
+              id={id}
+              {...describeError(error, errorId, props['aria-describedby'])}
+              $valid={shouldShowError && !error}
+              $error={error}
+            />
+            {showPassword !== undefined && (
+              <PasswordEye
+                type="button"
+                aria-label={
+                  showPassword ? t('auth.hidePassword') : t('auth.showPassword')
+                }
+                onClick={() => setShowPassword?.((prev) => !prev)}>
+                {showPassword ? <EyeHideIcon /> : <EyeIcon />}
+              </PasswordEye>
+            )}
+          </InputWrapper>
+          {error && <ErrorMessage id={errorId}>{error}</ErrorMessage>}
+        </div>
+      )
+    }
+
+    return props.name ? <Field {...props}>{renderInput}</Field> : renderInput()
   }
 
-  if (props.type === 'select' || props.type === 'textarea') {
-    const Control = props.type === 'select' ? Select : Textarea
-
-    return (
-      <Field {...props}>
-        {({ field, form, meta }: FieldProps<string>) => {
-          const shouldShowError = meta.touched && form.submitCount > 0
-
-          return (
-            <InputWrapper>
-              <Control
-                {...field}
-                {...props}
-                $valid={shouldShowError && !meta.error}
-                $error={shouldShowError && meta.error}>
-                {children}
-              </Control>
-              {shouldShowError && meta.error && (
-                <ErrorMessage>{meta.error}</ErrorMessage>
-              )}
-            </InputWrapper>
-          )
-        }}
-      </Field>
-    )
-  }
-
-  if (props.type === 'checkbox') {
-    return <Field type="checkbox" {...props} />
-  }
-
-  const renderInput = (fieldProps?: FieldProps<string>) => {
-    const error = fieldProps?.meta.error
-    const shouldShowError =
-      fieldProps?.meta.touched && fieldProps.form.submitCount > 0
-
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <InputWrapper>
-          <Input
-            {...fieldProps?.field}
-            {...props}
-            $valid={shouldShowError && !error}
-            $error={shouldShowError && error}
-          />
-          {showPassword !== undefined && (
-            <PasswordEye
-              type="button"
-              aria-label={
-                showPassword ? t('auth.hidePassword') : t('auth.showPassword')
-              }
-              onClick={() => setShowPassword?.((prev) => !prev)}>
-              {showPassword ? <EyeHideIcon /> : <EyeIcon />}
-            </PasswordEye>
-          )}
-        </InputWrapper>
-        {shouldShowError && error && <ErrorMessage>{error}</ErrorMessage>}
-      </div>
-    )
-  }
-
-  return props.name ? <Field {...props}>{renderInput}</Field> : renderInput()
+  return (
+    <>
+      {label && (
+        <p>
+          <label htmlFor={id}>{label}</label>
+        </p>
+      )}
+      {renderControl()}
+    </>
+  )
 }
 
-function FileField(props: FormikInput & { name: string }) {
+function describeError(
+  error: string | undefined,
+  id: string,
+  description: string | undefined,
+) {
+  if (error) {
+    return {
+      'aria-invalid': true,
+      'aria-describedby': description ? `${description} ${id}` : id,
+    }
+  }
+}
+
+function FileField(props: FormikInput & { id: string; name: string }) {
   const formikContext = useFormikContext()
   const fileMeta = formikContext.getFieldMeta(props.name)
   const shouldShowError = fileMeta.touched && formikContext.submitCount > 0
+  const error = shouldShowError ? fileMeta.error : undefined
+  const errorId = `${props.id}-error`
 
   const handleImgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     void formikContext.setFieldValue(
@@ -132,17 +175,15 @@ function FileField(props: FormikInput & { name: string }) {
   return (
     <InputWrapper>
       <Input
-        aria-label={props.name}
         onChange={handleImgChange}
         type="file"
         accept={IMAGE_ACCEPT}
         {...props}
-        $valid={shouldShowError && !fileMeta.error}
-        $error={shouldShowError && fileMeta.error}
+        {...describeError(error, errorId, props['aria-describedby'])}
+        $valid={shouldShowError && !error}
+        $error={error}
       />
-      {shouldShowError && fileMeta.error && (
-        <ErrorMessage>{fileMeta.error}</ErrorMessage>
-      )}
+      {error && <ErrorMessage id={errorId}>{error}</ErrorMessage>}
     </InputWrapper>
   )
 }

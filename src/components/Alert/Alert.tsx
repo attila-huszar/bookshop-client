@@ -9,6 +9,7 @@ import { StyledAlert } from './Alert.style'
 type Props = {
   type?: 'info' | 'warning'
   message?: string
+  messageId?: string
   error?: unknown
   fullScreen?: boolean
   backButton?: boolean
@@ -17,6 +18,7 @@ type Props = {
 export function Alert({
   type = 'warning',
   message,
+  messageId,
   error,
   fullScreen = false,
   backButton,
@@ -38,7 +40,7 @@ export function Alert({
     <StyledAlert $fullScreen={fullScreen}>
       {type === 'warning' ? <WarningIcon /> : <InfoIcon />}
       <div>
-        <p>{message ?? t('common.error')}</p>
+        <p id={messageId}>{message ?? t('common.error')}</p>
         {Boolean(error) && (
           <p>
             {typeof error === 'string'

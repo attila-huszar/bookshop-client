@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { Provider } from 'react-redux'
 import { i18n } from '@/i18n'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Form, Formik } from 'formik'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -49,7 +49,10 @@ const renderCountries = () =>
           onSubmit={vi.fn()}>
           <Form>
             <CountrySelect />
-            <CountrySelect fieldName="shippingCountry" />
+            <CountrySelect
+              fieldName="shippingCountry"
+              label="Shipping country"
+            />
           </Form>
         </Formik>
       </Provider>
@@ -57,6 +60,42 @@ const renderCountries = () =>
   )
 
 describe('country reference data', () => {
+  it('selects with the keyboard and restores trigger focus on selection or Escape', async () => {
+    const user = userEvent.setup()
+    renderCountries()
+    const trigger = await screen.findByRole('button', {
+      name: 'Country Hungary',
+    })
+
+    await user.tab()
+    expect(trigger).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    const search = screen.getByRole('combobox')
+    const options = screen.getByRole('listbox', { name: 'Country' })
+    expect(search).toHaveFocus()
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(search).toHaveAttribute('aria-controls', options.id)
+    expect(search).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Hungary', selected: true }).id,
+    )
+
+    await user.keyboard('{ArrowDown}')
+    fireEvent.keyDown(search, { key: 'Enter', isComposing: true })
+    expect(search).toHaveFocus()
+    expect(trigger).toHaveAccessibleName('Country Hungary')
+
+    await user.keyboard('{Enter}')
+    expect(trigger).toHaveFocus()
+    expect(trigger).toHaveAccessibleName('Country United States')
+
+    await user.keyboard('{ArrowDown}{Escape}')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
+    expect(trigger).toHaveAccessibleName('Country United States')
+  })
+
   it('localizes country names without refetching or changing cached data', async () => {
     renderCountries()
     expect(await screen.findByText('Hungary')).toBeInTheDocument()
@@ -81,9 +120,14 @@ describe('country reference data', () => {
     fetchMock.mockImplementation(() => response)
     renderCountries()
 
-    await userEvent.click(screen.getByText('HU'))
+    const trigger = screen.getByRole('button', {
+      name: 'Country Loading countries…',
+    })
+    expect(trigger).toHaveAttribute('aria-busy', 'true')
+    await userEvent.click(trigger)
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading countries…')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
     expect(screen.queryByText('No countries found')).not.toBeInTheDocument()
 
     act(() => {
@@ -98,6 +142,7 @@ describe('country reference data', () => {
       await screen.findByText('Hungary', { selector: 'li span' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(trigger).toHaveAttribute('aria-busy', 'false')
   })
 
   it('shares one request across Strict Mode effects, dropdowns, remounts, and focus/reconnect', async () => {

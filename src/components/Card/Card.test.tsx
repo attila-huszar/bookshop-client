@@ -1,6 +1,6 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, useNavigate } from 'react-router'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import { vi } from 'vitest'
@@ -8,6 +8,7 @@ import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartRestored } from '@/store/slices/cart'
 import { createAppStore } from '@/store/store'
+import { TimeMs } from '@/constants/time'
 import type { Book } from '@/types'
 import { Card } from './Card'
 
@@ -49,6 +50,7 @@ afterEach(() => {
   act(() => {
     store.dispatch(bookshopApi.util.resetApiState())
   })
+  vi.useRealTimers()
   localStorage.clear()
   sessionStorage.clear()
   vi.restoreAllMocks()
@@ -68,17 +70,44 @@ describe('Card', () => {
   it('renders book details and the add-to-basket action', () => {
     renderCard()
 
-    expect(screen.getByText('Test Book')).toBeInTheDocument()
+    const bookLink = screen.getByRole('link', { name: 'Test Book' })
+    expect(bookLink).toHaveAttribute('href', '/book?id=1')
+    expect(within(bookLink).queryByRole('button')).not.toBeInTheDocument()
     expect(screen.getByText('Test Description')).toBeInTheDocument()
     expect(screen.getByText('Add to Basket')).toBeInTheDocument()
   })
 
-  it('prefetches a book on hover or focus and reuses fresh data', async () => {
+  it('prefetches only when the pointer stays over the title', async () => {
+    vi.useFakeTimers()
+    renderCard()
+    const link = screen.getByRole('link')
+
+    fireEvent.mouseEnter(link)
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+    fireEvent.mouseLeave(link)
+    act(() => {
+      vi.advanceTimersByTime(TimeMs.TwoHundredMilliseconds)
+    })
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+
+    fireEvent.mouseEnter(link)
+    await act(async () => {
+      vi.advanceTimersByTime(TimeMs.TwoHundredMilliseconds)
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(publicApi.baseRequest).toHaveBeenCalledExactlyOnceWith(
+      'books',
+      expect.objectContaining({ searchParams: { id: 1 } }),
+    )
+  })
+
+  it('prefetches a book on focus and reuses fresh data', async () => {
     renderCard()
 
     expect(publicApi.baseRequest).not.toHaveBeenCalled()
     const link = screen.getByRole('link')
-    fireEvent.mouseEnter(link)
     fireEvent.focus(link)
     await act(async () => {
       await Promise.all(

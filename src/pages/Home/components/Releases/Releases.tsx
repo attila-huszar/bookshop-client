@@ -6,7 +6,8 @@ import { booksQueryArgs } from '@/store/selectors'
 import { Button } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
-import { CacheTime } from '@/constants/time'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { CacheTime, uiTiming } from '@/constants/time'
 import {
   ImageItem,
   ImageWrapper,
@@ -17,12 +18,16 @@ import {
   Welcome,
 } from './Releases.style'
 
-export function Releases() {
+export function Releases({ skipQuery = false }: { skipQuery?: boolean }) {
   const { t } = useTranslation()
   const queryArgs = useAppSelector(booksQueryArgs)
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
+  const prefetchBookOnHover = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
   const prefetchBooks = booksApi.usePrefetch('books', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
@@ -35,7 +40,13 @@ export function Releases() {
     prefetchOptions(undefined)
   }
 
+  const prefetchShopOnHover = useDebouncedCallback(
+    prefetchShop,
+    uiTiming.prefetchDelayMs,
+  )
+
   const { data: booksReleases = [] } = useBooksByPropertyQuery('newRelease', {
+    skip: skipQuery,
     refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
   const navigate = useNavigate()
@@ -50,7 +61,8 @@ export function Releases() {
         <p>{t('home.releasesDescription')}</p>
         <Button
           onClick={() => void navigate(`/${ROUTE.BOOKS}`)}
-          onMouseEnter={prefetchShop}
+          onMouseEnter={prefetchShopOnHover}
+          onMouseLeave={prefetchShopOnHover.cancel}
           onFocus={prefetchShop}
           $shadow
           $size="wide"
@@ -65,7 +77,8 @@ export function Releases() {
               <MobileImageCard key={book.id}>
                 <Link
                   to={`/${ROUTE.BOOK}?id=${book.id}`}
-                  onMouseEnter={() => prefetchBook(book.id)}
+                  onMouseEnter={() => prefetchBookOnHover(book.id)}
+                  onMouseLeave={prefetchBookOnHover.cancel}
                   onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                   <p>{book.title}</p>
@@ -79,7 +92,8 @@ export function Releases() {
               <ImageItem key={book.id} $idx={idx}>
                 <Link
                   to={`/${ROUTE.BOOK}?id=${book.id}`}
-                  onMouseEnter={() => prefetchBook(book.id)}
+                  onMouseEnter={() => prefetchBookOnHover(book.id)}
+                  onMouseLeave={prefetchBookOnHover.cancel}
                   onFocus={() => prefetchBook(book.id)}>
                   <img src={book.imgUrl} alt={book.title} />
                 </Link>

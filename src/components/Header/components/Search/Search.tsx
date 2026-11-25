@@ -1,14 +1,18 @@
-import { type SubmitEvent, useEffect, useRef, useState } from 'react'
+import {
+  type KeyboardEvent,
+  type SubmitEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { booksApi } from '@/store/api/booksApi'
-import { useAppDispatch } from '@/hooks/redux'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
-import { CacheTime } from '@/constants/time'
+import { CacheTime, uiTiming } from '@/constants/time'
 import { validationLimits } from '@/constants/validation'
-import type { Book } from '@/types'
 import {
   imagePlaceholder,
   LinkIcon,
@@ -24,86 +28,70 @@ import {
   NoResults,
   SearchButton,
   SearchField,
+  SearchStatus,
   StyledForm,
   TextBold,
 } from './Search.style'
+import { useBookSearch } from './useBookSearch'
 
 export function Search() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const dispatch = useAppDispatch()
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
+  const prefetchBookOnHover = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
+  const prefetchBookOnFocus = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
+  const {
+    searchValue,
+    hasQuery,
+    currentResponse,
+    isSearching,
+    updateSearchValue,
+  } = useBookSearch()
 
-  const [searchValue, setSearchValue] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
-  const [response, setResponse] = useState<{
-    query: string
-    books: Book[]
-    hasError: boolean
-  } | null>(null)
 
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const pendingRequest = useRef<{ abort: () => void } | null>(null)
-
-  const query = searchValue.trim()
-  const hasQuery = query.length > 1
-
-  const currentResponse = response?.query === query ? response : null
+  const resultsRef = useRef<HTMLUListElement>(null)
+  const resultToFocus = useRef<HTMLAnchorElement | null>(null)
   const searchResults = currentResponse?.books ?? []
-  const isSearching = hasQuery && !currentResponse
-
-  const debouncedSearch = useDebouncedCallback(getSearchResults)
+  const showResults = searchOpen && !isSearching
 
   useClickOutside(searchRef, () => setSearchOpen(false))
 
-  async function getSearchResults(searchQuery: string) {
-    const request = dispatch(
-      booksApi.endpoints.bookSearch.initiate(searchQuery, { subscribe: false }),
-    )
-    pendingRequest.current = request
-    const result = await request
-
-    if (pendingRequest.current !== request) {
+  useLayoutEffect(() => {
+    if (!showResults) {
       return
     }
 
-    pendingRequest.current = null
-    setResponse({
-      query: searchQuery,
-      books: result.error ? [] : (result.data ?? []),
-      hasError: Boolean(result.error),
-    })
-  }
-
-  useEffect(() => {
-    if (!hasQuery) return
-
-    debouncedSearch(query)
+    const result = resultToFocus.current
+    resultToFocus.current = null
+    result?.focus()
 
     return () => {
-      debouncedSearch.cancel()
-      pendingRequest.current?.abort()
-      pendingRequest.current = null
+      prefetchBookOnHover.cancel()
+      prefetchBookOnFocus.cancel()
     }
-  }, [debouncedSearch, hasQuery, query])
+  }, [prefetchBookOnHover, prefetchBookOnFocus, showResults])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    const nextQuery = value.trim()
-    setSearchValue(value)
+    const nextQuery = updateSearchValue(e.target.value)
 
-    if (nextQuery !== query) {
-      setResponse(null)
+    if (nextQuery !== undefined) {
       setSearchOpen(nextQuery.length > 1)
     }
   }
 
   const handleReset = () => {
-    setSearchValue('')
-    setResponse(null)
+    updateSearchValue('')
     setSearchOpen(false)
   }
 
@@ -116,9 +104,79 @@ export function Search() {
     }
   }
 
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.defaultPrevented || event.nativeEvent.isComposing) {
+      return
+    }
+
+    if (event.key === 'Escape' && searchOpen) {
+      event.preventDefault()
+      inputRef.current?.focus()
+      setSearchOpen(false)
+
+      return
+    }
+
+    const isDown = event.key === 'ArrowDown'
+
+    if (
+      (!isDown && event.key !== 'ArrowUp') ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return
+    }
+
+    const links = Array.from(
+      resultsRef.current?.querySelectorAll<HTMLAnchorElement>('a[href]') ?? [],
+    )
+    let nextFocus: HTMLElement | null | undefined
+
+    if (event.target === inputRef.current) {
+      const result = isDown ? links[0] : links.at(-1)
+
+      if (!searchOpen && hasQuery) {
+        event.preventDefault()
+        resultToFocus.current = result ?? null
+        setSearchOpen(true)
+
+        return
+      }
+
+      nextFocus = result
+    } else {
+      const index = links.findIndex((link) => link === event.target)
+
+      if (index === -1) {
+        return
+      }
+
+      nextFocus =
+        !isDown && index === 0
+          ? inputRef.current
+          : links[index + (isDown ? 1 : -1)]
+    }
+
+    if (nextFocus) {
+      event.preventDefault()
+      nextFocus.focus()
+    }
+  }
+
   return (
     <StyledForm ref={searchRef}>
-      <form onSubmit={handleSubmit} onReset={handleReset}>
+      <form
+        role="search"
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setSearchOpen(false)
+          }
+        }}
+        onKeyDown={handleKeyDown}>
         <SearchField
           ref={inputRef}
           id="search-books"
@@ -129,13 +187,19 @@ export function Search() {
           placeholder={t('catalogue.searchPlaceholder')}
           autoComplete="off"
           maxLength={validationLimits.search.maxLength}
+          $showResults={showResults}
           onChange={handleSearchChange}
           onClick={() => setSearchOpen(hasQuery)}
           value={searchValue}
         />
-        <Dropdown $show={searchOpen && !isSearching}>
+        <SearchStatus aria-live="polite" aria-atomic="true">
+          {showResults && currentResponse && !currentResponse.hasError
+            ? t('catalogue.searchResultsCount', { count: searchResults.length })
+            : null}
+        </SearchStatus>
+        <Dropdown $show={showResults}>
           {!isSearching && (
-            <DropdownList>
+            <DropdownList ref={resultsRef}>
               {currentResponse?.hasError ? (
                 <NoResults role="alert">{t('catalogue.searchError')}</NoResults>
               ) : searchResults.length ? (
@@ -143,8 +207,10 @@ export function Search() {
                   <li key={book.id}>
                     <Link
                       to={`/${ROUTE.BOOK}?id=${book.id}`}
-                      onMouseEnter={() => prefetchBook(book.id)}
-                      onFocus={() => prefetchBook(book.id)}
+                      onMouseEnter={() => prefetchBookOnHover(book.id)}
+                      onMouseLeave={prefetchBookOnHover.cancel}
+                      onFocus={() => prefetchBookOnFocus(book.id)}
+                      onBlur={prefetchBookOnFocus.cancel}
                       onClick={handleReset}>
                       <MenuItem>
                         <img
@@ -152,7 +218,7 @@ export function Search() {
                           onError={(e) =>
                             (e.currentTarget.src = imagePlaceholder)
                           }
-                          alt={book.title}
+                          alt=""
                           width="24"
                           height="24"
                         />
@@ -163,7 +229,7 @@ export function Search() {
                             <span>{book.author}</span>
                           </p>
                         </div>
-                        <LinkIcon width="16" height="16" />
+                        <LinkIcon width="16" height="16" aria-hidden="true" />
                       </MenuItem>
                     </Link>
                   </li>
@@ -182,7 +248,7 @@ export function Search() {
           {isSearching ? (
             <SpinnerIcon width={16} height={16} aria-hidden="true" />
           ) : (
-            <SearchIcon color="var(--color-on-surface-variant)" />
+            <SearchIcon width={16} height={16} aria-hidden="true" />
           )}
         </SearchButton>
         {searchValue && (

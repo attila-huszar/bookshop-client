@@ -8,7 +8,7 @@ import { toast } from '@/components/AppToaster'
 import { Loading } from '@/components/Loading'
 import { getErrorMessage } from '@/helpers/errors'
 
-export function VerifyEmail() {
+function VerifyEmail() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { search } = useLocation()
@@ -56,3 +56,5 @@ export function VerifyEmail() {
 
   return token ? <Loading message={t('auth.verifying')} fullScreen /> : null
 }
+
+export { VerifyEmail as Component }

@@ -1,13 +1,6 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router'
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import ky from 'ky'
 import * as publicApi from '@/api/baseRequest'
@@ -17,9 +10,9 @@ import { booksQueryArgs } from '@/store/selectors'
 import { applyBooksFilters, setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
 import { useAppSelector } from '@/hooks/redux'
-import { CacheTime } from '@/constants/time'
+import { CacheTime, uiTiming } from '@/constants/time'
 import type { Book } from '@/types'
-import { Products } from './Products'
+import { Component as Products } from './Products'
 
 vi.mock('@/components/Card', () => ({
   Card: ({ book }: { book: Book }) => <p>{book.title}</p>,
@@ -68,6 +61,7 @@ afterEach(() => {
   act(() => {
     store.dispatch(bookshopApi.util.resetApiState())
   })
+  vi.useRealTimers()
   vi.restoreAllMocks()
 })
 
@@ -114,16 +108,26 @@ describe('shop pagination', () => {
     )
     store.dispatch(setBooksCurrentPage(2))
     const view = await renderPagination()
+    vi.useFakeTimers()
 
     expect(publicApi.baseRequest).not.toHaveBeenCalled()
     const next = screen.getByRole('button', { name: 'Next Page' })
     fireEvent.mouseEnter(next)
-    await waitFor(() => expect(publicApi.baseRequest).toHaveBeenCalledTimes(1))
+    fireEvent.mouseLeave(next)
+    act(() => {
+      vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
+    })
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+
+    fireEvent.mouseEnter(next)
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
     await act(async () => {
+      vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )
     })
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     fireEvent.focus(next)
     expect(publicApi.baseRequest).toHaveBeenCalledTimes(1)
     expect(publicApi.baseRequest).toHaveBeenCalledWith(
@@ -138,6 +142,7 @@ describe('shop pagination', () => {
     )
     expect(store.getState().books.booksCurrentPage).toBe(2)
     view.unmount()
+    vi.useRealTimers()
 
     function Page() {
       const args = useAppSelector(booksQueryArgs)

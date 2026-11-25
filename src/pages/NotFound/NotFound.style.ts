@@ -34,20 +34,3 @@ export const NotFoundSection = styled.section`
     color: var(--color-on-surface-variant);
   }
 `
-
-export const BackButton = styled.button`
-  width: fit-content;
-  padding: 0 1rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  border: none;
-  background: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color 0.2s ease-out;
-
-  &:hover:not(:disabled) {
-    background-color: var(--color-surface-container-high);
-  }
-`

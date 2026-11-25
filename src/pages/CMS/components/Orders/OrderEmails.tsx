@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCmsEmailOutboxQuery } from '@/store/api/ordersApi'
 import { Alert } from '@/components/Alert'
@@ -29,6 +29,7 @@ const dateLabel = (date: string | null) => (date ? formatDate(date) : '—')
 
 export function OrderEmails({ paymentId }: { paymentId: string }) {
   const { t } = useTranslation()
+  const captionId = useId()
 
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<EmailOutboxStatus | ''>('')
@@ -54,7 +55,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
       ...(type ? { type } : {}),
       ...(search ? { search } : {}),
     },
-    { refetchOnMountOrArgChange: true },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
   )
   const pages = Math.max(
     1,
@@ -155,8 +156,9 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
         <Alert type="info" message={t('cms.emails.empty')} />
       )}
       {data && data.entries.length > 0 && (
-        <OutboxTable>
-          <table aria-label={t('cms.emails.title')}>
+        <OutboxTable aria-labelledby={captionId}>
+          <table>
+            <caption id={captionId}>{t('cms.emails.title')}</caption>
             <thead>
               <tr>
                 <th scope="col">{t('common.fields.email')}</th>

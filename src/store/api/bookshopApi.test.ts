@@ -27,6 +27,7 @@ import { cartLoader } from '@/routes/loaders/cartLoader'
 import { recoverCheckout } from '@/store/thunks/checkout'
 import { CheckoutForm } from '@/pages/Checkout/components/CheckoutForm/CheckoutForm'
 import { getErrorMessage } from '@/helpers/errors'
+import { CacheTime } from '@/constants/time'
 import type { Book, BookWithAuthorId, Filters } from '@/types'
 import { UserRole } from '@/types'
 import { booksQueryArgs, userSelector } from '../selectors'
@@ -1007,6 +1008,43 @@ describe('generated query hooks', () => {
       booksApi.endpoints.searchOptions.select()(store.getState()).data,
     ).toEqual(searchOptions)
   })
+})
+
+it('reuses public queries on focus and refreshes a subscribed profile', async () => {
+  const prefetchOptions = { ifOlderThan: CacheTime.FiveMinutes }
+  fetchMock.mockResolvedValueOnce(jsonResponse([book]))
+  await store
+    .dispatch(booksApi.endpoints.booksByProperty.initiate('newRelease'))
+    .unwrap()
+
+  store.dispatch(booksApi.util.prefetch('book', book.id, prefetchOptions))
+  await waitFor(() => {
+    expect(
+      booksApi.endpoints.book.select(book.id)(store.getState()).data,
+    ).toEqual(book)
+  })
+
+  fetchMock.mockResolvedValueOnce(jsonResponse(profile))
+  await store
+    .dispatch(
+      usersApi.endpoints.userProfile.initiate(undefined, {
+        subscriptionOptions: { refetchOnFocus: true },
+      }),
+    )
+    .unwrap()
+
+  const initialRequests = capturedRequests.length
+  fetchMock.mockResolvedValueOnce(jsonResponse(profile))
+  store.dispatch(bookshopApi.internalActions.onFocusLost())
+  store.dispatch(bookshopApi.internalActions.onFocus())
+  store.dispatch(booksApi.util.prefetch('book', book.id, prefetchOptions))
+  await Promise.all(store.dispatch(bookshopApi.util.getRunningQueriesThunk()))
+
+  expect(
+    capturedRequests
+      .slice(initialRequests)
+      .map((request) => new URL(request.url).pathname),
+  ).toEqual(['/api/users/profile'])
 })
 
 describe('Ky adapter', () => {

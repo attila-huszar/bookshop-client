@@ -1,5 +1,13 @@
 import { styled } from 'styled-components'
+import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles/media.breakpoints'
+
+export const CheckoutButton = styled(StyledButton).attrs({
+  $size: 'lg',
+  $textSize: 'lg',
+})`
+  width: 100%;
+`
 
 export const StyledCheckout = styled.section`
   --page-loading-height: calc(100dvh - 4rem);
@@ -122,106 +130,28 @@ export const StyledCheckout = styled.section`
     }
   }
 
-  button {
-    background: var(--color-primary);
-    font-family: Arial, sans-serif;
-    color: var(--color-on-primary);
-    border-radius: 4px;
-    border: 0;
-    padding: 12px 16px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: block;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      background-color 0.2s ease,
-      filter 0.2s ease;
-    box-shadow: var(--shadow-button);
-    width: 100%;
-  }
-
-  button:hover:not(:disabled) {
-    filter: brightness(0.9);
-    box-shadow: var(--shadow-button-hover);
-  }
-
-  button:active:not(:disabled) {
-    box-shadow: var(--shadow-button-pressed);
-  }
-
-  button:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  button:disabled {
-    opacity: 0.5;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
-  .spinner,
-  .spinner:before,
-  .spinner:after {
-    border-radius: 50%;
+  .payment-submit-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .spinner {
-    color: var(--color-on-primary);
-    font-size: 22px;
-    text-indent: -99999px;
-    margin: 0px auto;
-    position: relative;
-    width: 20px;
-    height: 20px;
-    box-shadow: inset 0 0 0 2px;
-    -webkit-transform: translateZ(0);
-    -ms-transform: translateZ(0);
-    transform: translateZ(0);
-  }
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid currentColor;
+    border-radius: 50%;
 
-  .spinner:before,
-  .spinner:after {
-    position: absolute;
-    content: '';
-  }
-
-  .spinner:before {
-    width: 10.4px;
-    height: 20.4px;
-    background: var(--color-primary);
-    border-radius: 20.4px 0 0 20.4px;
-    top: -0.2px;
-    left: -0.2px;
-    -webkit-transform-origin: 10.4px 10.2px;
-    transform-origin: 10.4px 10.2px;
-    -webkit-animation: loading 2s infinite ease 1.5s;
-    animation: loading 2s infinite ease 1.5s;
-  }
-
-  .spinner:after {
-    width: 10.4px;
-    height: 10.2px;
-    background: var(--color-primary);
-    border-radius: 0 10.2px 10.2px 0;
-    top: -0.1px;
-    left: 10.2px;
-    -webkit-transform-origin: 0px 10.2px;
-    transform-origin: 0px 10.2px;
-    -webkit-animation: loading 2s infinite ease;
-    animation: loading 2s infinite ease;
+    @media (prefers-reduced-motion: no-preference) {
+      border-inline-end-color: transparent;
+      animation: loading 0.8s linear infinite;
+    }
   }
 
   @keyframes loading {
-    0% {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-    }
-    100% {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
+    to {
+      transform: rotate(1turn);
     }
   }
 `

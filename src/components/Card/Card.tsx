@@ -1,17 +1,23 @@
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { booksApi } from '@/store/api/booksApi'
 import { cartAdd } from '@/store/slices/cart'
 import { Button } from '@/components/Button'
 import { Price } from '@/components/Price'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { CacheTime } from '@/constants/time'
-import { Book } from '@/types'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { CacheTime, uiTiming } from '@/constants/time'
+import type { Book } from '@/types'
 import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import { Description, Details, Image, StyledCard, Title } from './Card.style'
 
-export function Card({ book }: { book: Book }) {
+type Props = {
+  book: Book
+  imageLoading?: HTMLImageElement['loading']
+}
+
+export function Card({ book, imageLoading }: Props) {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
@@ -19,6 +25,10 @@ export function Card({ book }: { book: Book }) {
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
+  const prefetchOnHover = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
   const isBookInCart = useAppSelector((state) =>
     state.cart.cartItems.some((item) => item.id === book.id),
   )
@@ -33,32 +43,31 @@ export function Card({ book }: { book: Book }) {
 
   return (
     <StyledCard>
-      <Link
-        to={`/${ROUTE.BOOK}?id=${book.id}`}
-        onMouseEnter={() => prefetchBook(book.id)}
-        onFocus={() => prefetchBook(book.id)}>
-        <Image
-          src={book.imgUrl}
-          onError={(e) =>
-            ((e.target as HTMLImageElement).src = imagePlaceholder)
-          }
-          alt={book.title}></Image>
-        <Details>
-          <Title>{book.title}</Title>
-          <Description>{book.description}</Description>
-          <Price component="card" price={book.price} discount={book.discount} />
-          <Button
-            onClick={(e) => {
-              e.preventDefault()
-              handleCartAction()
-            }}
-            $icon={!isBookInCart && <CartAddIcon />}>
-            {isBookInCart
-              ? t('catalogue.viewBasket')
-              : t('catalogue.addToBasket')}
-          </Button>
-        </Details>
-      </Link>
+      <Image
+        loading={imageLoading}
+        src={book.imgUrl}
+        onError={(event) => (event.currentTarget.src = imagePlaceholder)}
+        alt=""
+      />
+      <Details>
+        <Title
+          to={`/${ROUTE.BOOK}?id=${book.id}`}
+          onMouseEnter={() => prefetchOnHover(book.id)}
+          onMouseLeave={prefetchOnHover.cancel}
+          onFocus={() => prefetchBook(book.id)}>
+          {book.title}
+        </Title>
+        <Description>{book.description}</Description>
+        <Price component="card" price={book.price} discount={book.discount} />
+        <Button
+          type="button"
+          onClick={handleCartAction}
+          $icon={!isBookInCart && <CartAddIcon aria-hidden="true" />}>
+          {isBookInCart
+            ? t('catalogue.viewBasket')
+            : t('catalogue.addToBasket')}
+        </Button>
+      </Details>
     </StyledCard>
   )
 }

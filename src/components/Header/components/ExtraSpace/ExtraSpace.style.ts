@@ -6,15 +6,12 @@ export const ExtraSpace = styled.div`
   top: 0;
   height: 1.5rem;
   width: 100%;
-  min-width: var(--min-width);
   max-width: var(--max-width);
   background-color: var(--color-page-frame);
   z-index: 4;
 
   ${media.down('sm')`
     height: 1rem;
-    min-width: 100%;
-    max-width: 100%;
   `}
 
   &::before {

@@ -1,7 +1,7 @@
 import { styled } from 'styled-components'
 import { media } from '@/styles/media.breakpoints'
 
-export const StyledAuthorizationMenu = styled.main`
+export const StyledAuthorizationMenu = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;

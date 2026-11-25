@@ -3,16 +3,21 @@ import { useUpdateUserProfileMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
 import { getErrorMessage } from '@/helpers/errors'
 import { BinIcon, CameraIcon, SpinnerIcon, UserIcon } from '@/assets/svg'
-import { IconOverlay, RemoveAvatar, StyledAvatar } from './Avatar.style'
+import {
+  AvatarButton,
+  IconOverlay,
+  RemoveAvatar,
+  StyledAvatar,
+} from './Avatar.style'
 import { AvatarTypes } from './Avatar.types'
 
-export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
+export function Avatar(options: AvatarTypes) {
+  const { imgUrl, $size = 40, $hoverControls, ...buttonProps } = options
   const { t, i18n } = useTranslation()
 
   const [updateUserProfile, avatarRemoval] = useUpdateUserProfileMutation()
 
-  const handleRemoveAvatar = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
+  const handleRemoveAvatar = async () => {
     try {
       await updateUserProfile({ avatar: null }).unwrap()
     } catch (error) {
@@ -20,45 +25,42 @@ export function Avatar({ imgUrl, $size = 40, ...props }: AvatarTypes) {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      props.onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
-    }
-  }
-
   return (
-    <StyledAvatar
-      role="button"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      $size={$size}
-      {...props}>
-      {props.$hoverControls && (
-        <>
-          {imgUrl && (
-            <RemoveAvatar
-              onClick={(e) => {
-                void handleRemoveAvatar(e)
-              }}
-              disabled={avatarRemoval.isLoading}
-              aria-busy={avatarRemoval.isLoading}
-              title={t('account.removeAvatar')}>
-              {avatarRemoval.isLoading ? <SpinnerIcon /> : <BinIcon />}
-            </RemoveAvatar>
-          )}
-          <IconOverlay>
+    <StyledAvatar $size={$size}>
+      <AvatarButton
+        type="button"
+        aria-label={buttonProps.title}
+        $hoverControls={$hoverControls}
+        {...buttonProps}>
+        {$hoverControls && (
+          <IconOverlay aria-hidden="true">
             <CameraIcon />
           </IconOverlay>
-        </>
-      )}
-      {imgUrl ? (
-        <img src={imgUrl} alt={props.title} />
-      ) : (
-        <UserIcon
-          color="var(--color-on-surface-variant)"
-          data-testid="default-avatar-icon"
-        />
+        )}
+        {imgUrl ? (
+          <img src={imgUrl} alt={buttonProps.title ?? ''} />
+        ) : (
+          <UserIcon
+            aria-hidden="true"
+            color="var(--color-on-surface-variant)"
+            data-testid="default-avatar-icon"
+          />
+        )}
+      </AvatarButton>
+      {$hoverControls && imgUrl && (
+        <RemoveAvatar
+          type="button"
+          onClick={() => void handleRemoveAvatar()}
+          disabled={avatarRemoval.isLoading}
+          aria-busy={avatarRemoval.isLoading}
+          aria-label={t('account.removeAvatar')}
+          title={t('account.removeAvatar')}>
+          {avatarRemoval.isLoading ? (
+            <SpinnerIcon aria-hidden="true" />
+          ) : (
+            <BinIcon aria-hidden="true" />
+          )}
+        </RemoveAvatar>
       )}
     </StyledAvatar>
   )

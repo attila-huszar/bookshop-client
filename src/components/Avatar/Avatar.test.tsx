@@ -25,15 +25,28 @@ describe('Avatar', () => {
       }),
     )
 
-    render(<Avatar imgUrl={imgUrl} title="Avatar" $hoverControls />, {
-      wrapper: Providers,
-    })
+    const changeAvatar = vi.fn()
+    render(
+      <Avatar
+        imgUrl={imgUrl}
+        title="Avatar"
+        onClick={changeAvatar}
+        $hoverControls
+      />,
+      { wrapper: Providers },
+    )
+    const user = userEvent.setup()
     const remove = screen.getByRole('button', { name: 'Remove Avatar' })
-    await userEvent.click(remove)
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Avatar' })).toHaveFocus()
+    await user.tab()
+    expect(remove).toHaveFocus()
+    await user.keyboard('[Space]')
 
     expect(remove).toBeDisabled()
     expect(remove).toHaveAttribute('aria-busy', 'true')
-    await userEvent.click(remove)
+    await user.click(remove)
+    expect(changeAvatar).not.toHaveBeenCalled()
     expect(privateApi.authRequest).toHaveBeenCalledTimes(1)
 
     act(() => {

@@ -6,6 +6,8 @@ The React/TypeScript client owns the storefront, CMS interface, browser state, a
 
 RTK Query is the single cache for catalogue data, profiles, orders, CMS entities, and payment requests. Domain APIs share one reducer, middleware, and invalidation tags; responses remain immutable.
 
+Window focus refreshes active profile, order, and order email history queries. The public catalogue and news reuse their cache on focus, including prefetched book details.
+
 Redux slices hold cart intent, session state, checkout workflow, and filter/pagination UI. Equivalent filters share cache entries, and pages use results for their current query arguments. Cart price recovery bypasses stale book data and waits for older reads before refreshing, preserving quantities.
 
 Ky owns token attachment, cookies, and single-flight refresh, including guest payment cookies. Authentication transitions clear private query data. API caches, Google credentials, payment tokens, and full PaymentIntent responses are never persisted. Browser storage holds cart intent, language preference, and safe checkout identity/retry keys.

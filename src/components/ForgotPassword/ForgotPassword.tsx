@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef } from 'react'
+import { useId, useImperativeHandle, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Formik } from 'formik'
 import { postPasswordReset } from '@/api/users'
@@ -26,6 +26,7 @@ type Props = { ref: React.Ref<PasswordDialogHandle> }
 
 export function ForgotPassword({ ref }: Props) {
   const { t, i18n } = useTranslation()
+  const titleId = useId()
 
   const forgotPassRef = useRef<HTMLDialogElement>(null)
 
@@ -65,7 +66,7 @@ export function ForgotPassword({ ref }: Props) {
   return (
     <StyledForgotPassword
       ref={forgotPassRef}
-      aria-label={t('auth.forgotPasswordTitle')}
+      aria-labelledby={titleId}
       onCancel={handleClose}>
       <Formik
         initialValues={{ email: '' }}
@@ -74,7 +75,7 @@ export function ForgotPassword({ ref }: Props) {
         {({ isSubmitting }) => (
           <>
             <DialogHeader>
-              <h2>{t('auth.forgotPasswordTitle')}</h2>
+              <h2 id={titleId}>{t('auth.forgotPasswordTitle')}</h2>
               <DialogCloseButton
                 type="button"
                 aria-label={t('common.actions.close')}
@@ -87,9 +88,9 @@ export function ForgotPassword({ ref }: Props) {
             <DialogBody>
               <p>{t('auth.resetHelp')}</p>
               <Form noValidate>
-                <p>{t('common.fields.email')}</p>
                 <FormikField
                   name="email"
+                  label={t('common.fields.email')}
                   placeholder={t('common.fields.email')}
                   type="email"
                   inputMode="email"

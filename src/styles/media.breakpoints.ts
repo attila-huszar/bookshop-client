@@ -10,28 +10,32 @@ export const breakpoints = {
 
 export type Breakpoint = keyof typeof breakpoints
 
-const max = (bp: Breakpoint) => `${breakpoints[bp] - 0.05}px`
-const min = (bp: Breakpoint) => `${breakpoints[bp]}px`
+export const mediaQuery = {
+  up: (bp: Breakpoint) => `(width >= ${breakpoints[bp]}px)`,
+  down: (bp: Breakpoint) => `(width < ${breakpoints[bp]}px)`,
+  between: (a: Breakpoint, b: Breakpoint) =>
+    `(${breakpoints[a]}px <= width < ${breakpoints[b]}px)`,
+}
 
 export const media = {
   up:
     (bp: Breakpoint) =>
     (...args: Parameters<typeof css>) => css`
-      @media (min-width: ${min(bp)}) {
+      @media ${mediaQuery.up(bp)} {
         ${css(...args)}
       }
     `,
   down:
     (bp: Breakpoint) =>
     (...args: Parameters<typeof css>) => css`
-      @media (max-width: ${max(bp)}) {
+      @media ${mediaQuery.down(bp)} {
         ${css(...args)}
       }
     `,
   between:
     (a: Breakpoint, b: Breakpoint) =>
     (...args: Parameters<typeof css>) => css`
-      @media (min-width: ${min(a)}) and (max-width: ${max(b)}) {
+      @media ${mediaQuery.between(a, b)} {
         ${css(...args)}
       }
     `,

@@ -82,7 +82,10 @@ function renderLogin() {
 }
 
 async function submitLogin() {
-  await userEvent.type(screen.getByLabelText('Email'), 'jane@example.com')
+  await userEvent.type(
+    screen.getByRole('textbox', { name: 'Email' }),
+    'jane@example.com',
+  )
   // Existing accounts can log in without meeting today's new-password policy.
   await userEvent.type(screen.getByLabelText('Password'), 'old')
   await userEvent.click(screen.getByRole('button', { name: 'Login' }))
@@ -99,7 +102,7 @@ describe('Login', () => {
       screen.getByRole('button', { name: 'Continue with Google' }),
     )
 
-    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Email' })).toBeDisabled()
     expect(
       screen.getByRole('button', { name: 'Continue with Google' }),
     ).toBeDisabled()
@@ -129,7 +132,7 @@ describe('Login', () => {
       email: 'jane@example.com',
       password: 'old',
     })
-    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Email' })).toBeDisabled()
     expect(screen.getByLabelText('Password')).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Login' })).toBeDisabled()
     const englishMessage = i18n.t('auth.welcome', { name: 'Jane' })
@@ -160,7 +163,9 @@ describe('Login', () => {
     expect(toast.error).toHaveBeenCalledWith(
       i18n.t('errors.invalidCredentials'),
     )
-    expect(screen.getByLabelText('Email')).toHaveValue('jane@example.com')
+    expect(screen.getByRole('textbox', { name: 'Email' })).toHaveValue(
+      'jane@example.com',
+    )
     expect(screen.getByLabelText('Password')).toHaveValue('old')
     expect(navigate).not.toHaveBeenCalled()
 

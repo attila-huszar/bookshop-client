@@ -49,9 +49,16 @@ export const Logo = styled.div`
   `}
 `
 
-export const LottieWrapper = styled.div`
+export const StatusGraphic = styled.div`
+  display: grid;
+  place-items: center;
   width: 200px;
   height: 200px;
+  font-size: 4rem;
+
+  > div {
+    width: 100%;
+  }
 
   ${media.down('sm')`
     width: 150px;

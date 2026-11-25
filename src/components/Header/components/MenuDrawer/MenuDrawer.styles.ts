@@ -1,46 +1,42 @@
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
-export const StyledDrawerPanel = styled.div<{ $show: boolean }>`
+const slideIn = keyframes`
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+`
+
+export const StyledDrawerPanel = styled.dialog`
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  display: flex;
+  inset: 0 auto 0 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   flex-direction: column;
   width: 60vw;
-  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   border-radius: 0;
-  transition: transform 0.3s ease-in-out;
-  box-shadow: none;
+  background: transparent;
+  color: inherit;
+  overscroll-behavior: contain;
 
-  ${({ $show }) => `
-    transform: ${$show ? 'translateX(0)' : 'translateX(-100%)'};
-  `}
+  &[open] {
+    display: flex;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: ${slideIn} 0.3s ease-in-out;
+    }
+  }
+
+  &::backdrop {
+    background-color: var(--color-backdrop);
+  }
 `
 
 export const DrawerCloseButton = styled.div`
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
-  z-index: 101;
-`
-
-export const Backdrop = styled.div<{ $show: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: var(--color-backdrop);
-  z-index: 90;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease-in-out;
-
-  ${({ $show }) =>
-    $show &&
-    `
-    opacity: 1;
-    visibility: visible;
-  `}
+  z-index: 1;
 `

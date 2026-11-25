@@ -265,31 +265,52 @@ describe('CMS menu', () => {
     },
   )
 
-  it.each([390, 1024])(
-    'dismisses the menu with Escape and outside clicks at %ipx',
-    async (width) => {
-      vi.stubGlobal('innerWidth', width)
-      renderCMS()
-      const user = userEvent.setup()
-      const trigger = screen.getByRole('button', { name: 'Menu' })
-      await user.click(trigger)
+  it('dismisses the desktop menu with Escape and outside clicks', async () => {
+    vi.stubGlobal('innerWidth', 1024)
+    renderCMS()
+    const user = userEvent.setup()
+    const trigger = screen.getByRole('button', { name: 'Menu' })
+    await user.click(trigger)
 
-      expect(
-        screen.getByRole('button', { name: 'Terms and Conditions' }),
-      ).toHaveFocus()
-      await user.keyboard('{Escape}')
+    expect(
+      screen.getByRole('button', { name: 'Terms and Conditions' }),
+    ).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(trigger).toHaveFocus()
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
 
-      expect(trigger).toHaveAttribute('aria-expanded', 'false')
-      expect(trigger).toHaveFocus()
-      await user.click(trigger)
-      await user.click(screen.getByRole('link', { name: 'Orders' }))
+    await user.click(trigger)
+    await user.click(screen.getByRole('link', { name: 'Orders' }))
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(
+      screen.queryByRole('button', { name: 'Terms and Conditions' }),
+    ).not.toBeInTheDocument()
+  })
 
-      expect(trigger).toHaveAttribute('aria-expanded', 'false')
-      expect(
-        screen.queryByRole('button', { name: 'Terms and Conditions' }),
-      ).not.toBeInTheDocument()
-    },
-  )
+  it('syncs the mobile menu with native dismissal and outside clicks', async () => {
+    vi.stubGlobal('innerWidth', 390)
+    renderCMS()
+    const user = userEvent.setup()
+    const trigger = screen.getByRole('button', { name: 'Menu' })
+    await user.click(trigger)
+
+    const drawer = screen.getByRole('dialog', { name: 'CMS' })
+    expect(
+      within(drawer).getByRole('button', { name: 'Terms and Conditions' }),
+    ).toHaveAttribute('autofocus')
+
+    // Simulate the native close event that follows Escape in a browser.
+    act(() => {
+      drawer.removeAttribute('open')
+      drawer.dispatchEvent(new Event('close'))
+    })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(trigger)
+    await user.click(screen.getByRole('link', { name: 'Orders' }))
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
 
   it('returns to the storefront from the menu', async () => {
     renderCMS()
@@ -316,7 +337,7 @@ describe('CMS menu', () => {
     await user.click(screen.getByRole('button', { name: 'Menü bezárása' }))
 
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    expect(trigger).toHaveFocus()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })
 
@@ -364,9 +385,16 @@ describe('CMS deletion controls', () => {
     })
 
     expect(screen.getByRole('link', { name: 'Rendelések' })).toBeInTheDocument()
+    const orderRegion = screen.getByRole('region', { name: 'Rendelések' })
+    expect(orderRegion).toHaveAttribute('tabindex', '0')
+    expect(
+      within(orderRegion).getByRole('table', { name: 'Rendelések' }),
+    ).toBeInTheDocument()
     await userEvent.click(selectOrder)
     await userEvent.click(screen.getByRole('button', { name: 'Eltávolítás' }))
-    const dialog = screen.getByRole('dialog')
+    const dialog = screen.getByRole('dialog', {
+      name: /eltávolítja a kijelölt tételeket/i,
+    })
     expect(
       within(dialog).getByText(/eltávolítja a kijelölt tételeket/i),
     ).toBeInTheDocument()

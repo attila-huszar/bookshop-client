@@ -12,7 +12,7 @@ import { booksQueryArgs } from '@/store/selectors'
 import { applyBooksFilters } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
 import type { Book } from '@/types'
-import { Products } from './Products'
+import { Component as Products } from './Products'
 
 vi.mock('@/components/Card', () => ({
   Card: ({ book }: { book: Book }) => <div>{book.title}</div>,

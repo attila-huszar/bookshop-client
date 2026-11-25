@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
@@ -38,14 +38,16 @@ export function AccountMenu() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { accessToken, userData } = useAppSelector(userSelector)
+  const menuId = useId()
   const menuRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const drawerRef = useRef<HTMLDivElement>(null)
 
-  useClickOutside(
-    isMobile ? [menuRef, drawerRef] : [menuRef, dropdownRef],
-    () => setMenuOpen(false),
-  )
+  const closeMenu = () => setMenuOpen(false)
+
+  useClickOutside(menuRef, () => {
+    if (!isMobile) {
+      closeMenu()
+    }
+  })
 
   const isAuthenticated = !!(accessToken && userData)
   const isAdmin = userData?.role === UserRole.Admin
@@ -111,7 +113,7 @@ export function AccountMenu() {
   const menuList = (
     <AccountMenuList>
       <li>
-        <Link to={`/${ROUTE.ACCOUNT}`} onClick={toggleMenu}>
+        <Link to={`/${ROUTE.ACCOUNT}`} onClick={closeMenu}>
           <MenuItem>
             <ProfileIcon height="1.5rem" />
             <span>{userData.firstName}</span>
@@ -119,7 +121,7 @@ export function AccountMenu() {
         </Link>
       </li>
       <li>
-        <Link to={`/${ROUTE.ORDERS}`} onClick={toggleMenu}>
+        <Link to={`/${ROUTE.ORDERS}`} onClick={closeMenu}>
           <MenuItem>
             <OrdersIcon height="1.5rem" />
             <span>{t('navigation.orders')}</span>
@@ -128,7 +130,7 @@ export function AccountMenu() {
       </li>
       {isAdmin && (
         <li>
-          <Link to={`/${ROUTE.CMS}/${ROUTE.ORDERS}`} onClick={toggleMenu}>
+          <Link to={`/${ROUTE.CMS}/${ROUTE.ORDERS}`} onClick={closeMenu}>
             <MenuItem>
               <CMSIcon height="1.5rem" />
               <span>{t('navigation.cms')}</span>
@@ -155,16 +157,23 @@ export function AccountMenu() {
   return (
     <StyledAccountMenu ref={menuRef}>
       <Avatar
+        aria-controls={menuId}
+        aria-expanded={menuOpen}
+        aria-haspopup={isMobile ? 'dialog' : undefined}
         imgUrl={userData.avatar ?? undefined}
         onClick={toggleMenu}
         title={userData.firstName}
       />
       {isMobile ? (
-        <MenuDrawer show={menuOpen} onClose={toggleMenu} drawerRef={drawerRef}>
+        <MenuDrawer
+          id={menuId}
+          label={userData.firstName}
+          show={menuOpen}
+          onClose={closeMenu}>
           {menuList}
         </MenuDrawer>
       ) : (
-        <MenuDropdown show={menuOpen} dropdownRef={dropdownRef}>
+        <MenuDropdown id={menuId} show={menuOpen}>
           {menuList}
         </MenuDropdown>
       )}

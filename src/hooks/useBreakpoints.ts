@@ -1,25 +1,12 @@
-import { useSyncExternalStore } from 'react'
-import { breakpoints } from '@/styles/media.breakpoints'
+import { mediaQuery } from '@/styles/media.breakpoints'
+import { useMediaQuery } from './useMediaQuery'
 
-const subscribe = (onChange: () => void) => {
-  window.addEventListener('resize', onChange)
-
-  return () => window.removeEventListener('resize', onChange)
-}
-
-const getBreakpoint = () => {
-  if (window.innerWidth < breakpoints.sm) {
-    return 'mobile'
-  }
-
-  return window.innerWidth < breakpoints.md ? 'tablet' : 'desktop'
-}
-
-export const useBreakpoints = () => {
-  const breakpoint = useSyncExternalStore(subscribe, getBreakpoint)
-
+export function useBreakpoints() {
   return {
-    isMobile: breakpoint === 'mobile',
-    isTablet: breakpoint === 'tablet',
+    isMobile: useMediaQuery(mediaQuery.between('xs', 'sm')),
+    isTablet: useMediaQuery(mediaQuery.between('sm', 'md')),
+    isLaptop: useMediaQuery(mediaQuery.between('md', 'lg')),
+    isDesktop: useMediaQuery(mediaQuery.between('lg', 'xl')),
+    isWideDesktop: useMediaQuery(mediaQuery.up('xl')),
   }
 }

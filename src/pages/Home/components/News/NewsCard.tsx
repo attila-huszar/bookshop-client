@@ -10,7 +10,7 @@ export function NewsCard({ title, content, img }: News) {
         <p>{content}</p>
       </Details>
       <ImageWrap>
-        <img src={img} alt={title} />
+        <img src={img} alt={title} loading="lazy" />
       </ImageWrap>
     </StyledNewsCard>
   )

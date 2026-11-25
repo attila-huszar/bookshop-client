@@ -7,7 +7,7 @@ import { serverUrl } from '@/constants/envConfig'
 import { timeZone } from '@/constants/time'
 import { Article, DownloadButton, PublishedDate } from './Terms.style'
 
-export function Terms() {
+function Terms() {
   const { version } = useParams()
   const { t, language } = useLanguage()
   const {
@@ -52,3 +52,5 @@ export function Terms() {
     </Article>
   )
 }
+
+export { Terms as Component }

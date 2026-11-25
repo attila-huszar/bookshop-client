@@ -3,11 +3,10 @@ import { media } from '@/styles/media.breakpoints'
 
 export const StyledFooter = styled.footer`
   display: grid;
-  grid-template-rows: 16rem 3.5rem;
-  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(16rem, auto) auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 2.5rem;
   width: 100%;
-  min-width: var(--min-width);
   max-width: var(--max-width);
   padding: 0 6.25rem;
 
@@ -15,9 +14,11 @@ export const StyledFooter = styled.footer`
     color: var(--color-primary);
   }
 
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
+
   ${media.down('sm')`
-    min-width: 100%;
-    max-width: 100%;
     display: flex;
     flex-direction: column;
     padding: 2rem 1.5rem;
@@ -31,12 +32,17 @@ export const LeftSection = styled.section`
 `
 
 export const RightSection = styled.section`
+  container: footer-subscribe / inline-size;
   grid-area: 1 / 2 / 2 / 3;
   align-self: center;
 
   p {
     text-wrap: pretty;
   }
+
+  ${media.down('sm')`
+    align-self: stretch;
+  `}
 `
 
 export const BottomSection = styled.section`

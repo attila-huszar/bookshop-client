@@ -17,7 +17,12 @@ describe('FormikField', () => {
           validationSchema={registrationSchema.pick(['firstName', 'email'])}
           onSubmit={vi.fn()}>
           <Form>
-            <FormikField name="firstName" placeholder="First name" type={type}>
+            <p id="name-hint">Shown on your account</p>
+            <FormikField
+              name="firstName"
+              label="First name"
+              aria-describedby="name-hint"
+              type={type}>
               {type === 'select' && <option value="">Choose a name</option>}
             </FormikField>
             <FormikField name="email" placeholder="Email" />
@@ -26,14 +31,25 @@ describe('FormikField', () => {
         </Formik>,
       )
 
+      const field = screen.getByLabelText('First name')
+      expect(field).not.toHaveAttribute('aria-invalid')
+      expect(field).toHaveAccessibleDescription('Shown on your account')
+
       await userEvent.click(screen.getByRole('button', { name: 'Save' }))
       expect(await screen.findByText('Required')).toBeInTheDocument()
+      expect(field).toHaveAttribute('aria-invalid', 'true')
+      expect(field).toHaveAccessibleDescription(
+        'Shown on your account Required',
+      )
 
       await act(async () => {
         await i18n.changeLanguage('hu')
       })
 
       expect(await screen.findByText('Kötelező')).toBeInTheDocument()
+      expect(field).toHaveAccessibleDescription(
+        'Shown on your account Kötelező',
+      )
       expect(screen.getByPlaceholderText('Email')).toHaveValue(
         'reader@example.com',
       )
@@ -157,10 +173,11 @@ describe('FormikField', () => {
     render(
       <Formik
         initialValues={{ avatar: null as File | null }}
+        validate={({ avatar }) => (avatar ? {} : { avatar: 'Choose an image' })}
         onSubmit={onSubmit}>
         {({ touched }) => (
           <Form>
-            <FormikField name="avatar" type="file" />
+            <FormikField name="avatar" label="Profile image" type="file" />
             {touched.avatar && <p>Avatar selected</p>}
             <button type="submit">Save</button>
           </Form>
@@ -168,8 +185,12 @@ describe('FormikField', () => {
       </Formik>,
     )
 
-    const fileInput = screen.getByLabelText(/avatar/i)
+    const fileInput = screen.getByLabelText('Profile image')
     expect(fileInput).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText('Choose an image')).toBeInTheDocument()
+    expect(fileInput).toHaveAttribute('aria-invalid', 'true')
+    expect(fileInput).toHaveAccessibleDescription('Choose an image')
 
     await userEvent.upload(fileInput, testFile)
     expect(await screen.findByText('Avatar selected')).toBeInTheDocument()
