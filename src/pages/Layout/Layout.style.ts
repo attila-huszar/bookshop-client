@@ -9,8 +9,7 @@ export const StyledLayout = styled.div`
 
   position: relative;
   isolation: isolate;
-  min-height: 100vh;
-  min-width: var(--min-width);
+  min-height: 100dvh;
   max-width: var(--max-width);
   margin: 0 auto;
   border-bottom-left-radius: var(--corner-cut);
@@ -19,10 +18,6 @@ export const StyledLayout = styled.div`
 
   ${media.down('sm')`
     --storefront-header-height: 5rem;
-
-    min-width: 100%;
-    max-width: 100%;
-    margin: 0;
   `}
 `
 

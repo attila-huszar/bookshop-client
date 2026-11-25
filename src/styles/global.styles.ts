@@ -14,7 +14,6 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   :root {
-    --min-width: 54rem;
     --max-width: 90rem;
     --color-page-frame: #5a6547;
     --color-surface-container-lowest: #ffffff;

@@ -8,11 +8,14 @@ export const StyledRecommended = styled.section`
 
   .swiper-slide {
     width: fit-content;
+    max-width: 100%;
   }
 
-  ${media.down('sm')`
-    padding: 2.5rem 1.5rem;
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
 
+  ${media.down('sm')`
     .swiper-slide {
       width: 100%;
     }

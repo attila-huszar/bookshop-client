@@ -12,9 +12,7 @@ export const StyledFilter = styled.aside`
   ${filterSurface}
   position: sticky;
   top: 7.5rem;
-  bottom: 0;
-  height: fit-content;
-  width: auto;
+  align-self: start;
 `
 
 export const FilterDialog = styled.dialog`

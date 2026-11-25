@@ -5,6 +5,7 @@ import { SearchTypes } from './Search.types'
 
 export const StyledForm = styled.div`
   flex-shrink: 1;
+  min-width: 0;
   width: 24rem;
   margin-right: auto;
 

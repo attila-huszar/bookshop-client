@@ -1,16 +1,23 @@
 import { styled } from 'styled-components'
-import { StyleTypes } from './Avatar.types'
 
-export const StyledAvatar = styled.div<StyleTypes>`
+export const StyledAvatar = styled.div<{ $size: number }>`
+  position: relative;
+  flex-shrink: 0;
+  height: ${({ $size }) => $size}px;
+  width: ${({ $size }) => $size}px;
+`
+
+export const AvatarButton = styled.button<{ $hoverControls?: boolean }>`
   position: relative;
   display: flex;
-  height: ${({ $size }) => $size + 'px'};
-  width: ${({ $size }) => $size + 'px'};
+  height: 100%;
+  width: 100%;
+  padding: 0;
   border: 2px solid transparent;
   border-radius: 9999px;
+  background: transparent;
   outline: 2px solid var(--color-primary);
   cursor: pointer;
-  transition: all 0.2s ease-out;
 
   & > img {
     display: block;
@@ -31,23 +38,23 @@ export const StyledAvatar = styled.div<StyleTypes>`
     width: 100%;
     background-color: var(--color-avatar-overlay);
     border-radius: 9999px;
-    transition: all 0.2s ease-out;
+    transition: opacity 0.2s ease-out;
     ${({ $hoverControls }) => $hoverControls && 'clip-path: inset(75% 0 0 0);'}
   }
 
-  &:hover::after {
+  &:is(:hover, :focus-visible)::after {
     opacity: 1;
   }
 
   & > svg {
     height: auto;
-    width: ${({ $size }) => $size + 'px'};
+    width: 100%;
     padding: 4px;
     border-radius: 50%;
   }
 `
 
-export const IconOverlay = styled.div`
+export const IconOverlay = styled.span`
   position: absolute;
   bottom: 8%;
   left: 50%;
@@ -55,19 +62,13 @@ export const IconOverlay = styled.div`
   width: 20px;
   height: 20px;
   opacity: 0;
-  transition:
-    opacity 0.2s ease-out,
-    background-color 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
 
-  &:hover:not(:disabled) {
-    background-color: var(--color-error-container);
-  }
-
-  &:focus-visible {
+  ${AvatarButton}:is(:hover, :focus-visible) & {
     opacity: 1;
   }
 
-  ${StyledAvatar}:hover & {
+  @media (hover: none) {
     opacity: 1;
   }
 `
@@ -97,6 +98,14 @@ export const RemoveAvatar = styled.button`
   }
 
   ${StyledAvatar}:hover & {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
     opacity: 1;
   }
 `

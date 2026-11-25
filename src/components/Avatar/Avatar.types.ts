@@ -1,9 +1,7 @@
-export type StyleTypes = {
+import type { ComponentPropsWithoutRef } from 'react'
+
+export type AvatarTypes = ComponentPropsWithoutRef<'button'> & {
+  imgUrl?: string
   $size?: number
   $hoverControls?: boolean
 }
-
-export type AvatarTypes = React.DetailedHTMLProps<
-  React.HTMLAttributes<HTMLDivElement>,
-  HTMLDivElement
-> & { imgUrl?: string } & StyleTypes

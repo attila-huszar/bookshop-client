@@ -4,14 +4,16 @@ import { media } from '@/styles/media.breakpoints'
 
 export const StyledProducts = styled.div`
   padding: 0 5rem 4rem;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
 
-  > section {
-    width: 100%;
-  }
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
 
   ${media.down('sm')`
+    grid-template-columns: minmax(0, 1fr);
     padding: 0 1rem 2rem;
   `}
 `
@@ -21,11 +23,6 @@ export const ProductsGrid = styled.div`
   flex-wrap: wrap;
   column-gap: 0.5rem;
   row-gap: 2rem;
-  min-width: 31.5rem;
-
-  ${media.down('sm')`
-    min-width: auto;
-  `}
 `
 
 export const FilterFloatingButton = styled.button`

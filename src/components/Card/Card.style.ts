@@ -7,6 +7,7 @@ export const StyledCard = styled.div`
   display: flex;
   height: 17.5rem;
   width: 30rem;
+  max-width: 100%;
   padding: 1rem;
   border-radius: 10px;
   background-color: var(--color-surface-container-low);
@@ -32,28 +33,33 @@ export const Details = styled.div`
   justify-content: space-between;
   padding: 4rem 0 0 2rem;
   min-width: 0;
+  overflow-wrap: anywhere;
 
   > button {
     position: relative;
     z-index: 1;
   }
 
+  ${media.down('md')`
+    padding: 0 0 0 1rem;
+    gap: 0.75rem;
+  `}
+
   ${media.down('sm')`
     padding: 1rem 0 0;
-    gap: 0.75rem;
   `}
 `
 
 export const Image = styled.img`
   height: 100%;
-  min-width: 11.25rem;
+  width: min(40%, 11.25rem);
+  flex-shrink: 0;
   border-radius: var(--border-radius);
   object-fit: cover;
 
   ${media.down('sm')`
     width: 100%;
     height: 12rem;
-    min-width: 0;
   `}
 `
 

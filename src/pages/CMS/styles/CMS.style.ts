@@ -6,14 +6,8 @@ export const StyledCMS = styled.section`
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  min-width: var(--min-width);
   max-width: var(--max-width);
   margin: 0 auto;
-
-  ${media.down('sm')`
-    min-width: 100%;
-    max-width: 100%;
-  `}
 `
 
 export const MainContainer = styled.div`

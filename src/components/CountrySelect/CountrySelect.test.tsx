@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { Provider } from 'react-redux'
 import { i18n } from '@/i18n'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Form, Formik } from 'formik'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -81,7 +81,12 @@ describe('country reference data', () => {
       screen.getByRole('option', { name: 'Hungary', selected: true }).id,
     )
 
-    await user.keyboard('{ArrowDown}{Enter}')
+    await user.keyboard('{ArrowDown}')
+    fireEvent.keyDown(search, { key: 'Enter', isComposing: true })
+    expect(search).toHaveFocus()
+    expect(trigger).toHaveAccessibleName('Country Hungary')
+
+    await user.keyboard('{Enter}')
     expect(trigger).toHaveFocus()
     expect(trigger).toHaveAccessibleName('Country United States')
 

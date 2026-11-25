@@ -33,6 +33,11 @@ export const StyledPriceProduct = styled.div`
     }
   `}
 
+  ${media.down('md')`
+    grid-column: 2;
+    grid-row: 3;
+  `}
+
   ${media.down('sm')`
     align-self: flex-start;
   `}

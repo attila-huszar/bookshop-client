@@ -50,6 +50,28 @@ Object.defineProperty(window, 'scrollTo', {
   writable: true,
 })
 
+window.matchMedia = (query) => {
+  const [, rangeMin, rangeMax] =
+    /^\((\d+)px <= width < (\d+)px\)$/.exec(query) ?? []
+  const minWidth = rangeMin ?? /^\(width >= (\d+)px\)$/.exec(query)?.[1]
+  const maxWidth = rangeMax ?? /^\(width < (\d+)px\)$/.exec(query)?.[1]
+  const isWidthQuery = minWidth !== undefined || maxWidth !== undefined
+  const matchesMin =
+    minWidth === undefined || window.innerWidth >= Number(minWidth)
+  const matchesMax =
+    maxWidth === undefined || window.innerWidth < Number(maxWidth)
+
+  return Object.assign(new EventTarget(), {
+    media: query,
+    matches: isWidthQuery
+      ? matchesMin && matchesMax
+      : query === '(prefers-reduced-motion: no-preference)',
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+  })
+}
+
 Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
   writable: true,

@@ -43,6 +43,31 @@ describe('PaymentStatus', () => {
     vi.mocked(useNavigate).mockReturnValue(navigate)
   })
 
+  it('renders a static status graphic when reduced motion is enabled', () => {
+    const motionQuery = window.matchMedia(
+      '(prefers-reduced-motion: no-preference)',
+    )
+    Object.assign(motionQuery, { matches: false })
+    vi.spyOn(window, 'matchMedia').mockReturnValue(motionQuery)
+    vi.mocked(usePaymentStatus).mockReturnValue({
+      status: { type: 'succeeded' },
+      retry: vi.fn(),
+    })
+
+    render(<PaymentStatus />)
+
+    expect(screen.queryByTestId('payment-animation')).not.toBeInTheDocument()
+    expect(screen.getByText('✅')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByText(/Payment successful/)).toBeVisible()
+
+    act(() => {
+      Object.assign(motionQuery, { matches: true })
+      motionQuery.dispatchEvent(new Event('change'))
+    })
+
+    expect(screen.getByTestId('payment-animation')).toBeInTheDocument()
+  })
+
   it('translates successful payment without clearing the session again on language change', async () => {
     vi.mocked(usePaymentStatus).mockReturnValue({
       status: { type: 'succeeded' },

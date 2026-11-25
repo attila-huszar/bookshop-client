@@ -143,7 +143,9 @@ describe('Account page', () => {
     const avatarButton = screen.getByTitle(/change profile picture/i)
     await userEvent.click(avatarButton)
 
-    const fileInput = screen.getByLabelText(/Change Profile Picture/i)
+    const fileInput = screen.getByLabelText(/Change Profile Picture/i, {
+      selector: 'input',
+    })
     await userEvent.upload(fileInput, file)
 
     await waitFor(() => {

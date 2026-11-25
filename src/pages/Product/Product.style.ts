@@ -10,6 +10,10 @@ export const StyledProduct = styled.div`
     padding: 0 3rem;
   `}
 
+  ${media.down('md')`
+    padding-inline: 1.5rem;
+  `}
+
   ${media.down('sm')`
     --page-loading-height: calc(100dvh - 6.5rem);
 
@@ -47,6 +51,13 @@ export const DetailsSection = styled.section`
     min-height: 28rem;
   `}
 
+  ${media.down('md')`
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-rows: repeat(3, max-content) 1fr auto;
+    gap: 1rem 1.5rem;
+    min-height: auto;
+  `}
+
   ${media.down('sm')`
     display: flex;
     flex-direction: column;
@@ -77,10 +88,14 @@ export const ImageWrapper = styled.div`
     padding: 2rem;
   `}
 
+  ${media.down('md')`
+    grid-row: 1 / -1;
+    padding: 1.5rem;
+  `}
+
   ${media.down('sm')`
     width: min(100%, 24rem);
     align-self: center;
-    padding: 1.5rem;
   `}
 `
 
@@ -152,6 +167,12 @@ export const Description = styled.div`
     }
   `}
 
+  ${media.down('md')`
+    grid-column: 2;
+    grid-row: 4;
+    padding: 0;
+  `}
+
   ${media.down('sm')`
     padding: 0 0 0.5rem;
 
@@ -171,6 +192,11 @@ export const ButtonWrapper = styled.div`
   grid-row: 4 / 5;
   align-self: end;
   justify-self: end;
+
+  ${media.down('md')`
+    grid-column: 2;
+    grid-row: 5;
+  `}
 
   ${media.down('sm')`
     width: 100%;
