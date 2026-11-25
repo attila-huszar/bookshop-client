@@ -62,9 +62,7 @@ function credentialCallback() {
 function TestProvider({ children }: PropsWithChildren) {
   return (
     <StrictMode>
-      <GoogleOAuthProvider
-        clientId="bookshop.apps.googleusercontent.com"
-        onScriptLoadError={() => toast.error(i18n.t('auth.googleUnavailable'))}>
+      <GoogleOAuthProvider clientId="bookshop.apps.googleusercontent.com">
         {children}
       </GoogleOAuthProvider>
     </StrictMode>
@@ -223,23 +221,16 @@ it.each(['success', 'failure'] as const)(
   },
 )
 
-it('reports a script loading failure without remounting the provider', async () => {
+it('hides the Google section silently when the script fails to load', () => {
   renderSignIn(<GoogleSignIn disabled={false} onCredential={onCredential} />)
   const script = providerScript()
   fireEvent.error(script)
 
-  await waitFor(() =>
-    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-      i18n.t('auth.googleUnavailable'),
-    ),
-  )
   expect(providerScript()).toBe(script)
   expect(usersTransport.postGoogleNonce).not.toHaveBeenCalled()
   expect(initialize).not.toHaveBeenCalled()
-  expect(screen.queryByRole('status')).not.toBeInTheDocument()
-  expect(
-    screen.queryByRole('button', { name: 'Try again' }),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByRole('separator')).not.toBeInTheDocument()
+  expect(toast.error).not.toHaveBeenCalled()
 })
 
 it('requires a successful nonce request before rendering sign-in', async () => {
@@ -254,10 +245,8 @@ it('requires a successful nonce request before rendering sign-in', async () => {
 
   expect(usersTransport.postGoogleNonce).toHaveBeenCalledOnce()
   expect(initialize).not.toHaveBeenCalled()
-  expect(screen.queryByRole('status')).not.toBeInTheDocument()
-  expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-    i18n.t('auth.googleUnavailable'),
-  )
+  expect(screen.queryByRole('separator')).not.toBeInTheDocument()
+  expect(toast.error).not.toHaveBeenCalled()
 })
 
 it('rejects a provider response without a credential', async () => {

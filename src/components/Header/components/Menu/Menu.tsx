@@ -7,8 +7,9 @@ import { IconButton } from '@/components/Button'
 import { useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
 import { menuLinks } from '@/constants/links'
-import { CacheTime } from '@/constants/time'
+import { CacheTime, uiTiming } from '@/constants/time'
 import { MenuIcon } from '@/assets/svg'
 import { MenuDrawer } from '../MenuDrawer/MenuDrawer'
 import { MenuDropdown } from '../MenuDropdown/MenuDropdown'
@@ -29,12 +30,20 @@ export function Menu() {
     prefetchOptions(undefined)
   }
 
+  const prefetchShopOnHover = useDebouncedCallback(
+    prefetchShop,
+    uiTiming.prefetchDelayMs,
+  )
+
   const { isMobile } = useBreakpoints()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const closeMenu = () => setMenuOpen(false)
+  const closeMenu = () => {
+    prefetchShopOnHover.cancel()
+    setMenuOpen(false)
+  }
 
   useClickOutside(menuRef, () => {
     if (!isMobile) {
@@ -43,25 +52,31 @@ export function Menu() {
   })
 
   const toggleMenu = () => {
+    prefetchShopOnHover.cancel()
     setMenuOpen((prevState) => !prevState)
   }
 
   const menuList = (
     <MenuList>
-      {menuLinks.map((link) => (
-        <li key={link.key}>
-          <Link
-            to={link.path}
-            onClick={closeMenu}
-            onMouseEnter={link.key === 'shop' ? prefetchShop : undefined}
-            onFocus={link.key === 'shop' ? prefetchShop : undefined}>
-            <MenuItem>
-              <link.Icon />
-              <span>{t(link.name)}</span>
-            </MenuItem>
-          </Link>
-        </li>
-      ))}
+      {menuLinks.map((link) => {
+        const isShopLink = link.key === 'shop'
+
+        return (
+          <li key={link.key}>
+            <Link
+              to={link.path}
+              onClick={closeMenu}
+              onMouseEnter={isShopLink ? prefetchShopOnHover : undefined}
+              onMouseLeave={isShopLink ? prefetchShopOnHover.cancel : undefined}
+              onFocus={isShopLink ? prefetchShop : undefined}>
+              <MenuItem>
+                <link.Icon />
+                <span>{t(link.name)}</span>
+              </MenuItem>
+            </Link>
+          </li>
+        )
+      })}
     </MenuList>
   )
 

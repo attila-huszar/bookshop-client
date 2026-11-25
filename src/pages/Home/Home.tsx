@@ -9,6 +9,7 @@ import { News, Releases, TopSellers } from './components'
 export function Home() {
   const { t } = useTranslation()
 
+  const isRestoring = useAppSelector((state) => state.auth.isRestoring)
   const booksError = useAppSelector(homeBooksErrorSelector)
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -20,10 +21,10 @@ export function Home() {
 
   return (
     <>
-      <Releases />
-      <TopSellers />
-      <Recommended />
-      <News />
+      <Releases skipQuery={isRestoring} />
+      <TopSellers skipQuery={isRestoring} />
+      <Recommended skipQuery={isRestoring} />
+      <News skipQuery={isRestoring} />
       <InfoDialog
         dialogRef={ref}
         message={t('home.error')}

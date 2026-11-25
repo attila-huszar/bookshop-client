@@ -8,6 +8,7 @@ import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { cartRestored } from '@/store/slices/cart'
 import { createAppStore } from '@/store/store'
+import { TimeMs } from '@/constants/time'
 import type { Book } from '@/types'
 import { Card } from './Card'
 
@@ -49,6 +50,7 @@ afterEach(() => {
   act(() => {
     store.dispatch(bookshopApi.util.resetApiState())
   })
+  vi.useRealTimers()
   localStorage.clear()
   sessionStorage.clear()
   vi.restoreAllMocks()
@@ -75,12 +77,37 @@ describe('Card', () => {
     expect(screen.getByText('Add to Basket')).toBeInTheDocument()
   })
 
-  it('prefetches a book on hover or focus and reuses fresh data', async () => {
+  it('prefetches only when the pointer stays over the title', async () => {
+    vi.useFakeTimers()
+    renderCard()
+    const link = screen.getByRole('link')
+
+    fireEvent.mouseEnter(link)
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+    fireEvent.mouseLeave(link)
+    act(() => {
+      vi.advanceTimersByTime(TimeMs.TwoHundredMilliseconds)
+    })
+    expect(publicApi.baseRequest).not.toHaveBeenCalled()
+
+    fireEvent.mouseEnter(link)
+    await act(async () => {
+      vi.advanceTimersByTime(TimeMs.TwoHundredMilliseconds)
+      await Promise.all(
+        store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
+      )
+    })
+    expect(publicApi.baseRequest).toHaveBeenCalledExactlyOnceWith(
+      'books',
+      expect.objectContaining({ searchParams: { id: 1 } }),
+    )
+  })
+
+  it('prefetches a book on focus and reuses fresh data', async () => {
     renderCard()
 
     expect(publicApi.baseRequest).not.toHaveBeenCalled()
     const link = screen.getByRole('link')
-    fireEvent.mouseEnter(link)
     fireEvent.focus(link)
     await act(async () => {
       await Promise.all(

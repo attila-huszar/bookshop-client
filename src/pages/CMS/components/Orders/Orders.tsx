@@ -24,7 +24,10 @@ export const Orders = () => {
     data: allOrders = [],
     isLoading: ordersLoading,
     error: ordersError,
-  } = useCmsOrdersQuery(undefined, { refetchOnMountOrArgChange: true })
+  } = useCmsOrdersQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  })
   const {
     showDeletedOrders,
     selectedItems,

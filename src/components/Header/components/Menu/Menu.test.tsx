@@ -7,7 +7,7 @@ import * as publicApi from '@/api/baseRequest'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { setBooksCurrentPage } from '@/store/slices/books'
 import { createAppStore } from '@/store/store'
-import { CacheTime } from '@/constants/time'
+import { CacheTime, uiTiming } from '@/constants/time'
 import { Menu } from './Menu'
 
 let store: ReturnType<typeof createAppStore>
@@ -97,14 +97,19 @@ describe('Menu', () => {
   })
 
   it('warms only Shop data on intent and refreshes only stale entries', async () => {
-    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.useFakeTimers()
     store.dispatch(setBooksCurrentPage(3))
     renderMenu()
-    await userEvent.click(screen.getByTitle('Menu'))
+    fireEvent.click(screen.getByTitle('Menu'))
     fireEvent.mouseEnter(screen.getByRole('link', { name: 'Home' }))
+    const shop = screen.getByRole('link', { name: 'Shop' })
+    fireEvent.mouseEnter(shop)
+    fireEvent.mouseLeave(shop)
+    act(() => {
+      vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
+    })
     expect(publicApi.baseRequest).not.toHaveBeenCalled()
 
-    const shop = screen.getByRole('link', { name: 'Shop' })
     fireEvent.focus(shop)
     await act(async () => {
       await Promise.all(
@@ -120,10 +125,16 @@ describe('Menu', () => {
     )
 
     fireEvent.mouseEnter(shop)
+    act(() => {
+      vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
+    })
     expect(publicApi.baseRequest).toHaveBeenCalledTimes(2)
+    fireEvent.mouseLeave(shop)
     vi.setSystemTime(Date.now() + (CacheTime.FiveMinutes + 1) * 1_000)
     fireEvent.mouseEnter(shop)
+    expect(publicApi.baseRequest).toHaveBeenCalledTimes(2)
     await act(async () => {
+      vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
       await Promise.all(
         store.dispatch(bookshopApi.util.getRunningQueriesThunk()),
       )

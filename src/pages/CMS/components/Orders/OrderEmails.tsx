@@ -55,7 +55,7 @@ export function OrderEmails({ paymentId }: { paymentId: string }) {
       ...(type ? { type } : {}),
       ...(search ? { search } : {}),
     },
-    { refetchOnMountOrArgChange: true },
+    { refetchOnMountOrArgChange: true, refetchOnFocus: true },
   )
   const pages = Math.max(
     1,

@@ -6,12 +6,18 @@ import { cartAdd } from '@/store/slices/cart'
 import { Button } from '@/components/Button'
 import { Price } from '@/components/Price'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { CacheTime } from '@/constants/time'
-import { Book } from '@/types'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { CacheTime, uiTiming } from '@/constants/time'
+import type { Book } from '@/types'
 import { CartAddIcon, imagePlaceholder } from '@/assets/svg'
 import { Description, Details, Image, StyledCard, Title } from './Card.style'
 
-export function Card({ book }: { book: Book }) {
+type Props = {
+  book: Book
+  imageLoading?: HTMLImageElement['loading']
+}
+
+export function Card({ book, imageLoading }: Props) {
   const { t } = useTranslation()
 
   const navigate = useNavigate()
@@ -19,6 +25,10 @@ export function Card({ book }: { book: Book }) {
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
+  const prefetchOnHover = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
   const isBookInCart = useAppSelector((state) =>
     state.cart.cartItems.some((item) => item.id === book.id),
   )
@@ -34,6 +44,7 @@ export function Card({ book }: { book: Book }) {
   return (
     <StyledCard>
       <Image
+        loading={imageLoading}
         src={book.imgUrl}
         onError={(event) => (event.currentTarget.src = imagePlaceholder)}
         alt=""
@@ -41,7 +52,8 @@ export function Card({ book }: { book: Book }) {
       <Details>
         <Title
           to={`/${ROUTE.BOOK}?id=${book.id}`}
-          onMouseEnter={() => prefetchBook(book.id)}
+          onMouseEnter={() => prefetchOnHover(book.id)}
+          onMouseLeave={prefetchOnHover.cancel}
           onFocus={() => prefetchBook(book.id)}>
           {book.title}
         </Title>

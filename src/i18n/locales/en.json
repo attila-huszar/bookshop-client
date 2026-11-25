@@ -186,7 +186,6 @@
     "welcome": "Welcome back, {{name}}!",
     "loggedOut": "{{email}} successfully logged out",
     "loginError": "Login failed, please try again later",
-    "googleUnavailable": "Google sign-in could not be loaded. Please refresh the page and try again.",
     "logoutError": "Logout failed, please try again later",
     "registered": "{{email}} registered successfully, please verify your email address",
     "registerError": "Registration failed, please try again later",

@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useNavigate } from 'react-router'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ROUTE } from '@/routes/route'
 import { userSelector } from '@/store/selectors'
 import { googleLogin } from '@/store/thunks/auth'
@@ -98,10 +99,12 @@ export function AuthorizationMenu() {
         <Outlet context={authSubmission} />
       </Suspense>
       {googleClientId && (
-        <GoogleSignIn
-          disabled={submitDisabled}
-          onCredential={handleGoogleSignIn}
-        />
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <GoogleSignIn
+            disabled={submitDisabled}
+            onCredential={handleGoogleSignIn}
+          />
+        </GoogleOAuthProvider>
       )}
     </StyledAuthorizationMenu>
   )

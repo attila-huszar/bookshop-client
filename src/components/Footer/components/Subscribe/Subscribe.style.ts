@@ -1,5 +1,4 @@
 import { styled } from 'styled-components'
-import { media } from '@/styles/media.breakpoints'
 
 export const Text = styled.p`
   margin: 1.25rem 0;
@@ -58,16 +57,21 @@ export const SubscribeForm = styled.form`
     }
   }
 
-  ${media.down('sm')`
+  @container footer-subscribe (inline-size < 27rem) {
     flex-direction: column;
 
     input {
-      width: 100%;
+      padding-inline: 0.5rem;
     }
 
     button {
-      width: 100%;
-      padding: 0.5rem;
+      padding-inline: 1rem;
     }
-  `}
+  }
+
+  @container footer-subscribe (inline-size < 15.5rem) {
+    input::placeholder {
+      font-size: 0.8125rem;
+    }
+  }
 `

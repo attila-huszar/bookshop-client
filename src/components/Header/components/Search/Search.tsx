@@ -10,7 +10,8 @@ import { Link, useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
 import { booksApi } from '@/store/api/booksApi'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import { CacheTime } from '@/constants/time'
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback'
+import { CacheTime, uiTiming } from '@/constants/time'
 import { validationLimits } from '@/constants/validation'
 import {
   imagePlaceholder,
@@ -39,6 +40,14 @@ export function Search() {
   const prefetchBook = booksApi.usePrefetch('book', {
     ifOlderThan: CacheTime.FiveMinutes,
   })
+  const prefetchBookOnHover = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
+  const prefetchBookOnFocus = useDebouncedCallback(
+    prefetchBook,
+    uiTiming.prefetchDelayMs,
+  )
   const {
     searchValue,
     hasQuery,
@@ -59,12 +68,19 @@ export function Search() {
   useClickOutside(searchRef, () => setSearchOpen(false))
 
   useLayoutEffect(() => {
-    if (showResults) {
-      const result = resultToFocus.current
-      resultToFocus.current = null
-      result?.focus()
+    if (!showResults) {
+      return
     }
-  }, [showResults])
+
+    const result = resultToFocus.current
+    resultToFocus.current = null
+    result?.focus()
+
+    return () => {
+      prefetchBookOnHover.cancel()
+      prefetchBookOnFocus.cancel()
+    }
+  }, [prefetchBookOnHover, prefetchBookOnFocus, showResults])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextQuery = updateSearchValue(e.target.value)
@@ -191,8 +207,10 @@ export function Search() {
                   <li key={book.id}>
                     <Link
                       to={`/${ROUTE.BOOK}?id=${book.id}`}
-                      onMouseEnter={() => prefetchBook(book.id)}
-                      onFocus={() => prefetchBook(book.id)}
+                      onMouseEnter={() => prefetchBookOnHover(book.id)}
+                      onMouseLeave={prefetchBookOnHover.cancel}
+                      onFocus={() => prefetchBookOnFocus(book.id)}
+                      onBlur={prefetchBookOnFocus.cancel}
                       onClick={handleReset}>
                       <MenuItem>
                         <img

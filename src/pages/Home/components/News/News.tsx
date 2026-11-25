@@ -5,10 +5,11 @@ import { CacheTime } from '@/constants/time'
 import { StyledNews } from './News.style'
 import { NewsCard } from './NewsCard'
 
-export function News() {
+export function News({ skipQuery = false }: { skipQuery?: boolean }) {
   const { t } = useTranslation()
 
   const { data: newsItems = [] } = useNewsQuery(undefined, {
+    skip: skipQuery,
     refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
   })
 

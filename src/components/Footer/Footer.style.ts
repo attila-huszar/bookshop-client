@@ -3,7 +3,7 @@ import { media } from '@/styles/media.breakpoints'
 
 export const StyledFooter = styled.footer`
   display: grid;
-  grid-template-rows: 16rem 3.5rem;
+  grid-template-rows: minmax(16rem, auto) auto;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 2.5rem;
   width: 100%;
@@ -32,12 +32,17 @@ export const LeftSection = styled.section`
 `
 
 export const RightSection = styled.section`
+  container: footer-subscribe / inline-size;
   grid-area: 1 / 2 / 2 / 3;
   align-self: center;
 
   p {
     text-wrap: pretty;
   }
+
+  ${media.down('sm')`
+    align-self: stretch;
+  `}
 `
 
 export const BottomSection = styled.section`

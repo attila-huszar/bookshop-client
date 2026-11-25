@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useGoogleOAuth } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
 import { postGoogleNonce } from '@/api/users'
-import { toast } from '@/components/AppToaster'
 import { Divider, GoogleSignInWrapper } from './GoogleSignIn.style'
 
 type GoogleSignInProps = {
@@ -17,10 +16,6 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
   const [buttonSignal, setButtonSignal] = useState<AbortSignal>()
   const containerRef = useRef<HTMLDivElement>(null)
   const locale = i18n.resolvedLanguage ?? 'en'
-
-  const reportUnavailable = useEffectEvent(() => {
-    toast.error(t('auth.googleUnavailable'))
-  })
 
   const handleCredential = useEffectEvent(
     ({ credential }: CredentialResponse, controller: AbortController) => {
@@ -79,9 +74,7 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
         })
         setButtonSignal(signal)
       } catch {
-        if (!signal.aborted) {
-          reportUnavailable()
-        }
+        challengeController.abort()
       }
     }
 
@@ -115,12 +108,16 @@ export function GoogleSignIn({ disabled, onCredential }: GoogleSignInProps) {
     return () => container.replaceChildren()
   }, [buttonSignal, locale])
 
+  if (!buttonSignal) {
+    return null
+  }
+
   return (
     <GoogleSignInWrapper disabled={disabled}>
       <Divider role="separator" aria-label={t('common.or')}>
         {t('common.or')}
       </Divider>
-      {buttonSignal && <div ref={containerRef} style={{ height: 40 }} />}
+      <div ref={containerRef} style={{ height: 40 }} />
     </GoogleSignInWrapper>
   )
 }

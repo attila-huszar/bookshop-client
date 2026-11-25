@@ -42,7 +42,10 @@ export function Orders() {
     data: orders = [],
     isLoading: ordersIsLoading,
     error: ordersError,
-  } = useUserOrdersQuery(undefined, { refetchOnMountOrArgChange: true })
+  } = useUserOrdersQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  })
   const { userData } = useAppSelector(userSelector)
 
   if (ordersIsLoading) {

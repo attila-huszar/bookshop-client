@@ -46,7 +46,6 @@ export const bookshopApi = createApi({
     'CheckoutTerms',
     'TermsDocument',
   ],
-  refetchOnFocus: true,
   refetchOnReconnect: true,
   endpoints: () => ({}),
 })

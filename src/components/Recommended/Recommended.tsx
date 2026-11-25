@@ -7,14 +7,14 @@ import { scrollToTop } from '@/helpers/scrollToTop'
 import { CacheTime } from '@/constants/time'
 import { StyledRecommended } from './Recommended.style'
 
-export function Recommended() {
+export function Recommended({ skipQuery = false }: { skipQuery?: boolean }) {
   const { t } = useTranslation()
 
   const { data: booksRecommended = [] } = useBooksByPropertyQuery(
     'recommended',
     {
+      skip: skipQuery,
       refetchOnMountOrArgChange: CacheTime.FifteenMinutes,
-      refetchOnFocus: false,
       refetchOnReconnect: false,
     },
   )
@@ -32,7 +32,7 @@ export function Recommended() {
       <h2>{t('home.recommended')}</h2>
       <SwiperComponent>
         {booksRecommended.map((book) => (
-          <Card key={book.id} book={book} />
+          <Card key={book.id} book={book} imageLoading="lazy" />
         ))}
       </SwiperComponent>
     </StyledRecommended>

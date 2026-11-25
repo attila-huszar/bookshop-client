@@ -9,6 +9,7 @@ import { booksApi } from '@/store/api/booksApi'
 import { bookshopApi } from '@/store/api/bookshopApi'
 import { createAppStore } from '@/store/store'
 import { useAppDispatch } from '@/hooks/redux'
+import { uiTiming } from '@/constants/time'
 import { Search } from './Search'
 
 vi.mock('react-router', async (importOriginal) => ({
@@ -130,6 +131,95 @@ describe('Search', () => {
         booksApi.endpoints.bookSearch.select('Author')(store.getState()).data,
       ).toEqual([book, anotherBook])
     })
+  })
+
+  it('cancels a queued book prefetch when search results close', async () => {
+    vi.useFakeTimers()
+
+    try {
+      const get = vi
+        .spyOn(publicApi, 'baseRequest')
+        .mockImplementation(() =>
+          httpResponse([
+            { id: 1, title: 'Test Book', author: 'Author', imgUrl: 'test.jpg' },
+          ]),
+        )
+      render(<Search />, { wrapper: Providers })
+      const input = screen.getByRole('textbox', { name: 'Search' })
+      fireEvent.change(input, { target: { value: 'Test' } })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(uiTiming.defaultDebounceMs)
+      })
+
+      fireEvent.mouseEnter(screen.getByRole('link', { name: /Test Book/ }))
+      fireEvent.keyDown(input, { key: 'Escape' })
+      act(() => {
+        vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
+      })
+
+      expect(get).toHaveBeenCalledExactlyOnceWith(
+        'books/search',
+        expect.objectContaining({ searchParams: { q: 'Test' } }),
+      )
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('prefetches only the result that keeps keyboard focus', async () => {
+    vi.useFakeTimers()
+
+    try {
+      const books = [
+        { id: 1, title: 'First Book', author: 'Author', imgUrl: 'test.jpg' },
+        { id: 2, title: 'Second Book', author: 'Author', imgUrl: 'test.jpg' },
+      ]
+      const get = vi
+        .spyOn(publicApi, 'baseRequest')
+        .mockImplementation((path) =>
+          httpResponse(path === 'books/search' ? books : books[1]),
+        )
+      render(<Search />, { wrapper: Providers })
+      const input = screen.getByRole('textbox', { name: 'Search' })
+      fireEvent.change(input, { target: { value: 'Book' } })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(uiTiming.defaultDebounceMs)
+      })
+
+      const firstResult = screen.getByRole('link', { name: /First Book/ })
+      const secondResult = screen.getByRole('link', { name: /Second Book/ })
+      const halfDelay = uiTiming.prefetchDelayMs / 2
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      expect(firstResult).toHaveFocus()
+      act(() => {
+        vi.advanceTimersByTime(halfDelay)
+      })
+      fireEvent.keyDown(firstResult, { key: 'ArrowDown' })
+      expect(secondResult).toHaveFocus()
+      act(() => {
+        vi.advanceTimersByTime(halfDelay)
+      })
+      expect(get).toHaveBeenCalledTimes(1)
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(halfDelay)
+      })
+      expect(get).toHaveBeenLastCalledWith(
+        'books',
+        expect.objectContaining({ searchParams: { id: 2 } }),
+      )
+
+      fireEvent.keyDown(secondResult, { key: 'ArrowUp' })
+      fireEvent.keyDown(firstResult, { key: 'ArrowUp' })
+      expect(input).toHaveFocus()
+      act(() => {
+        vi.advanceTimersByTime(uiTiming.prefetchDelayMs)
+      })
+      expect(get).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('announces the result count and supports Tab, arrow keys and Escape', async () => {
