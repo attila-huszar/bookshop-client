@@ -159,16 +159,23 @@ export const MenuItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  height: 3.5rem;
   padding: 0.5rem 1rem;
   cursor: pointer;
 
   img {
-    height: 3rem;
+    flex-shrink: 0;
     width: 2rem;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: 4px;
     box-shadow: var(--shadow-popover);
+  }
+
+  > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   svg {
@@ -177,23 +184,18 @@ export const MenuItem = styled.div`
     color: var(--color-on-surface-variant);
   }
 
-  @container search-results (max-width: 12rem) {
-    display: flex;
+  @container search-results (max-width: 192px) {
     flex-direction: column;
-    flex-wrap: nowrap;
     align-items: flex-start;
     gap: 0.5rem;
-    height: auto;
     padding: 0.5rem;
 
     p {
       line-height: 1.3;
-      white-space: normal;
-      overflow-wrap: break-word;
     }
   }
 
-  @container search-results (max-width: 14rem) {
+  @container search-results (max-width: 224px) {
     svg {
       display: none;
     }
@@ -208,8 +210,9 @@ export const TextBold = styled.p`
 export const NoResults = styled.li`
   display: flex;
   align-items: center;
-  height: 3.5rem;
+  min-height: 3.5rem;
   padding: 0.5rem 1rem;
   font-size: 1rem;
+  overflow-wrap: anywhere;
   color: var(--color-on-surface-variant);
 `

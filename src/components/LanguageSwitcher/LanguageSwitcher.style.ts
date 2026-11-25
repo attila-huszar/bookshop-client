@@ -27,12 +27,6 @@ export const Switcher = styled.div<{ $variant: 'menu' | 'icon' }>`
 
       > button {
         height: 2.25rem;
-        border-width: 2px;
-        background-color: var(--color-surface-container-lowest);
-
-        &:hover:not(:disabled) {
-          background-color: var(--color-primary-container);
-        }
 
         ${media.down('sm')`
           height: 2.5rem;

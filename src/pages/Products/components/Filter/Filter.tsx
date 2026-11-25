@@ -24,6 +24,7 @@ import { StarIcon, StarOutlineIcon } from '@/assets/svg'
 import { sliderStyles } from '@/styles/slider.styles'
 import {
   ButtonWrapper,
+  ClearSelectionButton,
   CustomButton,
   DiscountRadioButtons,
   FilterOptions,
@@ -154,9 +155,13 @@ export function Filter({ onMobileClose }: FilterProps) {
                       </div>
                     ))}
                   </GenreCheckBoxes>
-                  <button type="button" onClick={handleGenreClear}>
+                  <ClearSelectionButton
+                    type="button"
+                    $color="neutral"
+                    $inverted
+                    onClick={handleGenreClear}>
                     {t('filters.clear')}
-                  </button>
+                  </ClearSelectionButton>
                 </AccordionItem>
 
                 <AccordionItem header={t('common.fields.price')}>

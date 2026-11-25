@@ -16,6 +16,7 @@ import checkmarkAnim from '@/assets/animations/checkmark.json'
 import clockAnim from '@/assets/animations/clock_loop.json'
 import exclamationAnim from '@/assets/animations/exclamation.json'
 import logo from '@/assets/image/logo.png'
+import { CheckoutButton } from '../../Checkout.style'
 import { Logo, StatusGraphic, StyledPaymentStatus } from './PaymentStatus.style'
 
 export function PaymentStatus() {
@@ -97,28 +98,31 @@ export function PaymentStatus() {
         {primaryLine}
       </p>
       {canRetryStatus && (
-        <button onClick={retry} type="button">
+        <CheckoutButton onClick={retry} type="button">
           {t('payment.actions.checkAgain')}
-        </button>
+        </CheckoutButton>
       )}
       {canReturnToCheckout && (
-        <button
+        <CheckoutButton
           onClick={() => void navigate(`/${ROUTE.CHECKOUT}`, { replace: true })}
           type="button">
           {t('payment.actions.returnToCheckout')}
-        </button>
+        </CheckoutButton>
       )}
       {canReturnToCart && (
-        <button
+        <CheckoutButton
           onClick={() => leaveCheckout(`/${ROUTE.CART}`, { replace: true })}
           type="button">
           {t('common.actions.backToCart')}
-        </button>
+        </CheckoutButton>
       )}
       {(canReturnToCart || isStripeSuccess) && (
-        <button onClick={() => leaveCheckout('/')} type="button">
+        <CheckoutButton
+          onClick={() => leaveCheckout('/')}
+          type="button"
+          $inverted={canReturnToCart}>
           {t('common.actions.backToShop')}
-        </button>
+        </CheckoutButton>
       )}
     </StyledPaymentStatus>
   )

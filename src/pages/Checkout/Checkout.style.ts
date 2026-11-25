@@ -1,5 +1,13 @@
 import { styled } from 'styled-components'
+import { StyledButton } from '@/components/Button/Button.style'
 import { media } from '@/styles/media.breakpoints'
+
+export const CheckoutButton = styled(StyledButton).attrs({
+  $size: 'lg',
+  $textSize: 'lg',
+})`
+  width: 100%;
+`
 
 export const StyledCheckout = styled.section`
   --page-loading-height: calc(100dvh - 4rem);
@@ -120,46 +128,6 @@ export const StyledCheckout = styled.section`
     a {
       text-decoration: underline;
     }
-  }
-
-  button {
-    background: var(--color-primary);
-    font-family: Arial, sans-serif;
-    color: var(--color-on-primary);
-    border-radius: 4px;
-    border: 0;
-    padding: 12px 16px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: block;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      background-color 0.2s ease,
-      filter 0.2s ease;
-    box-shadow: var(--shadow-button);
-    width: 100%;
-  }
-
-  button:hover:not(:disabled) {
-    filter: brightness(0.9);
-    box-shadow: var(--shadow-button-hover);
-  }
-
-  button:active:not(:disabled) {
-    box-shadow: var(--shadow-button-pressed);
-  }
-
-  button:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  button:disabled {
-    opacity: 0.5;
-    box-shadow: none;
-    cursor: not-allowed;
   }
 
   .payment-submit-status {

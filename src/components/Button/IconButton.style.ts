@@ -1,5 +1,6 @@
 import { styled } from 'styled-components'
-import { StyleTypes } from './IconButton.types'
+import { buttonInteractionStyles } from '@/styles/button.styles'
+import type { StyleTypes } from './IconButton.types'
 
 const size = {
   xs: '1.5rem',
@@ -16,30 +17,32 @@ const iconHeight = {
 }
 
 export const StyledIconButton = styled.button<StyleTypes>`
+  ${buttonInteractionStyles}
   display: flex;
   align-items: center;
   justify-content: center;
   height: ${({ $size = 'md' }) => size[$size]};
   width: ${({ $size = 'md' }) => size[$size]};
   color: ${({ $color }) => $color ?? 'var(--color-on-surface-variant)'};
-  background-color: transparent;
-  border: ${({ $outline, $color }) =>
-    $outline
-      ? `3px solid ${$color ?? 'var(--color-on-surface-variant)'}`
-      : 'none'};
-  border-radius: ${({ $round }) => ($round ? '999px' : '10px')};
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease-out,
-    box-shadow 0.2s ease-out;
+  background-color: ${({ $outline }) =>
+    $outline ? 'var(--color-surface-container-lowest)' : 'transparent'};
+  border: 1px solid
+    ${({ $outline }) => ($outline ? 'var(--color-outline)' : 'transparent')};
+  border-radius: ${({ $round }) => ($round ? '999px' : 'var(--button-radius)')};
 
-  &:hover:not(:disabled),
-  &[aria-pressed='true']:not(:disabled) {
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface-container);
+    }
+  }
+
+  &[aria-pressed='true']:not(:disabled),
+  &[aria-expanded='true']:not(:disabled) {
     background-color: var(--color-surface-container-high);
   }
 
   &:active:not(:disabled) {
-    background-color: var(--color-secondary-container);
+    background-color: var(--color-surface-container-highest);
   }
 
   svg {
@@ -52,11 +55,7 @@ export const StyledIconButton = styled.button<StyleTypes>`
 
   &:disabled {
     color: var(--color-outline);
-    border-color: var(--color-surface-container-high);
-    cursor: not-allowed;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    border-color: ${({ $outline }) =>
+      $outline ? 'var(--color-outline-variant)' : 'transparent'};
   }
 `

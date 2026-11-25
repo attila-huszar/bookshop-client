@@ -148,6 +148,9 @@ export const CustomButton = styled(StyledButton)`
   padding-block: 0.125em;
   width: auto;
   font-size: 0.75rem;
-  border-radius: var(--border-radius);
-  border-width: 1px;
+`
+
+export const ClearSelectionButton = styled(CustomButton)`
+  width: fit-content;
+  margin: 0.5rem auto 0.375rem;
 `

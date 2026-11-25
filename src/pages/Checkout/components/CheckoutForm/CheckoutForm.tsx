@@ -19,6 +19,7 @@ import { calculatePriceCents } from '@/helpers/pricing'
 import { defaultCurrency } from '@/constants/defaultValues'
 import type { ApiError, StripePaymentElementOptions } from '@/types'
 import { SpinnerIcon } from '@/assets/svg'
+import { CheckoutButton } from '../../Checkout.style'
 
 const paymentElementOptions: StripePaymentElementOptions = {
   layout: 'accordion',
@@ -237,12 +238,16 @@ export function CheckoutForm() {
           </p>
         )}
         {hasTermsError && (
-          <button type="button" onClick={() => void refetchTerms()}>
+          <CheckoutButton
+            type="button"
+            $color="neutral"
+            $inverted
+            onClick={() => void refetchTerms()}>
             {t('terms.reload')}
-          </button>
+          </CheckoutButton>
         )}
       </div>
-      <button
+      <CheckoutButton
         type="submit"
         disabled={isPaymentDisabled}
         aria-busy={isLoading}
@@ -256,12 +261,13 @@ export function CheckoutForm() {
         ) : (
           orderButtonLabel
         )}
-      </button>
-      <button
+      </CheckoutButton>
+      <CheckoutButton
         type="button"
         onClick={() => void handleCancel()}
         disabled={isLoading || isCanceling}
-        style={{ backgroundColor: 'var(--color-on-surface-variant)' }}>
+        $color="neutral"
+        $inverted>
         <span>
           {isCanceling
             ? t('checkout.canceling')
@@ -269,7 +275,7 @@ export function CheckoutForm() {
               ? t('checkout.cancelRetry')
               : t('checkout.cancel')}
         </span>
-      </button>
+      </CheckoutButton>
       {cancelError && (
         <div id="cancel-message" role="alert" style={{ marginTop: '1rem' }}>
           {getErrorMessage(cancelError, t('checkout.cancelError'))}

@@ -50,20 +50,4 @@ export const Item = styled.div<AccordionItemTypes>`
 
 export const Content = styled.div`
   overflow: hidden;
-
-  > button {
-    display: block;
-    margin: 0.25rem auto 0;
-    padding: 0.25rem 0.5rem;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    color: var(--color-on-surface-variant);
-    background-color: var(--color-surface-container-lowest);
-    transition: background-color 0.2s ease-out;
-
-    &:hover:not(:disabled) {
-      background-color: var(--color-surface-container-high);
-    }
-  }
 `

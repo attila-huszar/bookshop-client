@@ -1,5 +1,6 @@
 import { styled } from 'styled-components'
 import { visuallyHidden } from '@/styles/accessibility.styles'
+import { buttonInteractionStyles } from '@/styles/button.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledProducts = styled.div`
@@ -29,6 +30,7 @@ export const FilterFloatingButton = styled.button`
   display: none;
 
   ${media.down('sm')`
+    ${buttonInteractionStyles}
     position: fixed;
     right: 1.5rem;
     bottom: 1.5rem;
@@ -42,11 +44,16 @@ export const FilterFloatingButton = styled.button`
     border-radius: 50%;
     background: var(--color-primary);
     color: var(--color-on-primary);
-    box-shadow: var(--shadow-raised);
-    transition: background-color 0.2s ease-out;
+    box-shadow: var(--shadow);
 
-    &:hover:not(:disabled) {
-      background-color: var(--color-primary-hover);
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background-color: var(--color-primary-hover);
+      }
+    }
+
+    &:active:not(:disabled) {
+      background-color: color-mix(in srgb, var(--color-primary-hover), black 6%);
     }
 
     > svg {

@@ -1,13 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { ROUTE } from '@/routes/route'
+import { Button } from '@/components/Button'
 import books from '@/assets/image/books.png'
-import {
-  BackButton,
-  ImageWrapper,
-  NotFoundSection,
-  StyledNotFound,
-} from './NotFound.style'
+import { ImageWrapper, NotFoundSection, StyledNotFound } from './NotFound.style'
 
 function NotFound() {
   const { t } = useTranslation()
@@ -33,9 +29,9 @@ function NotFound() {
         <h3>{t('notFound.title')}</h3>
         <h4>{t('notFound.description')}</h4>
       </NotFoundSection>
-      <BackButton type="button" onClick={handleGoBack}>
+      <Button type="button" onClick={handleGoBack} $inverted>
         {t('common.actions.goBack')}
-      </BackButton>
+      </Button>
     </StyledNotFound>
   )
 }

@@ -1,5 +1,6 @@
-import { styled } from 'styled-components'
-import { StyleTypes } from './Button.types'
+import { css, styled } from 'styled-components'
+import { buttonInteractionStyles } from '@/styles/button.styles'
+import type { StyleTypes } from './Button.types'
 
 const height = {
   xs: '1.5rem',
@@ -31,95 +32,89 @@ const colorMap = {
     color: 'var(--color-on-primary)',
     background: 'var(--color-primary)',
     accent: 'var(--color-primary)',
-    border: 'var(--color-primary)',
     hover: 'var(--color-primary-hover)',
-    tint: 'var(--color-primary-container)',
   },
   secondary: {
     color: 'var(--color-on-secondary)',
     background: 'var(--color-secondary)',
     accent: 'var(--color-secondary)',
-    border: 'var(--color-secondary)',
     hover: 'var(--color-secondary-hover)',
-    tint: 'var(--color-secondary-container)',
   },
   danger: {
     color: 'var(--color-on-error)',
     background: 'var(--color-error)',
     accent: 'var(--color-error)',
-    border: 'var(--color-error)',
     hover: 'var(--color-error-hover)',
-    tint: 'var(--color-error-container)',
   },
   neutral: {
     color: 'var(--color-on-surface-variant)',
-    background: 'var(--color-surface-container-lowest)',
+    background: 'var(--color-surface-container)',
     accent: 'var(--color-on-surface-variant)',
-    border: 'var(--color-outline)',
     hover: 'var(--color-surface-container-high)',
-    tint: 'var(--color-surface-container-high)',
   },
 }
 
-function getTheme(color: StyleTypes['$color'] = 'primary', inverted?: boolean) {
-  const palette = colorMap[color]
-
-  return {
-    color: inverted ? palette.accent : palette.color,
-    background: inverted
-      ? 'var(--color-surface-container-lowest)'
-      : palette.background,
-    border: palette.border,
-    hover: inverted ? palette.tint : palette.hover,
-  }
-}
-
 export const StyledButton = styled.button<StyleTypes>`
+  ${buttonInteractionStyles}
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
   min-height: ${({ $size = 'md' }) => height[$size]};
   height: auto;
-  padding-block: 0.25em;
+  padding: 0.25em 0.75rem;
   width: ${({ $size = 'md' }) => width[$size]};
+  max-width: 100%;
+  min-width: 0;
   font-size: ${({ $textSize = 'md' }) => fontSize[$textSize]};
-  font-weight: 700;
-  color: ${({ $color, $inverted }) => getTheme($color, $inverted).color};
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  border: 1px solid transparent;
+  border-radius: var(--button-radius);
 
-  background-color: ${({ $color, $inverted }) =>
-    getTheme($color, $inverted).background};
+  ${({ $color = 'primary', $inverted }) => {
+    const palette = colorMap[$color]
+    const surface = 'var(--color-surface-container-lowest)'
+    const hover = $inverted
+      ? `color-mix(in srgb, ${palette.accent} 9%, ${surface})`
+      : palette.hover
+    const active = $inverted
+      ? `color-mix(in srgb, ${palette.accent} 16%, ${surface})`
+      : `color-mix(in srgb, ${palette.hover}, black 6%)`
+
+    return css`
+      color: ${$inverted ? palette.accent : palette.color};
+      background-color: ${$inverted ? surface : palette.background};
+      border-color: ${$inverted ? 'var(--color-outline)' : 'transparent'};
+      --button-hover: ${hover};
+      --button-active: ${active};
+    `
+  }}
+
   box-shadow: ${({ $shadow }) =>
     $shadow ? 'var(--shadow-button)' : undefined};
-  border: 2px solid ${({ $color }) => getTheme($color).border};
-  border-radius: 10px;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease-out,
-    border-color 0.2s ease-out,
-    box-shadow 0.2s ease-out;
 
-  &:hover:not(:disabled) {
-    background-color: ${({ $color, $inverted }) =>
-      getTheme($color, $inverted).hover};
-    box-shadow: ${({ $shadow }) =>
-      $shadow ? 'var(--shadow-button-hover)' : undefined};
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background-color: var(--button-hover);
+      box-shadow: ${({ $shadow }) =>
+        $shadow ? 'var(--shadow-button-hover)' : undefined};
+    }
   }
 
   &:active:not(:disabled) {
-    box-shadow: var(--shadow-button-pressed);
+    background-color: var(--button-active);
+    box-shadow: none;
   }
 
   &:disabled {
     color: var(--color-on-surface-variant);
     background-color: var(--color-surface-container-high);
-    border-color: var(--color-surface-container-high);
+    border-color: transparent;
     box-shadow: none;
-    cursor: not-allowed;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
   }
 
   > div[role='img'] {
