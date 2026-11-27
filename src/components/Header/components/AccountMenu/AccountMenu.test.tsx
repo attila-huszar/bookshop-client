@@ -91,8 +91,8 @@ describe('AccountMenu component', () => {
     },
   )
 
-  it.each([390, 1280])(
-    'uses a single flag icon and retains login navigation during session restoration at %ipx',
+  it.each([390, 767, 768, 1280])(
+    'adapts the login button and retains navigation during session restoration at %ipx',
     async (width) => {
       vi.stubGlobal('innerWidth', width)
       localStorage.removeItem('language')
@@ -104,6 +104,10 @@ describe('AccountMenu component', () => {
       render(<AccountMenu />, { wrapper: Providers })
 
       const loginButton = screen.getByTitle('Login/Register')
+      expect(loginButton).toHaveAccessibleName(
+        width < 768 ? 'Login/Register' : 'Login',
+      )
+      expect(loginButton.textContent).toBe(width < 768 ? '' : 'Login')
       const languageButton = screen.getByRole('button', {
         name: 'Switch to Magyar',
       })

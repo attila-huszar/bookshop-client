@@ -1,4 +1,6 @@
 import { styled } from 'styled-components'
+import { StyledIconButton } from '@/components/Button/IconButton.style'
+import { ButtonWrapper } from '@/styles/form.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledAuthorizationMenu = styled.div`
@@ -20,6 +22,20 @@ export const StyledAuthorizationMenu = styled.div`
       margin-bottom: 1rem;
     }
   }
+`
+
+export const AuthFormActions = styled(ButtonWrapper)`
+  > ${StyledIconButton} {
+    flex-shrink: 0;
+  }
+
+  ${media.down('sm')`
+    gap: 0.75rem;
+
+    > button[type='submit'] {
+      padding-inline: 0.5rem;
+    }
+  `}
 `
 
 export const FormChangeLinks = styled.div`

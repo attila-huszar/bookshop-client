@@ -1,6 +1,10 @@
 import { styled } from 'styled-components'
 import { visuallyHidden } from '@/styles/accessibility.styles'
-import { buttonInteractionStyles } from '@/styles/button.styles'
+import {
+  buttonHeight,
+  buttonInteractionStyles,
+  iconButtonTouchArea,
+} from '@/styles/button.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledProducts = styled.div`
@@ -30,7 +34,10 @@ export const FilterFloatingButton = styled.button`
   display: none;
 
   ${media.down('sm')`
+    --icon-button-size: ${buttonHeight.md};
+
     ${buttonInteractionStyles}
+    ${iconButtonTouchArea}
     position: fixed;
     right: 1.5rem;
     bottom: 1.5rem;
@@ -38,8 +45,8 @@ export const FilterFloatingButton = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
+    inline-size: var(--icon-button-size);
+    aspect-ratio: 1;
     border: 0;
     border-radius: 50%;
     background: var(--color-primary);

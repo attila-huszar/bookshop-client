@@ -1,4 +1,6 @@
 import { styled } from 'styled-components'
+import { StyledIconButton } from '@/components/Button/IconButton.style'
+import { buttonHeight } from '@/styles/button.styles'
 import { media } from '@/styles/media.breakpoints'
 
 export const StyledHeader = styled.header`
@@ -21,6 +23,12 @@ export const StyledHeader = styled.header`
   );
   backdrop-filter: blur(10px);
   z-index: 3;
+
+  ${media.up('sm')`
+    ${StyledIconButton} {
+      --icon-button-size: ${buttonHeight.smMd};
+    }
+  `}
 
   ${media.down('md')`
     padding-inline: 1.5rem;

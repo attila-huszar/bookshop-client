@@ -1,15 +1,6 @@
 import { css, styled } from 'styled-components'
-import { buttonInteractionStyles } from '@/styles/button.styles'
+import { buttonHeight, buttonInteractionStyles } from '@/styles/button.styles'
 import type { StyleTypes } from './Button.types'
-
-const height = {
-  xs: '1.5rem',
-  sm: '2rem',
-  smMd: '2.25rem',
-  md: '2.5rem',
-  lg: '3rem',
-  wide: '2.5rem',
-}
 
 const width = {
   xs: '6rem',
@@ -60,7 +51,7 @@ export const StyledButton = styled.button<StyleTypes>`
   justify-content: center;
   align-items: center;
   gap: 0.375rem;
-  min-height: ${({ $size = 'md' }) => height[$size]};
+  min-height: ${({ $size = 'md' }) => buttonHeight[$size]};
   height: auto;
   padding: 0.25em 0.75rem;
   width: ${({ $size = 'md' }) => width[$size]};

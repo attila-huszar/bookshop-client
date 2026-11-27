@@ -11,6 +11,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { useBreakpoints } from '@/hooks/useBreakpoints'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { getErrorMessage } from '@/helpers/errors'
 import { UserRole } from '@/types'
 import {
@@ -35,6 +36,7 @@ export function AccountMenu() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { isMobile } = useBreakpoints()
+  const isCompactLogin = useMediaQuery('(width < 768px)')
   const [menuOpen, setMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { accessToken, userData } = useAppSelector(userSelector)
@@ -85,16 +87,18 @@ export function AccountMenu() {
   }
 
   if (!isAuthenticated || !userData) {
-    const loginButton = isMobile ? (
+    const loginLabel = t('auth.loginRegister')
+    const loginButton = isCompactLogin ? (
       <IconButton
         onClick={handleLoginClick}
-        icon={<UserOutlineIcon />}
-        title={t('auth.loginRegister')}
+        icon={<UserOutlineIcon aria-hidden="true" />}
+        aria-label={loginLabel}
+        title={loginLabel}
       />
     ) : (
       <Button
         onClick={handleLoginClick}
-        title={t('auth.loginRegister')}
+        title={loginLabel}
         $icon={<UserOutlineIcon />}
         $size="smMd"
         $inverted>

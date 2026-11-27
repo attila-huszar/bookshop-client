@@ -30,7 +30,8 @@ export const DialogHeader = styled.header`
   }
 
   ${DialogCloseButton} {
-    position: static;
+    position: relative;
+    inset: auto;
     flex-shrink: 0;
   }
 `

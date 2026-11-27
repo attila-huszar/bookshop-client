@@ -5,6 +5,7 @@ import { Form, Formik } from 'formik'
 import { ROUTE } from '@/routes/route'
 import { login } from '@/store/thunks/auth'
 import { toast } from '@/components/AppToaster'
+import { AuthFormActions } from '@/components/AuthorizationMenu/AuthorizationMenu.style'
 import type { AuthSubmission } from '@/components/AuthorizationMenu/AuthorizationMenu.types'
 import { Button, IconButton } from '@/components/Button'
 import { ForgotPassword } from '@/components/ForgotPassword'
@@ -16,7 +17,6 @@ import { loginSchema } from '@/validation/userSchemas'
 import { loginInitialValues } from '@/constants/defaultValues'
 import type { LoginRequest } from '@/types'
 import { BackIcon, QuestionIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles/form.styles'
 
 export function Login() {
   const { t, i18n } = useTranslation()
@@ -106,7 +106,7 @@ export function Login() {
             showPassword={showPassword}
             setShowPassword={setShowPassword}
           />
-          <ButtonWrapper>
+          <AuthFormActions>
             <IconButton
               icon={<BackIcon />}
               $size="lg"
@@ -129,7 +129,7 @@ export function Login() {
               disabled={isSubmitting}
               onClick={handleDialogOpen}
             />
-          </ButtonWrapper>
+          </AuthFormActions>
         </Form>
       </Formik>
       <ForgotPassword ref={forgotPasswordDialog} />

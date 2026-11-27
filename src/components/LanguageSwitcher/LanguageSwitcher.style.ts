@@ -1,6 +1,5 @@
 import { css, styled } from 'styled-components'
 import { dropdownOptionStyles } from '@/styles/dropdown.styles'
-import { media } from '@/styles/media.breakpoints'
 
 export const Switcher = styled.div<{ $variant: 'menu' | 'icon' }>`
   position: relative;
@@ -24,14 +23,6 @@ export const Switcher = styled.div<{ $variant: 'menu' | 'icon' }>`
     $variant === 'icon' &&
     css`
       flex-shrink: 0;
-
-      > button {
-        height: 2.25rem;
-
-        ${media.down('sm')`
-          height: 2.5rem;
-        `}
-      }
 
       p {
         position: absolute;

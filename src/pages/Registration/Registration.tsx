@@ -6,6 +6,7 @@ import { getUserCountry } from '@/api/users'
 import { ROUTE } from '@/routes/route'
 import { useRegisterMutation } from '@/store/api/usersApi'
 import { toast } from '@/components/AppToaster'
+import { AuthFormActions } from '@/components/AuthorizationMenu/AuthorizationMenu.style'
 import type { AuthSubmission } from '@/components/AuthorizationMenu/AuthorizationMenu.types'
 import { Button, IconButton } from '@/components/Button'
 import { CountrySelect } from '@/components/CountrySelect'
@@ -16,7 +17,6 @@ import { registrationSchema } from '@/validation/userSchemas'
 import { registrationInitialValues } from '@/constants/defaultValues'
 import { RegisterRequest } from '@/types'
 import { BackIcon, SpinnerIcon } from '@/assets/svg'
-import { ButtonWrapper } from '@/styles/form.styles'
 
 type RegistrationValues = RegisterRequest & { passwordConfirmation: string }
 
@@ -175,7 +175,7 @@ export function Registration() {
               aria-label={t('auth.uploadAvatar')}
               disabled={isSubmitting}
             />
-            <ButtonWrapper>
+            <AuthFormActions>
               <IconButton
                 icon={<BackIcon />}
                 $size="lg"
@@ -189,8 +189,8 @@ export function Registration() {
                 {isSubmitting && <SpinnerIcon height={28} />}
                 {t('auth.register')}
               </Button>
-              <div style={{ width: '3rem' }} />
-            </ButtonWrapper>
+              <div style={{ width: '2.5rem', flexShrink: 0 }} />
+            </AuthFormActions>
           </Form>
         )
       }}

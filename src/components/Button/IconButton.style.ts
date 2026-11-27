@@ -1,12 +1,16 @@
-import { styled } from 'styled-components'
-import { buttonInteractionStyles } from '@/styles/button.styles'
+import { css, styled } from 'styled-components'
+import {
+  buttonHeight,
+  buttonInteractionStyles,
+  iconButtonTouchArea,
+} from '@/styles/button.styles'
 import type { StyleTypes } from './IconButton.types'
 
 const size = {
-  xs: '1.5rem',
-  sm: '2rem',
-  md: '2.5rem',
-  lg: '3rem',
+  xs: buttonHeight.xs,
+  sm: buttonHeight.sm,
+  md: buttonHeight.md,
+  lg: buttonHeight.md,
 }
 
 const iconHeight = {
@@ -17,18 +21,28 @@ const iconHeight = {
 }
 
 export const StyledIconButton = styled.button<StyleTypes>`
+  --icon-button-size: ${({ $size = 'md' }) => size[$size]};
+
   ${buttonInteractionStyles}
   display: flex;
+  align-self: center;
   align-items: center;
   justify-content: center;
-  height: ${({ $size = 'md' }) => size[$size]};
-  width: ${({ $size = 'md' }) => size[$size]};
+  inline-size: var(--icon-button-size);
+  aspect-ratio: 1;
   color: ${({ $color }) => $color ?? 'var(--color-on-surface-variant)'};
   background-color: ${({ $outline }) =>
     $outline ? 'var(--color-surface-container-lowest)' : 'transparent'};
   border: 1px solid
     ${({ $outline }) => ($outline ? 'var(--color-outline)' : 'transparent')};
   border-radius: ${({ $round }) => ($round ? '999px' : 'var(--button-radius)')};
+
+  ${({ $size = 'md' }) =>
+    ($size === 'md' || $size === 'lg') &&
+    css`
+      position: relative;
+      ${iconButtonTouchArea}
+    `}
 
   @media (hover: hover) {
     &:hover:not(:disabled) {
